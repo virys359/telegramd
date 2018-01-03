@@ -82,21 +82,21 @@ func (dao *AuthUpdatesStateDAO) SelectById(auth_key_id int64, user_id int32) *da
 	return do
 }
 
-// update seq_updates_ngen set pts = :pts where auth_key_id = :auth_key_id and user_id = :user_id
+// update auth_updates_state set pts = :pts, qts = :qts, date2 = :date2 where auth_key_id = :auth_key_id and user_id = :user_id
 // TODO(@benqi): sqlmap
-func (dao *AuthUpdatesStateDAO) UpdatePts(pts int32, auth_key_id int64, user_id int32) int64 {
-	var query = "update seq_updates_ngen set pts = ? where auth_key_id = ? and user_id = ?"
-	r, err := dao.db.Exec(query, pts, auth_key_id, user_id)
+func (dao *AuthUpdatesStateDAO) UpdateState(pts int32, qts int32, date2 int32, auth_key_id int64, user_id int32) int64 {
+	var query = "update auth_updates_state set pts = ?, qts = ?, date2 = ? where auth_key_id = ? and user_id = ?"
+	r, err := dao.db.Exec(query, pts, qts, date2, auth_key_id, user_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in UpdatePts(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdateState(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in UpdatePts(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdateState(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

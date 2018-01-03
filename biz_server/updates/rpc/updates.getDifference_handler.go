@@ -128,6 +128,8 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	state.SetUnreadCount(0)
 	difference.SetState(state.To_Updates_State())
 
+	dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).UpdateState(request.GetPts(), request.GetQts(), request.GetDate(), md.AuthId, md.UserId)
+
 	glog.Infof("UpdatesGetDifference - reply: %s", difference)
 	return difference.To_Updates_Difference(), nil
 }

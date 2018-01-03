@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/base/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
@@ -31,7 +30,10 @@ func (s *PhoneServiceImpl) PhoneSaveCallDebug(ctx context.Context, request *mtpr
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("PhoneSaveCallDebug - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl PhoneSaveCallDebug logic
+	peer := request.GetPeer().To_InputPhoneCall()
+	glog.Infof("PhoneSaveCallDebug - debug: {%v}", request.GetDebug())
+	delete(phoneCallSessionManager, peer.GetId())
 
-	return nil, fmt.Errorf("Not impl PhoneSaveCallDebug")
+	glog.Infof("PhoneAcceptCall - reply: {true}")
+	return mtproto.ToBool(true), nil
 }

@@ -20,12 +20,12 @@
         </sql>
     </operation>
 
-    <operation name="UpdatePts">
+    <operation name="UpdateState">
         <sql>
             UPDATE
-                seq_updates_ngen
+            auth_updates_state
             SET
-                pts = :pts
+                pts = :pts, qts = :qts, date2 = :date2
             WHERE
                 auth_key_id = :auth_key_id AND user_id = :user_id
         </sql>
