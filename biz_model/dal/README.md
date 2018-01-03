@@ -1,9 +1,11 @@
-///////////////////////////////////////////////////////////////////////
-// 术语
-// DAL: Data Access Layer
-// DO:  Data Object
-// DAO: Data Access Object
+# DAL -- Data Access Layer
 
+> 术语
+> * DAL: Data Access Layer
+> * DO:  Data Object
+> * DAO: Data Access Object
+
+```
 // DO  --> 对应于数据库表
 // DAO --> 对表的操作
 
@@ -28,3 +30,4 @@
 // users表对应UserDO
 // DAO: insert, selectByID
 
+```
