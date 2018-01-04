@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2017-12-15 14:19:11
+-- Generation Time: 2018-01-04 15:57:17
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -11,12 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `nebulaim`
@@ -162,6 +156,42 @@ CREATE TABLE `auth_salts` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `auth_seq_updates`
+--
+
+CREATE TABLE `auth_seq_updates` (
+  `id` bigint(20) NOT NULL,
+  `auth_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `seq` int(11) NOT NULL,
+  `update_type` int(11) NOT NULL,
+  `update_data` blob NOT NULL,
+  `date2` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `auth_updates_state`
+--
+
+CREATE TABLE `auth_updates_state` (
+  `id` int(11) NOT NULL,
+  `auth_key_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `pts` int(11) NOT NULL DEFAULT '0',
+  `qts` int(11) NOT NULL DEFAULT '0',
+  `seq` int(11) NOT NULL DEFAULT '0',
+  `date2` int(11) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `auth_users`
 --
 
@@ -258,44 +288,6 @@ CREATE TABLE `chat_participants` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `chat_users`
---
-
-CREATE TABLE `chat_users` (
-  `id` int(11) NOT NULL,
-  `chat_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `participant_type` tinyint(4) DEFAULT '0',
-  `inviter_user_id` int(11) NOT NULL DEFAULT '0',
-  `invited_at` int(11) NOT NULL DEFAULT '0',
-  `joined_at` int(11) NOT NULL DEFAULT '0',
-  `state` tinyint(4) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `client_updates_state`
---
-
-CREATE TABLE `client_updates_state` (
-  `id` int(11) NOT NULL,
-  `auth_key_id` bigint(20) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `pts` int(11) NOT NULL DEFAULT '0',
-  `qts` int(11) NOT NULL DEFAULT '0',
-  `seq` int(11) NOT NULL DEFAULT '0',
-  `date2` int(11) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- 表的结构 `devices`
 --
 
@@ -352,12 +344,13 @@ CREATE TABLE `file_parts` (
 
 CREATE TABLE `messages` (
   `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `sender_user_id` int(11) NOT NULL,
   `peer_type` int(11) NOT NULL,
   `peer_id` int(11) NOT NULL,
   `random_id` bigint(20) NOT NULL,
   `message_type` tinyint(4) NOT NULL DEFAULT '0',
-  `message_data` text NOT NULL,
+  `message_data` text CHARACTER SET utf8mb4 NOT NULL,
   `date2` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
@@ -372,12 +365,13 @@ CREATE TABLE `messages` (
 CREATE TABLE `message_boxes` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `user_message_box_id` int(11) NOT NULL,
+  `message_id` int(11) NOT NULL,
   `sender_user_id` int(11) NOT NULL,
   `message_box_type` tinyint(4) NOT NULL,
   `peer_type` tinyint(4) NOT NULL DEFAULT '0',
   `peer_id` int(11) NOT NULL,
   `pts` int(11) NOT NULL,
-  `message_id` int(11) NOT NULL,
   `media_unread` tinyint(4) NOT NULL DEFAULT '0',
   `state` tinyint(4) NOT NULL,
   `date2` int(11) NOT NULL,
@@ -411,7 +405,7 @@ CREATE TABLE `orgs` (
 
 CREATE TABLE `photo_datas` (
   `id` int(11) NOT NULL,
-  `file_id` bigint(20) NOT NULL,
+  `photo_id` bigint(20) NOT NULL,
   `photo_type` tinyint(4) NOT NULL,
   `dc_id` int(11) NOT NULL,
   `volume_id` bigint(20) NOT NULL,
@@ -422,6 +416,23 @@ CREATE TABLE `photo_datas` (
   `file_size` int(11) NOT NULL,
   `bytes` mediumblob NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `push_credentials`
+--
+
+CREATE TABLE `push_credentials` (
+  `id` int(11) NOT NULL,
+  `auth_id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `token_type` tinyint(4) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `state` tinyint(4) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -462,16 +473,42 @@ CREATE TABLE `secret_messages` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `seq_updates_ngen`
+-- 表的结构 `sticker_data`
 --
 
-CREATE TABLE `seq_updates_ngen` (
-  `id` bigint(20) NOT NULL,
-  `seq_name` varchar(255) NOT NULL,
-  `seq` bigint(20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+CREATE TABLE `sticker_data` (
+  `id` int(11) NOT NULL,
+  `pack_id` int(11) NOT NULL,
+  `emoji` varchar(16) DEFAULT NULL,
+  `image_128_file_id` bigint(20) NOT NULL,
+  `image_128_file_hash` bigint(20) NOT NULL,
+  `image_128_file_size` bigint(20) NOT NULL,
+  `image_256_file_id` bigint(20) DEFAULT NULL,
+  `image_256_file_hash` bigint(20) DEFAULT NULL,
+  `image_256_file_size` bigint(20) DEFAULT NULL,
+  `image_512_file_id` bigint(20) DEFAULT NULL,
+  `image_512_file_hash` bigint(20) DEFAULT NULL,
+  `image_512_file_size` bigint(20) DEFAULT NULL,
+  `image_128_width` int(11) NOT NULL DEFAULT '128',
+  `image_128_height` int(11) NOT NULL DEFAULT '128',
+  `image_256_width` int(11) DEFAULT '256',
+  `image_256_height` int(11) DEFAULT '256',
+  `image_512_width` int(11) DEFAULT '512',
+  `image_512_height` int(11) DEFAULT '512'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `sticker_packs`
+--
+
+CREATE TABLE `sticker_packs` (
+  `id` int(11) NOT NULL,
+  `access_salt` varchar(255) NOT NULL,
+  `owner_user_id` int(11) NOT NULL,
+  `is_default` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -543,12 +580,18 @@ CREATE TABLE `user_dialogs` (
   `user_id` int(11) NOT NULL,
   `peer_type` tinyint(4) NOT NULL,
   `peer_id` int(11) NOT NULL,
-  `is_pinned` tinyint(1) NOT NULL DEFAULT '0',
+  `is_pinned` tinyint(4) NOT NULL DEFAULT '0',
   `top_message` int(11) NOT NULL DEFAULT '0',
   `read_inbox_max_id` int(11) NOT NULL DEFAULT '0',
   `read_outbox_max_id` int(11) NOT NULL DEFAULT '0',
   `unread_count` int(11) NOT NULL DEFAULT '0',
   `unread_mentions_count` int(11) NOT NULL DEFAULT '0',
+  `show_previews` tinyint(4) NOT NULL DEFAULT '1',
+  `silent` tinyint(4) NOT NULL DEFAULT '0',
+  `mute_until` int(11) NOT NULL DEFAULT '0',
+  `sound` varchar(128) NOT NULL DEFAULT 'default',
+  `pts` int(11) NOT NULL DEFAULT '0',
+  `draft_id` int(11) NOT NULL DEFAULT '0',
   `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -631,17 +674,38 @@ CREATE TABLE `user_privacys` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `user_sequence`
+-- 表的结构 `user_pts_updates`
 --
 
-CREATE TABLE `user_sequence` (
+CREATE TABLE `user_pts_updates` (
   `id` bigint(20) NOT NULL,
-  `user_id` varchar(255) NOT NULL,
-  `seq` bigint(20) NOT NULL DEFAULT '0',
-  `header` bigint(20) NOT NULL,
-  `data` blob,
-  `created_at` bigint(20) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `user_id` int(11) NOT NULL,
+  `peer_type` tinyint(4) NOT NULL,
+  `peer_id` int(11) NOT NULL,
+  `pts` int(11) NOT NULL,
+  `update_type` int(11) NOT NULL,
+  `update_data` blob NOT NULL,
+  `message_box_id` int(11) NOT NULL DEFAULT '0',
+  `max_message_box_id` int(11) NOT NULL DEFAULT '0',
+  `date2` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `user_qts_updates`
+--
+
+CREATE TABLE `user_qts_updates` (
+  `id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `qts` int(11) NOT NULL,
+  `update_type` int(11) NOT NULL,
+  `update_data` blob NOT NULL,
+  `date2` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Indexes for dumped tables
@@ -701,6 +765,20 @@ ALTER TABLE `auth_salts`
   ADD KEY `auth` (`auth_id`);
 
 --
+-- Indexes for table `auth_seq_updates`
+--
+ALTER TABLE `auth_seq_updates`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `auth_id` (`auth_id`,`user_id`,`seq`);
+
+--
+-- Indexes for table `auth_updates_state`
+--
+ALTER TABLE `auth_updates_state`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `auth_key_id` (`auth_key_id`,`user_id`);
+
+--
 -- Indexes for table `auth_users`
 --
 ALTER TABLE `auth_users`
@@ -735,21 +813,6 @@ ALTER TABLE `chat_participants`
   ADD KEY `chat_id` (`chat_id`);
 
 --
--- Indexes for table `chat_users`
---
-ALTER TABLE `chat_users`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `chat_id` (`chat_id`);
-
---
--- Indexes for table `client_updates_state`
---
-ALTER TABLE `client_updates_state`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_key_id` (`auth_key_id`,`user_id`),
-  ADD KEY `auth_key_id_2` (`auth_key_id`,`user_id`);
-
---
 -- Indexes for table `devices`
 --
 ALTER TABLE `devices`
@@ -773,13 +836,15 @@ ALTER TABLE `file_parts`
 -- Indexes for table `messages`
 --
 ALTER TABLE `messages`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `sender_user_id` (`sender_user_id`,`peer_type`,`peer_id`,`random_id`);
 
 --
 -- Indexes for table `message_boxes`
 --
 ALTER TABLE `message_boxes`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `message_id` (`message_id`,`sender_user_id`,`message_box_type`,`peer_type`,`peer_id`);
 
 --
 -- Indexes for table `orgs`
@@ -795,6 +860,13 @@ ALTER TABLE `photo_datas`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `push_credentials`
+--
+ALTER TABLE `push_credentials`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `auth_id` (`auth_id`,`user_id`);
+
+--
 -- Indexes for table `reports`
 --
 ALTER TABLE `reports`
@@ -808,11 +880,16 @@ ALTER TABLE `secret_messages`
   ADD KEY `message_content_header` (`message_content_header`);
 
 --
--- Indexes for table `seq_updates_ngen`
+-- Indexes for table `sticker_data`
 --
-ALTER TABLE `seq_updates_ngen`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `seq_name` (`seq_name`);
+ALTER TABLE `sticker_data`
+  ADD PRIMARY KEY (`id`,`pack_id`);
+
+--
+-- Indexes for table `sticker_packs`
+--
+ALTER TABLE `sticker_packs`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `tmp_passwords`
@@ -870,12 +947,16 @@ ALTER TABLE `user_privacys`
   ADD UNIQUE KEY `user_id` (`user_id`);
 
 --
--- Indexes for table `user_sequence`
+-- Indexes for table `user_pts_updates`
 --
-ALTER TABLE `user_sequence`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `seq` (`seq`,`user_id`),
-  ADD UNIQUE KEY `id` (`id`);
+ALTER TABLE `user_pts_updates`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `user_qts_updates`
+--
+ALTER TABLE `user_qts_updates`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- 在导出的表使用AUTO_INCREMENT
@@ -903,13 +984,13 @@ ALTER TABLE `app_ios_push_certs`
 -- 使用表AUTO_INCREMENT `auths`
 --
 ALTER TABLE `auths`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=124;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=176;
 
 --
 -- 使用表AUTO_INCREMENT `auth_phone_transactions`
@@ -924,10 +1005,22 @@ ALTER TABLE `auth_salts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
+-- 使用表AUTO_INCREMENT `auth_seq_updates`
+--
+ALTER TABLE `auth_seq_updates`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `auth_updates_state`
+--
+ALTER TABLE `auth_updates_state`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- 使用表AUTO_INCREMENT `channels`
@@ -954,18 +1047,6 @@ ALTER TABLE `chat_participants`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
--- 使用表AUTO_INCREMENT `chat_users`
---
-ALTER TABLE `chat_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
-
---
--- 使用表AUTO_INCREMENT `client_updates_state`
---
-ALTER TABLE `client_updates_state`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
 -- 使用表AUTO_INCREMENT `devices`
 --
 ALTER TABLE `devices`
@@ -975,25 +1056,25 @@ ALTER TABLE `devices`
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
 
 --
 -- 使用表AUTO_INCREMENT `file_parts`
 --
 ALTER TABLE `file_parts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=303;
 
 --
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=310;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=366;
 
 --
 -- 使用表AUTO_INCREMENT `message_boxes`
 --
 ALTER TABLE `message_boxes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=685;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=603;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1005,7 +1086,13 @@ ALTER TABLE `orgs`
 -- 使用表AUTO_INCREMENT `photo_datas`
 --
 ALTER TABLE `photo_datas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=385;
+
+--
+-- 使用表AUTO_INCREMENT `push_credentials`
+--
+ALTER TABLE `push_credentials`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
 -- 使用表AUTO_INCREMENT `reports`
@@ -1018,12 +1105,6 @@ ALTER TABLE `reports`
 --
 ALTER TABLE `secret_messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `seq_updates_ngen`
---
-ALTER TABLE `seq_updates_ngen`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- 使用表AUTO_INCREMENT `tmp_passwords`
@@ -1047,7 +1128,7 @@ ALTER TABLE `user_contacts`
 -- 使用表AUTO_INCREMENT `user_dialogs`
 --
 ALTER TABLE `user_dialogs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- 使用表AUTO_INCREMENT `user_imported_contacts`
@@ -1074,12 +1155,14 @@ ALTER TABLE `user_privacys`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `user_sequence`
+-- 使用表AUTO_INCREMENT `user_pts_updates`
 --
-ALTER TABLE `user_sequence`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
-COMMIT;
+ALTER TABLE `user_pts_updates`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=662;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+--
+-- 使用表AUTO_INCREMENT `user_qts_updates`
+--
+ALTER TABLE `user_qts_updates`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+COMMIT;
