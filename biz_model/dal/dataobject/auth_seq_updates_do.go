@@ -17,15 +17,13 @@
 
 package dataobject
 
-type ClientUpdatesStateDO struct {
-	Id        int32  `db:"id"`
-	AuthKeyId int64  `db:"auth_key_id"`
-	UserId    int32  `db:"user_id"`
-	Pts       int32  `db:"pts"`
-	Qts       int32  `db:"qts"`
-	Seq       int32  `db:"seq"`
-	Date2     int32  `db:"date2"`
-	CreatedAt string `db:"created_at"`
-	UpdatedAt string `db:"updated_at"`
-	DeletedAt string `db:"deleted_at"`
+type AuthSeqUpdatesDO struct {
+	Id         int64  `db:"id"`
+	AuthId     int64  `db:"auth_id"`
+	UserId     int32  `db:"user_id"`
+	Seq        int32  `db:"seq"`
+	UpdateType int32  `db:"update_type"`
+	UpdateData []byte `db:"update_data"`
+	Date2      int32  `db:"date2"`
+	CreatedAt  string `db:"created_at"`
 }

@@ -42,6 +42,11 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 	glog.Infof("MessagesReadHistory - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	peer := base.FromInputPeer(request.GetPeer())
+	if peer.PeerType == base.PEER_SELF {
+		// TODO(@benqi): 太土！
+		peer.PeerType = base.PEER_USER
+		peer.PeerId = md.UserId
+	}
 
 	// 消息已读逻辑
 	// 1. inbox，设置unread_count为0以及read_inbox_max_id

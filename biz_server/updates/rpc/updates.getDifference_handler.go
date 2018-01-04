@@ -121,15 +121,13 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	difference.SetOtherUpdates(otherUpdates)
 
 	state := mtproto.NewTLUpdatesState()
-
 	// TODO(@benqi): Pts通过规则计算出来
 	state.SetPts(lastPts)
 	state.SetDate(int32(time.Now().Unix()))
 	state.SetUnreadCount(0)
 	difference.SetState(state.To_Updates_State())
 
-	dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).UpdateState(request.GetPts(), request.GetQts(), request.GetDate(), md.AuthId, md.UserId)
-
+	// dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).UpdateState(request.GetPts(), request.GetQts(), request.GetDate(), md.AuthId, md.UserId)
 	glog.Infof("UpdatesGetDifference - reply: %s", difference)
 	return difference.To_Updates_Difference(), nil
 }

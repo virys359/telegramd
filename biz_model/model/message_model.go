@@ -127,9 +127,10 @@ func (m *messageModel) GetMessagesByPeerAndMessageIdList2(userId int32, idList [
 	return m.getMessagesByMessageBoxes(boxesList, false)
 }
 
+// Loadhistory
 func (m *messageModel) LoadBackwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) []*mtproto.Message {
-	// 1. 先从message_boxes取出message_id
-	boxesList := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectBackwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+	// TODO(@benqi): chat and channel
+	boxesList := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
 	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", boxesList)
 	if len(boxesList) == 0 {
 		return make([]*mtproto.Message, 0)
@@ -138,8 +139,8 @@ func (m *messageModel) LoadBackwardHistoryMessages(userId int32, peerType , peer
 }
 
 func (m *messageModel) LoadForwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) []*mtproto.Message {
-	// 1. 先从message_boxes取出message_id
-	boxesList := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectForwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+	// TODO(@benqi): chat and channel
+	boxesList := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
 	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", boxesList)
 	if len(boxesList) == 0 {
 		return make([]*mtproto.Message, 0)
@@ -147,7 +148,16 @@ func (m *messageModel) LoadForwardHistoryMessages(userId int32, peerType , peerI
 	return m.getMessagesByMessageBoxes(boxesList, true)
 }
 
-// TODO(@benqi): 出问题了！！！
+// TODO(@benqi): 这种方法比较土
+func searchBoxByMessageId(messageId int32, boxes []dataobject.MessageBoxesDO) *dataobject.MessageBoxesDO {
+	for _, box := range boxes {
+		if messageId == box.MessageId {
+			return &box
+		}
+	}
+	return nil
+}
+
 func (m *messageModel) getMessagesByMessageBoxes(boxes []dataobject.MessageBoxesDO, order bool) []*mtproto.Message {
 	glog.Infof("getMessagesByMessageBoxes - boxes: %s", logger.JsonDebugData(boxes))
 	messageIdList := make([]int32, 0, len(boxes))
@@ -155,10 +165,12 @@ func (m *messageModel) getMessagesByMessageBoxes(boxes []dataobject.MessageBoxes
 		messageIdList = append(messageIdList, do.MessageId)
 	}
 	messageList := m.getMessagesByIDList(messageIdList, order)
-	// TODO(@benqi): 假设数据一致，后续还是要考虑数据不一致情况
 	for i, message := range messageList {
-		// TODO(@benqi): 数据不一致会有问题
-		boxDO := boxes[i]
+		boxDO := searchBoxByMessageId(message.Data2.Id, boxes)
+		if boxDO == nil {
+			glog.Error("getMessagesByMessageBoxes - Not found box, db's data error!!!")
+			continue
+		}
 		if boxDO.MessageBoxType == MESSAGE_BOX_TYPE_OUTGOING {
 			message.Data2.Out = true
 		} else {
@@ -170,7 +182,7 @@ func (m *messageModel) getMessagesByMessageBoxes(boxes []dataobject.MessageBoxes
 
 		// 使用UserMessageBoxId作为messageBoxId
 		message.Data2.Id = boxDO.UserMessageBoxId
-		// glog.Infof("message(%d): %s", i, logger.JsonDebugData(message))
+		glog.Infof("getMessagesByMessageBoxes - message(%d): %s", i, logger.JsonDebugData(message))
 	}
 
 	return messageList

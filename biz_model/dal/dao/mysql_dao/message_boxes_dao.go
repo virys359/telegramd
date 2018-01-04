@@ -173,6 +173,37 @@ func (dao *MessageBoxesDAO) SelectBackwardByPeerOffsetLimit(user_id int32, peer_
 	return values
 }
 
+// select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, pts, media_unread, state, date2 from message_boxes where user_id = :user_id and ((sender_user_id = :user_id and peer_id = :peer_id) or (sender_user_id = :peer_id and peer_id = :user_id)) and peer_type = :peer_type and user_message_box_id < :user_message_box_id order by user_message_box_id desc limit :limit
+// TODO(@benqi): sqlmap
+func (dao *MessageBoxesDAO) SelectBackwardByPeerUserOffsetLimit(user_id int32, peer_id int32, peer_type int8, user_message_box_id int32, limit int32) []dataobject.MessageBoxesDO {
+	var query = "select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, pts, media_unread, state, date2 from message_boxes where user_id = ? and ((sender_user_id = ? and peer_id = ?) or (sender_user_id = ? and peer_id = ?)) and peer_type = ? and user_message_box_id < ? order by user_message_box_id desc limit ?"
+	rows, err := dao.db.Queryx(query, user_id, user_id, peer_id, peer_id, user_id, peer_type, user_message_box_id, limit)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectBackwardByPeerUserOffsetLimit(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.MessageBoxesDO
+	for rows.Next() {
+		v := dataobject.MessageBoxesDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectBackwardByPeerUserOffsetLimit(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
 // select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, pts, media_unread, state, date2 from message_boxes where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id and user_message_box_id >= :user_message_box_id order by user_message_box_id asc limit :limit
 // TODO(@benqi): sqlmap
 func (dao *MessageBoxesDAO) SelectForwardByPeerOffsetLimit(user_id int32, peer_type int8, peer_id int32, user_message_box_id int32, limit int32) []dataobject.MessageBoxesDO {
@@ -195,6 +226,37 @@ func (dao *MessageBoxesDAO) SelectForwardByPeerOffsetLimit(user_id int32, peer_t
 		err := rows.StructScan(&v)
 		if err != nil {
 			errDesc := fmt.Sprintf("StructScan in SelectForwardByPeerOffsetLimit(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
+// select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, pts, media_unread, state, date2 from message_boxes where user_id = :user_id and ((sender_user_id = :user_id and peer_id = :peer_id) or (sender_user_id = :peer_id and peer_id = :user_id)) and peer_type = :peer_type and user_message_box_id >= :user_message_box_id order by user_message_box_id asc limit :limit
+// TODO(@benqi): sqlmap
+func (dao *MessageBoxesDAO) SelectForwardByPeerUserOffsetLimit(user_id int32, peer_id int32, peer_type int8, user_message_box_id int32, limit int32) []dataobject.MessageBoxesDO {
+	var query = "select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, pts, media_unread, state, date2 from message_boxes where user_id = ? and ((sender_user_id = ? and peer_id = ?) or (sender_user_id = ? and peer_id = ?)) and peer_type = ? and user_message_box_id >= ? order by user_message_box_id asc limit ?"
+	rows, err := dao.db.Queryx(query, user_id, user_id, peer_id, peer_id, user_id, peer_type, user_message_box_id, limit)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectForwardByPeerUserOffsetLimit(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.MessageBoxesDO
+	for rows.Next() {
+		v := dataobject.MessageBoxesDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectForwardByPeerUserOffsetLimit(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}

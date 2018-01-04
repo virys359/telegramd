@@ -53,7 +53,7 @@ type phoneCallSession struct {
 }
 
 // TODO(@benqi): 存储到redis里
-var phoneCallSessionManager map[int64]*phoneCallSession
+var phoneCallSessionManager = make(map[int64]*phoneCallSession)
 
 type PhoneServiceImpl struct {
 }

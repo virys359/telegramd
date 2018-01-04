@@ -33,7 +33,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 
 	fullUser := mtproto.NewTLUserFull()
 	fullUser.SetPhoneCallsAvailable(true)
-	fullUser.SetPhoneCallsPrivate(true)
+	fullUser.SetPhoneCallsPrivate(false)
 	fullUser.SetAbout("@Benqi")
 	fullUser.SetCommonChatsCount(0)
 

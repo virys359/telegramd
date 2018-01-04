@@ -50,6 +50,23 @@
         </sql>
     </operation>
 
+    <operation name="SelectBackwardByPeerUserOffsetLimit" result_set="list">
+        <params>
+            <param name="limit" type="int32" />
+        </params>
+        <sql>
+            <![CDATA[
+            SELECT
+                user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, pts, media_unread, state, date2
+            FROM
+                message_boxes
+            WHERE
+                user_id = :user_id AND ((sender_user_id = :user_id AND peer_id = :peer_id) OR (sender_user_id = :peer_id AND peer_id = :user_id)) AND peer_type = :peer_type AND user_message_box_id < :user_message_box_id
+            ORDER BY user_message_box_id DESC LIMIT :limit
+            ]]>
+        </sql>
+    </operation>
+
     <!-- // Forward -->
     <operation name="SelectForwardByPeerOffsetLimit" result_set="list">
         <params>
@@ -63,6 +80,24 @@
                 message_boxes
             WHERE
                 user_id = :user_id AND peer_type = :peer_type AND peer_id = :peer_id AND user_message_box_id >= :user_message_box_id
+            ORDER BY user_message_box_id LIMIT :limit
+            ]]>
+        </sql>
+    </operation>
+
+
+    <operation name="SelectForwardByPeerUserOffsetLimit" result_set="list">
+        <params>
+            <param name="limit" type="int32" />
+        </params>
+        <sql>
+            <![CDATA[
+            SELECT
+                user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, pts, media_unread, state, date2
+            FROM
+                message_boxes
+            WHERE
+                user_id = :user_id AND ((sender_user_id = :user_id AND peer_id = :peer_id) OR (sender_user_id = :peer_id AND peer_id = :user_id)) AND peer_type = :peer_type AND user_message_box_id >= :user_message_box_id
             ORDER BY user_message_box_id LIMIT :limit
             ]]>
         </sql>

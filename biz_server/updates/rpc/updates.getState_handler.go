@@ -26,12 +26,13 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/model"
 )
 
+// 执行getState后，获取最新的pts, qts and seq
 // updates.getState#edd4882a = updates.State;
 func (s *UpdatesServiceImpl) UpdatesGetState(ctx context.Context, request *mtproto.TLUpdatesGetState) (*mtproto.Updates_State, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("UpdatesGetState - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	state := model.GetUpdatesModel().GetState(md.AuthId, md.UserId)
+	state := model.GetUpdatesModel().GetUpdatesState(md.AuthId, md.UserId)
 	glog.Infof("UpdatesGetState - reply: %s", logger.JsonDebugData(state))
 	return state.To_Updates_State(), nil
 }

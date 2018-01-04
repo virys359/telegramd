@@ -26,6 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/model"
+	"math"
 )
 
 // android client request source code
@@ -99,19 +100,26 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 	glog.Infof("MessagesGetDialogs - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	peer := base.FromInputPeer(request.OffsetPeer)
+	offsetId := request.GetOffsetId()
+	if offsetId == 0 {
+		offsetId = math.MaxInt32
+	}
+
 	var dialogs []*mtproto.TLDialog
 	if peer.PeerType == base.PEER_EMPTY {
 		// 取出全部
 	} else {
 		// 通过message_boxs表检查offset_peer
-		offsetMessageDO := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectByUserIdAndMessageBoxId(md.UserId, request.OffsetId)
+		offsetMessageDO := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectByUserIdAndMessageBoxId(md.UserId, offsetId)
 		// TODO(@benqi): date, access_hash check
 		if offsetMessageDO == nil || ( peer.PeerType != int32(offsetMessageDO.PeerType)  && peer.PeerId != offsetMessageDO.PeerId) {
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid"))
 		}
 	}
 
-	dialogs = model.GetDialogModel().GetDialogsByOffsetId(md.UserId, request.GetExcludePinned(), request.GetOffsetId(), request.GetLimit())
+	dialogs = model.GetDialogModel().GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
+	glog.Infof("dialogs - {%v}", dialogs)
+
 	messageDialogs := mtproto.NewTLMessagesDialogs()
 	messageIdList := []int32{}
 	userIdList := []int32{md.UserId}

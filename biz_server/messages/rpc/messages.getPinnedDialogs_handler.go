@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/biz_model/base"
 )
@@ -77,12 +76,7 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 		peerDialogs.Data2.Chats = model.GetChatModel().GetChatListByIDList(chatIdList)
 	}
 
-	state := mtproto.NewTLUpdatesState()
-	state.SetDate(int32(time.Now().Unix()))
-	state.SetPts(model.GetMessageModel().GetLastPtsByUserId(md.UserId))
-	state.SetQts(0)
-	state.SetSeq(1)
-	state.SetUnreadCount(0)
+	state := model.GetUpdatesModel().GetUpdatesState(md.AuthId, md.UserId)
 	peerDialogs.SetState(state.To_Updates_State())
 
 	glog.Infof("MessagesGetPinnedDialogs - reply: %s", logger.JsonDebugData(peerDialogs))

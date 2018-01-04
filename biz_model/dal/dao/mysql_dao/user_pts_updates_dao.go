@@ -55,12 +55,12 @@ func (dao *UserPtsUpdatesDAO) Insert(do *dataobject.UserPtsUpdatesDO) int64 {
 
 // select pts from user_pts_updates where user_id = :user_id order by pts desc limit 1
 // TODO(@benqi): sqlmap
-func (dao *UserPtsUpdatesDAO) SelectLastPtsByUserId(user_id int32) *dataobject.UserPtsUpdatesDO {
+func (dao *UserPtsUpdatesDAO) SelectLastPts(user_id int32) *dataobject.UserPtsUpdatesDO {
 	var query = "select pts from user_pts_updates where user_id = ? order by pts desc limit 1"
 	rows, err := dao.db.Queryx(query, user_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectLastPtsByUserId(_), error: %v", err)
+		errDesc := fmt.Sprintf("Queryx in SelectLastPts(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -71,7 +71,7 @@ func (dao *UserPtsUpdatesDAO) SelectLastPtsByUserId(user_id int32) *dataobject.U
 	if rows.Next() {
 		err = rows.StructScan(do)
 		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectLastPtsByUserId(_), error: %v", err)
+			errDesc := fmt.Sprintf("StructScan in SelectLastPts(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}

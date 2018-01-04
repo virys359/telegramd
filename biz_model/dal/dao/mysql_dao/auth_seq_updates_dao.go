@@ -25,18 +25,18 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 )
 
-type UserQtsUpdatesDAO struct {
+type AuthSeqUpdatesDAO struct {
 	db *sqlx.DB
 }
 
-func NewUserQtsUpdatesDAO(db *sqlx.DB) *UserQtsUpdatesDAO {
-	return &UserQtsUpdatesDAO{db}
+func NewAuthSeqUpdatesDAO(db *sqlx.DB) *AuthSeqUpdatesDAO {
+	return &AuthSeqUpdatesDAO{db}
 }
 
-// insert into user_qts_updates(user_id, qts, update_type, update_data, date2) values (:user_id, :qts, :update_type, :update_data, :date2)
+// insert into auth_seq_updates(auth_id, user_id, seq, update_type, update_data, date2) values (:auth_id, :user_id, :seq, :update_type, :update_data, :date2)
 // TODO(@benqi): sqlmap
-func (dao *UserQtsUpdatesDAO) Insert(do *dataobject.UserQtsUpdatesDO) int64 {
-	var query = "insert into user_qts_updates(user_id, qts, update_type, update_data, date2) values (:user_id, :qts, :update_type, :update_data, :date2)"
+func (dao *AuthSeqUpdatesDAO) Insert(do *dataobject.AuthSeqUpdatesDO) int64 {
+	var query = "insert into auth_seq_updates(auth_id, user_id, seq, update_type, update_data, date2) values (:auth_id, :user_id, :seq, :update_type, :update_data, :date2)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,25 +53,25 @@ func (dao *UserQtsUpdatesDAO) Insert(do *dataobject.UserQtsUpdatesDO) int64 {
 	return id
 }
 
-// select qts from user_qts_updates where user_id = :user_id order by qts desc limit 1
+// select seq from auth_seq_updates where auth_id = :auth_id and user_id = :user_id order by seq desc limit 1
 // TODO(@benqi): sqlmap
-func (dao *UserQtsUpdatesDAO) SelectLastQts(user_id int32) *dataobject.UserQtsUpdatesDO {
-	var query = "select qts from user_qts_updates where user_id = ? order by qts desc limit 1"
-	rows, err := dao.db.Queryx(query, user_id)
+func (dao *AuthSeqUpdatesDAO) SelectLastSeq(auth_id int64, user_id int32) *dataobject.AuthSeqUpdatesDO {
+	var query = "select seq from auth_seq_updates where auth_id = ? and user_id = ? order by seq desc limit 1"
+	rows, err := dao.db.Queryx(query, auth_id, user_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectLastQts(_), error: %v", err)
+		errDesc := fmt.Sprintf("Queryx in SelectLastSeq(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	defer rows.Close()
 
-	do := &dataobject.UserQtsUpdatesDO{}
+	do := &dataobject.AuthSeqUpdatesDO{}
 	if rows.Next() {
 		err = rows.StructScan(do)
 		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectLastQts(_), error: %v", err)
+			errDesc := fmt.Sprintf("StructScan in SelectLastSeq(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
@@ -82,28 +82,28 @@ func (dao *UserQtsUpdatesDAO) SelectLastQts(user_id int32) *dataobject.UserQtsUp
 	return do
 }
 
-// select user_id, qts, update_type, update_data, date2 from user_qts_updates where user_id = :user_id and qts > :qts order by qts asc
+// select auth_id, user_id, seq, update_type, update_data, date2 from user_seq_updates where auth_id = :auth_id and user_id = :user_id and seq > :seq order by seq asc
 // TODO(@benqi): sqlmap
-func (dao *UserQtsUpdatesDAO) SelectByGtQts(user_id int32, qts int32) []dataobject.UserQtsUpdatesDO {
-	var query = "select user_id, qts, update_type, update_data, date2 from user_qts_updates where user_id = ? and qts > ? order by qts asc"
-	rows, err := dao.db.Queryx(query, user_id, qts)
+func (dao *AuthSeqUpdatesDAO) SelectByGtSeq(auth_id int64, user_id int32, seq int32) []dataobject.AuthSeqUpdatesDO {
+	var query = "select auth_id, user_id, seq, update_type, update_data, date2 from user_seq_updates where auth_id = ? and user_id = ? and seq > ? order by seq asc"
+	rows, err := dao.db.Queryx(query, auth_id, user_id, seq)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectByGtQts(_), error: %v", err)
+		errDesc := fmt.Sprintf("Queryx in SelectByGtSeq(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	defer rows.Close()
 
-	var values []dataobject.UserQtsUpdatesDO
+	var values []dataobject.AuthSeqUpdatesDO
 	for rows.Next() {
-		v := dataobject.UserQtsUpdatesDO{}
+		v := dataobject.AuthSeqUpdatesDO{}
 
 		// TODO(@benqi): 不使用反射
 		err := rows.StructScan(&v)
 		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectByGtQts(_), error: %v", err)
+			errDesc := fmt.Sprintf("StructScan in SelectByGtSeq(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}

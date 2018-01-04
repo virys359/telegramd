@@ -9,9 +9,21 @@
         </sql>
     </operation>
 
-    <operation name="SelectLastQtsByUserId">
+    <operation name="SelectLastQts">
         <sql>
             SELECT qts FROM user_qts_updates WHERE user_id = :user_id ORDER BY qts DESC LIMIT 1
         </sql>
     </operation>
+
+    <operation name="SelectByGtQts" result_set="list">
+        <sql>
+            SELECT
+                user_id, qts, update_type, update_data, date2
+            FROM
+                user_qts_updates
+            WHERE
+                user_id = :user_id AND qts > :qts ORDER BY qts
+        </sql>
+    </operation>
+
 </table>

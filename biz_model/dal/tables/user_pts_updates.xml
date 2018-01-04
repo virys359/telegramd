@@ -9,7 +9,7 @@
         </sql>
     </operation>
 
-    <operation name="SelectLastPtsByUserId">
+    <operation name="SelectLastPts">
         <sql>
             SELECT pts FROM user_pts_updates WHERE user_id = :user_id ORDER BY pts DESC LIMIT 1
         </sql>

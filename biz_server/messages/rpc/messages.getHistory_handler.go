@@ -109,6 +109,11 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	glog.Infof("MessagesGetHistory - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	peer := base.FromInputPeer(request.GetPeer())
+	if peer.PeerType == base.PEER_SELF {
+		peer.PeerType = base.PEER_USER
+		peer.PeerId = md.UserId
+	}
+
 	chatIdList := []int32{}
 	userIdList := []int32{md.UserId}
 

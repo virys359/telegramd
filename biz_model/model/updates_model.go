@@ -43,27 +43,35 @@ func GetUpdatesModel() *updatesModel {
 	return updatesInstance
 }
 
-func (m *updatesModel) GetState(authKeyId int64, userId int32) *mtproto.TLUpdatesState {
+func (m *updatesModel) GetUpdatesState(authKeyId int64, userId int32) *mtproto.TLUpdatesState {
 	state := mtproto.NewTLUpdatesState()
-	stateData := state.GetData2()
 
-	// TODO(@benqi): 从数据库取出date
-	stateData.Date = int32(time.Now().Unix())
-
-	do := dao.GetAuthUpdatesStateDAO(dao.DB_SLAVE).SelectById(authKeyId, userId)
-	if do == nil || do.Pts == 0 {
-		// TODO(@benqi):
-		stateData.Date = int32(time.Now().Unix())
-		stateData.Pts = 1
-		stateData.Qts = 0
-		stateData.Seq = 1
-		stateData.UnreadCount = 0
+	// TODO(@benqi): first sign in, state data???
+	ptsDO := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectLastPts(userId)
+	if ptsDO != nil {
+		state.SetPts(ptsDO.Pts)
 	} else {
-		stateData.Pts = do.Pts
-		stateData.Qts = do.Qts
-		stateData.Seq = do.Seq
-		stateData.UnreadCount = 0
+		state.SetPts(1)
 	}
+
+	qtsDO := dao.GetUserQtsUpdatesDAO(dao.DB_SLAVE).SelectLastQts(userId)
+	if qtsDO != nil {
+		state.SetQts(qtsDO.Qts)
+	} else {
+		state.SetQts(0)
+	}
+
+	seqDO := dao.GetAuthSeqUpdatesDAO(dao.DB_SLAVE).SelectLastSeq(authKeyId, userId)
+	if seqDO != nil {
+		state.SetSeq(seqDO.Seq)
+	} else {
+		state.SetSeq(0)
+	}
+
+	state.SetDate(int32(time.Now().Unix()))
+	// TODO(@benqi): Calc unread
+	state.SetUnreadCount(0)
+
 	return state
 }
 
@@ -94,8 +102,9 @@ func (m *updatesModel) AddQtsToUpdatesQueue(userId, qts, updateType int32, updat
 	return int32(dao.GetUserQtsUpdatesDAO(dao.DB_MASTER).Insert(do))
 }
 
-func (m *updatesModel) AddSeqToUpdatesQueue(userId, seq, updateType int32, updateData []byte) int32 {
-	do := &dataobject.UserSeqUpdatesDO{
+func (m *updatesModel) AddSeqToUpdatesQueue(authId int64, userId, seq, updateType int32, updateData []byte) int32 {
+	do := &dataobject.AuthSeqUpdatesDO{
+		AuthId:     authId,
 		UserId:     userId,
 		UpdateType: updateType,
 		UpdateData: updateData,
@@ -103,7 +112,7 @@ func (m *updatesModel) AddSeqToUpdatesQueue(userId, seq, updateType int32, updat
 		Seq:        seq,
 	}
 
-	return int32(dao.GetUserSeqUpdatesDAO(dao.DB_MASTER).Insert(do))
+	return int32(dao.GetAuthSeqUpdatesDAO(dao.DB_MASTER).Insert(do))
 }
 
 //func (m *updatesModel) GetAffectedMessage(userId, messageId int32) *mtproto.TLMessagesAffectedMessages {
