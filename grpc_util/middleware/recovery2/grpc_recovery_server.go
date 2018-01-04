@@ -27,7 +27,7 @@ func NewRecoveryServer(unaryCustomFunc UnaryRecoveryHandlerFunc, streamCustomFun
 	// Shared options for the logger, with a custom gRPC code to log level function.
 	opts := []Option{
 		// grpc_recovery2.WithUnaryRecoveryHandler(unaryCustomFunc),
-		WithUnaryRecoveryHandler(nil),
+		WithUnaryRecoveryHandler(unaryCustomFunc),
 		WithStreamRecoveryHandler(streamCustomFunc),
 	}
 	// Create a server. Recovery handlers should typically be last in the chain so that other middleware

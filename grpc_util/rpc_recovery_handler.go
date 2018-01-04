@@ -30,7 +30,7 @@ import (
 func BizUnaryRecoveryHandler(ctx context.Context, p interface{}) (err error) {
 	// debug.PrintStack()
 	glog.Errorf("BizUnaryRecoveryHandler - %s", debug.Stack())
-	glog.Info(debug.Stack())
+	// glog.Info(debug.Stack())
 
 	switch p.(type) {
 	case *mtproto.TLRpcError:
