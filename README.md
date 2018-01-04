@@ -6,7 +6,7 @@
 Go语言开源mtproto服务器，兼容telegram客户端
 
 ### 编译
-首先，我们假设您已经回基本的golang基础，至少知道GOROOT，GOPATH这些概念。
+首先，我们假设您已经有基本的golang基础，至少知道GOROOT，GOPATH这些概念。
 
 #### 下载代码
 

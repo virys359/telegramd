@@ -29,10 +29,9 @@ import (
 // All of this is accomplished in parallel with the aid of several Telegram API methods and related notifications.
 //
 
-const(
+var (
 	fingerprint uint64 = 12240908862933197005
 )
-
 const (
 	PHONE_STATE_UNKNOWN = iota
 	PHONE_STATE_REQUEST_CALL

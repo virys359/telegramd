@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/base/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
