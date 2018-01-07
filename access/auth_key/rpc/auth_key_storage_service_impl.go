@@ -23,7 +23,7 @@ import (
 	"github.com/golang/glog"
 	"fmt"
 	"github.com/nebulaim/telegramd/base/logger"
-	"github.com/nebulaim/telegramd/auth_key_server/cache"
+	"github.com/nebulaim/telegramd/access/auth_key/cache"
 )
 
 type AuthKeyStorageServiceImpl struct {

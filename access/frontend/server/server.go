@@ -22,8 +22,8 @@ import (
 	net2 "github.com/nebulaim/telegramd/net"
 	. "github.com/nebulaim/telegramd/mtproto"
 	"net"
-	"github.com/nebulaim/telegramd/frontend/rpc"
-	"github.com/nebulaim/telegramd/frontend/client"
+	"github.com/nebulaim/telegramd/access/frontend/rpc"
+	"github.com/nebulaim/telegramd/access/frontend/client"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 )

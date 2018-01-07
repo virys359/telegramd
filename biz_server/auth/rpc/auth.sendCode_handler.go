@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/base/logger"
-	"github.com/nebulaim/telegramd/frontend/id"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/ttacon/libphonenumber"
@@ -29,6 +28,7 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
+	"github.com/nebulaim/telegramd/biz_model/base"
 )
 
 // auth.sendCode#86aef0ec flags:# allow_flashcall:flags.0?true phone_number:string current_number:flags.0?Bool api_id:int api_hash:string = auth.SentCode;
@@ -65,7 +65,7 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	    do.Code = "123456"
 	    do.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	    // TODO(@benqi): 生成一个32字节的随机字串
-	    do.TransactionHash = fmt.Sprintf("%20d", id.NextId())
+	    do.TransactionHash = fmt.Sprintf("%20d", base.NextSnowflakeId())
 
 	    dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).Insert(do)
 	} else {

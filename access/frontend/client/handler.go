@@ -27,7 +27,7 @@ import (
 	// "github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	// "github.com/nebulaim/telegramd/biz_model/model"
 	// "github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/frontend/id"
+	"github.com/nebulaim/telegramd/access/frontend/id"
 	"github.com/nebulaim/telegramd/zproto"
 )
 

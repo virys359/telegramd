@@ -29,8 +29,9 @@ import (
 	"github.com/nebulaim/telegramd/base/base"
 	"fmt"
 	"github.com/golang/glog"
-	id2 "github.com/nebulaim/telegramd/frontend/id"
 	"time"
+	"math/rand"
+	base2 "github.com/nebulaim/telegramd/biz_model/base"
 )
 
 const (
@@ -148,14 +149,14 @@ func (m *photoModel) UploadPhoto(userId int32, photoId, fileId int64, parts int3
 
 	imgSz := MakeResizeInfo(img)
 
-	vId := id2.NextId()
+	vId := base2.NextSnowflakeId()
 	for i, sz := range sizeList {
 		photoDatasDO := &dataobject.PhotoDatasDO{
 			PhotoId: photoId,
 			DcId: 2,
 			VolumeId: vId,
 			LocalId: int32(i),
-			AccessHash: id2.NextId(),
+			AccessHash: rand.Int63(),
 		}
 
 		var dst *image.NRGBA

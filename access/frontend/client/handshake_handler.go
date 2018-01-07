@@ -18,7 +18,7 @@
 package client
 
 import (
-	"github.com/nebulaim/telegramd/frontend/rpc"
+	"github.com/nebulaim/telegramd/access/frontend/rpc"
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/zproto"

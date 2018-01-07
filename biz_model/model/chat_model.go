@@ -20,11 +20,11 @@ package model
 import (
 	"sync"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/frontend/id"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/nebulaim/telegramd/base/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	"math/rand"
 )
 
 type chatModel struct {
@@ -98,11 +98,11 @@ func (m *chatModel) CreateChat(userId int32, title string, chatUserIdList []int3
 	chat.SetParticipantsCount(int32(len(chatUserIdList))+1)
 
 	chatDO := &dataobject.ChatsDO{}
-	chatDO.AccessHash = id.NextId()
+	chatDO.AccessHash = rand.Int63()
 	chatDO.CreatedAt = base.NowFormatYMDHMS()
 	chatDO.CreatorUserId = userId
 	// TODO(@benqi): 使用客户端message_id
-	chatDO.CreateRandomId = id.NextId()
+	chatDO.CreateRandomId = rand.Int63()
 	chatDO.Title = title
 
 	chatDO.TitleChangerUserId = userId

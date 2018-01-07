@@ -15,32 +15,27 @@
  * limitations under the License.
  */
 
-package main
+package base
 
-import (
-	server2 "github.com/nebulaim/telegramd/frontend/server"
-	"flag"
-	"github.com/BurntSushi/toml"
-	"fmt"
-	"github.com/golang/glog"
+import "github.com/nebulaim/telegramd/base/snowflake"
+
+var id *snowflake.IdWorker
+
+// = &snowflake.IdWorker{
+//
+//}
+
+const (
+	workerId	   	= int64(1)
+	dataCenterId	= int64(1)
+	twepoch        	= int64(1288834974657)
 )
 
-func init() {
-	flag.Set("alsologtostderr", "true")
-	flag.Set("log_dir", "false")
+func init()  {
+	id, _ = snowflake.NewIdWorker(workerId, dataCenterId, twepoch)
 }
 
-func main() {
-	flag.Parse()
-
-	frontendConfig := &server2.FrontendConfig{}
-	if _, err := toml.DecodeFile("./frontend.toml", frontendConfig); err != nil {
-		fmt.Errorf("%s\n", err)
-		return
-	}
-
-	glog.Info(frontendConfig)
-
-	server := server2.NewServer(frontendConfig)
-	server.Serve()
+func NextSnowflakeId() (int64) {
+	r, _ := id.NextId()
+	return r
 }

@@ -24,10 +24,11 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/frontend/id"
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/base/base"
+	base2 "github.com/nebulaim/telegramd/biz_model/base"
+	"math/rand"
 )
 
 /*
@@ -73,11 +74,11 @@ func (s *PhoneServiceImpl) PhoneRequestCall(ctx context.Context, request *mtprot
 	glog.Infof("PhoneRequestCall - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	callSession := &phoneCallSession{
-		id:                    id.NextId(),
+		id:                    base2.NextSnowflakeId(),
 		adminId:               md.UserId,
-		adminAccessHash:       id.NextId(),
+		adminAccessHash:       rand.Int63(),
 		participantId:         request.GetUserId().GetData2().GetUserId(),
-		participantAccessHash: id.NextId(),
+		participantAccessHash: rand.Int63(),
 		date:                  int32(time.Now().Unix()),
 		state:                 0,
 		protocol:              request.GetProtocol().To_PhoneCallProtocol(),

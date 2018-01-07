@@ -28,7 +28,6 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/frontend/id"
 )
 
 // messages.sendMedia#c8f16791 flags:# silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int media:InputMedia random_id:long reply_markup:flags.2?ReplyMarkup = Updates;
@@ -86,7 +85,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 		photo.SetAccessHash(filesDO.AccessHash)
 
 		// @benqi。重要，客户端发送图片文件后，要求返回的id不能和上传文件相同
-		photoId := id.NextId()
+		photoId := base.NextSnowflakeId()
 		photo.SetDate(now)
 		photo.SetId(photoId)
 		// photo.SetId(fileData.GetId())

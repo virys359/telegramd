@@ -24,11 +24,11 @@ import (
 	"github.com/golang/glog"
 	"errors"
 	"fmt"
-	"github.com/nebulaim/telegramd/frontend/id"
+	"github.com/nebulaim/telegramd/access/frontend/id"
 	"time"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/zproto"
-	"github.com/nebulaim/telegramd/frontend/rpc"
+	"github.com/nebulaim/telegramd/access/frontend/rpc"
 )
 
 type Client struct {

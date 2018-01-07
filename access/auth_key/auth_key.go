@@ -28,10 +28,10 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/auth_key_server/rpc"
+	"github.com/nebulaim/telegramd/access/auth_key/rpc"
 	"github.com/nebulaim/telegramd/zproto"
 	"github.com/nebulaim/telegramd/base/mysql_client"
-	cache2 "github.com/nebulaim/telegramd/auth_key_server/cache"
+	cache2 "github.com/nebulaim/telegramd/access/auth_key/cache"
 )
 
 func init() {

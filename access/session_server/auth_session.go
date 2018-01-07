@@ -29,7 +29,7 @@ import (
 	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/zproto"
 	"github.com/nebulaim/telegramd/base/mysql_client"
-	"github.com/nebulaim/telegramd/auth_session_server/rpc"
+	"github.com/nebulaim/telegramd/access/session_server/rpc"
 )
 
 func init() {

@@ -1,7 +1,7 @@
 # auth_key_server.toml
 
 ver = "0.0.1"
-#logPath = "/tmp/auth_key_server.log"
+#logPath = "/tmp/auth_key.log"
 
 [server]
 addr = "0.0.0.0:10003"

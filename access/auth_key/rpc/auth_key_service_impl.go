@@ -37,7 +37,7 @@ import (
 	"encoding/base64"
 	"google.golang.org/grpc"
 	"encoding/hex"
-	"github.com/nebulaim/telegramd/auth_key_server/cache"
+	"github.com/nebulaim/telegramd/access/auth_key/cache"
 )
 
 const (
