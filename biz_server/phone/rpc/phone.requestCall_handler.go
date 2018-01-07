@@ -164,7 +164,6 @@ func (s *PhoneServiceImpl) PhoneRequestCall(ctx context.Context, request *mtprot
 		updates.To_Updates().Encode())
 	// 返回给客户端
 
-
 	// 2. reply
 	phoneCall := mtproto.NewTLPhonePhoneCall()
 

@@ -26,6 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
+	"github.com/nebulaim/telegramd/base/base"
 )
 
 type updatesModel struct {
@@ -61,12 +62,15 @@ func (m *updatesModel) GetUpdatesState(authKeyId int64, userId int32) *mtproto.T
 		state.SetQts(0)
 	}
 
-	seqDO := dao.GetAuthSeqUpdatesDAO(dao.DB_SLAVE).SelectLastSeq(authKeyId, userId)
-	if seqDO != nil {
-		state.SetSeq(seqDO.Seq)
-	} else {
-		state.SetSeq(0)
-	}
+	// state.SetSeq(int32(GetSequenceModel().CurrentSeqId(base.Int64ToString(authKeyId))))
+	state.SetSeq(int32(GetSequenceModel().CurrentSeqId(base.Int32ToString(userId))))
+	//
+	//seqDO := dao.GetAuthSeqUpdatesDAO(dao.DB_SLAVE).SelectLastSeq(authKeyId, userId)
+	//if seqDO != nil {
+	//	state.SetSeq(seqDO.Seq)
+	//} else {
+	//	state.SetSeq(0)
+	//}
 
 	state.SetDate(int32(time.Now().Unix()))
 	// TODO(@benqi): Calc unread

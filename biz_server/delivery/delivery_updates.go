@@ -21,7 +21,8 @@ import (
 	"context"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/zproto"
-	"google.golang.org/grpc"
+	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/grpc_util"
 )
 
 type deliveryService struct {
@@ -36,9 +37,9 @@ func GetDeliveryInstance() *deliveryService {
 	return deliveryInstance
 }
 
-// TODO(@benqi): 使用GetDeliveryInstance()前执行
-func InstallDeliveryInstance(target string) {
-	conn, err := grpc.Dial(target, grpc.WithInsecure())
+func InstallDeliveryInstance(discovery *service_discovery.ServiceDiscoveryClientConfig) {
+	conn, err := grpc_util.NewRPCClientByServiceDiscovery(discovery)
+
 	if err != nil {
 		glog.Error(err)
 		panic(err)
@@ -72,3 +73,19 @@ func (d *deliveryService) DeliveryUpdatesNotMe(authKeyId, sessionId, netlibSessi
 	_, err = d.client.DeliveryUpdatesNotMe(context.Background(), delivery)
 	return
 }
+
+func (d *deliveryService) DeliveryUpdates2(authKeyId, sessionId, netlibSessionId int64, pushDatas []*zproto.PushUpdates) (err error) {
+	request := &zproto.UpdatesRequest{
+		SenderAuthKeyId:       authKeyId,
+		SenderSessionId:       sessionId,
+		SenderNetlibSessionId: netlibSessionId,
+		PushDatas:             pushDatas,
+	}
+	glog.Infof("DeliveryUpdates2 - delivery: %v", request)
+	_, err = d.client.DeliveryUpdates2(context.Background(), request)
+	return
+}
+
+//DeliveryUpdateShortMessage(ctx context.Context, in *UpdateShortMessageRequest, opts ...grpc.CallOption) (*DeliveryRsp, error)
+//DeliveryUpdatShortChatMessage(ctx context.Context, in *UpdatShortChatMessageRequest, opts ...grpc.CallOption) (*DeliveryRsp, error)
+//DeliveryUpdates2(ctx context.Context, in *UpdatesRequest, opts ...grpc.CallOption) (*DeliveryRsp, error)

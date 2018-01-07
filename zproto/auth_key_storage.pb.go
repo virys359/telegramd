@@ -28,8 +28,15 @@ It has these top-level messages:
 	AuthKeyMetadata
 	RpcMetadata
 	ServerAuthReq
-	DeliveryUpdatesToUsers
 	PushUpdatesData
+	DeliveryUpdatesToUsers
+	PushShortMessage
+	UpdateShortMessageRequest
+	PushShortChatMessage
+	UpdatShortChatMessageRequest
+	PushUpdates
+	UpdatesRequest
+	DeliveryRsp
 */
 package zproto
 

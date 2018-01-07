@@ -27,6 +27,7 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	base2 "github.com/nebulaim/telegramd/base/base"
 )
 
 // updates.getDifference#25939651 flags:# pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
@@ -125,6 +126,8 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	state.SetPts(lastPts)
 	state.SetDate(int32(time.Now().Unix()))
 	state.SetUnreadCount(0)
+	state.SetSeq(int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))))
+
 	difference.SetState(state.To_Updates_State())
 
 	// dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).UpdateState(request.GetPts(), request.GetQts(), request.GetDate(), md.AuthId, md.UserId)
