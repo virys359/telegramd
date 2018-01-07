@@ -6,9 +6,22 @@ ver = "0.0.1"
 [server]
 addr = "0.0.0.0:10001"
 
-[rpcClient]
+[discovery]
+serviceName = "biz"
+nodeID = "node1"
+rPCAddr = "127.0.0.1:10001"
+etcdAddrs = ["http://127.0.0.1:2379"]
+interval = "2s"
+tTL = "10s"
+
+#[rpcClient]
+#serviceName = "sync"
+#addr = "localhost:10002"
+
+[syncRpcClient]
 serviceName = "sync"
-addr = "localhost:10002"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
 
 [[redis]]
 name = "cache"

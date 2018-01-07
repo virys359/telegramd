@@ -21,13 +21,15 @@ import (
 	"flag"
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
-	"net"
 	"github.com/nebulaim/telegramd/zproto"
 	"github.com/nebulaim/telegramd/base/redis_client"
 	"github.com/BurntSushi/toml"
 	"fmt"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/sync_server/rpc"
+	"github.com/nebulaim/telegramd/base/mysql_client"
+	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 )
 
 func init() {
@@ -42,7 +44,9 @@ type RpcServerConfig struct {
 
 type SyncServerConfig struct{
 	Server 		*RpcServerConfig
+	Discovery service_discovery.ServiceDiscoveryServerConfig
 	Redis 		[]redis_client.RedisConfig
+	Mysql     []mysql_client.MySQLConfig
 }
 
 // 整合各服务，方便开发调试
@@ -59,36 +63,16 @@ func main() {
 
 	// 初始化mysql_client、redis_client
 	redis_client.InstallRedisClientManager(syncServerConfig.Redis)
+	mysql_client.InstallMysqlClientManager(syncServerConfig.Mysql)
 
 	// 初始化redis_dao、mysql_dao
+	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	//// TODO(@benqi): 配置驱动
-	//redisConfig := &redis_client.RedisConfig{
-	//	Name: "test",
-	//	Addr: "127.0.0.1:6379",
-	//	Idle: 100,
-	//	Active: 100,
-	//	DialTimeout: 1000000,
-	//	ReadTimeout: 1000000,
-	//	WriteTimeout: 1000000,
-	//	IdleTimeout: 15000000,
-	//	DBNum: "0",
-	//	Password: "",
-	//}
-	//
-	//redisPool := redis_client.NewRedisPool(redisConfig)
-	//onlineModel := model.NewOnlineStatusModel(redisPool)
-
-	lis, err := net.Listen("tcp", syncServerConfig.Server.Addr)
-	if err != nil {
-		glog.Fatalf("failed to listen: %v", err)
-	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
-
-	zproto.RegisterRPCSyncServer(grpcServer, rpc.NewSyncService())
-
-	glog.Info("NewRPCServer in 0.0.0.0:10002.")
-	grpcServer.Serve(lis)
+	authKeyServer := grpc_util.NewRpcServer(syncServerConfig.Server.Addr, &syncServerConfig.Discovery)
+	authKeyServer.Serve(func(s *grpc.Server) {
+		// cache := cache2.NewAuthKeyCacheManager()
+		// mtproto.RegisterRPCAuthKeyServer(s, rpc.NewAuthKeyService(cache))
+		zproto.RegisterRPCSyncServer(s, rpc.NewSyncService())
+	})
 }

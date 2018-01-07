@@ -84,8 +84,8 @@ type RPCClient struct {
 	conn *grpc.ClientConn
 }
 
-func NewRPCClient(target string) (c *RPCClient, err error) {
-	conn, err := grpc.Dial(target, grpc.WithInsecure())
+func NewRPCClient(discovery *service_discovery.ServiceDiscoveryClientConfig) (c *RPCClient, err error) {
+	conn, err := NewRPCClientByServiceDiscovery(discovery)
 	if err != nil {
 		glog.Error(err)
 		panic(err)

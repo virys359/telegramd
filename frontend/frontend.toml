@@ -9,11 +9,13 @@ addr = "0.0.0.0:12345"
 
 [syncRpcClient]
 serviceName = "sync"
-addr = "localhost:10002"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
 
 [bizRpcClient]
 serviceName = "biz"
-addr = "localhost:10001"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
 
 [authKeyRpcClient]
 serviceName = "auth_key"
@@ -24,15 +26,3 @@ balancer = "round_robin"
 serviceName = "auth_session"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
-
-[[redis]]
-name = "cache"
-addr = "127.0.0.1:6379"
-idle = 100
-active = 100
-dialTimeout = "1s"
-readTimeout = "1s"
-writeTimeout = "1s"
-idleTimeout = "10s"
-dbNum = "0"
-password = ""

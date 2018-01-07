@@ -19,7 +19,6 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/zproto"
 	"io"
 	"context"
@@ -27,14 +26,17 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	net2 "github.com/nebulaim/telegramd/net"
 	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 )
 
 type SyncRPCClient struct {
 	client zproto.RPCSyncClient
 }
 
-func NewSyncRPCClient(target string) (c *SyncRPCClient, err error) {
-	conn, err := grpc.Dial(target, grpc.WithInsecure())
+func NewSyncRPCClient(discovery *service_discovery.ServiceDiscoveryClientConfig) (c *SyncRPCClient, err error) {
+	// conn, err := grpc.Dial(target, grpc.WithInsecure())
+	conn, err := grpc_util.NewRPCClientByServiceDiscovery(discovery)
 	if err != nil {
 		glog.Error(err)
 		panic(err)
@@ -59,7 +61,6 @@ func (c* SyncRPCClient) RunUpdatesStreamLoop(server *net2.Server) {
 			time.Sleep(10 * time.Second)
 			continue
 		}
-
 
 		for {
 			update, err := stream.Recv()

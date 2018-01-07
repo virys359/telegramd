@@ -42,8 +42,8 @@ type FrontendConfig struct {
 	Server           ServerConfig
 	Server2          ServerConfig
 	Server3          ServerConfig
-	BizRpcClient     RpcClientConfig
-	SyncRpcClient    RpcClientConfig
+	BizRpcClient     service_discovery.ServiceDiscoveryClientConfig
+	SyncRpcClient    service_discovery.ServiceDiscoveryClientConfig
 	AuthKeyRpcClient service_discovery.ServiceDiscoveryClientConfig
 	AuthSessionRpcClient service_discovery.ServiceDiscoveryClientConfig
 }
@@ -65,10 +65,10 @@ func NewServer(frontendConfig *FrontendConfig) (s *Server) {
 	s.Server = net2.NewServer(lsn, mtproto, 1024, net2.HandlerFunc(emptySessionLoop))
 
 	// TODO(@benqi): check error
-	s.rpcClient, _ = grpc_util.NewRPCClient(frontendConfig.BizRpcClient.Addr)
+	s.rpcClient, _ = grpc_util.NewRPCClient(&frontendConfig.BizRpcClient)
 	s.authKeyRpcClient, _ = rpc.NewAuthKeyRPCClient(&frontendConfig.AuthKeyRpcClient)
 	s.authSessionRpcClient, _ = rpc.NewAuthSessionRPCClient(&frontendConfig.AuthSessionRpcClient)
-	s.syncRpcClient, _ = rpc.NewSyncRPCClient(frontendConfig.SyncRpcClient.Addr)
+	s.syncRpcClient, _ = rpc.NewSyncRPCClient(&frontendConfig.SyncRpcClient)
 	return
 }
 

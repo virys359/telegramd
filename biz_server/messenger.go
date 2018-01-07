@@ -37,15 +37,15 @@ import (
 	upload "github.com/nebulaim/telegramd/biz_server/upload/rpc"
 	users "github.com/nebulaim/telegramd/biz_server/users/rpc"
 	"github.com/nebulaim/telegramd/mtproto"
-	"net"
 	"github.com/nebulaim/telegramd/base/redis_client"
 	"github.com/nebulaim/telegramd/base/mysql_client"
 	"github.com/BurntSushi/toml"
 	"fmt"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_server/delivery"
-	"github.com/nebulaim/telegramd/grpc_util/middleware/recovery2"
 	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
+	"google.golang.org/grpc"
 )
 
 func init() {
@@ -57,16 +57,19 @@ type RpcServerConfig struct {
 	Addr string
 }
 
-type RpcClientConfig struct {
-	ServiceName string
-	Addr string
-}
+//type RpcClientConfig struct {
+//	ServiceName string
+//	Addr string
+//}
 
 type BizServerConfig struct{
 	Server 		*RpcServerConfig
-	RpcClient	*RpcClientConfig
+	Discovery service_discovery.ServiceDiscoveryServerConfig
+
+	// RpcClient	*RpcClientConfig
 	Mysql		[]mysql_client.MySQLConfig
 	Redis 		[]redis_client.RedisConfig
+	SyncRpcClient *service_discovery.ServiceDiscoveryClientConfig
 }
 
 // 整合各服务，方便开发调试
@@ -90,45 +93,50 @@ func main() {
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	lis, err := net.Listen("tcp", bizServerConfig.Server.Addr)
-	if err != nil {
-		glog.Fatalf("failed to listen: %v", err)
-	}
+	//lis, err := net.Listen("tcp", bizServerConfig.Server.Addr)
+	//if err != nil {
+	//	glog.Fatalf("failed to listen: %v", err)
+	//}
 
-	delivery.InstallDeliveryInstance(bizServerConfig.RpcClient.Addr)
+	delivery.InstallDeliveryInstance(bizServerConfig.SyncRpcClient)
+
+	// Start server
+	grpcServer := grpc_util.NewRpcServer(bizServerConfig.Server.Addr, &bizServerConfig.Discovery)
+	grpcServer.Serve(func(s *grpc.Server) {
+		// AccountServiceImpl
+		mtproto.RegisterRPCAccountServer(s, &account.AccountServiceImpl{})
+
+		// AuthServiceImpl
+		mtproto.RegisterRPCAuthServer(s, &auth.AuthServiceImpl{})
+
+		mtproto.RegisterRPCBotsServer(s, &bots.BotsServiceImpl{})
+		mtproto.RegisterRPCChannelsServer(s, &channels.ChannelsServiceImpl{})
+
+		// ContactsServiceImpl
+		mtproto.RegisterRPCContactsServer(s, &contacts.ContactsServiceImpl{})
+
+		mtproto.RegisterRPCHelpServer(s, &help.HelpServiceImpl{})
+		mtproto.RegisterRPCLangpackServer(s, &langpack.LangpackServiceImpl{})
+
+		// MessagesServiceImpl
+		mtproto.RegisterRPCMessagesServer(s, &messages.MessagesServiceImpl{})
+
+		mtproto.RegisterRPCPaymentsServer(s, &payments.PaymentsServiceImpl{})
+		mtproto.RegisterRPCPhoneServer(s, &phone.PhoneServiceImpl{})
+		mtproto.RegisterRPCPhotosServer(s, &photos.PhotosServiceImpl{})
+		mtproto.RegisterRPCStickersServer(s, &stickers.StickersServiceImpl{})
+		mtproto.RegisterRPCUpdatesServer(s, &updates.UpdatesServiceImpl{})
+		mtproto.RegisterRPCUploadServer(s, &upload.UploadServiceImpl{})
+
+		mtproto.RegisterRPCUsersServer(s, &users.UsersServiceImpl{})
+	})
 
 	// var opts []grpc.ServerOption
 	// grpcServer := grpc.NewServer(opts...)
-	grpcServer := grpc_recovery2.NewRecoveryServer(grpc_util.BizUnaryRecoveryHandler, grpc_util.BizStreamRecoveryHandler)
+	// grpcServer := grpc_recovery2.NewRecoveryServer(grpc_util.BizUnaryRecoveryHandler, grpc_util.BizStreamRecoveryHandler)
 
-	// AccountServiceImpl
-	mtproto.RegisterRPCAccountServer(grpcServer, &account.AccountServiceImpl{})
 
-	// AuthServiceImpl
-	mtproto.RegisterRPCAuthServer(grpcServer, &auth.AuthServiceImpl{})
+	// glog.Infof("NewRPCServer in {%v}.", bizServerConfig)
 
-	mtproto.RegisterRPCBotsServer(grpcServer, &bots.BotsServiceImpl{})
-	mtproto.RegisterRPCChannelsServer(grpcServer, &channels.ChannelsServiceImpl{})
-
-	// ContactsServiceImpl
-	mtproto.RegisterRPCContactsServer(grpcServer, &contacts.ContactsServiceImpl{})
-
-	mtproto.RegisterRPCHelpServer(grpcServer, &help.HelpServiceImpl{})
-	mtproto.RegisterRPCLangpackServer(grpcServer, &langpack.LangpackServiceImpl{})
-
-	// MessagesServiceImpl
-	mtproto.RegisterRPCMessagesServer(grpcServer, &messages.MessagesServiceImpl{})
-
-	mtproto.RegisterRPCPaymentsServer(grpcServer, &payments.PaymentsServiceImpl{})
-	mtproto.RegisterRPCPhoneServer(grpcServer, &phone.PhoneServiceImpl{})
-	mtproto.RegisterRPCPhotosServer(grpcServer, &photos.PhotosServiceImpl{})
-	mtproto.RegisterRPCStickersServer(grpcServer, &stickers.StickersServiceImpl{})
-	mtproto.RegisterRPCUpdatesServer(grpcServer, &updates.UpdatesServiceImpl{})
-	mtproto.RegisterRPCUploadServer(grpcServer, &upload.UploadServiceImpl{})
-
-	mtproto.RegisterRPCUsersServer(grpcServer, &users.UsersServiceImpl{})
-
-	glog.Infof("NewRPCServer in {%v}.", bizServerConfig)
-
-	grpcServer.Serve(lis)
+	// grpcServer.Serve(lis)
 }
