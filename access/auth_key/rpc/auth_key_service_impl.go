@@ -45,11 +45,9 @@ const (
 )
 
 var (
-	rsa = crypto.NewRSACryptor()
 	headerRpcMetadata = "auth_key_metadata"
 
-
-// TODO(@benqi): 预先计算出fingerprint
+	// TODO(@benqi): 预先计算出fingerprint
 	// 这里直接使用了0xc3b42b026ce86b21
 	fingerprint uint64 = 12240908862933197005
 
@@ -62,42 +60,84 @@ var (
 	q = []byte{0x53, 0x91, 0x10, 0x73}
 
 	// TODO(@benqi): 直接指定了dh2048_p和dh2048_g!!!
+	// andriod client 指定的good prime
+	//
+	// static const char *goodPrime = "
+	//
+	// c71caeb9c6b1c9048e6c522f
+	// 70f13f73980d40238e3e21c1
+	// 4934d037563d930f48198a0a
+	// a7c14058229493d22530f4db
+	// fa336f6e0ac925139543aed4
+	// 4cce7c3720fd51f69458705a
+	// c68cd4fe6b6b13abdc974651
+	// 2969328454f18faf8c595f64
+	// 2477fe96bb2a941d5bcd1d4a
+	// c8cc49880708fa9b378e3c4f
+	// 3a9060bee67cf9a4a4a69581
+	// 1051907e162753b56b0f6b41
+	// 0dba74d8a84b2a14b3144e0e
+	// f1284754fd17ed950d5965b4
+	// b9dd46582db1178d169c6bc4
+	// 65b0d6ff9ca3928fef5b9ae4
+	// e418fc15e83ebea0f87fa9ff
+	// 5eed70050ded2849f47bf959
+	// d956850ce929851f0d8115f6
+	// 35b105ee2e4e15d04b2454bf
+	// 6f4fadf034b10403119cd8e3
+	// b92fcc5b";
+	//
 	dh2048_p =[]byte{
-		0xF8,0x87,0xA5,0x15,0x98,0x35,0x20,0x1E,0xF5,0x81,0xE5,0x95,
-		0x1B,0xE4,0x54,0xEA,0x53,0xF5,0xE7,0x26,0x30,0x03,0x06,0x79,
-		0x3C,0xC1,0x0B,0xAD,0x3B,0x59,0x3C,0x61,0x13,0x03,0x7B,0x02,
-		0x70,0xDE,0xC1,0x20,0x11,0x9E,0x94,0x13,0x50,0xF7,0x62,0xFC,
-		0x99,0x0D,0xC1,0x12,0x6E,0x03,0x95,0xA3,0x57,0xC7,0x3C,0xB8,
-		0x6B,0x40,0x56,0x65,0x70,0xFB,0x7A,0xE9,0x02,0xEC,0xD2,0xB6,
-		0x54,0xD7,0x34,0xAD,0x3D,0x9E,0x11,0x61,0x53,0xBE,0xEA,0xB8,
-		0x17,0x48,0xA8,0xDC,0x70,0xAE,0x65,0x99,0x3F,0x82,0x4C,0xFF,
-		0x6A,0xC9,0xFA,0xB1,0xFA,0xE4,0x4F,0x5D,0xA4,0x05,0xC2,0x8E,
-		0x55,0xC0,0xB1,0x1D,0xCC,0x17,0xF3,0xFA,0x65,0xD8,0x6B,0x09,
-		0x13,0x01,0x2A,0x39,0xF1,0x86,0x73,0xE3,0x7A,0xC8,0xDB,0x7D,
-		0xDA,0x1C,0xA1,0x2D,0xBA,0x2C,0x00,0x6B,0x2C,0x55,0x28,0x2B,
-		0xD5,0xF5,0x3C,0x9F,0x50,0xA7,0xB7,0x28,0x9F,0x22,0xD5,0x3A,
-		0xC4,0x53,0x01,0xC9,0xF3,0x69,0xB1,0x8D,0x01,0x36,0xF8,0xA8,
-		0x89,0xCA,0x2E,0x72,0xBC,0x36,0x3A,0x42,0xC1,0x06,0xD6,0x0E,
-		0xCB,0x4D,0x5C,0x1F,0xE4,0xA1,0x17,0xBF,0x55,0x64,0x1B,0xB4,
-		0x52,0xEC,0x15,0xED,0x32,0xB1,0x81,0x07,0xC9,0x71,0x25,0xF9,
-		0x4D,0x48,0x3D,0x18,0xF4,0x12,0x09,0x32,0xC4,0x0B,0x7A,0x4E,
-		0x83,0xC3,0x10,0x90,0x51,0x2E,0xBE,0x87,0xF9,0xDE,0xB4,0xE6,
-		0x3C,0x29,0xB5,0x32,0x01,0x9D,0x95,0x04,0xBD,0x42,0x89,0xFD,
-		0x21,0xEB,0xE9,0x88,0x5A,0x27,0xBB,0x31,0xC4,0x26,0x99,0xAB,
-		0x8C,0xA1,0x76,0xDB,
+		0xc7, 0x1c, 0xae, 0xb9, 0xc6, 0xb1, 0xc9, 0x04, 0x8e, 0x6c, 0x52, 0x2f,
+		0x70, 0xf1, 0x3f, 0x73, 0x98, 0x0d, 0x40, 0x23, 0x8e, 0x3e, 0x21, 0xc1,
+		0x49, 0x34, 0xd0, 0x37, 0x56, 0x3d, 0x93, 0x0f, 0x48, 0x19, 0x8a, 0x0a,
+		0xa7, 0xc1, 0x40, 0x58, 0x22, 0x94, 0x93, 0xd2, 0x25, 0x30, 0xf4, 0xdb,
+		0xfa, 0x33, 0x6f, 0x6e, 0x0a, 0xc9, 0x25, 0x13, 0x95, 0x43, 0xae, 0xd4,
+		0x4c, 0xce, 0x7c, 0x37, 0x20, 0xfd, 0x51, 0xf6, 0x94, 0x58, 0x70, 0x5a,
+		0xc6, 0x8c, 0xd4, 0xfe, 0x6b, 0x6b, 0x13, 0xab, 0xdc, 0x97, 0x46, 0x51,
+		0x29, 0x69, 0x32, 0x84, 0x54, 0xf1, 0x8f, 0xaf, 0x8c, 0x59, 0x5f, 0x64,
+		0x24, 0x77, 0xfe, 0x96, 0xbb, 0x2a, 0x94, 0x1d, 0x5b, 0xcd, 0x1d, 0x4a,
+		0xc8, 0xcc, 0x49, 0x88, 0x07, 0x08, 0xfa, 0x9b, 0x37, 0x8e, 0x3c, 0x4f,
+		0x3a, 0x90, 0x60, 0xbe, 0xe6, 0x7c, 0xf9, 0xa4, 0xa4, 0xa6, 0x95, 0x81,
+		0x10, 0x51, 0x90, 0x7e, 0x16, 0x27, 0x53, 0xb5, 0x6b, 0x0f, 0x6b, 0x41,
+		0x0d, 0xba, 0x74, 0xd8, 0xa8, 0x4b, 0x2a, 0x14, 0xb3, 0x14, 0x4e, 0x0e,
+		0xf1, 0x28, 0x47, 0x54, 0xfd, 0x17, 0xed, 0x95, 0x0d, 0x59, 0x65, 0xb4,
+		0xb9, 0xdd, 0x46, 0x58, 0x2d, 0xb1, 0x17, 0x8d, 0x16, 0x9c, 0x6b, 0xc4,
+		0x65, 0xb0, 0xd6, 0xff, 0x9c, 0xa3, 0x92, 0x8f, 0xef, 0x5b, 0x9a, 0xe4,
+		0xe4, 0x18, 0xfc, 0x15, 0xe8, 0x3e, 0xbe, 0xa0, 0xf8, 0x7f, 0xa9, 0xff,
+		0x5e, 0xed, 0x70, 0x05, 0x0d, 0xed, 0x28, 0x49, 0xf4, 0x7b, 0xf9, 0x59,
+		0xd9, 0x56, 0x85, 0x0c, 0xe9, 0x29, 0x85, 0x1f, 0x0d, 0x81, 0x15, 0xf6,
+		0x35, 0xb1, 0x05, 0xee, 0x2e, 0x4e, 0x15, 0xd0, 0x4b, 0x24, 0x54, 0xbf,
+		0x6f, 0x4f, 0xad, 0xf0, 0x34, 0xb1, 0x04, 0x03, 0x11, 0x9c, 0xd8, 0xe3,
+		0xb9, 0x2f, 0xcc, 0x5b,
 	}
 
 	dh2048_g = []byte{ 0x02,}
 )
 
-
+/////////////////////////////////////////////////////////////////////////////////
 type AuthKeyServiceImpl struct {
+	rsa *crypto.RSACryptor
+
+	// TODO(@benqi): 使用map管理多个g和p
+	dh2048p []byte
+	dh2048g []byte
+
+	// cache dh2048p和dh2048p
+	bigIntDH2048G *big.Int
+	bigIntDH2048P *big.Int
+
 	cache cache.AuthKeyStorager
 }
 
 func NewAuthKeyService(cache cache.AuthKeyStorager) *AuthKeyServiceImpl {
 	s := &AuthKeyServiceImpl{
-		cache: cache,
+		rsa:           crypto.NewRSACryptor(),
+		dh2048p:       dh2048_p,
+		dh2048g:       dh2048_g,
+		bigIntDH2048P: new(big.Int).SetBytes(dh2048_p),
+		bigIntDH2048G: new(big.Int).SetBytes(dh2048_g),
+		cache:         cache,
 	}
 	return s
 }
@@ -174,11 +214,30 @@ func (s *AuthKeyServiceImpl) Req_DHParams(ctx context.Context, request *mtproto.
 		return nil, fmt.Errorf("process Req_DHParams - Invalid PublicKeyFingerprint value")
 	}
 
-	// encryptedData := []byte(request.EncryptedData)
-	// glog.Info("EncryptedData: len = ", len(encryptedData), ", data: ", hex.EncodeToString(encryptedData))
 
+
+	// new_nonce := another (good) random number generated by the client;
+	// after this query, it is known to both client and server;
+	//
+	// data := a serialization of
+	//
+	// p_q_inner_data#83c95aec pq:string p:string q:string nonce:int128 server_nonce:int128 new_nonce:int256 = P_Q_inner_data
+	// or of
+	// p_q_inner_data_temp#3c6a84d4 pq:string p:string q:string nonce:int128 server_nonce:int128 new_nonce:int256 expires_in:int = P_Q_inner_data;
+	//
+	// data_with_hash := SHA1(data) + data + (any random bytes);
+	// 	 such that the length equal 255 bytes;
+	// encrypted_data := RSA (data_with_hash, server_public_key);
+	// 	 a 255-byte long number (big endian) is raised to the requisite power over the requisite modulus,
+	// 	 and the result is stored as a 256-byte number.
+	//
+
+	// encryptedData := []byte(request.EncryptedData)
+	//
+	// glog.Info("EncryptedData: len = ", len(encryptedData), ", data: ", hex.EncodeToString(encryptedData))
+	//
 	// 1. 解密
-	encryptedPQInnerData := rsa.Decrypt([]byte(request.EncryptedData))
+	encryptedPQInnerData := s.rsa.Decrypt([]byte(request.EncryptedData))
 
 	// TODO(@benqi): sha1_check
 	sha1Check := sha1.Sum(encryptedPQInnerData[20:])
@@ -189,6 +248,9 @@ func (s *AuthKeyServiceImpl) Req_DHParams(ctx context.Context, request *mtproto.
 	//	return nil, fmt.Errorf("process Req_DHParams - sha1Check error")
 	//}
 
+	// pqInnerData := new(mtproto.P_QInnerData)
+	// pqInnerData.Decode()
+	//
 	// 2. 反序列化出pqInnerData
 	pqInnerData := mtproto.NewTLPQInnerData()
 	// &TLPQInnerData{}
@@ -199,28 +261,63 @@ func (s *AuthKeyServiceImpl) Req_DHParams(ctx context.Context, request *mtproto.
 		return nil, fmt.Errorf("process Req_DHParams - TLPQInnerData decode error: %v", err)
 	}
 
+	// 2. 再检查一遍p_q_inner_data里的pq, p, q, nonce, server_nonce合法性
+	// 客户端传输数据解析
+	// PQ
+	if !bytes.Equal([]byte(pqInnerData.GetPq()), []byte(pq)) {
+		glog.Error("process Req_DHParams - Invalid p_q_inner_data.pq value")
+		return nil, fmt.Errorf("process Req_DHParams - Invalid p_q_inner_data.pq value")
+	}
+
+	// P
+	if !bytes.Equal([]byte(pqInnerData.GetP()), p) {
+		glog.Error("process Req_DHParams - Invalid p_q_inner_data.p value")
+		return nil, fmt.Errorf("process Req_DHParams - Invalid p_q_inner_data.p value")
+	}
+
+	// Q
+	if !bytes.Equal([]byte(pqInnerData.GetQ()), q) {
+		glog.Error("process Req_DHParams - Invalid p_q_inner_data.q value")
+		return nil, fmt.Errorf("process Req_DHParams - Invalid p_q_inner_data.q value")
+	}
+
+	// Nonce
+	if !bytes.Equal(pqInnerData.GetNonce(), authKeyMD.Nonce) {
+		glog.Error("process Req_DHParams - Invalid Nonce")
+		return nil, fmt.Errorf("process Req_DHParams - InvalidNonce")
+	}
+
+	// ServerNonce
+	if !bytes.Equal(request.GetServerNonce(), authKeyMD.ServerNonce) {
+		glog.Error("process Req_DHParams - Wrong ServerNonce")
+		return nil, fmt.Errorf("process Req_DHParams - Wrong ServerNonce")
+	}
+
 	// glog.Info("processReq_DHParams - pqInnerData Decode sucess: ", pqInnerData.String())
 
+	// 检查NewNonce的长度(int256)
 	// 缓存NewNonce
 	authKeyMD.NewNonce = pqInnerData.GetNewNonce()
 	authKeyMD.A = crypto.GenerateNonce(256)
-	authKeyMD.P = dh2048_p
+	authKeyMD.P = s.dh2048p
 
 	bigIntA := new(big.Int).SetBytes(authKeyMD.A)
-	bigIntP := new(big.Int).SetBytes(authKeyMD.P)
+	// bigIntP := new(big.Int).SetBytes(authKeyMD.P)
 
 	//c.A = new(big.Int).SetBytes()
 	//c.P = new(big.Int).SetBytes(dh2048_p)
 
+	// 服务端计算GA = g^a mod p
 	g_a := new(big.Int)
-	g_a.Exp(new(big.Int).SetBytes(dh2048_g), bigIntA, bigIntP)
+	g_a.Exp(s.bigIntDH2048G, bigIntA, s.bigIntDH2048P)
+
 	// ServerNonce
 	server_DHInnerData := &mtproto.TLServer_DHInnerData{ Data2: &mtproto.Server_DHInnerData_Data{
 		Nonce: authKeyMD.Nonce,
 		ServerNonce: authKeyMD.ServerNonce,
-		G: int32(dh2048_g[0]),
+		G: int32(s.dh2048g[0]),
 		GA: string(g_a.Bytes()),
-		DhPrime: string(dh2048_p),
+		DhPrime: string(s.dh2048p),
 		ServerTime: int32(time.Now().Unix()),
 	}}
 
@@ -336,15 +433,15 @@ func (s *AuthKeyServiceImpl) SetClient_DHParams(ctx context.Context, request *mt
 	}
 
 	bigIntA := new(big.Int).SetBytes(authKeyMD.A)
-	bigIntP := new(big.Int).SetBytes(authKeyMD.P)
+	// bigIntP := new(big.Int).SetBytes(authKeyMD.P)
 
 	// hash_key
 	authKeyNum := new(big.Int)
-	authKeyNum.Exp(new(big.Int).SetBytes([]byte(client_DHInnerData.GetGB())), bigIntA, bigIntP)
+	authKeyNum.Exp(new(big.Int).SetBytes([]byte(client_DHInnerData.GetGB())), bigIntA, s.bigIntDH2048P)
+
 	authKey := make([]byte, 256)
+
 	copy(authKey[256-len(authKeyNum.Bytes()):], authKeyNum.Bytes())
-
-
 	authKeyAuxHash := make([]byte, len(authKeyMD.NewNonce))
 	copy(authKeyAuxHash, authKeyMD.NewNonce)
 	authKeyAuxHash = append(authKeyAuxHash, byte(0x01))
@@ -353,17 +450,27 @@ func (s *AuthKeyServiceImpl) SetClient_DHParams(ctx context.Context, request *mt
 	sha1_e := sha1.Sum(authKeyAuxHash[:len(authKeyAuxHash)-12])
 	authKeyAuxHash = append(authKeyAuxHash, sha1_e[:]...)
 
+	// 至此key已经创建成功
+	authKeyId := int64(binary.LittleEndian.Uint64(authKeyAuxHash[len(authKeyMD.NewNonce)+1+12:len(authKeyMD.NewNonce)+1+12+8]))
+
+	// TODO(@benqi): authKeyId生成后要检查在数据库里是否已经存在，有非常小的概率会碰撞
+	// 如果碰撞让客户端重新再来一轮
+
 	dhGenOk := &mtproto.TLDhGenOk{ Data2: &mtproto.SetClient_DHParamsAnswer_Data{
 		Nonce: authKeyMD.Nonce,
 		ServerNonce: authKeyMD.ServerNonce,
 		NewNonceHash1: authKeyAuxHash[len(authKeyAuxHash)-16:len(authKeyAuxHash)],
 	}}
 
-	authKeyMD.AuthKeyId = int64(binary.LittleEndian.Uint64(authKeyAuxHash[len(authKeyMD.NewNonce)+1+12:len(authKeyMD.NewNonce)+1+12+8]))
-	authKeyMD.AuthKey = authKey
-
 	// TODO(@benqi): error 处理
-	s.cache.PutAuthKey(authKeyMD.AuthKeyId, authKeyMD.AuthKey)
+	err = s.cache.PutAuthKey(authKeyMD.AuthKeyId, authKeyMD.AuthKey)
+	if err != nil {
+		glog.Errorf("put auth_key error: {%v}", err)
+		return nil, err
+	}
+
+	authKeyMD.AuthKeyId = authKeyId
+	authKeyMD.AuthKey = authKey
 
 	glog.Infof("process Req_DHParams - reply: %s", logger.JsonDebugData(dhGenOk))
 	s.authKeyMetadataToTrailer(ctx, authKeyMD)
