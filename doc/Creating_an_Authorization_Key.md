@@ -93,7 +93,7 @@
 			p_q_inner_data#83c95aec pq:string p:string q:string nonce:int128 server_nonce:int128 new_nonce:int256 = P_Q_inner_data
 			// 或者
 			p_q_inner_data_temp#3c6a84d4 pq:string p:string q:string nonce:int128 server_nonce:int128 new_nonce:int256 expires_in:int = P_Q_inner_data;
-		```
+		    ```
 
 			- `new_nonce`：客户端生成的另一个（好的）随机数; 在这个请求之后，客户端和服务器都知道它;
 
@@ -109,7 +109,6 @@
 			encrypted_data：= RSA（data_with_hash，server_public_key）
 			```
 			
-	
 		- 入侵者可能会拦截查询并替换成自己的查询，但入侵者无法获得`new_nonce`，他不得不重新生成这个字段（因为入侵者不能解密客户端发送的加密数据）。但所有后续消息都使用`new_nonce`加密或包含`new_nonce_hash`，因此它们将不会被客户端处理（入侵者无法使其看起来好像是由服务器生成的，因为它们不包含`new_nonce`）。因此，这个拦截只会导致入侵者完成授权密钥生成协议而不是客户端，并创建一个新的密钥（与客户端无关）; 
 		- 内部数据（`p_q_inner_data_temp`）的另一种形式是用来创建临时密钥，它只存储在服务器RAM中，并在最多expires_in秒后丢弃。服务器可以随时丢弃临时密钥。在所有其他方面，临时密钥生成协议是相同的。在创建临时密钥后，客户端通常通过auth.bindTempAuthKey方法将其绑定到其主体授权密钥，并将其用于所有客户端 - 服务器通信，直到它过期; 然后生成一个新的临时密钥。通过此方法可以在客户端 - 服务端通信中实现完美的正向保密（PFS）。
 
@@ -184,7 +183,7 @@
 	
 		```
 	  	client_DH_inner_data#6643b654 nonce:int128 server_nonce:int128 retry_id:long g_b:string = Client_DH_Inner_Data
-	  	```
+	    ```
   	
 	- `data_with_hash：= SHA1（data）+ data +（0-15 random bytes）`; 使长度可以被16整除;
 
