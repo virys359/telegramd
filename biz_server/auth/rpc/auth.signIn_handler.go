@@ -59,7 +59,8 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 	    do3 := &dataobject.AuthUsersDO{}
 	    do3.AuthId = md.AuthId
 	    do3.UserId = do2.Id
-	    dao.GetAuthUsersDAO(dao.DB_MASTER).Insert(do3)
+		// TODO(@benqi): 插入关联数据表
+		dao.GetAuthUsersDAO(dao.DB_MASTER).Insert(do3)
 	}
 
 	// TODO(@benqi): 从数据库加载

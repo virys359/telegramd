@@ -49,7 +49,6 @@ type MysqlDAOList struct {
 	UserContactsDAO          *mysql_dao.UserContactsDAO
 	MessageBoxesDAO          *mysql_dao.MessageBoxesDAO
 	MessagesDAO              *mysql_dao.MessagesDAO
-	SeqUpdatesNgenDAO        *mysql_dao.SeqUpdatesNgenDAO
 	UserNotifySettingsDAO    *mysql_dao.UserNotifySettingsDAO
 	ReportsDAO               *mysql_dao.ReportsDAO
 	UserPrivacysDAO          *mysql_dao.UserPrivacysDAO
@@ -62,6 +61,7 @@ type MysqlDAOList struct {
 	UserPtsUpdatesDAO        *mysql_dao.UserPtsUpdatesDAO
 	UserQtsUpdatesDAO        *mysql_dao.UserQtsUpdatesDAO
 	AuthSeqUpdatesDAO        *mysql_dao.AuthSeqUpdatesDAO
+	AuthUpdatesStateDAO		 *mysql_dao.AuthUpdatesStateDAO
 }
 
 // TODO(@benqi): 一主多从
@@ -92,7 +92,7 @@ func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
 		daoList.UserContactsDAO = mysql_dao.NewUserContactsDAO(v)
 		daoList.MessageBoxesDAO = mysql_dao.NewMessageBoxesDAO(v)
 		daoList.MessagesDAO = mysql_dao.NewMessagesDAO(v)
-		daoList.SeqUpdatesNgenDAO = mysql_dao.NewSeqUpdatesNgenDAO(v)
+		daoList.AuthUpdatesStateDAO = mysql_dao.NewAuthUpdatesStateDAO(v)
 		daoList.UserNotifySettingsDAO = mysql_dao.NewUserNotifySettingsDAO(v)
 		daoList.ReportsDAO = mysql_dao.NewReportsDAO(v)
 		daoList.UserPrivacysDAO = mysql_dao.NewUserPrivacysDAO(v)
@@ -231,11 +231,11 @@ func GetMessagesDAO(dbName string) (dao *mysql_dao.MessagesDAO) {
 	return
 }
 
-func GetSeqUpdatesNgenDAO(dbName string) (dao *mysql_dao.SeqUpdatesNgenDAO) {
+func GetAuthUpdatesStateDAO(dbName string) (dao *mysql_dao.AuthUpdatesStateDAO) {
 	daoList := GetMysqlDAOList(dbName)
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
-		dao = daoList.SeqUpdatesNgenDAO
+		dao = daoList.AuthUpdatesStateDAO
 	}
 	return
 }

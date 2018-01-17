@@ -25,18 +25,18 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 )
 
-type SeqUpdatesNgenDAO struct {
+type AuthUpdatesStateDAO struct {
 	db *sqlx.DB
 }
 
-func NewSeqUpdatesNgenDAO(db *sqlx.DB) *SeqUpdatesNgenDAO {
-	return &SeqUpdatesNgenDAO{db}
+func NewAuthUpdatesStateDAO(db *sqlx.DB) *AuthUpdatesStateDAO {
+	return &AuthUpdatesStateDAO{db}
 }
 
-// insert into seq_updates_ngen(seq_name, seq, created_at) values (:seq_name, :seq, :created_at)
+// insert into auth_updates_state(auth_key_id, user_id, pts, qts, seq, date2, created_at) values (:auth_key_id, :user_id, :pts, :qts, :seq, :date2, :created_at)
 // TODO(@benqi): sqlmap
-func (dao *SeqUpdatesNgenDAO) Insert(do *dataobject.SeqUpdatesNgenDO) int64 {
-	var query = "insert into seq_updates_ngen(seq_name, seq, created_at) values (:seq_name, :seq, :created_at)"
+func (dao *AuthUpdatesStateDAO) Insert(do *dataobject.AuthUpdatesStateDO) int64 {
+	var query = "insert into auth_updates_state(auth_key_id, user_id, pts, qts, seq, date2, created_at) values (:auth_key_id, :user_id, :pts, :qts, :seq, :date2, :created_at)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,21 +53,21 @@ func (dao *SeqUpdatesNgenDAO) Insert(do *dataobject.SeqUpdatesNgenDO) int64 {
 	return id
 }
 
-// update seq_updates_ngen set seq = :seq where seq_name = :seq_name
+// update auth_updates_state set pts = :pts, qts = :qts where auth_key_id = :auth_key_id
 // TODO(@benqi): sqlmap
-func (dao *SeqUpdatesNgenDAO) UpdateSeqBySeqName(seq int64, seq_name string) int64 {
-	var query = "update seq_updates_ngen set seq = ? where seq_name = ?"
-	r, err := dao.db.Exec(query, seq, seq_name)
+func (dao *AuthUpdatesStateDAO) UpdatePtsAndQts(pts int32, qts int32, auth_key_id int64) int64 {
+	var query = "update auth_updates_state set pts = ?, qts = ? where auth_key_id = ?"
+	r, err := dao.db.Exec(query, pts, qts, auth_key_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in UpdateSeqBySeqName(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdatePtsAndQts(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in UpdateSeqBySeqName(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdatePtsAndQts(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -75,25 +75,25 @@ func (dao *SeqUpdatesNgenDAO) UpdateSeqBySeqName(seq int64, seq_name string) int
 	return rows
 }
 
-// select seq_name, seq from seq_updates_ngen where seq_name = :seq_name
+// select pts, qts, seq, date2 from auth_updates_state where auth_key_id = :auth_key_id
 // TODO(@benqi): sqlmap
-func (dao *SeqUpdatesNgenDAO) SelectBySeqName(seq_name string) *dataobject.SeqUpdatesNgenDO {
-	var query = "select seq_name, seq from seq_updates_ngen where seq_name = ?"
-	rows, err := dao.db.Queryx(query, seq_name)
+func (dao *AuthUpdatesStateDAO) SelectByAuthId(auth_key_id int64) *dataobject.AuthUpdatesStateDO {
+	var query = "select pts, qts, seq, date2 from auth_updates_state where auth_key_id = ?"
+	rows, err := dao.db.Queryx(query, auth_key_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectBySeqName(_), error: %v", err)
+		errDesc := fmt.Sprintf("Queryx in SelectByAuthId(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	defer rows.Close()
 
-	do := &dataobject.SeqUpdatesNgenDO{}
+	do := &dataobject.AuthUpdatesStateDO{}
 	if rows.Next() {
 		err = rows.StructScan(do)
 		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectBySeqName(_), error: %v", err)
+			errDesc := fmt.Sprintf("StructScan in SelectByAuthId(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}

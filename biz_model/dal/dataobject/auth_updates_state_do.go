@@ -17,10 +17,15 @@
 
 package dataobject
 
-type SeqUpdatesNgenDO struct {
-	Id        int64  `db:"id"`
-	SeqName   string `db:"seq_name"`
-	Seq       int64  `db:"seq"`
+type AuthUpdatesStateDO struct {
+	Id        int32  `db:"id"`
+	AuthKeyId int64  `db:"auth_key_id"`
+	UserId    int32  `db:"user_id"`
+	Pts       int32  `db:"pts"`
+	Qts       int32  `db:"qts"`
+	Seq       int32  `db:"seq"`
+	Date2     int32  `db:"date2"`
 	CreatedAt string `db:"created_at"`
 	UpdatedAt string `db:"updated_at"`
+	DeletedAt string `db:"deleted_at"`
 }

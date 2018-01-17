@@ -98,8 +98,8 @@ func (s* Server) sessionLoop(c *client.Client) {
 	// .Info("NewClient, sessionId: ", session.ID(), ", addr: ", client.RemoteAddr)
 
 	defer func() {
-
 	}()
+
 	for {
 		// 接收数据包
 		msg, err := c.Session.Receive()

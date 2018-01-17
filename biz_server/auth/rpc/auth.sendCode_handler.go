@@ -36,6 +36,7 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AuthSendCode - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+
 	// Check TLAuthSendCode
 	// CurrentNumber: 是否为本机电话号码
 	// 检查数据是否合法
@@ -54,6 +55,14 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	//  1. is_deleted !=0 and now - created_at < 15 分钟
 
 	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
+	var err error
+
+	// check number
+	if request.GetPhoneNumber() == "" {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EMPTY), "auth.sendCode#86aef0ec: phone code empty")
+		return nil, err
+	}
+
 	phoneNumer := libphonenumber.NormalizeDigitsOnly(request.PhoneNumber)
 
 	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneAndApiIdAndHash(phoneNumer, request.ApiId, request.ApiHash)
