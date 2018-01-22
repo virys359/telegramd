@@ -42,8 +42,8 @@ import (
 //    >   - hash里的field为<auth_key_id, session_id>二元组
 //    >   - field的value为<time, server_id, net_lib_session_id>三元组
 //  - why？？
-//    > telegram最大的一个特色是允许多端漫游，由auth_key_id标识一个客户端设备，连接到服务端以后，由auth_key_id+session_id对应于
-//    > telegram实例（https://core.telegram.org/mtproto/description），一个用户可能会有多个由auth_key_id，而且每个由auth_key_id
+//    > telegram最大的一个特色是允许多端同步，由auth_key_id标识一个客户端设备，连接到服务端以后，由auth_key_id+session_id对应于
+//    > telegram实例（https://core.telegram.org/mtproto/description），一个用户可能会有多个auth_key_id，而且每个由auth_key_id
 //    > 也可能会有多个session_id，所以以<auth_key_id, session_id>二元组做为字段唯一标识客户端实例已经上线，但这样会存在如下问题：
 //    > - hash没有指定某一个field设置过期时间，会导致已经下线的客户端还存在field里，故field的value里要缓存一个time时间，由业务层通过
 //    >   过期时间来判断是否已经失效
