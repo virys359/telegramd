@@ -34,7 +34,8 @@ func (s *ContactsServiceImpl) ContactsGetBlocked(ctx context.Context, request *m
 
 	blockedList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectBlockedList(md.UserId, request.Offset, request.Limit)
 
-	blocks := &mtproto.TLContactsBlocked{}
+	blocks := mtproto.NewTLContactsBlocked()
+	// &mtproto.TLContactsBlocked{}
 
 	if len(blockedList) > 0 {
 		blockedIdList := make([]int32, 0, len(blockedList))
