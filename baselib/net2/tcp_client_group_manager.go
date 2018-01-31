@@ -42,7 +42,7 @@ func NewTcpClientGroupManager(protoName string, clients map[string][]string, cb 
 		m := make(map[string]*TcpClient)
 
 		for _, address := range v {
-			client := NewTcpClient(k, 10 * 1024, group.protoName, address, group.callback)
+			client := NewTcpClient(k, 10*1024, group.protoName, address, group.callback)
 			if client != nil {
 				m[address] = client
 			}
