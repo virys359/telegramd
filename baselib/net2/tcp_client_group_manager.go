@@ -57,11 +57,11 @@ func NewTcpClientGroupManager(protoName string, clients map[string][]string, cb 
 	return group
 }
 
-func (group *TcpClientGroupManager) Serve() bool {
-	group.clientMapLock.Lock()
-	defer group.clientMapLock.Unlock()
+func (this *TcpClientGroupManager) Serve() bool {
+	this.clientMapLock.Lock()
+	defer this.clientMapLock.Unlock()
 
-	for _, v := range group.clientMap {
+	for _, v := range this.clientMap {
 		for _, c := range v {
 			c.Serve()
 		}
@@ -70,11 +70,11 @@ func (group *TcpClientGroupManager) Serve() bool {
 	return true
 }
 
-func (group *TcpClientGroupManager) Stop() bool {
-	group.clientMapLock.Lock()
-	defer group.clientMapLock.Unlock()
+func (this *TcpClientGroupManager) Stop() bool {
+	this.clientMapLock.Lock()
+	defer this.clientMapLock.Unlock()
 
-	for _, v := range group.clientMap {
+	for _, v := range this.clientMap {
 		for _, c := range v {
 			c.Stop()
 		}
@@ -83,22 +83,22 @@ func (group *TcpClientGroupManager) Stop() bool {
 	return true
 }
 
-func (group *TcpClientGroupManager) GetConfig() interface{} {
+func (this *TcpClientGroupManager) GetConfig() interface{} {
 	return nil
 }
 
-func (group *TcpClientGroupManager) AddClient(name string, address string) {
+func (this *TcpClientGroupManager) AddClient(name string, address string) {
 	glog.Info("TcpClientGroup AddClient name ", name, " address ", address)
-	group.clientMapLock.Lock()
-	defer group.clientMapLock.Unlock()
+	this.clientMapLock.Lock()
+	defer this.clientMapLock.Unlock()
 
-	m, ok := group.clientMap[name]
+	m, ok := this.clientMap[name]
 
 	if !ok {
-		group.clientMap[name] = make(map[string]*TcpClient)
+		this.clientMap[name] = make(map[string]*TcpClient)
 	}
 
-	m, _ = group.clientMap[name]
+	m, _ = this.clientMap[name]
 
 	_, ok = m[address]
 
@@ -106,26 +106,26 @@ func (group *TcpClientGroupManager) AddClient(name string, address string) {
 		return
 	}
 
-	client := NewTcpClient(name, 10 * 1024, group.protoName, address, group.callback)
+	client := NewTcpClient(name, 10 * 1024, this.protoName, address, this.callback)
 
 	m[address] = client
 
 	client.Serve()
 }
 
-func (group *TcpClientGroupManager) RemoveClient(name string, address string) {
+func (this *TcpClientGroupManager) RemoveClient(name string, address string) {
 	glog.Info("TcpClientGroup RemoveClient name ", name, " address ", address)
 
-	group.clientMapLock.Lock()
-	defer group.clientMapLock.Unlock()
+	this.clientMapLock.Lock()
+	defer this.clientMapLock.Unlock()
 
-	m, ok := group.clientMap[name]
+	m, ok := this.clientMap[name]
 
 	if !ok {
 		return
 	}
 
-	m, _ = group.clientMap[name]
+	m, _ = this.clientMap[name]
 
 	c, ok := m[address]
 
@@ -135,11 +135,11 @@ func (group *TcpClientGroupManager) RemoveClient(name string, address string) {
 
 	c.Stop()
 
-	delete(group.clientMap[name], address)
+	delete(this.clientMap[name], address)
 }
 
-func (group *TcpClientGroupManager) SendData(name string, msg interface{}) error {
-	tcpConn := group.getRotationSession(name)
+func (this *TcpClientGroupManager) SendData(name string, msg interface{}) error {
+	tcpConn := this.getRotationSession(name)
 	if tcpConn == nil {
 		return errors.New("Can not get connection!!")
 	}
