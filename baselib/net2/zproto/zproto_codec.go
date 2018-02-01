@@ -27,14 +27,18 @@ import (
 	// "golang.org/x/text/message"
 )
 
+func init() {
+	net2.RegisterPtotocol("zproto", &ZProto{})
+}
+
 type ZProto struct {
 	recvLastPakageIndex uint32
 	sendLastPakageIndex uint32
 }
 
-func (this *ZProto) NewCodec(conn *net.TCPConn) (net2.Codec, error) {
+func (this *ZProto) NewCodec(rw io.ReadWriter) (net2.Codec, error) {
 	codec := new(ZProtoCodec)
-	codec.conn = conn
+	codec.conn = rw.(*net.TCPConn)
 	codec.headBuf = make([]byte, kFrameHeaderLen)
 	return codec, nil
 }
