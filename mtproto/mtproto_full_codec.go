@@ -90,32 +90,36 @@ func (c *MTProtoFullCodec) Receive() (interface{}, error) {
 	}
 
 	authKeyId := int64(binary.LittleEndian.Uint64(buf))
-	var message MessageBase
-	if authKeyId == 0 {
-		message = NewUnencryptedRawMessage()
-		// message.Decode(buf[8:])
-	} else {
-		message = NewEncryptedRawMessage(authKeyId)
-	}
-
-	err = message.Decode(buf[8:])
-	if err != nil {
-		glog.Errorf("decode message error: {%v}", err)
-		return nil, err
-	}
-
+	message := NewMTPRawMessage(authKeyId, 0)
+	message.Decode(buf)
 	return message, nil
+
+	//var message MessageBase
+	//if authKeyId == 0 {
+	//	message = NewUnencryptedRawMessage()
+	//	// message.Decode(buf[8:])
+	//} else {
+	//	message = NewEncryptedRawMessage(authKeyId)
+	//}
+	//
+	//err = message.Decode(buf[8:])
+	//if err != nil {
+	//	glog.Errorf("decode message error: {%v}", err)
+	//	return nil, err
+	//}
+	//
+	// return message, nil
 }
 
 func (c *MTProtoFullCodec) Send(msg interface{}) error {
-	message, ok := msg.(MessageBase)
+	message, ok := msg.(*MTPRawMessage)
 	if !ok {
-		err := fmt.Errorf("msg type error, only UnencryptedRawMessage or EncryptedRawMessage, msg: {%v}", msg)
+		err := fmt.Errorf("msg type error, only MTPRawMessage, msg: {%v}", msg)
 		glog.Error(err)
 		return err
 	}
 
-	b, _ := message.Encode()
+	b := message.Encode()
 
 	sb := make([]byte, 4)
 	// minus padding

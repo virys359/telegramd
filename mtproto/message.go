@@ -74,6 +74,11 @@ func (m *UnencryptedMessage) MessageType() int {
 	return UNENCRYPTED_MESSAGE
 }
 
+func (m *UnencryptedMessage) Encode() ([]byte) {
+	buf, _ := m.encode()
+	return buf
+}
+
 func (m *UnencryptedMessage) encode() ([]byte, error) {
 	x := NewEncodeBuf(512)
 	x.Long(0)
@@ -85,6 +90,10 @@ func (m *UnencryptedMessage) encode() ([]byte, error) {
 
 	// glog.Info("Encode object: ", m.Object)
 	return x.buf, nil
+}
+
+func (m *UnencryptedMessage) Decode(b []byte) error {
+	return m.decode(b)
 }
 
 func (m *UnencryptedMessage) decode(b []byte) error {
@@ -124,11 +133,11 @@ type MsgDetailedInfoContainer struct {
 ////////////////////////////////////////////////////////////////////////////////////////////
 // TODO(@benqi): 将Encrypt和Descrypt移到底层
 type EncryptedMessage2 struct {
-	// AuthKeyId int64
+	authKeyId int64
 	NeedAck bool
 
 	msgKey []byte
-	salt int64
+	Salt int64
 	SessionId int64
 	MessageId int64
 	SeqNo int32
@@ -137,6 +146,11 @@ type EncryptedMessage2 struct {
 
 func (m *EncryptedMessage2) MessageType() int {
 	return ENCRYPTED_MESSAGE
+}
+
+func (m *EncryptedMessage2) Encode(authKeyId int64, authKey []byte) ([]byte, error) {
+	buf, err := m.encode(authKeyId, authKey)
+	return buf, err
 }
 
 func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, error) {
@@ -153,7 +167,7 @@ func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, err
 	// x.Long(authKeyId)
 	// msgKey := make([]byte, 16)
 	// x.Bytes(msgKey)
-	x.Long(m.salt)
+	x.Long(m.Salt)
 	x.Long(m.SessionId)
 	m.MessageId = GenerateMessageId()
 	x.Long(m.MessageId)
@@ -173,6 +187,11 @@ func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, err
 	return x2.buf, nil
 }
 
+func (m *EncryptedMessage2) Decode(authKeyId int64, authKey, b []byte) error {
+	_ = authKeyId
+	return m.decode(authKey, b)
+}
+
 func (m *EncryptedMessage2) decode(authKey []byte, b []byte) error {
 	msgKey := b[:16]
 	// aesKey, aesIV := generateMessageKey(msgKey, authKey, false)
@@ -185,7 +204,7 @@ func (m *EncryptedMessage2) decode(authKey []byte, b []byte) error {
 
 	dbuf := NewDecodeBuf(x)
 
-	m.salt = dbuf.Long() // salt
+	m.Salt = dbuf.Long() // salt
 	m.SessionId = dbuf.Long() // session_id
 	m.MessageId = dbuf.Long()
 
@@ -197,7 +216,7 @@ func (m *EncryptedMessage2) decode(authKey []byte, b []byte) error {
 	m.SeqNo = dbuf.Int()
 	messageLen := dbuf.Int()
 	if int(messageLen) > dbuf.size-32 {
-		// 	return fmt.Errorf("Message len: %d (need less than %d)", messageLen, dbuf.size-32)
+		// 	return fmt.Errorf("Message len: %d (need less than %d)", messagxeLen, dbuf.size-32)
 	}
 
 	// glog.Infof("salt: %d, sessionId: %d, messageId: %d, seqNo: %d, messageLen: %d", m.salt, m.SessionId, m.MessageId, m.SeqNo, messageLen)

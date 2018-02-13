@@ -24,7 +24,14 @@ import (
 	"strings"
 	"time"
 	"io"
+	"fmt"
 )
+
+type TcpConnectionCallback interface {
+	OnNewConnection(conn *TcpConnection)
+	OnConnectionDataArrived(c *TcpConnection, msg interface{}) error
+	OnConnectionClosed(c *TcpConnection)
+}
 
 type TcpServer struct {
 	connectionManager *ConnectionManager
@@ -66,6 +73,7 @@ func (s *TcpServer) Serve() {
 		// TODO(@benqi): limit maxConn
 		codec, err := NewCodecByName(s.protoName, conn)
 		if err != nil {
+			glog.Error(err)
 			conn.Close()
 			return
 		}
@@ -136,13 +144,13 @@ func (s *TcpServer) establishTcpConnection(conn *TcpConnection) {
 		}
 
 		if msg == nil {
-			glog.Errorf("recv a nil msg: %v", conn)
+			// glog.Errorf("recv a nil msg: %v", conn)
 			// 是否需要关闭？
-			return
+			continue
 		}
 
 		if s.callback != nil {
-			if err := s.callback.OnDataArrived(conn, msg); err != nil {
+			if err := s.callback.OnConnectionDataArrived(conn, msg); err != nil {
 				// TODO: 是否需要关闭?
 			}
 		}
@@ -167,4 +175,21 @@ func (s *TcpServer) onConnectionClosed (conn *TcpConnection) {
 	if s.callback != nil {
 		s.callback.OnConnectionClosed(conn)
 	}
+}
+
+//根据ConnId发送数据
+func (s *TcpServer) SendByConnID(connID uint64, msg interface{}) error {
+	conn := s.connectionManager.GetConnection(connID)
+	if conn == nil {
+		return fmt.Errorf("can not get session!")
+	}
+	return conn.Send(msg)
+}
+
+func (s *TcpServer) GetConnection(connID uint64) *TcpConnection {
+	conn := s.connectionManager.GetConnection(connID)
+	if conn != nil {
+		return conn.(*TcpConnection)
+	}
+	return nil
 }

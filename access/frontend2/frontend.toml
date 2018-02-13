@@ -1,0 +1,38 @@
+# biz_server.toml
+
+ver = "0.0.1"
+#logPath = "/tmp/frontend.log"
+serverId = 1
+
+[server]
+addr = "0.0.0.0:12345"
+
+[server80]
+name = "frontend"
+protoName = "mtproto"
+addr = "0.0.0.0:8000"
+
+[server443]
+name = "frontend"
+protoName = "mtproto"
+addr = "0.0.0.0:12345"
+
+[syncRpcClient]
+serviceName = "sync"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
+[bizRpcClient]
+serviceName = "biz"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
+[authKeyRpcClient]
+serviceName = "auth_key"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
+[authSessionRpcClient]
+serviceName = "auth_session"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"

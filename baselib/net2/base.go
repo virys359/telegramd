@@ -20,6 +20,7 @@ package net2
 import (
 	"io"
 	"fmt"
+	"github.com/golang/glog"
 )
 
 type Protocol interface {
@@ -39,7 +40,7 @@ type Codec interface {
 }
 
 type MessageBase interface {
-	Encode() ([]byte, error)
+	Encode() ([]byte)
 	Decode(b []byte) error
 }
 
@@ -56,6 +57,7 @@ var (
 )
 
 func RegisterPtotocol(name string, protocol Protocol) {
+	glog.Info("RegisterPtotocol: ", name)
 	protolRegisters[name] = protocol
 }
 

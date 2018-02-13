@@ -52,7 +52,7 @@ func (s *EchoServer) OnNewConnection(conn *net2.TcpConnection) {
 	glog.Infof("OnNewConnection %v", conn.RemoteAddr())
 }
 
-func (s *EchoServer) OnDataArrived(conn *net2.TcpConnection, msg interface{}) error {
+func (s *EchoServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg interface{}) error {
 	glog.Infof("echo_server recv peer(%v) data: %v", conn.RemoteAddr(), msg)
 	conn.Send(msg)
 	return nil
@@ -81,17 +81,17 @@ func (c* EchoClient) Serve() {
 	c.client.Serve()
 }
 
-func (c* EchoClient) OnNewConnection(client *net2.TcpClient) {
+func (c* EchoClient) OnNewClient(client *net2.TcpClient) {
 	glog.Infof("OnNewConnection")
 	client.Send("ping\n")
 }
 
-func (c* EchoClient) OnDataArrived(client *net2.TcpClient, msg interface{}) error {
+func (c* EchoClient) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
 	glog.Infof("OnDataArrived - recv data: %v", msg)
 	return client.Send("ping\n")
 }
 
-func (c* EchoClient) OnConnectionClosed(client *net2.TcpClient) {
+func (c* EchoClient) OnClientClosed(client *net2.TcpClient) {
 	glog.Infof("OnConnectionClosed")
 }
 

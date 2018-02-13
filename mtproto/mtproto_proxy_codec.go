@@ -68,6 +68,10 @@ const (
 	VAL2_FLAG = 0x00000000
 )
 
+func init() {
+	net2.RegisterPtotocol("mtproto", &MTProtoProxy{})
+}
+
 // 服务端MTPProto代理
 // 服务端需要兼容各种协议
 type MTProtoProxy struct {
@@ -86,9 +90,9 @@ func NewMTProtoProxy() *MTProtoProxy {
 	}
 }
 
-func (m *MTProtoProxy) NewCodec(conn *net.TCPConn) (net2.Codec, error) {
+func (m *MTProtoProxy) NewCodec(rw io.ReadWriter) (net2.Codec, error) {
 	codec := &MTProtoProxyCodec{
-		conn:  conn,
+		conn:  rw.(*net.TCPConn),
 		State: STATE_CONNECTED,
 	}
 
@@ -220,11 +224,14 @@ func (c *MTProtoProxyCodec) Receive() (interface{}, error) {
 	return c.codec.Receive()
 }
 
-func (c *MTProtoProxyCodec) Send(interface{}) error {
-	return nil
+func (c *MTProtoProxyCodec) Send(msg interface{}) error {
+	return c.codec.Send(msg)
 }
 
 func (c *MTProtoProxyCodec) Close() error {
+	if c.State == STATE_DATA {
+		return c.codec.Close()
+	}
 	return nil
 }
 

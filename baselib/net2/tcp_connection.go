@@ -22,13 +22,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"errors"
+	"fmt"
 )
-
-type TcpConnectionCallback interface {
-	OnNewConnection(conn *TcpConnection)
-	OnDataArrived(c *TcpConnection, msg interface{}) error
-	OnConnectionClosed(c *TcpConnection)
-}
 
 var ConnectionClosedError = errors.New("Connection Closed")
 var ConnectionBlockedError = errors.New("Connection Blocked")
@@ -84,6 +79,10 @@ func NewClientTcpConnection(conn *net.TCPConn, sendChanSize int, codec Codec, cb
 	return conn2
 }
 
+func (c *TcpConnection) String() string {
+	return fmt.Sprintf("{connID: %d, name: %s, lAddr: %s, rAddr: %s}", c.id, c.name, c.conn.LocalAddr(), c.conn.RemoteAddr())
+}
+
 func (c *TcpConnection) LoadAddr() net.Addr {
 	return c.conn.LocalAddr()
 }
@@ -92,95 +91,95 @@ func (c *TcpConnection) RemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
 }
 
-func (conn *TcpConnection) GetConnID() uint64 {
-	return conn.id
+func (c *TcpConnection) GetConnID() uint64 {
+	return c.id
 }
 
-func (conn *TcpConnection) IsClosed() bool {
-	return atomic.LoadInt32(&conn.closeFlag) == 1
+func (c *TcpConnection) IsClosed() bool {
+	return atomic.LoadInt32(&c.closeFlag) == 1
 }
 
-func (conn *TcpConnection) Close() error {
-	if atomic.CompareAndSwapInt32(&conn.closeFlag, 0, 1) {
-		if conn.closeCallback != nil {
-			conn.closeCallback.OnConnectionClosed(conn)
+func (c *TcpConnection) Close() error {
+	if atomic.CompareAndSwapInt32(&c.closeFlag, 0, 1) {
+		if c.closeCallback != nil {
+			c.closeCallback.OnConnectionClosed(c)
 		}
 
-		close(conn.closeChan)
+		close(c.closeChan)
 
-		if conn.sendChan != nil {
-			conn.sendMutex.Lock()
-			close(conn.sendChan)
-			if clear, ok := conn.codec.(ClearSendChan); ok {
-				clear.ClearSendChan(conn.sendChan)
+		if c.sendChan != nil {
+			c.sendMutex.Lock()
+			close(c.sendChan)
+			if clear, ok := c.codec.(ClearSendChan); ok {
+				clear.ClearSendChan(c.sendChan)
 			}
-			conn.sendMutex.Unlock()
+			c.sendMutex.Unlock()
 		}
 
-		err := conn.codec.Close()
+		err := c.codec.Close()
 		return err
 	}
 	return ConnectionClosedError
 }
 
-func (conn *TcpConnection) Codec() Codec {
-	return conn.codec
+func (c *TcpConnection) Codec() Codec {
+	return c.codec
 }
 
-func (conn *TcpConnection) Receive() (interface{}, error) {
-	conn.recvMutex.Lock()
-	defer conn.recvMutex.Unlock()
+func (c *TcpConnection) Receive() (interface{}, error) {
+	c.recvMutex.Lock()
+	defer c.recvMutex.Unlock()
 
-	msg, err := conn.codec.Receive()
+	msg, err := c.codec.Receive()
 	if err != nil {
-		conn.Close()
+		c.Close()
 	}
 	return msg, err
 }
 
-func (conn *TcpConnection) sendLoop() {
-	defer conn.Close()
+func (c *TcpConnection) sendLoop() {
+	defer c.Close()
 	for {
 		select {
-		case msg, ok := <-conn.sendChan:
-			if !ok || conn.codec.Send(msg) != nil {
+		case msg, ok := <-c.sendChan:
+			if !ok || c.codec.Send(msg) != nil {
 				return
 			}
-		case <-conn.closeChan:
+		case <-c.closeChan:
 			return
 		}
 	}
 }
 
-func (conn *TcpConnection) Send(msg interface{}) error {
-	if conn.sendChan == nil {
-		if conn.IsClosed() {
+func (c *TcpConnection) Send(msg interface{}) error {
+	if c.sendChan == nil {
+		if c.IsClosed() {
 			return ConnectionClosedError
 		}
 
-		conn.sendMutex.Lock()
-		defer conn.sendMutex.Unlock()
+		c.sendMutex.Lock()
+		defer c.sendMutex.Unlock()
 
-		err := conn.codec.Send(msg)
+		err := c.codec.Send(msg)
 		if err != nil {
-			conn.Close()
+			c.Close()
 		}
 		return err
 	}
 
-	conn.sendMutex.RLock()
-	if conn.IsClosed() {
-		conn.sendMutex.RUnlock()
+	c.sendMutex.RLock()
+	if c.IsClosed() {
+		c.sendMutex.RUnlock()
 		return ConnectionClosedError
 	}
 
 	select {
-	case conn.sendChan <- msg:
-		conn.sendMutex.RUnlock()
+	case c.sendChan <- msg:
+		c.sendMutex.RUnlock()
 		return nil
 	default:
-		conn.sendMutex.RUnlock()
-		conn.Close()
+		c.sendMutex.RUnlock()
+		c.Close()
 		return ConnectionBlockedError
 	}
 }

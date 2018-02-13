@@ -26,10 +26,10 @@ import (
 )
 
 type TcpClientCallBack interface {
-	OnNewConnection(c *TcpClient)
-	OnDataArrived(c *TcpClient, msg interface{}) error
-	OnConnectionClosed(c *TcpClient)
-	OnTimer(c *TcpClient)
+	OnNewClient(c *TcpClient)
+	OnClientDataArrived(c *TcpClient, msg interface{}) error
+	OnClientClosed(c *TcpClient)
+	OnClientTimer(c *TcpClient)
 }
 
 type TcpClient struct {
@@ -99,13 +99,13 @@ func (c *TcpClient) establishTcpConnection(conn* TcpConnection) {
 		}
 
 		if msg == nil {
-			glog.Errorf("recv a nil msg: %v", conn)
+			// glog.Errorf("recv a nil msg: %v", conn)
 			// 是否需要关闭？
-			return
+			continue
 		}
 
 		if c.callback != nil {
-			if err := c.callback.OnDataArrived(c, msg); err != nil {
+			if err := c.callback.OnClientDataArrived(c, msg); err != nil {
 				// TODO: 是否需要关闭?
 			}
 		}
@@ -147,13 +147,13 @@ func (c *TcpClient) OnConnectionClosed(conn Connection) {
 
 func (c *TcpClient) onNewConnection (conn *TcpConnection) {
 	if c.callback != nil {
-		c.callback.OnNewConnection(c)
+		c.callback.OnNewClient(c)
 	}
 }
 
 func (c *TcpClient) onConnectionClosed (conn *TcpConnection) {
 	if c.callback != nil {
-		c.callback.OnConnectionClosed(c)
+		c.callback.OnClientClosed(c)
 	}
 }
 
@@ -166,7 +166,7 @@ func (c *TcpClient) StartTimer() {
 	if c.conn != nil && !c.conn.IsClosed() {
 		//
 		if c.callback != nil {
-			c.callback.OnTimer(c)
+			c.callback.OnClientTimer(c)
 		}
 		//next
 		time.AfterFunc(c.timeInterval, func() {

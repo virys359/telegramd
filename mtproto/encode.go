@@ -35,6 +35,16 @@ func (e *EncodeBuf) GetBuf() []byte {
 	return e.buf
 }
 
+func (e *EncodeBuf) Int16(s int16) {
+	e.buf = append(e.buf, 0, 0)
+	binary.LittleEndian.PutUint16(e.buf[len(e.buf)-2:], uint16(s))
+}
+
+func (e *EncodeBuf) UInt16(s uint16) {
+	e.buf = append(e.buf, 0, 0)
+	binary.LittleEndian.PutUint16(e.buf[len(e.buf)-2:], s)
+}
+
 func (e *EncodeBuf) Int(s int32) {
 	e.buf = append(e.buf, 0, 0, 0, 0)
 	binary.LittleEndian.PutUint32(e.buf[len(e.buf)-4:], uint32(s))

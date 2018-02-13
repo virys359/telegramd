@@ -19,10 +19,11 @@ package mtproto
 
 import (
 	"fmt"
+	// "encoding/binary"
 )
 
 type MessageBase interface {
-	Encode() ([]byte, error)
+	Encode() ([]byte)
 	Decode(b []byte) error
 }
 
@@ -32,6 +33,33 @@ type MessageBase interface {
 //	Decode(dbuf *DecodeBuf) error
 //}
 
+func NewMTPRawMessage(authKeyId int64, quickAckId int32) *MTPRawMessage {
+	return &MTPRawMessage{
+		AuthKeyId:  authKeyId,
+		QuickAckId: quickAckId,
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+// 代理使用
+type MTPRawMessage struct {
+	AuthKeyId  int64	// 由原始数据解压获得
+	QuickAckId int32	// EncryptedMessage，则可能存在
+
+	// 原始数据
+	Payload    []byte
+}
+
+func (m *MTPRawMessage) Encode() []byte {
+	return m.Payload
+}
+
+func (m *MTPRawMessage) Decode(b []byte) error {
+	m.Payload = b
+	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////
 func NewUnencryptedRawMessage() *UnencryptedRawMessage {
 	return &UnencryptedRawMessage{
 		AuthKeyId: 0,
@@ -46,7 +74,7 @@ type UnencryptedRawMessage struct {
 	MessageData []byte
 }
 
-func (m *UnencryptedRawMessage) Encode() ([]byte, error) {
+func (m *UnencryptedRawMessage) Encode() []byte {
 	// 一次性分配
 	x := NewEncodeBuf(20+len(m.MessageData))
 	x.Long(0)
@@ -54,7 +82,7 @@ func (m *UnencryptedRawMessage) Encode() ([]byte, error) {
 	x.Long(m.MessageId)
 	x.Int(int32(len(m.MessageData)))
 	x.Bytes(m.MessageData)
-	return x.buf, nil
+	return x.buf
 }
 
 func (m *UnencryptedRawMessage) Decode(b []byte) error {
@@ -82,13 +110,13 @@ func NewEncryptedRawMessage(authKeyId int64) *EncryptedRawMessage {
 	}
 }
 
-func (m *EncryptedRawMessage) Encode() ([]byte, error) {
+func (m *EncryptedRawMessage) Encode() []byte {
 	// 一次性分配
 	x := NewEncodeBuf(24+len(m.EncryptedData))
 	x.Long(m.AuthKeyId)
 	x.Bytes(m.MsgKey)
 	x.Bytes(m.EncryptedData)
-	return x.buf, nil
+	return x.buf
 }
 
 func (m *EncryptedRawMessage) Decode(b []byte) error {

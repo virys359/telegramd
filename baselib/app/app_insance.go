@@ -25,6 +25,8 @@ import (
 	"flag"
 )
 
+var GAppInstance AppInstance
+
 func init() {
 	flag.Parse()
 	flag.Set("alsologtostderr", "true")
@@ -37,6 +39,8 @@ type AppInstance interface {
 	Destroy()
 }
 
+var ch = make(chan os.Signal, 1)
+
 func DoMainAppInsance(insance AppInstance) {
 	if insance == nil {
 		// panic("instance is nil!!!!")
@@ -44,20 +48,24 @@ func DoMainAppInsance(insance AppInstance) {
 		return
 	}
 
+	// global
+	GAppInstance = insance
+
 	glog.Info("instance initialize...")
 	err := insance.Initialize()
 	if err != nil {
-		glog.Info("instance initialize error: {%v}", err)
+		glog.Infof("instance initialize error: {%v}", err)
 		return
 	}
 
-	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
 
 	glog.Info("instance run_loop...")
 	go insance.RunLoop()
 
 	// fmt.Printf("%d", os.Getpid())
+	glog.Info("Wait quit...")
+
 	s2 := <-ch
 	if i, ok := s2.(syscall.Signal); ok {
 		glog.Infof("instance recv os.Exit(%d) signal...", i)
@@ -68,3 +76,10 @@ func DoMainAppInsance(insance AppInstance) {
 	insance.Destroy()
 	glog.Info("instance quited!")
 }
+
+func QuitAppInstance() {
+	notifier := make(chan os.Signal, 1)
+	signal.Stop(notifier)
+}
+
+// syscall.SIGTERM

@@ -1,0 +1,34 @@
+# biz_server.toml
+
+ver = "0.0.1"
+#logPath = "/tmp/frontend.log"
+serverId = 1
+
+[server]
+name = "session"
+protoName = "zproto"
+addr = "0.0.0.0:10000"
+
+[syncRpcClient]
+serviceName = "sync"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
+[bizRpcClient]
+serviceName = "biz"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
+[[mysql]]
+name = "immaster"
+dsn = "root:@/nebulaim?charset=utf8"
+#root:1@tcp(127.0.0.1:3306)/nebulaim?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
+active = 5
+idle = 2
+
+[[mysql]]
+name = "imslave"
+dsn = "root:@/nebulaim?charset=utf8"
+# root:1@tcp(127.0.0.1:3306)/nebulaim?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
+active = 5
+idle = 2
