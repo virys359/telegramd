@@ -18,22 +18,23 @@
 package server
 
 import (
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/zproto"
-	"io"
-	"context"
-	"time"
-	"github.com/nebulaim/telegramd/mtproto"
-	net2 "github.com/nebulaim/telegramd/net"
-	"github.com/nebulaim/telegramd/base/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
+	//"github.com/golang/glog"
+	//"github.com/nebulaim/telegramd/zproto"
+	//"io"
+	//"context"
+	//"time"
+	//"github.com/nebulaim/telegramd/mtproto"
+	//net2 "github.com/nebulaim/telegramd/net"
+	//"github.com/nebulaim/telegramd/base/logger"
+	//"github.com/nebulaim/telegramd/grpc_util"
+	//"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 )
 
 type SyncRPCClient struct {
-	client zproto.RPCSyncClient
+	// client zproto.RPCSyncClient
 }
 
+/*
 func NewSyncRPCClient(discovery *service_discovery.ServiceDiscoveryClientConfig) (c *SyncRPCClient, err error) {
 	// conn, err := grpc.Dial(target, grpc.WithInsecure())
 	conn, err := grpc_util.NewRPCClientByServiceDiscovery(discovery)
@@ -100,3 +101,4 @@ func sendBySessionID(server *net2.Server, sessionId int64, message mtproto.TLObj
 		glog.Errorf("SendBySessionID - can't found sessionId: %d", sessionId)
 	}
 }
+*/

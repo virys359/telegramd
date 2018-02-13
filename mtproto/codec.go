@@ -225,7 +225,7 @@ func (m *MTProtoCodec) Send(msg interface{}) error {
 	case *EncryptedMessage2:
 		encrypedMessage, _ := msg.(*EncryptedMessage2)
 		encrypedMessage.SessionId = m.SessionId
-		encrypedMessage.salt = m.Salt
+		encrypedMessage.Salt = m.Salt
 		encrypedMessage.SeqNo = m.getSeqNo(true)
 		// switch encrypedMessage.Object.(type) {
 		// case *TLUpdates:
@@ -271,7 +271,7 @@ func (m *MTProtoCodec) Send(msg interface{}) error {
 		// TODO(@benqi): 蹩脚的实现
 		encrypedMessage := msg.(*MsgDetailedInfoContainer).Message
 		encrypedMessage.SessionId = m.SessionId
-		encrypedMessage.salt = m.Salt
+		encrypedMessage.Salt = m.Salt
 		encrypedMessage.SeqNo = m.getSeqNo(true)
 		b, _ := encrypedMessage.encode(int64(m.AuthKeyId), m.AuthKey)
 
