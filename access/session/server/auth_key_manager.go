@@ -39,11 +39,6 @@ func NewAuthKeyCacheManager() *AuthKeyCacheManager {
 type AuthKeyCacheManager struct {
 }
 
-// TODO(@benqi): 暂时在这里操作数据库，需要改善的地方:
-// 1. 如果数据库连接有问题，尝试存储到本地缓存
-// 2. 所有需要读写数据库和缓存的地方，全部推给后端服务
-// GetAuthKey(uint64) []byte
-// PutAuthKey(uint64, []byte) error
 func (s *AuthKeyCacheManager) GetAuthKey(keyID int64) (authKey []byte) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -51,12 +46,25 @@ func (s *AuthKeyCacheManager) GetAuthKey(keyID int64) (authKey []byte) {
 		}
 	}()
 
+	// find by cache
+	var cacheKey CacheAuthKeyItem
+	if k, ok := cacheAuthKey.Load(keyID); ok {
+		// 本地缓存命中
+		cacheKey = k.(CacheAuthKeyItem)
+		if cacheKey.AuthKey != nil {
+			authKey = cacheKey.AuthKey
+			return
+		}
+	}
+
 	do := dao.GetAuthKeysDAO(dao.DB_SLAVE).SelectByAuthId(keyID)
 	if do == nil {
 		glog.Errorf("Read keyData error: not find keyId\n")
 		return nil
 	}
 	authKey, _ = base64.RawStdEncoding.DecodeString(do.Body)
+	cacheAuthKey.Store(keyID, cacheKey)
+
 	return
 }
 
@@ -70,6 +78,9 @@ func (s *AuthKeyCacheManager) PutAuthKey(keyID int64, key []byte) (err error) {
 	do := &dataobject.AuthKeysDO{ AuthId: keyID}
 	do.Body = base64.RawStdEncoding.EncodeToString(key)
 	dao.GetAuthKeysDAO(dao.DB_MASTER).Insert(do)
+
+	// store cache
+	cacheAuthKey.Store(keyID, key)
 	return
 }
 

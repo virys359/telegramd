@@ -145,6 +145,7 @@ type ZProtoMetadata struct {
 
 func (m *ZProtoMetadata) Encode() []byte {
 	x := NewEncodeBuf(512)
+
 	x.Int(int32(m.ServerId))
 	x.Long(int64(m.ClientConnId))
 	x.String(m.ClientAddr)
@@ -152,6 +153,7 @@ func (m *ZProtoMetadata) Encode() []byte {
 	x.Long(m.SpanId)
 	x.Long(m.ReceiveTime)
 	x.String(m.From)
+
 	// x.String(m.To)
 	x.Int(int32(len(m.Options)))
 	for k, v := range m.Options {
@@ -163,6 +165,7 @@ func (m *ZProtoMetadata) Encode() []byte {
 
 func (m *ZProtoMetadata) Decode(b []byte) error {
 	dbuf := NewDecodeBuf(b)
+
 	m.ServerId = int(dbuf.Int())
 	m.ClientConnId = uint64(dbuf.Long())
 	m.ClientAddr = dbuf.String()
@@ -170,6 +173,7 @@ func (m *ZProtoMetadata) Decode(b []byte) error {
 	m.SpanId = dbuf.Long()
 	m.ReceiveTime = dbuf.Long()
 	m.From = dbuf.String()
+
 	// m.To = dbuf.String()
 	len := int(dbuf.Int())
 	for i := 0; i < len; i++ {

@@ -23,25 +23,33 @@ import (
 	"github.com/nebulaim/telegramd/baselib/app"
 	"github.com/golang/glog"
 	"fmt"
+	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	"github.com/nebulaim/telegramd/grpc_util"
 )
 
 
-type ClientIOCallback interface {
-	SendToClientData(*sessionClient, int32, *mtproto.ZProtoMetadata, []mtproto.TLObject) error;
+type sessionClientCallback interface {
+	SendToClientData(*sessionClient, int32, *mtproto.ZProtoMetadata, []*messageData) error;
 }
 
-func SendDataByConnection(conn* net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
+func sendDataByConnection(conn* net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
+	smsg := &mtproto.ZProtoSessionData{
+		MTPMessage: &mtproto.MTPRawMessage{
+			Payload: buf,
+		},
+	}
 	zmsg := &mtproto.ZProtoMessage{
 		SessionId: sessionID,
-		Metadata: md,
-		Message: &mtproto.ZProtoRawPayload{
-			Payload: buf,
+		Metadata:  md,
+		SeqNum:    2,
+		Message:   &mtproto.ZProtoRawPayload{
+			Payload: smsg.Encode(),
 		},
 	}
 	return conn.Send(zmsg)
 }
 
-func SendDataByConnID(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
+func sendDataByConnID(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
 	sessionServer, ok := app.GAppInstance.(*SessionServer)
 	if !ok {
 		err := fmt.Errorf("not use app instance framework!")
@@ -49,4 +57,30 @@ func SendDataByConnID(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf 
 		return err
 	}
 	return sessionServer.SendToClientData(connID, sessionID, md, buf)
+}
+
+func getBizRPCClient() (*grpc_util.RPCClient, error) {
+	sessionServer, ok := app.GAppInstance.(*SessionServer)
+	if !ok {
+		err := fmt.Errorf("not use app instance framework!")
+		glog.Error(err)
+		return nil, err
+	}
+	return sessionServer.rpcClient, nil
+}
+
+func getUserIDByAuthKeyID(authKeyId int64) (useId int32) {
+	defer func() {
+		if r := recover(); r != nil {
+			glog.Error(r)
+		}
+	}()
+
+	do := dao.GetAuthUsersDAO(dao.DB_SLAVE).SelectByAuthId(authKeyId)
+	if do == nil {
+		glog.Errorf("not find userId by authKeyId: %d", authKeyId)
+	} else {
+		useId = do.UserId
+	}
+	return 0
 }

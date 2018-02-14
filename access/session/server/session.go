@@ -61,7 +61,6 @@ const (
 
 type sessionDataList struct {
 	clientSessionId   uint64
-	// clientSeqNum      uint64
 	quickAckId  int32
 	metadata    *mtproto.ZProtoMetadata
 	salt		int64
@@ -89,6 +88,9 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 		msgContainer, _ := object.(*mtproto.TLMsgContainer)
 		// glog.Info("processMsgContainer - request data: ", msgContainer.String())
 		for _, m := range msgContainer.Messages {
+			if m.Object == nil {
+				continue
+			}
 			this.onMessage(m.MsgId, m.Seqno, m.Object)
 		}
 	case *mtproto.TLGzipPacked:
@@ -170,9 +172,10 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 }
 
 type sessionClientList struct {
-	authKeyId int64
-	authKey   []byte
-	sessions  map[int64]*sessionClient
+	authKeyId  int64
+	authKey    []byte
+	authUserId int32
+	sessions   map[int64]*sessionClient
 }
 
 func newSessionClientList(authKeyId int64, authKey []byte) *sessionClientList {
@@ -195,12 +198,16 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 
 	sess, ok := s.sessions[message.SessionId]
 	if !ok {
+		bizRPCClient, _ := getBizRPCClient()
 		sess = &sessionClient{
+			authKeyId:   s.authKeyId,
 			sessionType: UNKNOWN,
 			// clientSessionId:      true,
-			sessionId:  message.SessionId,
-			state:      kSessionStateCreated,
-			ioCallback: s,
+			sessionId:    message.SessionId,
+			state:        kSessionStateCreated,
+			authUserId:   s.authUserId,
+			callback:     s,
+			bizRPCClient: bizRPCClient,
 		}
 		s.sessions[message.SessionId] = sess
 		sess.onSessionClientConnected(conn, sessionID)
@@ -211,10 +218,6 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 		}
 	}
 
-	//if sess.clientSessionId == 0 {
-	//	sess.clientSessionId = sessionID
-	//}
-
 	// check salt
 	if !checkSalt(message.Salt) {
 		badServerSalt := mtproto.NewTLBadServerSalt()
@@ -223,97 +226,67 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 		badServerSalt.SetBadMsgSeqno(message.SeqNo)
 		badServerSalt.SetNewServerSalt(getSalt())
 		b, _ := sess.encodeMessage(s.authKeyId, s.authKey, false, badServerSalt)
-		return SendDataByConnection(conn, sessionID, md, b)
+		return sendDataByConnection(conn, sessionID, md, b)
 	}
 
-	//if !ok {
-	//	sess.onNewSessionClient()
-	//}
-	// check session
-	//
-	//sess := s.getSessionClientBySessionId(message.SessionId)
-	//if sess {
-	//}
 	sessDatas := newSessionDataList(sessionID, md, message)
-	sess.onSessionClientData(sessDatas)
+	if s.authUserId == 0 {
+		var hasLoginedMessage = false
+		for _, m := range sess.sendMessageList {
+			if checkWithoutLogin(m.obj) {
+				hasLoginedMessage = true
+				break
+			}
+		}
+		if hasLoginedMessage {
+			s.authUserId = getUserIDByAuthKeyID(s.authKeyId)
+			if s.authUserId == 0 {
+				err = fmt.Errorf("recv without login message: {%v}", sessDatas)
+				// TODO(@benqi): close client
+				return err
+			} else {
+				// 设置所有的客户端
+				for _, c := range s.sessions {
+					c.authUserId = s.authUserId
+				}
+			}
+		}
+	}
 
+	if s.authUserId !=0 {
+		// TODO(@benqi): Set user online for a period of time (timeout)
+		sess.onUserOnline(1)
+	}
+
+	sess.onSessionClientData(sessDatas)
 	return nil
 }
 
 func (s *sessionClientList) onClientClose(sessionID int64) {
 }
 
-func (s* sessionClientList) SendToClientData(client *sessionClient, quickAckId int32, md *mtproto.ZProtoMetadata, messages []mtproto.TLObject) error {
+func (s* sessionClientList) SendToClientData(client *sessionClient, quickAckId int32, md *mtproto.ZProtoMetadata, messages []*messageData) error {
 	if client.clientSession == nil || len(messages) == 0 {
 		return fmt.Errorf("client offline or messages is nil.")
 	}
 
 	if len(messages) == 0 {
 	} else if len(messages) == 1 {
-		b, err := client.encodeMessage(s.authKeyId, s.authKey, false, messages[0])
+		b, err := client.encodeMessage(s.authKeyId, s.authKey, messages[0].confirmFlag, messages[0].obj)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
-		return SendDataByConnection(client.clientSession.conn, client.clientSession.clientSessionId, md, b)
+		return sendDataByConnection(client.clientSession.conn, client.clientSession.clientSessionId, md, b)
 	} else {
 		// TODO(@benqi): pack msg_container
 		for _, m := range messages {
-			b, err := client.encodeMessage(s.authKeyId, s.authKey, false, m)
+			b, err := client.encodeMessage(s.authKeyId, s.authKey, m.confirmFlag, m.obj)
 			if err == nil {
-				SendDataByConnection(client.clientSession.conn, client.clientSession.clientSessionId, md, b)
+				sendDataByConnection(client.clientSession.conn, client.clientSession.clientSessionId, md, b)
 			}
 		}
 		return nil
 	}
 	return nil
 }
-
-//// lookup session by sessionId
-//func (s *sessionClientList) getOrCreateSessionClient(sessionId int64) *sessionClient {
-//	if s.generic.sessionId == sessionId {
-//		return s.generic
-//	} else if s.push.sessionId == sessionId {
-//		return s.push
-//	} else if s.temp.sessionId == sessionId {
-//		return s.temp
-//	} else {
-//		for _, v := range s.download {
-//			if v.sessionId == sessionId {
-//				return v
-//			}
-//		}
-//		for _, v := range s.upload {
-//			if v.sessionId == sessionId {
-//				return v
-//			}
-//		}
-//	}
-//
-//	if sess, ok := s.unknown[sessionId]; !ok {
-//		sess = &sessionClient{
-//			sessionType: UNKNOWN,
-//			online:      true,
-//			sessionId:   sessionId,
-//			ioCallback:  s.ioCallback,
-//		}
-//		s.unknown[sessionId] = sess
-//		return sess
-//	} else {
-//		return sess
-//	}
-//	// return nil
-//}
-//
-//func (s *sessionClientList) getSessionClientByConnectionType(connectionType int, sessionId int64) *sessionClient {
-//	return nil
-//}
-
-
-//uint32_t ConnectionSession::generateMessageSeqNo(bool increment) {
-//uint32_t value = nextSeqNo;
-//if (increment) {
-//nextSeqNo++;
-//}
-//return value * 2 + (increment ? 1 : 0);
-//}

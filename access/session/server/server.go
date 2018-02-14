@@ -27,6 +27,9 @@ import (
 	"encoding/binary"
 	"github.com/nebulaim/telegramd/base/mysql_client"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	"github.com/nebulaim/telegramd/base/redis_client"
+	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/grpc_util"
 )
 
 type ServerConfig struct {
@@ -46,21 +49,22 @@ func newTcpServer(config ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tcp
 }
 
 type SessionConfig struct {
-	ServerId int32 // 服务器ID
-	Mysql    []mysql_client.MySQLConfig
-	Server   ServerConfig
+	ServerId     int32 // 服务器ID
+	Mysql        []mysql_client.MySQLConfig
+	Redis        []redis_client.RedisConfig
+	BizRpcClient service_discovery.ServiceDiscoveryClientConfig
+	Server       ServerConfig
 }
 
 type SessionServer struct {
 	configPath string
 	config     *SessionConfig
-
-	server	   *net2.TcpServer
+	server     *net2.TcpServer
 	// server443  *net2.TcpServer
-	client     *net2.TcpClientGroupManager
-
-	handshake *handshake
-	sessionManager* sessionManager
+	client         *net2.TcpClientGroupManager
+	rpcClient      *grpc_util.RPCClient
+	handshake      *handshake
+	sessionManager *sessionManager
 }
 
 func NewSessionServer(configPath string) *SessionServer {
@@ -84,12 +88,16 @@ func (s *SessionServer) Initialize() error {
 
 	glog.Infof("config loaded: %v", s.config)
 
-	// install mysql
+	// 初始化mysql_client、redis_client
 	mysql_client.InstallMysqlClientManager(s.config.Mysql)
+	redis_client.InstallRedisClientManager(s.config.Redis)
+
 	// 初始化redis_dao、mysql_dao
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
+	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	glog.Info(s.config)
+	// TODO(@benqi): check error
+	s.rpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
 
 	s.server, err = newTcpServer(s.config.Server, s)
 	if err != nil {
@@ -160,7 +168,7 @@ func (s *SessionServer) OnConnectionClosed(conn *net2.TcpConnection) {
 func (s *SessionServer) SendToClientData(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
 	conn := s.server.GetConnection(connID)
 	if conn != nil {
-		return SendDataByConnection(conn, sessionID, md, buf)
+		return sendDataByConnection(conn, sessionID, md, buf)
 	} else {
 		return fmt.Errorf("send data error, conn offline, connID: %d", connID)
 	}

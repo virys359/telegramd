@@ -22,16 +22,23 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"time"
+	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/access/frontend/id"
+	"github.com/nebulaim/telegramd/zproto"
+	"github.com/nebulaim/telegramd/grpc_util"
 )
 
 type sessionClient struct {
+	authKeyId       int64
 	sessionType     int
 	clientSession   *clientSession
+	bizRPCClient    *grpc_util.RPCClient
 	sessionId       int64
 	nextSeqNo       uint32
 	state           int
+	authUserId      int32
 	sendMessageList []*messageData
-	ioCallback      ClientIOCallback
+	callback        sessionClientCallback
 }
 
 type clientSession struct {
@@ -80,12 +87,12 @@ func (c *sessionClient) onCloseSessionClient() {
 	}
 }
 
-func (c *sessionClient) sendToClient(md *mtproto.ZProtoMetadata, obj mtproto.TLObject) error {
-	return c.ioCallback.SendToClientData(c, 0, md, []mtproto.TLObject{obj})
-}
+//func (c *sessionClient) sendToClient(md *mtproto.ZProtoMetadata, obj mtproto.TLObject) error {
+//	return c.callback.SendToClientData(c, 0, md, []mtproto.TLObject{obj})
+//}
 
-func (c *sessionClient) sendDataListToClient(md *mtproto.ZProtoMetadata, objs []mtproto.TLObject) error {
-	return c.ioCallback.SendToClientData(c, 0, md, objs)
+func (c *sessionClient) sendDataListToClient(md *mtproto.ZProtoMetadata, messages []*messageData) error {
+	return c.callback.SendToClientData(c, 0, md, messages)
 }
 
 // 客户端Session事件
@@ -132,31 +139,32 @@ func (c *sessionClient) onSessionClientData(sessDataList *sessionDataList) {
 	for _, message := range sessDataList.messages {
 		// check new_session_created
 		if c.state == kSessionStateCreated {
-			c.onNewSessionCreated(message.MsgId, message.Seqno, message)
+			c.onNewSessionCreated(message.MsgId, message.Seqno, message.Object)
 		}
 
 		switch message.Object.(type) {
 		case *mtproto.TLPing:
-			c.onPing(message.MsgId, message.Seqno, message)
+			c.onPing(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLPingDelayDisconnect:
-			c.onPingDelayDisconnect(message.MsgId, message.Seqno, message)
+			c.onPingDelayDisconnect(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLGetFutureSalts:
-			c.onGetFutureSalts(message.MsgId, message.Seqno, message)
+			c.onGetFutureSalts(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLRpcDropAnswer:
-			c.onRpcDropAnswer(message.MsgId, message.Seqno, message)
+			c.onRpcDropAnswer(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLDestroySession:
-			c.onDestroySession(message.MsgId, message.Seqno, message)
+			c.onDestroySession(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLMsgsAck:
-			c.onMsgsAck(message.MsgId, message.Seqno, message)
+			c.onMsgsAck(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLHttpWait:
-			c.onHttpWait(message.MsgId, message.Seqno, message)
+			c.onHttpWait(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLMsgsStateReq:
-			c.onMsgsStateReq(message.MsgId, message.Seqno, message)
+			c.onMsgsStateReq(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLMsgResendReq:
-			c.onMsgResendReq(message.MsgId, message.Seqno, message)
+			c.onMsgResendReq(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
+		case *mtproto.TLInitConnection:
+			// c.onMsgResendReq(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		default:
-			c.onRpcRequest(message.MsgId, message.Seqno, message)
-
+			c.onRpcRequest(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 			//sess := s.getSessionClientBySessionId(sessionId)
 			//if sess!= nil {
 			//	//
@@ -167,6 +175,11 @@ func (c *sessionClient) onSessionClientData(sessDataList *sessionDataList) {
 			//}
 			//sess.onSessionClientData(sessionId, msgId, seqNo, request)
 		}
+	}
+
+	if len(c.sendMessageList) > 0 {
+		c.sendDataListToClient(sessDataList.metadata, c.sendMessageList)
+		c.sendMessageList = nil
 	}
 }
 
@@ -195,7 +208,7 @@ func (c *sessionClient) onNewSessionCreated(msgId int64, seqNo int32, request mt
 //	c.sendMessageList = append(c.sendMessageList, &messageData{true, false, destroyAuthKeyRes})
 //}
 
-func (c *sessionClient) onPing(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onPing(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	ping, _ := request.(*mtproto.TLPing)
 	glog.Info("processPing - request data: ", ping.String())
 
@@ -208,7 +221,7 @@ func (c *sessionClient) onPing(msgId int64, seqNo int32, request mtproto.TLObjec
 	c.sendMessageList = append(c.sendMessageList, &messageData{false, false, pong})
 }
 
-func (c *sessionClient) onPingDelayDisconnect(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onPingDelayDisconnect(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	pingDelayDissconnect, _ := request.(*mtproto.TLPingDelayDisconnect)
 	glog.Info("onPingDelayDisconnect - request data: ", pingDelayDissconnect)
 
@@ -232,7 +245,7 @@ func (c *sessionClient) onPingDelayDisconnect(msgId int64, seqNo int32, request 
 	c.sendMessageList = append(c.sendMessageList, &messageData{false, false, pong})
 }
 
-func (c *sessionClient) onDestroySession(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onDestroySession(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	destroySession, _ := request.(*mtproto.TLDestroySession)
 	glog.Info("onDestroySession - request data: ", destroySession)
 
@@ -243,7 +256,7 @@ func (c *sessionClient) onDestroySession(msgId int64, seqNo int32, request mtpro
 	c.sendMessageList = append(c.sendMessageList, &messageData{false, false, destroySessionOk})
 }
 
-func (c *sessionClient) onGetFutureSalts(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onGetFutureSalts(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	getFutureSalts, _ := request.(*mtproto.TLGetFutureSalts)
 	glog.Info("onGetFutureSalts - request data: ", getFutureSalts)
 
@@ -261,7 +274,7 @@ func (c *sessionClient) onGetFutureSalts(msgId int64, seqNo int32, request mtpro
 // rpc_answer_unknown#5e2ad36e = RpcDropAnswer;
 // rpc_answer_dropped_running#cd78e586 = RpcDropAnswer;
 // rpc_answer_dropped#a43ad8b7 msg_id:long seq_no:int bytes:int = RpcDropAnswer;
-func (c *sessionClient) onRpcDropAnswer(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onRpcDropAnswer(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	rpcDropAnswer, _ := request.(*mtproto.TLRpcDropAnswer)
 	glog.Info("processRpcDropAnswer - request data: ", rpcDropAnswer.String())
 
@@ -270,7 +283,7 @@ func (c *sessionClient) onRpcDropAnswer(msgId int64, seqNo int32, request mtprot
 	// return nil
 }
 
-func (c *sessionClient) onContestSaveDeveloperInfo(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onContestSaveDeveloperInfo(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	contestSaveDeveloperInfo, _ := request.(*mtproto.TLContestSaveDeveloperInfo)
 	glog.Info("processGetFutureSalts - request data: ", contestSaveDeveloperInfo.String())
 	// TODO(@benqi): 实现scontestSaveDeveloperInfo处理逻辑
@@ -278,22 +291,87 @@ func (c *sessionClient) onContestSaveDeveloperInfo(msgId int64, seqNo int32, req
 	_ = r
 }
 
-func (c *sessionClient) onMsgsAck(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onMsgsAck(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Info("onMsgsAck - request: %s", request.String())
 }
 
-func (c *sessionClient) onHttpWait(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onHttpWait(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Info("onHttpWait - request: %s", request.String())
 }
 
-func (c *sessionClient) onMsgsStateReq(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onMsgsStateReq(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Info("onMsgsStateReq - request: %s", request.String())
 }
 
-func (c *sessionClient) onMsgResendReq(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onMsgResendReq(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Info("onMsgResendReq - request: %s", request.String())
 }
 
-func (c *sessionClient) onRpcRequest(msgId int64, seqNo int32, request mtproto.TLObject) {
+func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Info("onRpcRequest - request: %s", request.String())
+
+	if c.sessionType == UNKNOWN {
+		// setup connection type.
+		c.sessionType = getConntctionType(request)
+	}
+
+	// 初始化metadata
+	rpcMetadata := &zproto.RpcMetadata{}
+	rpcMetadata.ServerId = 1
+	rpcMetadata.NetlibSessionId = int64(c.clientSession.clientSessionId)
+	rpcMetadata.UserId = c.authUserId
+	rpcMetadata.AuthId = c.authKeyId
+	rpcMetadata.SessionId = c.sessionId
+	rpcMetadata.ClientAddr = md.ClientAddr
+	rpcMetadata.TraceId = md.TraceId
+	rpcMetadata.SpanId = id.NextId()
+	rpcMetadata.ReceiveTime = time.Now().Unix()
+
+	rpcResult, err := c.bizRPCClient.Invoke(rpcMetadata, request)
+
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+
+	glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
+	// 构造rpc_result
+	reply := &mtproto.TLRpcResult{
+		ReqMsgId: msgId,
+		Result: rpcResult,
+	}
+	c.sendMessageList = append(c.sendMessageList, &messageData{true, false, reply})
+
+	//  // TODO(@benqi): 协议底层处理
+	//	if _, ok := request.(*mtproto.TLMessagesSendMedia); ok {
+	//		if _, ok := rpcResult.(*mtproto.TLRpcError); !ok {
+	//			// TODO(@benqi): 由底层处理，通过多种策略（gzip, msg_container等）来打包并发送给客户端
+	//			m := &mtproto.MsgDetailedInfoContainer{Message: &mtproto.EncryptedMessage2{
+	//				NeedAck: false,
+	//				SeqNo:   seqNo,
+	//				Object:  reply,
+	//			}}
+	//			return c.Session.Send(m)
+	//		}
+	//	}
 }
+
+func (c *sessionClient) onUserOnline(serverId int32) {
+	defer func() {
+		if r := recover(); r != nil {
+			glog.Error(r)
+		}
+	}()
+
+	status := &model.SessionStatus{
+		ServerId:        serverId,
+		UserId:          c.authUserId,
+		AuthKeyId:       c.authKeyId,
+		SessionId:       c.sessionId,
+		NetlibSessionId: int64(c.clientSession.clientSessionId),
+		Now:             time.Now().Unix(),
+	}
+
+	model.GetOnlineStatusModel().SetOnline(status)
+}
+
