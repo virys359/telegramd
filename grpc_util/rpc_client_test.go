@@ -86,7 +86,7 @@ func TestRPCClient(t *testing.T)  {
 		return
 	}
 
-	fmt.Printf("%v\n", t2)
+	fmt.Printf("1. %v\n", t2)
 
 	o2 := t2.NewReplyFunc()
 	err = grpc.Invoke(context.Background(), t2.Method, authSendCode, o2, conn)
@@ -94,5 +94,5 @@ func TestRPCClient(t *testing.T)  {
 	if err != nil {
 		fmt.Errorf("%v.AuthSentCode(_) = _, %v: \n", conn, err)
 	}
-	fmt.Printf("%v\n", o2)
+	fmt.Printf("2. %v\n", o2)
 }

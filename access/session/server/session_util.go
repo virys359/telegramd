@@ -82,5 +82,5 @@ func getUserIDByAuthKeyID(authKeyId int64) (useId int32) {
 	} else {
 		useId = do.UserId
 	}
-	return 0
+	return
 }

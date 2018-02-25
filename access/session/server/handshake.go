@@ -139,7 +139,7 @@ func (s *handshake) onHandshake(conn *net2.TcpConnection, payload *mtproto.ZProt
 	hmsg := &mtproto.SessionHandshakeMessage{
 		State: &mtproto.HandshakeState{},
 	}
-	glog.Info(payload)
+	// glog.Info(payload)
 	hmsg.Decode(payload.Payload[4:])
 	state := hmsg.State
 	// request, _ := hmsg.MTPMessage.Object.(*mtproto.TLReqPq)
@@ -220,7 +220,7 @@ func (s *handshake) onReqPq(state *mtproto.HandshakeState, request *mtproto.TLRe
 }
 
 // req_DH_params#d712e4be nonce:int128 server_nonce:int128 p:string q:string public_key_fingerprint:long encrypted_data:string = Server_DH_Params;
-func (s *handshake) onReq_DHParams(state *mtproto.HandshakeState, request *mtproto.TLReq_DHParams) (*mtproto.TLResPQ, error) {
+func (s *handshake) onReq_DHParams(state *mtproto.HandshakeState, request *mtproto.TLReq_DHParams) (*mtproto.Server_DH_Params, error) {
 	// mmsg, _ := zmsg.Message.(*mtproto.SessionHandshakeMessage)
 	// request, _ := mmsg.MTPMessage.Object.(*mtproto.TLReq_DHParams)
 
@@ -406,12 +406,12 @@ func (s *handshake) onReq_DHParams(state *mtproto.HandshakeState, request *mtpro
 	glog.Infof("process Req_DHParams - reply: %s", logger.JsonDebugData(server_DHParamsOk))
 
 	// s.authKeyMetadataToTrailer(ctx, authKeyMD)
-	// return server_DHParamsOk.To_Server_DH_Params(), nil
-	return nil, nil
+	state.Ctx, _ = proto.Marshal(authKeyMD)
+	return server_DHParamsOk.To_Server_DH_Params(), nil
 }
 
 // set_client_DH_params#f5045f1f nonce:int128 server_nonce:int128 encrypted_data:string = Set_client_DH_params_answer;
-func (s *handshake) onSetClient_DHParams(state *mtproto.HandshakeState, request *mtproto.TLSetClient_DHParams) (*mtproto.TLResPQ, error) {
+func (s *handshake) onSetClient_DHParams(state *mtproto.HandshakeState, request *mtproto.TLSetClient_DHParams) (*mtproto.SetClient_DHParamsAnswer, error) {
 	// mmsg, _ := zmsg.Message.(*mtproto.SessionHandshakeMessage)
 	// request, _ := mmsg.MTPMessage.Object.(*mtproto.TLSetClient_DHParams)
 
@@ -515,6 +515,9 @@ func (s *handshake) onSetClient_DHParams(state *mtproto.HandshakeState, request 
 		NewNonceHash1: authKeyAuxHash[len(authKeyAuxHash)-16:len(authKeyAuxHash)],
 	}}
 
+	authKeyMD.AuthKeyId = authKeyId
+	authKeyMD.AuthKey = authKey
+
 	// TODO(@benqi): error 处理
 	err = s.cache.PutAuthKey(authKeyMD.AuthKeyId, authKeyMD.AuthKey)
 	if err != nil {
@@ -522,13 +525,10 @@ func (s *handshake) onSetClient_DHParams(state *mtproto.HandshakeState, request 
 		return nil, err
 	}
 
-	authKeyMD.AuthKeyId = authKeyId
-	authKeyMD.AuthKey = authKey
-
 	glog.Infof("process Req_DHParams - reply: %s", logger.JsonDebugData(dhGenOk))
 	// s.authKeyMetadataToTrailer(ctx, authKeyMD)
-	// return dhGenOk.To_SetClient_DHParamsAnswer(), nil
-	return nil, nil
+	state.Ctx, _ = proto.Marshal(authKeyMD)
+	return dhGenOk.To_SetClient_DHParamsAnswer(), nil
 }
 
 // msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;

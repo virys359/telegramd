@@ -146,6 +146,8 @@ func checkWithoutLogin(tl mtproto.TLObject) bool {
 			*mtproto.TLAccountGetPasswordSettings:
 		return true
 
+	case *mtproto.TLInitConnection:
+		return true
 	}
 
 	return false

@@ -316,6 +316,10 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 
 func (s *FrontendServer) OnClientClosed(client *net2.TcpClient) {
 	glog.Infof("OnConnectionClosed")
+
+	if client.AutoReconnect() {
+		client.Reconnect()
+	}
 }
 
 func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {

@@ -49,7 +49,7 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	do2 := usersDAO.SelectByPhoneNumber(phoneNumber)
 	if do2 == nil {
-	    err := fmt.Errorf("SelectByPhoneNumber(_) return empty in request{}%v", request)
+	    err := fmt.Errorf("SelectByPhoneNumber(_) return empty in request {%v}", request)
 	    glog.Error(err)
 	    return nil, err
 	}

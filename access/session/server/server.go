@@ -57,10 +57,9 @@ type SessionConfig struct {
 }
 
 type SessionServer struct {
-	configPath string
-	config     *SessionConfig
-	server     *net2.TcpServer
-	// server443  *net2.TcpServer
+	configPath     string
+	config         *SessionConfig
+	server         *net2.TcpServer
 	client         *net2.TcpClientGroupManager
 	rpcClient      *grpc_util.RPCClient
 	handshake      *handshake
@@ -71,8 +70,8 @@ func NewSessionServer(configPath string) *SessionServer {
 	return &SessionServer{
 		configPath:     configPath,
 		config:         &SessionConfig{},
-		handshake:      &handshake{},
-		sessionManager: newSessionManager(),
+		// handshake:      &handshake{},
+		// sessionManager: newSessionManager(),
 	}
 }
 
@@ -96,8 +95,9 @@ func (s *SessionServer) Initialize() error {
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	// TODO(@benqi): check error
-	s.rpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
+	cache := NewAuthKeyCacheManager()
+	s.handshake = newHandshake(cache)
+	s.sessionManager = newSessionManager(cache)
 
 	s.server, err = newTcpServer(s.config.Server, s)
 	if err != nil {
@@ -108,7 +108,9 @@ func (s *SessionServer) Initialize() error {
 }
 
 func (s *SessionServer) RunLoop() {
-	go s.server.Serve()
+	// TODO(@benqi): check error
+	s.rpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
+	s.server.Serve()
 	// go s.client.Serve()
 }
 
@@ -124,7 +126,7 @@ func (s *SessionServer) OnNewConnection(conn *net2.TcpConnection) {
 }
 
 func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg interface{}) error {
-	glog.Infof("echo_server recv peer(%v) data: %v", conn.RemoteAddr(), msg)
+	glog.Infof("recv peer(%v) data: {%v}", conn.RemoteAddr(), msg)
 	// var err error
 	zmsg, ok := msg.(*mtproto.ZProtoMessage)
 	if !ok {

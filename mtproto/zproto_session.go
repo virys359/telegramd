@@ -17,7 +17,7 @@
 
 package mtproto
 
-import "github.com/golang/glog"
+// import "github.com/golang/glog"
 
 const (
 	STATE_ERROR     = 0x0000
@@ -127,7 +127,7 @@ func (m *SessionHandshakeMessage) Encode() []byte {
 }
 
 func (m *SessionHandshakeMessage) Decode(b []byte) error {
-	glog.Info(b)
+	// glog.Info(b)
 	dbuf := NewDecodeBuf(b)
 	m.State.State = int(dbuf.Int())
 	m.State.ResState = int(dbuf.Int())

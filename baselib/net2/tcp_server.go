@@ -139,7 +139,7 @@ func (s *TcpServer) establishTcpConnection(conn *TcpConnection) {
 	for {
 		msg, err := conn.Receive()
 		if err != nil {
-			// glog.Errorf("recv error: %v", err)
+			glog.Errorf("recv error: %v", err)
 			return
 		}
 

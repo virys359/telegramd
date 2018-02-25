@@ -78,6 +78,7 @@ func newSessionDataList(sessionId uint64, md *mtproto.ZProtoMetadata, message *m
 		// seqNo:           message.SeqNo,
 	}
 	sessDatas.onMessage(message.MessageId, message.SeqNo, message.Object)
+	glog.Info("newSessionDataList - sessDatas: ", sessDatas)
 	return sessDatas
 }
 
@@ -86,7 +87,7 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 	switch object.(type) {
 	case *mtproto.TLMsgContainer:
 		msgContainer, _ := object.(*mtproto.TLMsgContainer)
-		// glog.Info("processMsgContainer - request data: ", msgContainer.String())
+		glog.Info("processMsgContainer - request data: ", msgContainer)
 		for _, m := range msgContainer.Messages {
 			if m.Object == nil {
 				continue
@@ -95,7 +96,7 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 		}
 	case *mtproto.TLGzipPacked:
 		gzipPacked, _ := object.(*mtproto.TLGzipPacked)
-		// glog.Info("processGzipPacked - request data: ", gzipPacked.String())
+		glog.Info("processGzipPacked - request data: ", gzipPacked)
 
 		dbuf := mtproto.NewDecodeBuf(gzipPacked.PackedData)
 		o := dbuf.Object()
@@ -107,7 +108,7 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 		this.onMessage(msgId, seqNo, o)
 	case *mtproto.TLInvokeAfterMsg:
 		invokeAfterMsg, _ := object.(*mtproto.TLInvokeAfterMsg)
-		// glog.Info("processInvokeAfterMsg - request data: ", invokeAfterMsg.String())
+		glog.Info("processInvokeAfterMsg - request data: ", object)
 		if invokeAfterMsg.GetQuery() == nil {
 			glog.Errorf("invokeAfterMsg Query is nil, query: {%v}", invokeAfterMsg)
 			return
@@ -126,11 +127,13 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 		this.onMessage(msgId, seqNo, query)
 
 	case *mtproto.TLInvokeAfterMsgs:
+		glog.Info("TLInvokeAfterMsgs - request data: ", object)
+
 		// @benqi: android client not use InvokeAfterMsgs
 
 	case *mtproto.TLInvokeWithLayer:
 		invokeWithLayer, _ := object.(*mtproto.TLInvokeWithLayer)
-		// glog.Info("processInvokeWithLayer - request data: ", invokeWithLayer.String())
+		glog.Info("processInvokeWithLayer - request data: ", object)
 
 		// TODO(@benqi): Check api layer
 		// if invokeWithLayer.Layer > API_LAYER {
@@ -164,9 +167,14 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 		}
 
 	case *mtproto.TLInvokeWithoutUpdates:
+		glog.Info("processInvokeWithoutUpdates - request data: ", object)
 		// @benqi: android client not use InvokeAfterMsgs
 
+	// case *mtproto.TLMsgsStateReq:
+
 	default:
+		glog.Info("processOthers - request data: ", object)
+
 		this.messages = append(this.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: object})
 	}
 }
@@ -213,9 +221,10 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 		sess.onSessionClientConnected(conn, sessionID)
 		// sess.onNewSessionClient(message.SessionId, message.MessageId, message.SeqNo)
 	} else {
-		if sess.clientSession == nil {
-			sess.onSessionClientConnected(conn, sessionID)
-		}
+		sess.onSessionClientConnected(conn, sessionID)
+		// if sess.clientSession == nil {
+		// 	sess.onSessionClientConnected(conn, sessionID)
+		// }
 	}
 
 	// check salt
@@ -232,8 +241,8 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 	sessDatas := newSessionDataList(sessionID, md, message)
 	if s.authUserId == 0 {
 		var hasLoginedMessage = false
-		for _, m := range sess.sendMessageList {
-			if checkWithoutLogin(m.obj) {
+		for _, m := range sessDatas.messages {
+			if !checkWithoutLogin(m.Object) {
 				hasLoginedMessage = true
 				break
 			}
@@ -242,6 +251,7 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 			s.authUserId = getUserIDByAuthKeyID(s.authKeyId)
 			if s.authUserId == 0 {
 				err = fmt.Errorf("recv without login message: {%v}", sessDatas)
+				glog.Errorf("onSessionClientData - authKeyId: %d, error: %v", s.authKeyId, err)
 				// TODO(@benqi): close client
 				return err
 			} else {
@@ -250,13 +260,21 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 					c.authUserId = s.authUserId
 				}
 			}
+			glog.Info("authUserId: ", s.authUserId, ", sessDatas: ", sessDatas)
 		}
+	} else {
+		if sess.authUserId == 0 {
+			sess.authUserId = s.authUserId
+		}
+		glog.Info("authUserId: ", s.authUserId)
 	}
 
 	if s.authUserId !=0 {
 		// TODO(@benqi): Set user online for a period of time (timeout)
 		sess.onUserOnline(1)
 	}
+
+	glog.Info("authUserId: ", s.authUserId, ", sessDatas: ", sessDatas)
 
 	sess.onSessionClientData(sessDatas)
 	return nil

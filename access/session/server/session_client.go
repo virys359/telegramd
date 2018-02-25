@@ -162,7 +162,7 @@ func (c *sessionClient) onSessionClientData(sessDataList *sessionDataList) {
 		case *mtproto.TLMsgResendReq:
 			c.onMsgResendReq(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLInitConnection:
-			// c.onMsgResendReq(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
+			c.onInitConnection(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 		default:
 			c.onRpcRequest(sessDataList.metadata, message.MsgId, message.Seqno, message.Object)
 			//sess := s.getSessionClientBySessionId(sessionId)
@@ -292,23 +292,28 @@ func (c *sessionClient) onContestSaveDeveloperInfo(md *mtproto.ZProtoMetadata, m
 }
 
 func (c *sessionClient) onMsgsAck(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Info("onMsgsAck - request: %s", request.String())
+	glog.Infof("onMsgsAck - request: %s", request.String())
 }
 
 func (c *sessionClient) onHttpWait(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Info("onHttpWait - request: %s", request.String())
+	glog.Infof("onHttpWait - request: %s", request.String())
 }
 
 func (c *sessionClient) onMsgsStateReq(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Info("onMsgsStateReq - request: %s", request.String())
+	glog.Infof("onMsgsStateReq - request: %s", request.String())
 }
 
+func (c *sessionClient) onInitConnection(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
+	glog.Infof("onInitConnection - request: %s", request.String())
+}
+
+
 func (c *sessionClient) onMsgResendReq(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Info("onMsgResendReq - request: %s", request.String())
+	glog.Infof("onMsgResendReq - request: %s", request.String())
 }
 
 func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Info("onRpcRequest - request: %s", request.String())
+	glog.Infof("onRpcRequest - request: {%s}", request)
 
 	if c.sessionType == UNKNOWN {
 		// setup connection type.

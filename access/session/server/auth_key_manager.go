@@ -47,23 +47,25 @@ func (s *AuthKeyCacheManager) GetAuthKey(keyID int64) (authKey []byte) {
 	}()
 
 	// find by cache
-	var cacheKey CacheAuthKeyItem
+	// var cacheKey CacheAuthKeyItem
 	if k, ok := cacheAuthKey.Load(keyID); ok {
 		// 本地缓存命中
-		cacheKey = k.(CacheAuthKeyItem)
-		if cacheKey.AuthKey != nil {
-			authKey = cacheKey.AuthKey
+		cacheKey := k.([]byte)
+		if cacheKey != nil {
+			authKey = cacheKey
 			return
 		}
 	}
 
 	do := dao.GetAuthKeysDAO(dao.DB_SLAVE).SelectByAuthId(keyID)
 	if do == nil {
-		glog.Errorf("Read keyData error: not find keyId\n")
+		glog.Errorf("Read keyData error: not find keyId = %d", keyID)
 		return nil
 	}
+
+	glog.Info("keyID: ", keyID, ", do: ", do)
 	authKey, _ = base64.RawStdEncoding.DecodeString(do.Body)
-	cacheAuthKey.Store(keyID, cacheKey)
+	cacheAuthKey.Store(keyID, authKey)
 
 	return
 }

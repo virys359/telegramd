@@ -24,6 +24,7 @@ import (
 	//"fmt"
 	//"encoding/hex"
 	//"github.com/golang/glog"
+	"github.com/golang/glog"
 )
 
 type sessionManager struct {
@@ -32,9 +33,9 @@ type sessionManager struct {
 	// ioCallback ClientIOCallback
 }
 
-func newSessionManager() *sessionManager {
+func newSessionManager(cache AuthKeyStorager) *sessionManager {
 	return &sessionManager{
-		cache:      NewAuthKeyCacheManager(),
+		cache:      cache,
 		sessions:   make(map[int64]*sessionClientList),
 		// ioCallback: ioCallback,
 	}
@@ -44,7 +45,9 @@ func (s *sessionManager) onSessionData(conn *net2.TcpConnection, sessionID uint6
 	authKeyId := int64(binary.LittleEndian.Uint64(buf))
 	sess, ok := s.sessions[authKeyId]
 	if !ok {
-		sess = newSessionClientList(authKeyId, s.cache.GetAuthKey(authKeyId))
+		authKey := s.cache.GetAuthKey(authKeyId)
+		glog.Infof("onSessionData - authKeyId: {%d}, authKey: {%v}", authKeyId, authKey)
+		sess = newSessionClientList(authKeyId, authKey)
 		s.sessions[authKeyId] = sess
 		// sess.onNewClient(sessionID)
 	} else {

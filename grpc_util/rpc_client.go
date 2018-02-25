@@ -106,15 +106,18 @@ func (c* RPCClient) Invoke(rpcMetaData *zproto.RpcMetadata, object mtproto.TLObj
 
 	glog.Infof("Invoke - method: {%s}, req: {%v}", t.Method, object)
 	r := t.NewReplyFunc()
-	// glog.Infof("Invoke - NewReplyFunc: {%v}\n", r)
+	glog.Infof("Invoke - NewReplyFunc: {%v}\n", r)
 
 	var header, trailer metadata.MD
 
 	// ctx := context.Background()
+	glog.Infof("Invoke - NewReplyFunc: {%v}\n", r)
 	ctx, _ := RpcMetadatToOutgoing(context.Background(), rpcMetaData)
+	glog.Infof("Invoke - NewReplyFunc: {%v}\n", r)
 	err := c.conn.Invoke(ctx, t.Method, object, r, grpc.Header(&header), grpc.Trailer(&trailer))
 	// TODO(@benqi): process header from server
 	// grpc.Header(&header)
+	glog.Infof("Invoke - error: {%v}", err)
 
 	if err != nil {
 		// TODO(@benqi): 哪些情况需要断开客户端连接
