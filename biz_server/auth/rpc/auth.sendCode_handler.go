@@ -36,17 +36,80 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AuthSendCode - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+	var err error
 
-	// Check TLAuthSendCode
+	// TODO(@benqi):
+	// 1. check api_id and api_hash
+
+	// 3. check number
+	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
+
+	if request.GetPhoneNumber() == "" {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "auth.sendCode#86aef0ec: phone number empty")
+		return nil, err
+	}
+
+	// check phone invalid
+	var number *libphonenumber.PhoneNumber
+	number, err = libphonenumber.Parse(request.GetPhoneNumber(), "")
+	if err != nil {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), fmt.Sprintf("auth.sendCode#86aef0ec: %v", err))
+		return nil, err
+	} else {
+		if !libphonenumber.IsValidNumber(number) {
+			err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "auth.sendCode#86aef0ec: invalid phone number")
+			return nil, err
+		}
+	}
+
+	phoneNumber := libphonenumber.NormalizeDigitsOnly(request.PhoneNumber)
+
+	// 2. check allow_flashcall and current_number
 	// CurrentNumber: 是否为本机电话号码
-	// 检查数据是否合法
-	//switch request.CurrentNumber.(type) {
-	//case *mtproto.Bool_BoolFalse:
-	//	// 本机电话号码，AllowFlashcall为false
-	//	if request.AllowFlashcall == false {
-	//		// TODO(@benqi): 数据包非法
-	//	}
-	//}
+
+	// if current_number is true then allow_flashcall is true
+	currentNumber := mtproto.FromBool(request.GetCurrentNumber())
+	if currentNumber && !request.GetAllowFlashcall() {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "auth.sendCode#86aef0ec: current_number is true but allow_flashcall is false.")
+		return nil, err
+	}
+
+	// <string name="PhoneNumberFlood">Sorry, you have deleted and re-created your account too many times recently.
+	//    Please wait for a few days before signing up again.</string>
+	//
+
+	userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+	if userDO != nil && userDO.Banned != 0 {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
+		return nil, err
+	}
+
+	// TODO(@benqi): MIGRATE datacenter
+	// https://core.telegram.org/api/datacenter
+	// The auth.sendCode method is the basic entry point when registering a new user or authorizing an existing user.
+	//   95% of all redirection cases to a different DC will occure when invoking this method.
+	//
+	// The client does not yet know which DC it will be associated with; therefore,
+	//   it establishes an encrypted connection to a random address and sends its query to that address.
+	// Having received a phone_number from a client,
+	// 	 we can find out whether or not it is registered in the system.
+	//   If it is, then, if necessary, instead of sending a text message,
+	//   we request that it establish a connection with a different DC first (PHONE_MIGRATE_X error).
+	// If we do not yet have a user with this number, we examine its IP-address.
+	//   We can use it to identify the closest DC.
+	//   Again, if necessary, we redirect the user to a different DC (NETWORK_MIGRATE_X error).
+
+	if userDO == nil {
+		// phone registered
+		// TODO(@benqi): 由phoneNumber和ip优选
+	} else {
+		// TODO(@benqi): 由userId优选
+	}
+
+	// 检查phoneNumber是否异常
+	// TODO(@benqi): 定义恶意登录规则
+	// PhoneNumberFlood
+	// FLOOD_WAIT
 
 	// TODO(@benqi): 独立出统一消息推送系统
 	// 检查phpne是否存在，若存在是否在线决定是否通过短信发送或通过其他客户端发送
@@ -54,31 +117,34 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	// 检查满足条件的TransactionHash是否存在，可能的条件：
 	//  1. is_deleted !=0 and now - created_at < 15 分钟
 
-	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
-	var err error
+	//  auth.sentCodeTypeApp#3dbb5986 length:int = auth.SentCodeType;
+	//  auth.sentCodeTypeSms#c000bba2 length:int = auth.SentCodeType;
+	//  auth.sentCodeTypeCall#5353e5a7 length:int = auth.SentCodeType;
+	//  auth.sentCodeTypeFlashCall#ab03c6d9 pattern:string = auth.SentCodeType;
+	//
 
-	// check number
-	if request.GetPhoneNumber() == "" {
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EMPTY), "auth.sendCode#86aef0ec: phone code empty")
-		return nil, err
-	}
+	// TODO(@benqi): 是否要限制同一个authKeyId??
 
-	phoneNumer := libphonenumber.NormalizeDigitsOnly(request.PhoneNumber)
-
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneAndApiIdAndHash(phoneNumer, request.ApiId, request.ApiHash)
+	// 15分钟内有效
+	lastCreatedAt := time.Unix(time.Now().Unix()-15*60, 0).Format("2006-01-02 15:04:05")
+	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneAndApiIdAndHash(phoneNumber, request.ApiId, request.ApiHash, lastCreatedAt)
 	if do == nil {
 	    do = &dataobject.AuthPhoneTransactionsDO{}
 	    do.ApiId = request.ApiId
 	    do.ApiHash = request.ApiHash
-	    do.PhoneNumber = phoneNumer
+	    do.PhoneNumber = phoneNumber
+	    // TODO(@benqi): gen rand number
 	    do.Code = "123456"
 	    do.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	    // TODO(@benqi): 生成一个32字节的随机字串
 	    do.TransactionHash = fmt.Sprintf("%20d", base.NextSnowflakeId())
-
 	    dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).Insert(do)
 	} else {
-	    // TODO(@benqi): 检查是否已经过了失效期
+		if do.Attempts > 3 {
+			// TODO(@benqi): 输入了太多次错误的phone code
+			err = mtproto.NewFloodWaitX(15*60, "auth.sendCode#86aef0ec: too many attempts.")
+			return nil, err
+		}
 	}
 
 	authSentCode := mtproto.NewTLAuthSentCode()

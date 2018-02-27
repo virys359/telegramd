@@ -8,7 +8,17 @@
     </operation>
     <operation name="SelectByPhoneAndApiIdAndHash">
         <sql>
-            SELECT transaction_hash FROM auth_phone_transactions WHERE phone_number = :phone_number AND api_id = :api_id AND api_hash = :api_hash
+            <![CDATA[
+
+            SELECT
+                transaction_hash
+            FROM
+                auth_phone_transactions, attempts
+            WHERE
+                phone_number = :phone_number AND api_id = :api_id AND api_hash = :api_hash AND created_at < :created_at AND is_deleted = 0
+            LIMIT 1
+
+            ]]>
         </sql>
     </operation>
     <operation name="SelectByPhoneCode">

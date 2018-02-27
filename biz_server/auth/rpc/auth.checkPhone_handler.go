@@ -39,20 +39,10 @@ func (s *AuthServiceImpl) AuthCheckPhone(ctx context.Context, request *mtproto.T
 	phoneNumer := libphonenumber.NormalizeDigitsOnly(request.PhoneNumber)
 
 	usersDO := usersDAO.SelectByPhoneNumber(phoneNumer)
+	checkedPhone := mtproto.TLAuthCheckedPhone{Data2: &mtproto.Auth_CheckedPhone_Data{
+		PhoneRegistered: mtproto.ToBool(usersDO == nil),
+	}}
 
-	var reply *mtproto.Auth_CheckedPhone
-	if usersDO == nil {
-	    // 未注册
-	    checkedPhone := mtproto.NewTLAuthCheckedPhone()
-	    checkedPhone.SetPhoneRegistered(mtproto.ToBool(false))
-	    reply = checkedPhone.To_Auth_CheckedPhone()
-	} else {
-	    // 已经注册
-		checkedPhone := mtproto.NewTLAuthCheckedPhone()
-		checkedPhone.SetPhoneRegistered(mtproto.ToBool(true))
-		reply = checkedPhone.To_Auth_CheckedPhone()
-	}
-
-	glog.Infof("AuthCheckPhone - reply: %s\n", reply)
-	return reply, nil
+	glog.Infof("AuthCheckPhone - reply: %s\n", checkedPhone)
+	return checkedPhone.To_Auth_CheckedPhone(), nil
 }

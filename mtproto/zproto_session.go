@@ -49,6 +49,7 @@ const (
 const (
 	SESSION_HANDSHAKE    = 0x01
 	SESSION_SESSION_DATA = 0x02
+	SYNC_DATA = 0x03
 )
 
 //func isHandshake(state int) bool {

@@ -25,6 +25,7 @@ var id *snowflake.IdWorker
 //
 //}
 
+// TODO(@benqi): 多服务器部署时需要配置驱动workId
 const (
 	workerId	   	= int64(1)
 	dataCenterId	= int64(1)

@@ -53,11 +53,11 @@ func (dao *AuthPhoneTransactionsDAO) Insert(do *dataobject.AuthPhoneTransactions
 	return id
 }
 
-// select transaction_hash from auth_phone_transactions where phone_number = :phone_number and api_id = :api_id and api_hash = :api_hash
+// select transaction_hash from auth_phone_transactions, attempts where phone_number = :phone_number and api_id = :api_id and api_hash = :api_hash and created_at < :created_at and is_deleted = 0 limit 1
 // TODO(@benqi): sqlmap
-func (dao *AuthPhoneTransactionsDAO) SelectByPhoneAndApiIdAndHash(phone_number string, api_id int32, api_hash string) *dataobject.AuthPhoneTransactionsDO {
-	var query = "select transaction_hash from auth_phone_transactions where phone_number = ? and api_id = ? and api_hash = ?"
-	rows, err := dao.db.Queryx(query, phone_number, api_id, api_hash)
+func (dao *AuthPhoneTransactionsDAO) SelectByPhoneAndApiIdAndHash(phone_number string, api_id int32, api_hash string, created_at string) *dataobject.AuthPhoneTransactionsDO {
+	var query = "select transaction_hash from auth_phone_transactions, attempts where phone_number = ? and api_id = ? and api_hash = ? and created_at < ? and is_deleted = 0 limit 1"
+	rows, err := dao.db.Queryx(query, phone_number, api_id, api_hash, created_at)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Queryx in SelectByPhoneAndApiIdAndHash(_), error: %v", err)

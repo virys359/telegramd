@@ -53,10 +53,10 @@ func (dao *UsersDAO) Insert(do *dataobject.UsersDO) int64 {
 	return id
 }
 
-// select id, access_hash, first_name, last_name, username from users where phone = :phone limit 1
+// select id, access_hash, first_name, last_name, username, banned from users where phone = :phone limit 1
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) SelectByPhoneNumber(phone string) *dataobject.UsersDO {
-	var query = "select id, access_hash, first_name, last_name, username from users where phone = ? limit 1"
+	var query = "select id, access_hash, first_name, last_name, username, banned from users where phone = ? limit 1"
 	rows, err := dao.db.Queryx(query, phone)
 
 	if err != nil {
@@ -172,6 +172,28 @@ func (dao *UsersDAO) SelectByQueryString(username string, first_name string, las
 	}
 
 	return values
+}
+
+// update users set banned = :banned, banned_reason = :banned_reason, banned_at = :banned_at where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) Banned(banned int64, banned_reason string, banned_at string, id int32) int64 {
+	var query = "update users set banned = ?, banned_reason = ?, banned_at = ? where id = ?"
+	r, err := dao.db.Exec(query, banned, banned_reason, banned_at, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in Banned(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in Banned(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
 }
 
 // update users set deleted = 1, deleted_reason = :deleted_reason, deleted_at = :deleted_at where id = :id

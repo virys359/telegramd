@@ -29,9 +29,12 @@ type UsersDO struct {
 	About         string `db:"about"`
 	State         int32  `db:"state"`
 	IsBot         int8   `db:"is_bot"`
+	Banned        int64  `db:"banned"`
+	BannedReason  string `db:"banned_reason"`
 	Deleted       int8   `db:"deleted"`
 	DeletedReason string `db:"deleted_reason"`
 	CreatedAt     string `db:"created_at"`
 	UpdatedAt     string `db:"updated_at"`
+	BannedAt      string `db:"banned_at"`
 	DeletedAt     string `db:"deleted_at"`
 }

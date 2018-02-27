@@ -118,6 +118,7 @@ enum TLRpcErrorCodes {
     FIELD_NAME_INVALID = 400016;
     FIELD_NAME_EMPTY = 400017;
     MSG_WAIT_FAILED = 400018;
+    // PHONE_NUMBER_BANNED = 4000;
 
     // android client code:
     //    if (error.code == 400 && "PARTICIPANT_VERSION_OUTDATED".equals(error.text)) {
@@ -126,9 +127,9 @@ enum TLRpcErrorCodes {
 
     //
     PHONE_CODE_INVALID = 400020;
+    PHONE_NUMBER_BANNED = 400030;
+    SESSION_PASSWORD_NEEDED = 400040;
 
-    // PHONE_NUMBER_BANNED
-    // SESSION_PASSWORD_NEEDED
     //
     BAD_REQUEST = 400;
 

@@ -10,7 +10,7 @@
     </operation>
     <operation name="SelectByPhoneNumber">
         <sql>
-            SELECT id, access_hash, first_name, last_name, username FROM users WHERE phone=:phone limit 1
+            SELECT id, access_hash, first_name, last_name, username, banned FROM users WHERE phone=:phone limit 1
         </sql>
     </operation>
     <operation name="SelectById">
@@ -29,6 +29,13 @@
     <operation name="SelectByQueryString" result_set="list">
         <sql>
             SELECT id, access_hash, first_name, last_name, username, phone FROM users WHERE username = :username OR first_name = :first_name OR last_name = :last_name OR phone = :phone limit 20
+        </sql>
+    </operation>
+
+    <!-- soft deleted -->
+    <operation name="Banned">
+        <sql>
+            UPDATE users SET banned=:banned, banned_reason=:banned_reason, banned_at=:banned_at WHERE id=:id
         </sql>
     </operation>
 

@@ -64,6 +64,7 @@ type SessionServer struct {
 	rpcClient      *grpc_util.RPCClient
 	handshake      *handshake
 	sessionManager *sessionManager
+	syncHandler    *syncHandler
 }
 
 func NewSessionServer(configPath string) *SessionServer {
@@ -98,7 +99,7 @@ func (s *SessionServer) Initialize() error {
 	cache := NewAuthKeyCacheManager()
 	s.handshake = newHandshake(cache)
 	s.sessionManager = newSessionManager(cache)
-
+	s.syncHandler = newSyncHandler()
 	s.server, err = newTcpServer(s.config.Server, s)
 	if err != nil {
 		glog.Error(err)
@@ -155,6 +156,8 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 			return conn.Send(res)
 		case mtproto.SESSION_SESSION_DATA:
 			return s.sessionManager.onSessionData(conn, zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
+		case mtproto.SYNC_DATA:
+			return s.syncHandler.onSyncData(conn, payload.Payload[4:])
 		default:
 			return fmt.Errorf("invalid payload type: %v", msg)
 		}
