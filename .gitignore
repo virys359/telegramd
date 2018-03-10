@@ -32,3 +32,5 @@ access/session_server/session_server
 auth_key_server2/auth_key_server
 access/auth_key/auth_key
 access/auth_key/testing/dh_util
+access/frontend2/frontend2
+push/sync/sync
