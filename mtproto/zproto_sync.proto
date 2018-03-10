@@ -22,7 +22,7 @@ option java_package = "com.nebulaim.zproto";
 option java_outer_classname = "ZProtoSync";
 option optimize_for = CODE_SIZE;
 
-// import "schema.tl.sync.proto";
+import "schema.tl.sync.proto";
 
 package mtproto;
 
@@ -68,27 +68,64 @@ message MessageData {
 message VoidRsp {
 }
 
-///////////////////////////////////////////////////////////////////////
-// ServerAuthReq ==> VoidRsp
-// SERVER_AUTH_REQ
-//message ServerAuthReq {
-//    int32  server_id = 1;
-//    string server_name = 2;
-//}
-
-message PushUpdatesData {
+message PushClientID {
     int64 auth_key_id = 1;
     int64 session_id = 2;
     int64 netlib_session_id = 3;
+}
+
+// PushMessage state
+message ClientUpdatesState {
+    int32 pts = 1;
+    int32 pts_count = 2;
+    int32 qts = 3;
+    int32 qts_count = 4;
+    int32 seq = 5;
+    int32 seq_start = 6;
+    int32 date = 7;
+}
+
+// updateShortMessage
+// updateShortChatMessage
+// updateShort
+// updatesCombined
+// updates
+// updateShortSentMessage
+
+///////////////////////////////////////////////////////////////////////
+// SERVER_AUTH_REQ
+message ConnectToSessionServerReq {
+}
+
+message SessionServerConnectedRsp {
+    int32  server_id = 1;
+    string server_name = 2;
+}
+
+// PushUpdatesData --> VoidRsp
+message PushUpdatesData {
+    PushClientID client_id = 1;
+    ClientUpdatesState state = 2;
     uint32 raw_data_header = 4;
     bytes  raw_data = 5;
 }
 
-message PushUpdatesNotify {
-    int64 auth_key_id = 1;
-    int64 session_id = 2;
-    int64 netlib_session_id = 3;
-}
+//message PushUpdatesDataRsp {
+//}
+
+//message PushUpdatesData {
+//    int64 auth_key_id = 1;
+//    int64 session_id = 2;
+//    int64 netlib_session_id = 3;
+//    uint32 raw_data_header = 4;
+//    bytes  raw_data = 5;
+//}
+
+//message PushUpdatesNotify {
+//    int64 auth_key_id = 1;
+//    int64 session_id = 2;
+//    int64 netlib_session_id = 3;
+//}
 
 ////
 //message DeliveryUpdatesToUsers {
@@ -99,96 +136,93 @@ message PushUpdatesNotify {
 //    // uint32 raw_data_header = 4;
 //    bytes  raw_data = 5;
 //}
-//
-/////////////////////////////////////////////////////////////////////////
-//message PushShortMessage {
-//    SyncType push_type = 1;
-//    int32 push_user_id = 2;
-//    mtproto.TL_updateShortMessage push_data= 3;
-//}
-//// UpdateShortMessageRequest --> DeliveryRsp
-//message UpdateShortMessageRequest {
-//    int64 sender_auth_key_id = 1;
-//    int64 sender_session_id = 2;
-//    int64 sender_netlib_session_id = 3;
-//    int32 sender_user_id = 4;
-//    int32 peer_user_id = 5;     // sender_user_id == peer_user_id检查是否是发送给自己
-//    repeated PushShortMessage push_datas = 6;
-//}
-//
-//message PushShortChatMessage {
-//    SyncType push_type = 1;
-//    int32 push_user_id = 2;
-//    mtproto.TL_updateShortChatMessage push_data= 3;
-//}
-//
-//// UpdatShortChatMessageRequest --> DeliveryRsp
-//message UpdatShortChatMessageRequest {
-//    int64 sender_auth_key_id = 1;
-//    int64 sender_session_id = 2;
-//    int64 sender_netlib_session_id = 3;
-//    int32 sender_user_id = 4;
-//    int32 peer_chat_id = 5;
-//
-//    // 首记录为发送者
-//    repeated PushShortChatMessage push_datas = 6;
-//    // repeated int32  peer_user_id_list = 6;
-//    // mtproto.TL_updateShortChatMessage peer_updates = 7;
-//}
-//
-//message PushUpdates {
-//    SyncType push_type = 1;
-//    int32 push_user_id = 2;
-//    mtproto.TL_updates push_data = 3;
-//}
-//
-//// UpdatesRequest --> DeliveryRsp
-//message UpdatesRequest {
-//    int64 sender_auth_key_id = 1;
-//    int64 sender_session_id = 2;
-//    int64 sender_netlib_session_id = 3;
-//    int32 sender_user_id = 4;
-//    repeated PushUpdates push_datas = 5;
-//}
-//
-//message DeliveryRsp {
-//    int32 date = 1;
-//    int32 pts = 2;
-//    int32 pts_count = 3;
-//    int32 qts = 4;
-//    int32 seq_start = 5;
-//    int32 seq =6;
-//}
-//
-//message GetUpdatesDataRequest {
-//    int64 auth_key_id = 1;
-//    int32 user_id = 2;
-//    int32 last_pts = 3;
-//    int32 last_qts = 4;
-//    int32 last_seq =5;
-//}
 
-//message UpdatesDatasRsp {
-//    mtproto.TL_updates push_data = 3;
-//}
-//
-//// Interface exported by the server.
-//service RPCSync {
-//    // stream
-//    // frontend --> sync
-//    rpc PushUpdatesStream(ServerAuthReq) returns (stream PushUpdatesNotify);
-//
-//    // rpc
-//    // frontend --> sync
-//    rpc GetUpdatesData(GetUpdatesDataRequest) returns (UpdatesDatasRsp);
-//
-//    // messenger --> sync
-//    // rpc ServerAuth(ServerAuthReq) returns (VoidRsp);
-//    rpc DeliveryUpdates(DeliveryUpdatesToUsers) returns (VoidRsp);
-//    rpc DeliveryUpdatesNotMe(DeliveryUpdatesToUsers) returns (VoidRsp);
-//
-//    // DeliveryUpdateShortMessage
-//    rpc DeliveryUpdateShortMessage(UpdateShortMessageRequest) returns (DeliveryRsp);
-//    rpc DeliveryUpdatShortChatMessage(UpdatShortChatMessageRequest) returns (DeliveryRsp);
-//    rpc DeliveryUpdates2(UpdatesRequest) returns (DeliveryRsp);
-//}
+///////////////////////////////////////////////////////////////////////
+// UpdateShortMessage
+message PushShortMessage {
+    SyncType push_type = 1;
+    int32 push_user_id = 2;
+    TL_updateShortMessage push_data= 3;
+}
+
+message SyncShortMessageRequest {
+    PushClientID client_id = 1;
+    int32 sender_user_id = 2;
+    int32 peer_user_id = 3;     // sender_user_id == peer_user_id检查是否是发送给自己
+    PushShortMessage push_data= 4;
+}
+
+// UpdateShortMessageRequest --> DeliveryRsp
+message UpdateShortMessageRequest {
+    int32 sender_user_id = 1;
+    int32 peer_user_id = 2;     // sender_user_id == peer_user_id检查是否是发送给自己
+    PushShortMessage push_data = 3;
+}
+
+// UpdateShortChatMessage
+message PushShortChatMessage {
+    SyncType push_type = 1;
+    int32 push_user_id = 2;
+    TL_updateShortChatMessage push_data= 3;
+}
+
+// UpdatShortChatMessageRequest --> DeliveryRsp
+message SyncShortChatMessageRequest {
+    PushClientID client_id = 1;
+    int32 sender_user_id = 2;
+    int32 peer_chat_id = 3;
+    PushShortChatMessage push_data = 4;
+}
+
+message UpdateShortChatMessageRequest {
+    int32 sender_user_id = 1;
+    int32 peer_chat_id = 2;
+    repeated PushShortChatMessage push_datas = 3;
+}
+
+/*
+message PushUpdates {
+    SyncType push_type = 1;
+    int32 push_user_id = 2;
+    TL_updates push_data = 3;
+}
+
+// UpdatesRequest --> DeliveryRsp
+message UpdatesRequest {
+    int64 sender_auth_key_id = 1;
+    int64 sender_session_id = 2;
+    int64 sender_netlib_session_id = 3;
+    int32 sender_user_id = 4;
+    repeated PushUpdates push_datas = 5;
+}
+
+message DeliveryRsp {
+    int32 date = 1;
+    int32 pts = 2;
+    int32 pts_count = 3;
+    int32 qts = 4;
+    int32 seq_start = 5;
+    int32 seq =6;
+}
+
+message GetUpdatesDataRequest {
+    int64 auth_key_id = 1;
+    int32 user_id = 2;
+    int32 last_pts = 3;
+    int32 last_qts = 4;
+    int32 last_seq =5;
+}
+
+message UpdatesDatasRsp {
+    TL_updates push_data = 3;
+}
+*/
+
+// Interface exported by the server.
+service RPCSync {
+    rpc SyncUpdateShortMessage(SyncShortMessageRequest) returns (ClientUpdatesState);
+    rpc PushUpdateShortMessage(UpdateShortMessageRequest) returns (VoidRsp);
+    rpc SyncUpdateShortChatMessage(SyncShortChatMessageRequest) returns (ClientUpdatesState);
+    rpc PushUpdateShortChatMessage(UpdateShortChatMessageRequest) returns (VoidRsp);
+    // rpc DeliveryUpdates2(UpdatesRequest) returns (DeliveryRsp);
+}

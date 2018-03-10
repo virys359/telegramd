@@ -26,10 +26,9 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/zproto"
-	base2 "github.com/nebulaim/telegramd/base/base"
 	"fmt"
+	"github.com/nebulaim/telegramd/biz_server/sync"
 )
 
 // 流程：
@@ -54,7 +53,7 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	case mtproto.TLConstructor_CRC32_inputPeerChat:
 		sentMessage, err = sendPeerChatMessage(md, request)
 	case mtproto.TLConstructor_CRC32_inputPeerChannel:
-		sentMessage, err = sendPeerChatMessage(md, request)
+		sentMessage, err = sendPeerChannelMessage(md, request)
 	default:
 		err = fmt.Errorf("MessagesSendMessage - Invalid inpuet peer {%v}", request.GetPeer())
 		glog.Error(err)
@@ -285,51 +284,54 @@ func sendPeerSelfMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSend
 	peer := &base.PeerUtil{PeerType: base.PEER_USER, PeerId: md.UserId}
 	message.SetToId(peer.ToPeer())
 
-
-	sentMessage := mtproto.NewTLUpdateShortSentMessage()
-
 	// message
 	ids := model.GetMessageModel().SendMessage(md.UserId, base.PEER_USER, md.UserId, request.GetRandomId(), message.To_Message())
-
-	//// 1. SaveMessage
-	//messageId := model.GetMessageModel().CreateHistoryMessage2(md.UserId, peer, request.RandomId, message.GetDate(), message.To_Message())
-	//// 2. MessageBoxes
-	//pts := model.GetMessageModel().CreateMessageBoxes(md.UserId, message.GetFromId(), peer.PeerType, md.UserId, false, messageId)
-	//// 3. dialog
-	//model.GetDialogModel().CreateOrUpdateByLastMessage(md.UserId, peer.PeerType, md.UserId, messageId, message.GetMentioned(), false)
-
-	// 推送给sync
-	pts := int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(md.UserId)))
-	model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, pts, base.PEER_USER, md.UserId, model.PTS_MESSAGE_INBOX, ids[0].MessageBoxId, 0)
 
 	// model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, )
 	// 推给客户端的updates
 	updates := mtproto.NewTLUpdateShortMessage()
-	sentMessage.SetOut(true)
+	// sentMessage.SetOut(true)
 	updates.SetId(ids[0].MessageBoxId)
 	updates.SetUserId(md.UserId)
 	// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
-	updates.SetPts(pts)
-	updates.SetPtsCount(1)
+	// updates.SetPts(pts)
+	// updates.SetPtsCount(1)
 	updates.SetMessage(request.Message)
 	updates.SetDate(message.GetDate())
-	updatesData := updates.To_Updates().Encode()
-	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-		md.AuthId,
-		md.SessionId,
-		md.NetlibSessionId,
-		[]int32{md.UserId},
-		updatesData)
-	// 返回给客户端
+	state, err := sync.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
+	if err != nil {
+		return nil, err
+	}
 
+	sentMessage := mtproto.NewTLUpdateShortSentMessage()
 	// sentMessage := &mtproto.TLUpdateShortSentMessage{}
 	sentMessage.SetOut(true)
 	sentMessage.SetId(int32(ids[0].MessageBoxId))
 	// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
-	sentMessage.SetPts(pts)
-	sentMessage.SetPtsCount(1)
+	sentMessage.SetPts(state.Pts)
+	sentMessage.SetPtsCount(state.PtsCount)
 	sentMessage.SetDate(message.GetDate())
 	sentMessage.SetMedia(mtproto.NewTLMessageMediaEmpty().To_MessageMedia())
+
+	////// 1. SaveMessage
+	////messageId := model.GetMessageModel().CreateHistoryMessage2(md.UserId, peer, request.RandomId, message.GetDate(), message.To_Message())
+	////// 2. MessageBoxes
+	////pts := model.GetMessageModel().CreateMessageBoxes(md.UserId, message.GetFromId(), peer.PeerType, md.UserId, false, messageId)
+	////// 3. dialog
+	////model.GetDialogModel().CreateOrUpdateByLastMessage(md.UserId, peer.PeerType, md.UserId, messageId, message.GetMentioned(), false)
+	//
+	//// 推送给sync
+	//pts := int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(md.UserId)))
+	//model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, pts, base.PEER_USER, md.UserId, model.PTS_MESSAGE_INBOX, ids[0].MessageBoxId, 0)
+	//
+	//
+	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
+	//	md.AuthId,
+	//	md.SessionId,
+	//	md.NetlibSessionId,
+	//	[]int32{md.UserId},
+	//	updatesData)
+	//// 返回给客户端
 	glog.Infof("MessagesSendMessage - reply: %s", logger.JsonDebugData(sentMessage))
 	// reply = sentMessage.ToUpdates()
 	return sentMessage, nil
@@ -343,10 +345,34 @@ func sendPeerUserMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSend
 	peer := &base.PeerUtil{PeerType: base.PEER_USER, PeerId: request.GetPeer().GetData2().GetUserId()}
 	message.SetToId(peer.ToPeer())
 
-	sentMessage := mtproto.NewTLUpdateShortSentMessage()
-
 	// message
 	ids := model.GetMessageModel().SendMessage(md.UserId, base.PEER_USER, peer.PeerId, request.GetRandomId(), message.To_Message())
+
+
+	// model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, )
+	// 推给客户端的updates
+	updates := mtproto.NewTLUpdateShortMessage()
+	// sentMessage.SetOut(true)
+	updates.SetId(ids[0].MessageBoxId)
+	updates.SetUserId(md.UserId)
+	// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
+	// updates.SetPts(pts)
+	// updates.SetPtsCount(1)
+	updates.SetMessage(request.Message)
+	updates.SetDate(message.GetDate())
+	state, err := sync.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
+	if err != nil {
+		return nil, err
+	}
+
+	sentMessage := mtproto.NewTLUpdateShortSentMessage()
+	sentMessage.SetOut(true)
+	sentMessage.SetId(int32(ids[0].MessageBoxId))
+	// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
+	sentMessage.SetPts(state.Pts)
+	sentMessage.SetPtsCount(state.PtsCount)
+	sentMessage.SetDate(message.GetDate())
+	sentMessage.SetMedia(mtproto.NewTLMessageMediaEmpty().To_MessageMedia())
 
 	//// 1. SaveMessage
 	//messageId := model.GetMessageModel().CreateHistoryMessage2(md.UserId, peer, request.RandomId, message.GetDate(), message.To_Message())
@@ -359,43 +385,15 @@ func sendPeerUserMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSend
 	for _, idPair := range ids {
 		// model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, )
 		// 推给客户端的updates
-		updates := mtproto.NewTLUpdateShortMessage()
-		// 推送给sync
-		pts := int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(idPair.UserId)))
-		if idPair.UserId == md.UserId {
-			updates.SetOut(true)
-			model.GetUpdatesModel().AddPtsToUpdatesQueue(idPair.UserId, pts, base.PEER_USER, peer.PeerId, model.PTS_MESSAGE_OUTBOX, idPair.MessageBoxId, 0)
-		} else {
-			updates.SetOut(false)
-			model.GetUpdatesModel().AddPtsToUpdatesQueue(idPair.UserId, pts, base.PEER_USER, peer.PeerId, model.PTS_MESSAGE_INBOX, idPair.MessageBoxId, 0)
-		}
-
-		updates.SetId(idPair.MessageBoxId)
-		updates.SetUserId(md.UserId)
+		updates2 := mtproto.NewTLUpdateShortMessage()
+		updates2.SetId(idPair.MessageBoxId)
+		updates2.SetUserId(md.UserId)
 		// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
-		updates.SetPts(pts)
-		updates.SetPtsCount(1)
-		updates.SetMessage(request.Message)
-		updates.SetDate(message.GetDate())
-		updatesData := updates.To_Updates().Encode()
-		delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-			md.AuthId,
-			md.SessionId,
-			md.NetlibSessionId,
-			[]int32{idPair.UserId},
-			updatesData)
-		// 返回给客户端
-
-		if idPair.UserId == md.UserId {
-			// sentMessage := &mtproto.TLUpdateShortSentMessage{}
-			sentMessage.SetOut(true)
-			sentMessage.SetId(idPair.MessageBoxId)
-			// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
-			sentMessage.SetPts(pts)
-			sentMessage.SetPtsCount(1)
-			sentMessage.SetDate(message.GetDate())
-			sentMessage.SetMedia(mtproto.NewTLMessageMediaEmpty().To_MessageMedia())
-		}
+		//updates.SetPts(pts)
+		//updates.SetPtsCount(1)
+		updates2.SetMessage(request.Message)
+		updates2.SetDate(message.GetDate())
+		sync.GetSyncClient().PushUpdateShortMessage(md.UserId, idPair.UserId, updates2)
 	}
 
 	glog.Infof("MessagesSendMessage - reply: %s", logger.JsonDebugData(sentMessage))

@@ -46,6 +46,7 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 	"google.golang.org/grpc"
+	"github.com/nebulaim/telegramd/biz_server/sync"
 )
 
 func init() {
@@ -69,7 +70,8 @@ type BizServerConfig struct{
 	// RpcClient	*RpcClientConfig
 	Mysql		[]mysql_client.MySQLConfig
 	Redis 		[]redis_client.RedisConfig
-	SyncRpcClient *service_discovery.ServiceDiscoveryClientConfig
+	SyncRpcClient1 *service_discovery.ServiceDiscoveryClientConfig
+	SyncRpcClient2 *service_discovery.ServiceDiscoveryClientConfig
 }
 
 // 整合各服务，方便开发调试
@@ -98,8 +100,8 @@ func main() {
 	//	glog.Fatalf("failed to listen: %v", err)
 	//}
 
-	delivery.InstallDeliveryInstance(bizServerConfig.SyncRpcClient)
-
+	delivery.InstallDeliveryInstance(bizServerConfig.SyncRpcClient1)
+	sync.InstallSyncClient(bizServerConfig.SyncRpcClient2)
 	// Start server
 	grpcServer := grpc_util.NewRpcServer(bizServerConfig.Server.Addr, &bizServerConfig.Discovery)
 	grpcServer.Serve(func(s *grpc.Server) {

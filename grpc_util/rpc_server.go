@@ -106,3 +106,7 @@ func (s *RPCServer) Serve(regFunc RegisterRPCServerFunc) {
 		glog.Fatalf("failed to serve: %s", err)
 	}
 }
+
+func (s *RPCServer) Stop() {
+	s.s.GracefulStop()
+}

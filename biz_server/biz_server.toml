@@ -18,8 +18,13 @@ tTL = "10s"
 #serviceName = "sync"
 #addr = "localhost:10002"
 
-[syncRpcClient]
+[syncRpcClient1]
 serviceName = "sync"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
+[syncRpcClient2]
+serviceName = "sync2"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
 

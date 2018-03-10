@@ -7,6 +7,11 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
+import (
+	context "golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+)
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -78,38 +83,162 @@ func (m *VoidRsp) String() string            { return proto.CompactTextString(m)
 func (*VoidRsp) ProtoMessage()               {}
 func (*VoidRsp) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{2} }
 
-type PushUpdatesData struct {
-	AuthKeyId       int64  `protobuf:"varint,1,opt,name=auth_key_id,json=authKeyId" json:"auth_key_id,omitempty"`
-	SessionId       int64  `protobuf:"varint,2,opt,name=session_id,json=sessionId" json:"session_id,omitempty"`
-	NetlibSessionId int64  `protobuf:"varint,3,opt,name=netlib_session_id,json=netlibSessionId" json:"netlib_session_id,omitempty"`
-	RawDataHeader   uint32 `protobuf:"varint,4,opt,name=raw_data_header,json=rawDataHeader" json:"raw_data_header,omitempty"`
-	RawData         []byte `protobuf:"bytes,5,opt,name=raw_data,json=rawData,proto3" json:"raw_data,omitempty"`
+type PushClientID struct {
+	AuthKeyId       int64 `protobuf:"varint,1,opt,name=auth_key_id,json=authKeyId" json:"auth_key_id,omitempty"`
+	SessionId       int64 `protobuf:"varint,2,opt,name=session_id,json=sessionId" json:"session_id,omitempty"`
+	NetlibSessionId int64 `protobuf:"varint,3,opt,name=netlib_session_id,json=netlibSessionId" json:"netlib_session_id,omitempty"`
 }
 
-func (m *PushUpdatesData) Reset()                    { *m = PushUpdatesData{} }
-func (m *PushUpdatesData) String() string            { return proto.CompactTextString(m) }
-func (*PushUpdatesData) ProtoMessage()               {}
-func (*PushUpdatesData) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{3} }
+func (m *PushClientID) Reset()                    { *m = PushClientID{} }
+func (m *PushClientID) String() string            { return proto.CompactTextString(m) }
+func (*PushClientID) ProtoMessage()               {}
+func (*PushClientID) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{3} }
 
-func (m *PushUpdatesData) GetAuthKeyId() int64 {
+func (m *PushClientID) GetAuthKeyId() int64 {
 	if m != nil {
 		return m.AuthKeyId
 	}
 	return 0
 }
 
-func (m *PushUpdatesData) GetSessionId() int64 {
+func (m *PushClientID) GetSessionId() int64 {
 	if m != nil {
 		return m.SessionId
 	}
 	return 0
 }
 
-func (m *PushUpdatesData) GetNetlibSessionId() int64 {
+func (m *PushClientID) GetNetlibSessionId() int64 {
 	if m != nil {
 		return m.NetlibSessionId
 	}
 	return 0
+}
+
+// PushMessage state
+type ClientUpdatesState struct {
+	Pts      int32 `protobuf:"varint,1,opt,name=pts" json:"pts,omitempty"`
+	PtsCount int32 `protobuf:"varint,2,opt,name=pts_count,json=ptsCount" json:"pts_count,omitempty"`
+	Qts      int32 `protobuf:"varint,3,opt,name=qts" json:"qts,omitempty"`
+	QtsCount int32 `protobuf:"varint,4,opt,name=qts_count,json=qtsCount" json:"qts_count,omitempty"`
+	Seq      int32 `protobuf:"varint,5,opt,name=seq" json:"seq,omitempty"`
+	SeqStart int32 `protobuf:"varint,6,opt,name=seq_start,json=seqStart" json:"seq_start,omitempty"`
+	Date     int32 `protobuf:"varint,7,opt,name=date" json:"date,omitempty"`
+}
+
+func (m *ClientUpdatesState) Reset()                    { *m = ClientUpdatesState{} }
+func (m *ClientUpdatesState) String() string            { return proto.CompactTextString(m) }
+func (*ClientUpdatesState) ProtoMessage()               {}
+func (*ClientUpdatesState) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{4} }
+
+func (m *ClientUpdatesState) GetPts() int32 {
+	if m != nil {
+		return m.Pts
+	}
+	return 0
+}
+
+func (m *ClientUpdatesState) GetPtsCount() int32 {
+	if m != nil {
+		return m.PtsCount
+	}
+	return 0
+}
+
+func (m *ClientUpdatesState) GetQts() int32 {
+	if m != nil {
+		return m.Qts
+	}
+	return 0
+}
+
+func (m *ClientUpdatesState) GetQtsCount() int32 {
+	if m != nil {
+		return m.QtsCount
+	}
+	return 0
+}
+
+func (m *ClientUpdatesState) GetSeq() int32 {
+	if m != nil {
+		return m.Seq
+	}
+	return 0
+}
+
+func (m *ClientUpdatesState) GetSeqStart() int32 {
+	if m != nil {
+		return m.SeqStart
+	}
+	return 0
+}
+
+func (m *ClientUpdatesState) GetDate() int32 {
+	if m != nil {
+		return m.Date
+	}
+	return 0
+}
+
+// /////////////////////////////////////////////////////////////////////
+// SERVER_AUTH_REQ
+type ConnectToSessionServerReq struct {
+}
+
+func (m *ConnectToSessionServerReq) Reset()                    { *m = ConnectToSessionServerReq{} }
+func (m *ConnectToSessionServerReq) String() string            { return proto.CompactTextString(m) }
+func (*ConnectToSessionServerReq) ProtoMessage()               {}
+func (*ConnectToSessionServerReq) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{5} }
+
+type SessionServerConnectedRsp struct {
+	ServerId   int32  `protobuf:"varint,1,opt,name=server_id,json=serverId" json:"server_id,omitempty"`
+	ServerName string `protobuf:"bytes,2,opt,name=server_name,json=serverName" json:"server_name,omitempty"`
+}
+
+func (m *SessionServerConnectedRsp) Reset()                    { *m = SessionServerConnectedRsp{} }
+func (m *SessionServerConnectedRsp) String() string            { return proto.CompactTextString(m) }
+func (*SessionServerConnectedRsp) ProtoMessage()               {}
+func (*SessionServerConnectedRsp) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{6} }
+
+func (m *SessionServerConnectedRsp) GetServerId() int32 {
+	if m != nil {
+		return m.ServerId
+	}
+	return 0
+}
+
+func (m *SessionServerConnectedRsp) GetServerName() string {
+	if m != nil {
+		return m.ServerName
+	}
+	return ""
+}
+
+// PushUpdatesData --> VoidRsp
+type PushUpdatesData struct {
+	ClientId      *PushClientID       `protobuf:"bytes,1,opt,name=client_id,json=clientId" json:"client_id,omitempty"`
+	State         *ClientUpdatesState `protobuf:"bytes,2,opt,name=state" json:"state,omitempty"`
+	RawDataHeader uint32              `protobuf:"varint,4,opt,name=raw_data_header,json=rawDataHeader" json:"raw_data_header,omitempty"`
+	RawData       []byte              `protobuf:"bytes,5,opt,name=raw_data,json=rawData,proto3" json:"raw_data,omitempty"`
+}
+
+func (m *PushUpdatesData) Reset()                    { *m = PushUpdatesData{} }
+func (m *PushUpdatesData) String() string            { return proto.CompactTextString(m) }
+func (*PushUpdatesData) ProtoMessage()               {}
+func (*PushUpdatesData) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{7} }
+
+func (m *PushUpdatesData) GetClientId() *PushClientID {
+	if m != nil {
+		return m.ClientId
+	}
+	return nil
+}
+
+func (m *PushUpdatesData) GetState() *ClientUpdatesState {
+	if m != nil {
+		return m.State
+	}
+	return nil
 }
 
 func (m *PushUpdatesData) GetRawDataHeader() uint32 {
@@ -126,73 +255,466 @@ func (m *PushUpdatesData) GetRawData() []byte {
 	return nil
 }
 
-type PushUpdatesNotify struct {
-	AuthKeyId       int64 `protobuf:"varint,1,opt,name=auth_key_id,json=authKeyId" json:"auth_key_id,omitempty"`
-	SessionId       int64 `protobuf:"varint,2,opt,name=session_id,json=sessionId" json:"session_id,omitempty"`
-	NetlibSessionId int64 `protobuf:"varint,3,opt,name=netlib_session_id,json=netlibSessionId" json:"netlib_session_id,omitempty"`
+// /////////////////////////////////////////////////////////////////////
+// UpdateShortMessage
+type PushShortMessage struct {
+	PushType   SyncType              `protobuf:"varint,1,opt,name=push_type,json=pushType,enum=mtproto.SyncType" json:"push_type,omitempty"`
+	PushUserId int32                 `protobuf:"varint,2,opt,name=push_user_id,json=pushUserId" json:"push_user_id,omitempty"`
+	PushData   *TLUpdateShortMessage `protobuf:"bytes,3,opt,name=push_data,json=pushData" json:"push_data,omitempty"`
 }
 
-func (m *PushUpdatesNotify) Reset()                    { *m = PushUpdatesNotify{} }
-func (m *PushUpdatesNotify) String() string            { return proto.CompactTextString(m) }
-func (*PushUpdatesNotify) ProtoMessage()               {}
-func (*PushUpdatesNotify) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{4} }
+func (m *PushShortMessage) Reset()                    { *m = PushShortMessage{} }
+func (m *PushShortMessage) String() string            { return proto.CompactTextString(m) }
+func (*PushShortMessage) ProtoMessage()               {}
+func (*PushShortMessage) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{8} }
 
-func (m *PushUpdatesNotify) GetAuthKeyId() int64 {
+func (m *PushShortMessage) GetPushType() SyncType {
 	if m != nil {
-		return m.AuthKeyId
+		return m.PushType
+	}
+	return SyncType_SYNC_TYPE_UNKNOWN
+}
+
+func (m *PushShortMessage) GetPushUserId() int32 {
+	if m != nil {
+		return m.PushUserId
 	}
 	return 0
 }
 
-func (m *PushUpdatesNotify) GetSessionId() int64 {
+func (m *PushShortMessage) GetPushData() *TLUpdateShortMessage {
 	if m != nil {
-		return m.SessionId
+		return m.PushData
+	}
+	return nil
+}
+
+type SyncShortMessageRequest struct {
+	ClientId     *PushClientID     `protobuf:"bytes,1,opt,name=client_id,json=clientId" json:"client_id,omitempty"`
+	SenderUserId int32             `protobuf:"varint,2,opt,name=sender_user_id,json=senderUserId" json:"sender_user_id,omitempty"`
+	PeerUserId   int32             `protobuf:"varint,3,opt,name=peer_user_id,json=peerUserId" json:"peer_user_id,omitempty"`
+	PushData     *PushShortMessage `protobuf:"bytes,4,opt,name=push_data,json=pushData" json:"push_data,omitempty"`
+}
+
+func (m *SyncShortMessageRequest) Reset()                    { *m = SyncShortMessageRequest{} }
+func (m *SyncShortMessageRequest) String() string            { return proto.CompactTextString(m) }
+func (*SyncShortMessageRequest) ProtoMessage()               {}
+func (*SyncShortMessageRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{9} }
+
+func (m *SyncShortMessageRequest) GetClientId() *PushClientID {
+	if m != nil {
+		return m.ClientId
+	}
+	return nil
+}
+
+func (m *SyncShortMessageRequest) GetSenderUserId() int32 {
+	if m != nil {
+		return m.SenderUserId
 	}
 	return 0
 }
 
-func (m *PushUpdatesNotify) GetNetlibSessionId() int64 {
+func (m *SyncShortMessageRequest) GetPeerUserId() int32 {
 	if m != nil {
-		return m.NetlibSessionId
+		return m.PeerUserId
 	}
 	return 0
+}
+
+func (m *SyncShortMessageRequest) GetPushData() *PushShortMessage {
+	if m != nil {
+		return m.PushData
+	}
+	return nil
+}
+
+// UpdateShortMessageRequest --> DeliveryRsp
+type UpdateShortMessageRequest struct {
+	SenderUserId int32             `protobuf:"varint,1,opt,name=sender_user_id,json=senderUserId" json:"sender_user_id,omitempty"`
+	PeerUserId   int32             `protobuf:"varint,2,opt,name=peer_user_id,json=peerUserId" json:"peer_user_id,omitempty"`
+	PushData     *PushShortMessage `protobuf:"bytes,3,opt,name=push_data,json=pushData" json:"push_data,omitempty"`
+}
+
+func (m *UpdateShortMessageRequest) Reset()                    { *m = UpdateShortMessageRequest{} }
+func (m *UpdateShortMessageRequest) String() string            { return proto.CompactTextString(m) }
+func (*UpdateShortMessageRequest) ProtoMessage()               {}
+func (*UpdateShortMessageRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{10} }
+
+func (m *UpdateShortMessageRequest) GetSenderUserId() int32 {
+	if m != nil {
+		return m.SenderUserId
+	}
+	return 0
+}
+
+func (m *UpdateShortMessageRequest) GetPeerUserId() int32 {
+	if m != nil {
+		return m.PeerUserId
+	}
+	return 0
+}
+
+func (m *UpdateShortMessageRequest) GetPushData() *PushShortMessage {
+	if m != nil {
+		return m.PushData
+	}
+	return nil
+}
+
+// UpdateShortChatMessage
+type PushShortChatMessage struct {
+	PushType   SyncType                  `protobuf:"varint,1,opt,name=push_type,json=pushType,enum=mtproto.SyncType" json:"push_type,omitempty"`
+	PushUserId int32                     `protobuf:"varint,2,opt,name=push_user_id,json=pushUserId" json:"push_user_id,omitempty"`
+	PushData   *TLUpdateShortChatMessage `protobuf:"bytes,3,opt,name=push_data,json=pushData" json:"push_data,omitempty"`
+}
+
+func (m *PushShortChatMessage) Reset()                    { *m = PushShortChatMessage{} }
+func (m *PushShortChatMessage) String() string            { return proto.CompactTextString(m) }
+func (*PushShortChatMessage) ProtoMessage()               {}
+func (*PushShortChatMessage) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{11} }
+
+func (m *PushShortChatMessage) GetPushType() SyncType {
+	if m != nil {
+		return m.PushType
+	}
+	return SyncType_SYNC_TYPE_UNKNOWN
+}
+
+func (m *PushShortChatMessage) GetPushUserId() int32 {
+	if m != nil {
+		return m.PushUserId
+	}
+	return 0
+}
+
+func (m *PushShortChatMessage) GetPushData() *TLUpdateShortChatMessage {
+	if m != nil {
+		return m.PushData
+	}
+	return nil
+}
+
+// UpdatShortChatMessageRequest --> DeliveryRsp
+type SyncShortChatMessageRequest struct {
+	ClientId     *PushClientID         `protobuf:"bytes,1,opt,name=client_id,json=clientId" json:"client_id,omitempty"`
+	SenderUserId int32                 `protobuf:"varint,2,opt,name=sender_user_id,json=senderUserId" json:"sender_user_id,omitempty"`
+	PeerChatId   int32                 `protobuf:"varint,3,opt,name=peer_chat_id,json=peerChatId" json:"peer_chat_id,omitempty"`
+	PushData     *PushShortChatMessage `protobuf:"bytes,4,opt,name=push_data,json=pushData" json:"push_data,omitempty"`
+}
+
+func (m *SyncShortChatMessageRequest) Reset()                    { *m = SyncShortChatMessageRequest{} }
+func (m *SyncShortChatMessageRequest) String() string            { return proto.CompactTextString(m) }
+func (*SyncShortChatMessageRequest) ProtoMessage()               {}
+func (*SyncShortChatMessageRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{12} }
+
+func (m *SyncShortChatMessageRequest) GetClientId() *PushClientID {
+	if m != nil {
+		return m.ClientId
+	}
+	return nil
+}
+
+func (m *SyncShortChatMessageRequest) GetSenderUserId() int32 {
+	if m != nil {
+		return m.SenderUserId
+	}
+	return 0
+}
+
+func (m *SyncShortChatMessageRequest) GetPeerChatId() int32 {
+	if m != nil {
+		return m.PeerChatId
+	}
+	return 0
+}
+
+func (m *SyncShortChatMessageRequest) GetPushData() *PushShortChatMessage {
+	if m != nil {
+		return m.PushData
+	}
+	return nil
+}
+
+type UpdateShortChatMessageRequest struct {
+	SenderUserId int32                   `protobuf:"varint,1,opt,name=sender_user_id,json=senderUserId" json:"sender_user_id,omitempty"`
+	PeerChatId   int32                   `protobuf:"varint,2,opt,name=peer_chat_id,json=peerChatId" json:"peer_chat_id,omitempty"`
+	PushDatas    []*PushShortChatMessage `protobuf:"bytes,3,rep,name=push_datas,json=pushDatas" json:"push_datas,omitempty"`
+}
+
+func (m *UpdateShortChatMessageRequest) Reset()                    { *m = UpdateShortChatMessageRequest{} }
+func (m *UpdateShortChatMessageRequest) String() string            { return proto.CompactTextString(m) }
+func (*UpdateShortChatMessageRequest) ProtoMessage()               {}
+func (*UpdateShortChatMessageRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{13} }
+
+func (m *UpdateShortChatMessageRequest) GetSenderUserId() int32 {
+	if m != nil {
+		return m.SenderUserId
+	}
+	return 0
+}
+
+func (m *UpdateShortChatMessageRequest) GetPeerChatId() int32 {
+	if m != nil {
+		return m.PeerChatId
+	}
+	return 0
+}
+
+func (m *UpdateShortChatMessageRequest) GetPushDatas() []*PushShortChatMessage {
+	if m != nil {
+		return m.PushDatas
+	}
+	return nil
 }
 
 func init() {
 	proto.RegisterType((*MessageDataEmpty)(nil), "mtproto.MessageDataEmpty")
 	proto.RegisterType((*MessageData)(nil), "mtproto.MessageData")
 	proto.RegisterType((*VoidRsp)(nil), "mtproto.VoidRsp")
+	proto.RegisterType((*PushClientID)(nil), "mtproto.PushClientID")
+	proto.RegisterType((*ClientUpdatesState)(nil), "mtproto.ClientUpdatesState")
+	proto.RegisterType((*ConnectToSessionServerReq)(nil), "mtproto.ConnectToSessionServerReq")
+	proto.RegisterType((*SessionServerConnectedRsp)(nil), "mtproto.SessionServerConnectedRsp")
 	proto.RegisterType((*PushUpdatesData)(nil), "mtproto.PushUpdatesData")
-	proto.RegisterType((*PushUpdatesNotify)(nil), "mtproto.PushUpdatesNotify")
+	proto.RegisterType((*PushShortMessage)(nil), "mtproto.PushShortMessage")
+	proto.RegisterType((*SyncShortMessageRequest)(nil), "mtproto.SyncShortMessageRequest")
+	proto.RegisterType((*UpdateShortMessageRequest)(nil), "mtproto.UpdateShortMessageRequest")
+	proto.RegisterType((*PushShortChatMessage)(nil), "mtproto.PushShortChatMessage")
+	proto.RegisterType((*SyncShortChatMessageRequest)(nil), "mtproto.SyncShortChatMessageRequest")
+	proto.RegisterType((*UpdateShortChatMessageRequest)(nil), "mtproto.UpdateShortChatMessageRequest")
 	proto.RegisterEnum("mtproto.SyncType", SyncType_name, SyncType_value)
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// Client API for RPCSync service
+
+type RPCSyncClient interface {
+	SyncUpdateShortMessage(ctx context.Context, in *SyncShortMessageRequest, opts ...grpc.CallOption) (*ClientUpdatesState, error)
+	PushUpdateShortMessage(ctx context.Context, in *UpdateShortMessageRequest, opts ...grpc.CallOption) (*VoidRsp, error)
+	SyncUpdateShortChatMessage(ctx context.Context, in *SyncShortChatMessageRequest, opts ...grpc.CallOption) (*ClientUpdatesState, error)
+	PushUpdateShortChatMessage(ctx context.Context, in *UpdateShortChatMessageRequest, opts ...grpc.CallOption) (*VoidRsp, error)
+}
+
+type rPCSyncClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewRPCSyncClient(cc *grpc.ClientConn) RPCSyncClient {
+	return &rPCSyncClient{cc}
+}
+
+func (c *rPCSyncClient) SyncUpdateShortMessage(ctx context.Context, in *SyncShortMessageRequest, opts ...grpc.CallOption) (*ClientUpdatesState, error) {
+	out := new(ClientUpdatesState)
+	err := grpc.Invoke(ctx, "/mtproto.RPCSync/SyncUpdateShortMessage", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCSyncClient) PushUpdateShortMessage(ctx context.Context, in *UpdateShortMessageRequest, opts ...grpc.CallOption) (*VoidRsp, error) {
+	out := new(VoidRsp)
+	err := grpc.Invoke(ctx, "/mtproto.RPCSync/PushUpdateShortMessage", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCSyncClient) SyncUpdateShortChatMessage(ctx context.Context, in *SyncShortChatMessageRequest, opts ...grpc.CallOption) (*ClientUpdatesState, error) {
+	out := new(ClientUpdatesState)
+	err := grpc.Invoke(ctx, "/mtproto.RPCSync/SyncUpdateShortChatMessage", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCSyncClient) PushUpdateShortChatMessage(ctx context.Context, in *UpdateShortChatMessageRequest, opts ...grpc.CallOption) (*VoidRsp, error) {
+	out := new(VoidRsp)
+	err := grpc.Invoke(ctx, "/mtproto.RPCSync/PushUpdateShortChatMessage", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for RPCSync service
+
+type RPCSyncServer interface {
+	SyncUpdateShortMessage(context.Context, *SyncShortMessageRequest) (*ClientUpdatesState, error)
+	PushUpdateShortMessage(context.Context, *UpdateShortMessageRequest) (*VoidRsp, error)
+	SyncUpdateShortChatMessage(context.Context, *SyncShortChatMessageRequest) (*ClientUpdatesState, error)
+	PushUpdateShortChatMessage(context.Context, *UpdateShortChatMessageRequest) (*VoidRsp, error)
+}
+
+func RegisterRPCSyncServer(s *grpc.Server, srv RPCSyncServer) {
+	s.RegisterService(&_RPCSync_serviceDesc, srv)
+}
+
+func _RPCSync_SyncUpdateShortMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncShortMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RPCSyncServer).SyncUpdateShortMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mtproto.RPCSync/SyncUpdateShortMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCSyncServer).SyncUpdateShortMessage(ctx, req.(*SyncShortMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RPCSync_PushUpdateShortMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateShortMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RPCSyncServer).PushUpdateShortMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mtproto.RPCSync/PushUpdateShortMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCSyncServer).PushUpdateShortMessage(ctx, req.(*UpdateShortMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RPCSync_SyncUpdateShortChatMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncShortChatMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RPCSyncServer).SyncUpdateShortChatMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mtproto.RPCSync/SyncUpdateShortChatMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCSyncServer).SyncUpdateShortChatMessage(ctx, req.(*SyncShortChatMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RPCSync_PushUpdateShortChatMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateShortChatMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RPCSyncServer).PushUpdateShortChatMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mtproto.RPCSync/PushUpdateShortChatMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCSyncServer).PushUpdateShortChatMessage(ctx, req.(*UpdateShortChatMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _RPCSync_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "mtproto.RPCSync",
+	HandlerType: (*RPCSyncServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SyncUpdateShortMessage",
+			Handler:    _RPCSync_SyncUpdateShortMessage_Handler,
+		},
+		{
+			MethodName: "PushUpdateShortMessage",
+			Handler:    _RPCSync_PushUpdateShortMessage_Handler,
+		},
+		{
+			MethodName: "SyncUpdateShortChatMessage",
+			Handler:    _RPCSync_SyncUpdateShortChatMessage_Handler,
+		},
+		{
+			MethodName: "PushUpdateShortChatMessage",
+			Handler:    _RPCSync_PushUpdateShortChatMessage_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "zproto_sync.proto",
 }
 
 func init() { proto.RegisterFile("zproto_sync.proto", fileDescriptor10) }
 
 var fileDescriptor10 = []byte{
-	// 376 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x92, 0xdb, 0x6a, 0xe2, 0x40,
-	0x1c, 0xc6, 0x77, 0x3c, 0xac, 0xfa, 0x57, 0xd7, 0x64, 0xf6, 0x94, 0x65, 0x0f, 0x64, 0x03, 0xbb,
-	0x88, 0x17, 0xb2, 0xb0, 0x4f, 0x50, 0xdb, 0x80, 0x22, 0xc6, 0x90, 0xc4, 0x16, 0x7b, 0x33, 0x8c,
-	0x66, 0x5a, 0x43, 0xcd, 0x81, 0xcc, 0x88, 0x4c, 0x2f, 0xfa, 0x38, 0x7d, 0x8d, 0xbe, 0x5a, 0x49,
-	0x62, 0xdb, 0x94, 0xd2, 0xdb, 0x5e, 0xcd, 0x7f, 0x7e, 0xdf, 0xc7, 0xc7, 0x7c, 0xc3, 0x1f, 0xd4,
-	0xeb, 0x24, 0x8d, 0x45, 0x4c, 0xb8, 0x8c, 0xd6, 0xc3, 0x7c, 0xc4, 0x8d, 0x50, 0xe4, 0x83, 0x81,
-	0x41, 0x99, 0x31, 0xce, 0xe9, 0x25, 0x3b, 0xa1, 0x82, 0x9a, 0x61, 0x22, 0xa4, 0xf1, 0x0f, 0xda,
-	0x25, 0x86, 0x7f, 0x43, 0x27, 0x2c, 0xae, 0x44, 0xc8, 0x84, 0x69, 0x48, 0x47, 0xfd, 0xba, 0xd3,
-	0x3e, 0x30, 0x4f, 0x26, 0xcc, 0x68, 0x41, 0xe3, 0x34, 0x0e, 0x7c, 0x87, 0x27, 0xc6, 0x1d, 0x82,
-	0x9e, 0xbd, 0xe3, 0x9b, 0x45, 0xe2, 0x53, 0xc1, 0x78, 0x9e, 0xf0, 0x0b, 0xda, 0x74, 0x27, 0x36,
-	0xe4, 0x8a, 0x49, 0x12, 0xf8, 0x79, 0x40, 0xd5, 0x69, 0x65, 0x68, 0xca, 0xe4, 0xc4, 0xc7, 0x3f,
-	0x01, 0x38, 0xe3, 0x3c, 0x88, 0xa3, 0x4c, 0xae, 0x14, 0xf2, 0x81, 0x4c, 0x7c, 0x3c, 0x00, 0x35,
-	0x62, 0x62, 0x1b, 0xac, 0x48, 0xc9, 0x55, 0xcd, 0x5d, 0xbd, 0x42, 0x70, 0x1f, 0xbd, 0x7f, 0xa1,
-	0x97, 0xd2, 0x3d, 0xf1, 0xa9, 0xa0, 0x64, 0xc3, 0xa8, 0xcf, 0x52, 0xad, 0xa6, 0xa3, 0x7e, 0xd7,
-	0xe9, 0xa6, 0x74, 0x9f, 0x3d, 0x66, 0x9c, 0x43, 0xfc, 0x0d, 0x9a, 0x0f, 0x3e, 0xad, 0xae, 0xa3,
-	0x7e, 0xc7, 0x69, 0x1c, 0x0c, 0xc6, 0x0d, 0xa8, 0xa5, 0x02, 0x56, 0x2c, 0x82, 0x0b, 0xf9, 0x86,
-	0x15, 0x06, 0xb7, 0x08, 0x9a, 0xae, 0x8c, 0xd6, 0xd9, 0xcf, 0xe2, 0xcf, 0xa0, 0xba, 0x4b, 0xeb,
-	0x98, 0x78, 0x4b, 0xdb, 0x24, 0x0b, 0x6b, 0x6a, 0xcd, 0xcf, 0x2c, 0xe5, 0x1d, 0xc6, 0xf0, 0xa1,
-	0x84, 0x5d, 0xd3, 0x51, 0x10, 0xd6, 0xe0, 0xd3, 0x73, 0x46, 0xac, 0xb9, 0x37, 0x33, 0x95, 0x0a,
-	0xfe, 0x02, 0xf8, 0x49, 0x39, 0x5a, 0x78, 0x63, 0x32, 0x35, 0x97, 0x4a, 0x15, 0x7f, 0x87, 0xaf,
-	0x2f, 0x79, 0x11, 0x57, 0xc3, 0x3a, 0xfc, 0x78, 0x45, 0x2c, 0x62, 0xeb, 0xa3, 0x3f, 0xf0, 0x71,
-	0x1d, 0x87, 0xc3, 0x88, 0xad, 0x76, 0x5b, 0x1a, 0x84, 0xc3, 0x62, 0xcd, 0x46, 0x70, 0x6e, 0x67,
-	0x67, 0x56, 0x61, 0x5c, 0xb1, 0xd1, 0xea, 0x7d, 0x8e, 0xff, 0xdf, 0x07, 0x00, 0x00, 0xff, 0xff,
-	0x05, 0x80, 0x07, 0xca, 0x87, 0x02, 0x00, 0x00,
+	// 881 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x96, 0xdd, 0x6e, 0xe3, 0x44,
+	0x14, 0xc7, 0x71, 0xd2, 0x6c, 0x92, 0x93, 0x6c, 0x9b, 0x0e, 0xdd, 0x6e, 0x3e, 0xe8, 0x52, 0xac,
+	0x65, 0x85, 0xf6, 0x22, 0x82, 0x20, 0x71, 0x01, 0x48, 0x88, 0xcd, 0x46, 0x6a, 0x54, 0x36, 0x1b,
+	0xd9, 0xc9, 0xae, 0xca, 0x8d, 0x35, 0xb5, 0x8f, 0x70, 0x44, 0xfd, 0x39, 0x63, 0x56, 0xe6, 0x55,
+	0xb8, 0xe2, 0x02, 0x24, 0x1e, 0x80, 0x2b, 0x9e, 0x81, 0x4b, 0x9e, 0x82, 0x97, 0x40, 0x33, 0xe3,
+	0x38, 0x4e, 0x9d, 0x96, 0x55, 0x25, 0xb8, 0xca, 0xf8, 0x7f, 0xfe, 0x9d, 0xf3, 0x3b, 0x67, 0xce,
+	0xb8, 0x86, 0xc3, 0x1f, 0xc3, 0x38, 0xe0, 0x81, 0xc5, 0x52, 0xdf, 0x1e, 0xca, 0x25, 0xa9, 0x7b,
+	0x5c, 0x2e, 0xfa, 0x47, 0xcc, 0x76, 0xd1, 0xa3, 0x43, 0x7e, 0x35, 0xdc, 0x84, 0x75, 0x02, 0x9d,
+	0x17, 0xc8, 0x18, 0xfd, 0x0e, 0x9f, 0x53, 0x4e, 0x27, 0x5e, 0xc8, 0x53, 0xfd, 0x63, 0x68, 0x15,
+	0x34, 0xf2, 0x01, 0xb4, 0x3d, 0xf5, 0x68, 0xf1, 0x34, 0xc4, 0xae, 0x76, 0xaa, 0x7d, 0x54, 0x33,
+	0x5a, 0x99, 0xb6, 0x48, 0x43, 0xd4, 0x9b, 0x50, 0x7f, 0x15, 0xac, 0x1c, 0x83, 0x85, 0x7a, 0x0a,
+	0xed, 0x79, 0xc2, 0xdc, 0xf1, 0xd5, 0x0a, 0x7d, 0x3e, 0x7d, 0x4e, 0x1e, 0x41, 0x8b, 0x26, 0xdc,
+	0xb5, 0xbe, 0xc7, 0xd4, 0x5a, 0x39, 0xf2, 0x8f, 0xab, 0x46, 0x53, 0x48, 0xe7, 0x98, 0x4e, 0x1d,
+	0x72, 0x02, 0xc0, 0x90, 0xb1, 0x55, 0xe0, 0x8b, 0x70, 0x45, 0x85, 0x33, 0x65, 0xea, 0x90, 0xa7,
+	0x70, 0xe8, 0x23, 0xbf, 0x5a, 0x5d, 0x5a, 0x05, 0x57, 0x55, 0xba, 0x0e, 0x54, 0xc0, 0x5c, 0x7b,
+	0xf5, 0xdf, 0x35, 0x20, 0x2a, 0xef, 0x32, 0x74, 0x28, 0x47, 0x66, 0x72, 0xca, 0x91, 0x74, 0xa0,
+	0x1a, 0x72, 0x96, 0x61, 0x8b, 0x25, 0x19, 0x40, 0x33, 0xe4, 0xcc, 0xb2, 0x83, 0xc4, 0xe7, 0x32,
+	0x65, 0xcd, 0x68, 0x84, 0x9c, 0x8d, 0xc5, 0xb3, 0xb0, 0x47, 0x9c, 0xc9, 0x1c, 0x35, 0x43, 0x2c,
+	0x85, 0x3d, 0xca, 0xed, 0x7b, 0xca, 0x1e, 0x15, 0xec, 0x0c, 0xa3, 0x6e, 0x4d, 0xd9, 0x19, 0x46,
+	0xc2, 0xce, 0x30, 0xb2, 0x18, 0xa7, 0x31, 0xef, 0xde, 0x53, 0x76, 0x86, 0x91, 0x29, 0x9e, 0x09,
+	0x81, 0x3d, 0x81, 0xd6, 0xad, 0x4b, 0x5d, 0xae, 0xf5, 0x01, 0xf4, 0xc6, 0x81, 0xef, 0xa3, 0xcd,
+	0x17, 0x41, 0x56, 0x8d, 0x89, 0xf1, 0x0f, 0x18, 0x1b, 0x18, 0xe9, 0x17, 0xd0, 0xdb, 0xd2, 0x32,
+	0x27, 0x8a, 0x66, 0xab, 0x54, 0x42, 0x5d, 0xb7, 0x56, 0xa6, 0x12, 0xc2, 0xd4, 0x21, 0xef, 0x43,
+	0x2b, 0x0b, 0xfa, 0xd4, 0x43, 0x59, 0x67, 0xd3, 0x00, 0x25, 0xcd, 0xa8, 0x87, 0xfa, 0x1f, 0x1a,
+	0x1c, 0x88, 0xb3, 0xca, 0xba, 0x25, 0x0f, 0x7b, 0x04, 0x4d, 0x5b, 0xb6, 0x70, 0xbd, 0x63, 0x6b,
+	0xf4, 0x60, 0x98, 0x8d, 0xd0, 0xb0, 0x78, 0xb0, 0x46, 0x43, 0xf9, 0xa6, 0x0e, 0xf9, 0x04, 0x6a,
+	0x4c, 0x74, 0x5a, 0xa6, 0x68, 0x8d, 0x06, 0xb9, 0xbf, 0x7c, 0x18, 0x86, 0x72, 0x92, 0x27, 0x70,
+	0x10, 0xd3, 0x37, 0x96, 0x43, 0x39, 0xb5, 0x5c, 0xa4, 0x0e, 0xc6, 0xb2, 0xb1, 0xf7, 0x8d, 0xfb,
+	0x31, 0x7d, 0x23, 0x40, 0xce, 0xa4, 0x48, 0x7a, 0xd0, 0x58, 0xfb, 0x64, 0x8b, 0xdb, 0x46, 0x3d,
+	0x33, 0xe8, 0x3f, 0x6b, 0xd0, 0x11, 0x40, 0xa6, 0x1b, 0xc4, 0x3c, 0x9b, 0x57, 0x32, 0x84, 0x66,
+	0x98, 0x30, 0x77, 0x33, 0xa8, 0xfb, 0xa3, 0xc3, 0x1c, 0xc7, 0x4c, 0x7d, 0x5b, 0x8c, 0xab, 0xd1,
+	0x10, 0x1e, 0xb1, 0x22, 0xa7, 0xd0, 0x96, 0xfe, 0x84, 0xa9, 0x1e, 0xaa, 0x61, 0x00, 0xa1, 0x2d,
+	0x99, 0xec, 0xe2, 0x17, 0xd9, 0x8e, 0x12, 0xa1, 0x2a, 0x0b, 0x7c, 0x94, 0xef, 0xb8, 0xf8, 0xc6,
+	0x4a, 0x64, 0x75, 0x45, 0x08, 0xb5, 0xbd, 0x64, 0xfc, 0x53, 0x83, 0x87, 0x22, 0xeb, 0x56, 0x18,
+	0xa3, 0x04, 0x19, 0xbf, 0x53, 0xa7, 0x1f, 0xc3, 0x3e, 0x43, 0xdf, 0xc1, 0xf8, 0x1a, 0x70, 0x5b,
+	0xa9, 0x19, 0xb2, 0x28, 0x0a, 0x0b, 0x9e, 0x6a, 0x56, 0x14, 0xe6, 0x8e, 0xcf, 0x8a, 0x45, 0xed,
+	0xc9, 0xdc, 0xbd, 0xad, 0xdc, 0x37, 0xd4, 0xf3, 0x93, 0x06, 0xbd, 0x65, 0xb9, 0xe0, 0xac, 0xa2,
+	0x32, 0x9d, 0xf6, 0x16, 0x74, 0x95, 0xdb, 0xe9, 0xaa, 0x6f, 0x4f, 0xf7, 0x9b, 0x06, 0x47, 0x79,
+	0x78, 0xec, 0xd2, 0xff, 0x70, 0x2a, 0xbe, 0x2a, 0x23, 0xea, 0x37, 0x4c, 0x45, 0x01, 0xa4, 0xc0,
+	0xfa, 0x97, 0x06, 0x83, 0x7c, 0x32, 0x8a, 0x96, 0xff, 0x6d, 0x3a, 0x6c, 0x97, 0xf2, 0x6b, 0xd3,
+	0x21, 0x38, 0xa6, 0x0e, 0xf9, 0xbc, 0x3c, 0x1d, 0x27, 0xe5, 0xfe, 0xef, 0xae, 0xeb, 0x17, 0x0d,
+	0x4e, 0x96, 0xbb, 0x8b, 0xbf, 0xd3, 0x94, 0xac, 0x29, 0x2b, 0x25, 0xca, 0x2f, 0x01, 0x72, 0x4a,
+	0xf1, 0xba, 0xae, 0xfe, 0x3b, 0x66, 0x73, 0x8d, 0xc9, 0x9e, 0xfe, 0xaa, 0x41, 0x63, 0x7d, 0xf2,
+	0xe4, 0x01, 0x1c, 0x9a, 0x17, 0xb3, 0xb1, 0xb5, 0xb8, 0x98, 0x4f, 0xac, 0xe5, 0xec, 0x7c, 0xf6,
+	0xf2, 0xf5, 0xac, 0xf3, 0x0e, 0x21, 0xb0, 0x5f, 0x90, 0xcd, 0x89, 0xd1, 0xd1, 0x48, 0x17, 0x8e,
+	0xb6, 0x35, 0x6b, 0xf6, 0x72, 0xf1, 0x62, 0xd2, 0xa9, 0x90, 0x63, 0x20, 0x9b, 0xc8, 0xd7, 0xcb,
+	0xc5, 0x99, 0x75, 0x3e, 0xb9, 0xe8, 0x54, 0xc9, 0x00, 0x1e, 0x96, 0x75, 0xb5, 0xdd, 0x1e, 0x39,
+	0x85, 0xf7, 0x6e, 0x08, 0xaa, 0x6d, 0x6b, 0xa3, 0xbf, 0x2b, 0x50, 0x37, 0xe6, 0x63, 0xc1, 0x4a,
+	0x5e, 0xc3, 0xb1, 0xf8, 0x2d, 0xdf, 0x40, 0x72, 0xba, 0x35, 0xce, 0x3b, 0x2e, 0x67, 0xff, 0xb6,
+	0xb7, 0x32, 0x99, 0xc1, 0xf1, 0xe6, 0x1f, 0xc1, 0xd6, 0xc6, 0x9b, 0xa9, 0xbe, 0xf1, 0xde, 0xf7,
+	0x3b, 0xb9, 0x27, 0xfb, 0x08, 0x20, 0x16, 0xf4, 0xaf, 0x81, 0x16, 0xaf, 0xe3, 0xe3, 0x32, 0x6c,
+	0x79, 0x4e, 0x6e, 0x07, 0x7e, 0x05, 0xfd, 0x6b, 0xc0, 0xc5, 0x04, 0x4f, 0x76, 0x41, 0xef, 0x48,
+	0x51, 0x02, 0x7f, 0xf6, 0x21, 0xbc, 0x6b, 0x07, 0xde, 0xd0, 0xc7, 0xcb, 0xe4, 0x8a, 0xae, 0xbc,
+	0xa1, 0xfa, 0x9e, 0x7a, 0x06, 0xdf, 0xce, 0xc5, 0xaf, 0xc0, 0x3d, 0xab, 0xcc, 0xb5, 0xcb, 0x7b,
+	0x52, 0xfe, 0xf4, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x7f, 0x2c, 0xd2, 0x77, 0x70, 0x09, 0x00,
+	0x00,
 }
