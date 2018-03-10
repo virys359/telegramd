@@ -22,25 +22,26 @@ import (
 	"github.com/nebulaim/telegramd/base/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/ttacon/libphonenumber"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 )
 
 // auth.checkPhone#6fe51dfb phone_number:string = auth.CheckedPhone;
+// tdesktop客户端会调用，android客户端未使用
 func (s *AuthServiceImpl) AuthCheckPhone(ctx context.Context, request *mtproto.TLAuthCheckPhone) (*mtproto.Auth_CheckedPhone, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AuthCheckPhone - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): panic/recovery
+	phoneNumber, err := checkAndGetPhoneNumber(request.GetPhoneNumber())
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+
 	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
-
-	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
-	phoneNumer := libphonenumber.NormalizeDigitsOnly(request.PhoneNumber)
-
-	usersDO := usersDAO.SelectByPhoneNumber(phoneNumer)
+	usersDO := usersDAO.SelectByPhoneNumber(phoneNumber)
 	checkedPhone := mtproto.TLAuthCheckedPhone{Data2: &mtproto.Auth_CheckedPhone_Data{
-		PhoneRegistered: mtproto.ToBool(usersDO == nil),
+		PhoneRegistered: mtproto.ToBool(usersDO != nil),
 	}}
 
 	glog.Infof("AuthCheckPhone - reply: %s\n", checkedPhone)

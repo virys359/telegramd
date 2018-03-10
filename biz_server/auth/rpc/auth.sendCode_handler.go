@@ -23,12 +23,13 @@ import (
 	"github.com/nebulaim/telegramd/base/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/ttacon/libphonenumber"
+	// "github.com/ttacon/libphonenumber"
 	"golang.org/x/net/context"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/nebulaim/telegramd/biz_model/base"
+	// "github.com/ttacon/libphonenumber"
 )
 
 // auth.sendCode#86aef0ec flags:# allow_flashcall:flags.0?true phone_number:string current_number:flags.0?Bool api_id:int api_hash:string = auth.SentCode;
@@ -36,33 +37,18 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AuthSendCode - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	var err error
+	// var err error
 
 	// TODO(@benqi):
 	// 1. check api_id and api_hash
 
-	// 3. check number
-	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
-
-	if request.GetPhoneNumber() == "" {
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "auth.sendCode#86aef0ec: phone number empty")
-		return nil, err
-	}
-
-	// check phone invalid
-	var number *libphonenumber.PhoneNumber
-	number, err = libphonenumber.Parse(request.GetPhoneNumber(), "")
+	//// 3. check number
+	//// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
+	phoneNumber, err := checkAndGetPhoneNumber(request.GetPhoneNumber())
 	if err != nil {
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), fmt.Sprintf("auth.sendCode#86aef0ec: %v", err))
+		glog.Error(err)
 		return nil, err
-	} else {
-		if !libphonenumber.IsValidNumber(number) {
-			err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "auth.sendCode#86aef0ec: invalid phone number")
-			return nil, err
-		}
 	}
-
-	phoneNumber := libphonenumber.NormalizeDigitsOnly(request.PhoneNumber)
 
 	// 2. check allow_flashcall and current_number
 	// CurrentNumber: 是否为本机电话号码
@@ -116,14 +102,15 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	// 透传AuthId，UserId，终端类型等
 	// 检查满足条件的TransactionHash是否存在，可能的条件：
 	//  1. is_deleted !=0 and now - created_at < 15 分钟
-
+	//
 	//  auth.sentCodeTypeApp#3dbb5986 length:int = auth.SentCodeType;
 	//  auth.sentCodeTypeSms#c000bba2 length:int = auth.SentCodeType;
 	//  auth.sentCodeTypeCall#5353e5a7 length:int = auth.SentCodeType;
 	//  auth.sentCodeTypeFlashCall#ab03c6d9 pattern:string = auth.SentCodeType;
 	//
 
-	// TODO(@benqi): 是否要限制同一个authKeyId??
+	// TODO(@benqi): 限制同一个authKeyId
+	// TODO(@benqi): 使用redis
 
 	// 15分钟内有效
 	lastCreatedAt := time.Unix(time.Now().Unix()-15*60, 0).Format("2006-01-02 15:04:05")
@@ -147,13 +134,35 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 		}
 	}
 
+	// 如果手机号已经注册，检查是否有其他设备在线，有则使用sentCodeTypeApp
+	// 否则使用sentCodeTypeSms
+	// TODO(@benqi): 有则使用sentCodeTypeFlashCall和entCodeTypeCall？？
+
+	// 使用app类型，code统一为123456
 	authSentCode := mtproto.NewTLAuthSentCode()
-	authSentCodeType := mtproto.NewTLAuthSentCodeTypeApp()
-	authSentCodeType.SetLength(6)
-	authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
+	phoneRegistered := userDO != nil
+	authSentCode.SetPhoneRegistered(phoneRegistered)
+
+	if phoneRegistered {
+		// TODO(@benqi): check other session online
+		authSentCodeType := mtproto.NewTLAuthSentCodeTypeApp()
+		authSentCodeType.SetLength(6)
+		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
+	} else {
+		// TODO(@benqi): sentCodeTypeFlashCall and sentCodeTypeCall, nextType
+		authSentCodeType := mtproto.NewTLAuthSentCodeTypeSms()
+		authSentCodeType.SetLength(6)
+		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
+
+		// TODO(@benqi): nextType
+		// authSentCode.SetNextType()
+	}
+
 	authSentCode.SetPhoneCodeHash(do.TransactionHash)
 
-	// reply := mtproto.MakeAuth_SentCode(authSentCode)
+	// TODO(@benqi): 默认60s
+	authSentCode.SetTimeout(60)
+
 	glog.Infof("AuthSendCode - reply: %s", logger.JsonDebugData(authSentCode))
 	return authSentCode.To_Auth_SentCode(), nil
 }

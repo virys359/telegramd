@@ -11,9 +11,9 @@
             <![CDATA[
 
             SELECT
-                transaction_hash
+                transaction_hash, attempts
             FROM
-                auth_phone_transactions, attempts
+                auth_phone_transactions
             WHERE
                 phone_number = :phone_number AND api_id = :api_id AND api_hash = :api_hash AND created_at < :created_at AND is_deleted = 0
             LIMIT 1
@@ -24,6 +24,18 @@
     <operation name="SelectByPhoneCode">
         <sql>
             SELECT id FROM auth_phone_transactions WHERE transaction_hash = :transaction_hash AND code = :code AND phone_number = :phone_number
+        </sql>
+    </operation>
+    <operation name="SelectByPhoneCodeHash">
+        <sql>
+            <![CDATA[
+            SELECT
+                code, attempts, created_at
+            FROM
+                auth_phone_transactions
+            WHERE
+                transaction_hash = :transaction_hash AND phone_number = :phone_number AND is_deleted = 0
+            ]]>
         </sql>
     </operation>
 </table>

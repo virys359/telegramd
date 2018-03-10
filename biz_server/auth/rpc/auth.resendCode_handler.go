@@ -24,6 +24,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	"time"
 )
 
 // auth.resendCode#3ef1a9bf phone_number:string phone_code_hash:string = auth.SentCode;
@@ -31,7 +33,20 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AuthResendCode - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AuthResendCode logic
+	// 1. check number
+	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
+	phoneNumber, err := checkAndGetPhoneNumber(request.GetPhoneNumber())
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+
+	// 2. sentCode
+	lastCreatedAt := time.Unix(time.Now().Unix()-15*60, 0).Format("2006-01-02 15:04:05")
+	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(request.GetPhoneCodeHash(), phoneNumber, lastCreatedAt)
+	if do == nil {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EXPIRED), "invalid phone number")
+	}
 
 	return nil, fmt.Errorf("Not impl AuthResendCode")
 }

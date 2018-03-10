@@ -53,10 +53,10 @@ func (dao *AuthPhoneTransactionsDAO) Insert(do *dataobject.AuthPhoneTransactions
 	return id
 }
 
-// select transaction_hash from auth_phone_transactions, attempts where phone_number = :phone_number and api_id = :api_id and api_hash = :api_hash and created_at < :created_at and is_deleted = 0 limit 1
+// select transaction_hash, attempts from auth_phone_transactions where phone_number = :phone_number and api_id = :api_id and api_hash = :api_hash and created_at < :created_at and is_deleted = 0 limit 1
 // TODO(@benqi): sqlmap
 func (dao *AuthPhoneTransactionsDAO) SelectByPhoneAndApiIdAndHash(phone_number string, api_id int32, api_hash string, created_at string) *dataobject.AuthPhoneTransactionsDO {
-	var query = "select transaction_hash from auth_phone_transactions, attempts where phone_number = ? and api_id = ? and api_hash = ? and created_at < ? and is_deleted = 0 limit 1"
+	var query = "select transaction_hash, attempts from auth_phone_transactions where phone_number = ? and api_id = ? and api_hash = ? and created_at < ? and is_deleted = 0 limit 1"
 	rows, err := dao.db.Queryx(query, phone_number, api_id, api_hash, created_at)
 
 	if err != nil {
@@ -101,6 +101,35 @@ func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCode(transaction_hash string, 
 		err = rows.StructScan(do)
 		if err != nil {
 			errDesc := fmt.Sprintf("StructScan in SelectByPhoneCode(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
+
+// select code, attempts from auth_phone_transactions where transaction_hash = :transaction_hash and phone_number = :phone_number and created_at < :created_at and is_deleted = 0
+// TODO(@benqi): sqlmap
+func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCodeHash(transaction_hash string, phone_number string, created_at string) *dataobject.AuthPhoneTransactionsDO {
+	var query = "select code, attempts from auth_phone_transactions where transaction_hash = ? and phone_number = ? and created_at < ? and is_deleted = 0"
+	rows, err := dao.db.Queryx(query, transaction_hash, phone_number, created_at)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByPhoneCodeHash(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.AuthPhoneTransactionsDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByPhoneCodeHash(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
