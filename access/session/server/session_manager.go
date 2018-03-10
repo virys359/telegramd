@@ -25,9 +25,11 @@ import (
 	//"encoding/hex"
 	//"github.com/golang/glog"
 	"github.com/golang/glog"
+	"fmt"
 )
 
 type sessionManager struct {
+	// sync.RWMutex
 	cache      AuthKeyStorager
 	sessions   map[int64]*sessionClientList
 	// ioCallback ClientIOCallback
@@ -66,4 +68,22 @@ func (s *sessionManager) onNewClient() error {
 // TODO(@benqi): 客户端连接断开
 func (s *sessionManager) onClientClose() error {
 	return nil
+}
+
+func (s *sessionManager) pushToSessionData(authKeyId, sessionId int64, md *mtproto.ZProtoMetadata, data *messageData) error {
+	// var ok bool
+	sessList, ok := s.sessions[authKeyId]
+	if !ok {
+		err := fmt.Errorf("pushToSessionData - not find sessionList by authKeyId: {%d}", authKeyId)
+		glog.Warning(err)
+		return err
+	}
+	sess, ok := sessList.sessions[sessionId]
+	if !ok {
+		err := fmt.Errorf("pushToSessionData - not find session by sessionId: {%d}", sessionId)
+		glog.Warning(err)
+		return err
+	}
+
+	return sessList.SendToClientData(sess, 0, md, []*messageData{data})
 }

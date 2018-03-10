@@ -134,10 +134,10 @@ func (c *TcpClient) AutoReconnect() bool {
 	return c.autoReConnect
 }
 
-func (this *TcpClient) Reconnect() {
+func (c *TcpClient) Reconnect() {
 	time.AfterFunc(5*time.Second, func() {
-		glog.Error("Auto Reconnect server ", this.remoteName, " address ", this.remoteAddress)
-		this.Serve()
+		glog.Error("Auto Reconnect server ", c.remoteName, " address ", c.remoteAddress)
+		c.Serve()
 	})
 }
 

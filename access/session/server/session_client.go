@@ -333,17 +333,20 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 	rpcMetadata.ReceiveTime = time.Now().Unix()
 
 	rpcResult, err := c.bizRPCClient.Invoke(rpcMetadata, request)
+	reply := &mtproto.TLRpcResult{
+		ReqMsgId: msgId,
+		// Result: rpcResult,
+	}
 
 	if err != nil {
 		glog.Error(err)
-		return
-	}
-
-	glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
-	// 构造rpc_result
-	reply := &mtproto.TLRpcResult{
-		ReqMsgId: msgId,
-		Result: rpcResult,
+		reply.Result = &mtproto.TLRpcError { Data2: &mtproto.RpcError_Data {
+			ErrorCode: mtproto.RPC_INTERNAL_ERROR,
+			ErrorMessage: "INTERNAL_ERROR",
+		}}
+	} else {
+		glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
+		reply.Result = rpcResult
 	}
 	c.sendMessageList = append(c.sendMessageList, &messageData{true, false, reply})
 
@@ -372,8 +375,8 @@ func (c *sessionClient) onUserOnline(serverId int32) {
 		ServerId:        serverId,
 		UserId:          c.authUserId,
 		AuthKeyId:       c.authKeyId,
-		SessionId:       c.sessionId,
-		NetlibSessionId: int64(c.clientSession.clientSessionId),
+		SessionId:       int64(c.clientSession.clientSessionId),
+		NetlibSessionId: int64(c.clientSession.conn.GetConnID()),
 		Now:             time.Now().Unix(),
 	}
 
