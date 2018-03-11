@@ -33,10 +33,10 @@ func NewAuthPhoneTransactionsDAO(db *sqlx.DB) *AuthPhoneTransactionsDAO {
 	return &AuthPhoneTransactionsDAO{db}
 }
 
-// insert into auth_phone_transactions(transaction_hash, api_id, api_hash, phone_number, code, created_at) values (:transaction_hash, :api_id, :api_hash, :phone_number, :code, :created_at)
+// insert into auth_phone_transactions(transaction_hash, api_id, api_hash, phone_number, auth_key_id, code, created_time, created_at) values (:transaction_hash, :api_id, :api_hash, :phone_number, :auth_key_id, :code, :created_time, :created_at)
 // TODO(@benqi): sqlmap
 func (dao *AuthPhoneTransactionsDAO) Insert(do *dataobject.AuthPhoneTransactionsDO) int64 {
-	var query = "insert into auth_phone_transactions(transaction_hash, api_id, api_hash, phone_number, code, created_at) values (:transaction_hash, :api_id, :api_hash, :phone_number, :code, :created_at)"
+	var query = "insert into auth_phone_transactions(transaction_hash, api_id, api_hash, phone_number, auth_key_id, code, created_time, created_at) values (:transaction_hash, :api_id, :api_hash, :phone_number, :auth_key_id, :code, :created_time, :created_at)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -82,10 +82,10 @@ func (dao *AuthPhoneTransactionsDAO) SelectByPhoneAndApiIdAndHash(phone_number s
 	return do
 }
 
-// select id from auth_phone_transactions where transaction_hash = :transaction_hash and code = :code and phone_number = :phone_number
+// select id from auth_phone_transactions where transaction_hash = :transaction_hash and code = :code and phone_number = :phone_number and is_deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCode(transaction_hash string, code string, phone_number string) *dataobject.AuthPhoneTransactionsDO {
-	var query = "select id from auth_phone_transactions where transaction_hash = ? and code = ? and phone_number = ?"
+	var query = "select id from auth_phone_transactions where transaction_hash = ? and code = ? and phone_number = ? and is_deleted = 0"
 	rows, err := dao.db.Queryx(query, transaction_hash, code, phone_number)
 
 	if err != nil {
@@ -111,11 +111,11 @@ func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCode(transaction_hash string, 
 	return do
 }
 
-// select code, attempts from auth_phone_transactions where transaction_hash = :transaction_hash and phone_number = :phone_number and created_at < :created_at and is_deleted = 0
+// select code, attempts, created_at from auth_phone_transactions where transaction_hash = :transaction_hash and phone_number = :phone_number and is_deleted = 0
 // TODO(@benqi): sqlmap
-func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCodeHash(transaction_hash string, phone_number string, created_at string) *dataobject.AuthPhoneTransactionsDO {
-	var query = "select code, attempts from auth_phone_transactions where transaction_hash = ? and phone_number = ? and created_at < ? and is_deleted = 0"
-	rows, err := dao.db.Queryx(query, transaction_hash, phone_number, created_at)
+func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCodeHash(transaction_hash string, phone_number string) *dataobject.AuthPhoneTransactionsDO {
+	var query = "select code, attempts, created_at from auth_phone_transactions where transaction_hash = ? and phone_number = ? and is_deleted = 0"
+	rows, err := dao.db.Queryx(query, transaction_hash, phone_number)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Queryx in SelectByPhoneCodeHash(_), error: %v", err)

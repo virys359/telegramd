@@ -42,6 +42,8 @@ func GetUserModel() *userModel {
 	return userInstance
 }
 
+// func (m *userModel) User(userId int32) (user* mtproto.TLUser) {
+
 func (m *userModel) GetUser(userId int32) (user* mtproto.TLUser) {
 	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	userDO := usersDAO.SelectById(userId)

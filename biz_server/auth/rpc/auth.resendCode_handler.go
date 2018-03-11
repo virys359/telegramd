@@ -41,12 +41,66 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 		return nil, err
 	}
 
-	// 2. sentCode
-	lastCreatedAt := time.Unix(time.Now().Unix()-15*60, 0).Format("2006-01-02 15:04:05")
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(request.GetPhoneCodeHash(), phoneNumber, lastCreatedAt)
-	if do == nil {
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EXPIRED), "invalid phone number")
+	// <string name="PhoneNumberFlood">Sorry, you have deleted and re-created your account too many times recently.
+	//    Please wait for a few days before signing up again.</string>
+	//
+	userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+	if userDO != nil && userDO.Banned != 0 {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("Not impl AuthResendCode")
+	// 2. sentCode
+	// lastCreatedAt := time.Unix(time.Now().Unix()-15*60, 0).Format("2006-01-02 15:04:05")
+	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(request.GetPhoneCodeHash(), phoneNumber)
+	if do == nil {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_HASH_EMPTY), "invalid phone number")
+		glog.Error(err)
+		return nil, err
+	}
+
+	if time.Now().Unix() > do.CreatedTime + 15*60 {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EXPIRED), "code expired")
+		glog.Error(err)
+		return nil, err
+	}
+
+	if do.Attempts > 3 {
+		// TODO(@benqi): 输入了太多次错误的phone code
+		err = mtproto.NewFloodWaitX(15*60, "auth.sendCode#86aef0ec: too many attempts.")
+		return nil, err
+	}
+
+	// 如果手机号已经注册，检查是否有其他设备在线，有则使用sentCodeTypeApp
+	// 否则使用sentCodeTypeSms
+	// TODO(@benqi): 有则使用sentCodeTypeFlashCall和entCodeTypeCall？？
+
+	// 使用app类型，code统一为123456
+	authSentCode := mtproto.NewTLAuthSentCode()
+
+	phoneRegistered := userDO != nil
+	authSentCode.SetPhoneRegistered(phoneRegistered)
+
+	if phoneRegistered {
+		// TODO(@benqi): check other session online
+		authSentCodeType := mtproto.NewTLAuthSentCodeTypeApp()
+		authSentCodeType.SetLength(6)
+		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
+	} else {
+		// TODO(@benqi): sentCodeTypeFlashCall and sentCodeTypeCall, nextType
+		authSentCodeType := mtproto.NewTLAuthSentCodeTypeSms()
+		authSentCodeType.SetLength(6)
+		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
+
+		// TODO(@benqi): nextType
+		// authSentCode.SetNextType()
+	}
+
+	authSentCode.SetPhoneCodeHash(do.TransactionHash)
+
+	// TODO(@benqi): 默认60s
+	authSentCode.SetTimeout(60)
+
+	glog.Infof("auth.resendCode#3ef1a9bf - reply: %s", logger.JsonDebugData(authSentCode))
+	return authSentCode.To_Auth_SentCode(), nil
 }

@@ -2,8 +2,10 @@
 <table sqlname="auth_phone_transactions">
     <operation name="Insert">
         <sql>
-            INSERT INTO auth_phone_transactions (transaction_hash, api_id, api_hash, phone_number, code, created_at)
-            VALUES (:transaction_hash, :api_id, :api_hash, :phone_number, :code, :created_at)
+            INSERT INTO auth_phone_transactions
+                (transaction_hash, api_id, api_hash, phone_number, auth_key_id, code, created_time, created_at)
+            VALUES
+                (:transaction_hash, :api_id, :api_hash, :phone_number, :auth_key_id, :code, :created_time, :created_at)
         </sql>
     </operation>
     <operation name="SelectByPhoneAndApiIdAndHash">
@@ -23,7 +25,12 @@
     </operation>
     <operation name="SelectByPhoneCode">
         <sql>
-            SELECT id FROM auth_phone_transactions WHERE transaction_hash = :transaction_hash AND code = :code AND phone_number = :phone_number
+            SELECT
+                id
+            FROM
+                auth_phone_transactions
+            WHERE
+                transaction_hash = :transaction_hash AND code = :code AND phone_number = :phone_number AND is_deleted = 0
         </sql>
     </operation>
     <operation name="SelectByPhoneCodeHash">
