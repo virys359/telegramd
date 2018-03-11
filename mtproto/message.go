@@ -23,7 +23,7 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"encoding/hex"
-	"github.com/nebulaim/telegramd/base/crypto"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
 const (

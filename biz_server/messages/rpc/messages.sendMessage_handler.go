@@ -19,14 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/zproto"
+	// "github.com/nebulaim/telegramd/zproto"
 	"fmt"
 	"github.com/nebulaim/telegramd/biz_server/sync"
 )
@@ -276,7 +276,7 @@ func makeMessageBySendMessage(request *mtproto.TLMessagesSendMessage) *mtproto.T
 	return message
 }
 
-func sendPeerSelfMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
+func sendPeerSelfMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
 	// message
 	message := makeMessageBySendMessage(request)
 	message.SetFromId(md.UserId)
@@ -337,7 +337,7 @@ func sendPeerSelfMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSend
 	return sentMessage, nil
 }
 
-func sendPeerUserMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
+func sendPeerUserMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
 	// message
 	message := makeMessageBySendMessage(request)
 	message.SetFromId(md.UserId)
@@ -401,10 +401,10 @@ func sendPeerUserMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSend
 	return sentMessage, nil
 }
 
-func sendPeerChatMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
+func sendPeerChatMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
 	return nil, nil
 }
 
-func sendPeerChannelMessage(md *zproto.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
+func sendPeerChannelMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
 	return nil, nil
 }

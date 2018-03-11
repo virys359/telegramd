@@ -26,7 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"image"
-	"github.com/nebulaim/telegramd/base/base"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"fmt"
 	"github.com/golang/glog"
 	"time"

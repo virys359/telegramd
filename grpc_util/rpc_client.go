@@ -27,7 +27,6 @@ import (
 	"time"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
-	"github.com/nebulaim/telegramd/zproto"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery/etcd3"
@@ -97,7 +96,7 @@ func NewRPCClient(discovery *service_discovery.ServiceDiscoveryClientConfig) (c 
 }
 
 // 通用grpc转发器
-func (c* RPCClient) Invoke(rpcMetaData *zproto.RpcMetadata, object mtproto.TLObject) (mtproto.TLObject, error) {
+func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (mtproto.TLObject, error) {
 	t := mtproto.FindRPCContextTuple(object)
 	if t == nil {
 		err := fmt.Errorf("Invoke error: %v not regist!\n", object)

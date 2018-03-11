@@ -18,12 +18,12 @@
 package model
 
 import (
-	"github.com/nebulaim/telegramd/base/redis_client"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/golang/glog"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"strings"
-	"github.com/nebulaim/telegramd/base/base"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"sync"

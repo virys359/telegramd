@@ -23,10 +23,10 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/golang/glog"
-	base2 "github.com/nebulaim/telegramd/base/base"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"time"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"fmt"
 	"encoding/json"
 )

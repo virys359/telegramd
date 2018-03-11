@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"github.com/disintegration/imaging"
 	"bytes"
-	"github.com/nebulaim/telegramd/base/mysql_client"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/golang/glog"
 	"image"

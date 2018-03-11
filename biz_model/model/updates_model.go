@@ -26,7 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
-	"github.com/nebulaim/telegramd/base/base"
+	"github.com/nebulaim/telegramd/baselib/base"
 )
 
 type updatesModel struct {

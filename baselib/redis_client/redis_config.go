@@ -15,41 +15,24 @@
  * limitations under the License.
  */
 
-package main
+package redis_client
 
 import (
-	net2 "github.com/nebulaim/telegramd/net"
-	"github.com/nebulaim/telegramd/net/codec"
-	"log"
-	"fmt"
+	"github.com/nebulaim/telegramd/baselib/base"
 )
 
-func main() {
-	lengthBasedFrame := codec.NewLengthBasedFrame(1024)
+// Redis client config.
+type RedisConfig struct {
+	Name         	string 			// redis name
+	Addr         	string
+	Active       	int 			// pool
+	Idle         	int 			// pool
+	DialTimeout  	base.Duration
+	ReadTimeout  	base.Duration
+	WriteTimeout 	base.Duration
+	IdleTimeout  	base.Duration
 
-	server, err := net2.Listen("tcp", "0.0.0.0:12345",
-		lengthBasedFrame, 0 /* sync send */,
-		net2.HandlerFunc(serverSessionLoop))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	server.Listener().Addr().String()
-	server.Serve()
+	DBNum			string			// db号
+	Password 		string			// 密码
 }
 
-func serverSessionLoop(session *net2.Session) {
-	log.Println("OnNewSession: ")
-	for {
-		line, err := session.Receive()
-		if err != nil {
-			return
-		}
-
-		fmt.Print(line)
-		err = session.Send(line)
-		if err != nil {
-			return
-		}
-	}
-}

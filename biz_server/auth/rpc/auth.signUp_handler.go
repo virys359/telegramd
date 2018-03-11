@@ -19,7 +19,7 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
@@ -27,7 +27,7 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/nebulaim/telegramd/biz_model/base"
-	base2 "github.com/nebulaim/telegramd/base/base"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 )
 
 // auth.signUp#1b067634 phone_number:string phone_code_hash:string phone_code:string first_name:string last_name:string = auth.Authorization;

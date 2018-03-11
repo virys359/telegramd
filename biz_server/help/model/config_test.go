@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"testing"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/logger"
 )
 
 func TestGetAuthKey(t *testing.T) {

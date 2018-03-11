@@ -23,7 +23,7 @@ import (
 	_ "github.com/nebulaim/telegramd/mtproto"
 	"flag"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/base/crypto"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/gogo/protobuf/proto"
 )
 

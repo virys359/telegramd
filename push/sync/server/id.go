@@ -17,7 +17,7 @@
 
 package server
 
-import "github.com/nebulaim/telegramd/base/snowflake"
+import "github.com/nebulaim/telegramd/baselib/snowflake"
 
 var id *snowflake.IdWorker
 

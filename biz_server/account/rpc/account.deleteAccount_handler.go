@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	base2 "github.com/nebulaim/telegramd/base/base"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 )
 
 // account.deleteAccount#418d4e0b reason:string = Bool;

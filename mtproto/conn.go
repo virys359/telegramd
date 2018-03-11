@@ -20,7 +20,7 @@ package mtproto
 import (
 	"net"
 	"time"
-	"github.com/nebulaim/telegramd/base/crypto"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/golang/glog"
 	"sync"
 )

@@ -21,7 +21,7 @@ import (
 	"net"
 	"io"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/base/crypto"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"errors"
 )

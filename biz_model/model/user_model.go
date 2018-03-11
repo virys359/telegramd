@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	// "github.com/nebulaim/telegramd/base/base"
 	// "github.com/golang/glog"
-	// "github.com/nebulaim/telegramd/base/logger"
+	// "github.com/nebulaim/telegramd/baselib/logger"
 )
 
 type userModel struct {

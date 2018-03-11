@@ -15,19 +15,28 @@
  * limitations under the License.
  */
 
-package main
+package server
 
-import (
-	"github.com/nebulaim/telegramd/sync_server/chat_test"
-	"flag"
+import "github.com/nebulaim/telegramd/baselib/snowflake"
+
+var id *snowflake.IdWorker
+
+// = &snowflake.IdWorker{
+//
+//}
+
+// TODO(@benqi): 多服务器部署时需要配置驱动workId
+const (
+	workerId	   	= int64(1)
+	dataCenterId	= int64(1)
+	twepoch        	= int64(1288834974657)
 )
 
-func init() {
-	flag.Set("alsologtostderr", "true")
-	flag.Set("log_dir", "false")
+func init()  {
+	id, _ = snowflake.NewIdWorker(workerId, dataCenterId, twepoch)
 }
 
-func main() {
-	flag.Parse()
-	chat_test.DoChatTestClient()
+func NextId() (int64) {
+	r, _ := id.NextId()
+	return r
 }

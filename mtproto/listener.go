@@ -26,7 +26,7 @@ import (
 	"sync/atomic"
 	"encoding/hex"
 	"encoding/binary"
-	"github.com/nebulaim/telegramd/base/crypto"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
 const (

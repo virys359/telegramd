@@ -19,8 +19,8 @@ package server
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/base/base"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	base2 "github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/mtproto"

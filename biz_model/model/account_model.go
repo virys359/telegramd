@@ -22,7 +22,7 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/nebulaim/telegramd/biz_model/base"
-	base2 "github.com/nebulaim/telegramd/base/base"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/mtproto"
 )
 

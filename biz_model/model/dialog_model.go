@@ -24,9 +24,9 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/golang/glog"
-	base2 "github.com/nebulaim/telegramd/base/base"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"time"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/logger"
 )
 
 var (

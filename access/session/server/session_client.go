@@ -23,8 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/access/frontend/id"
-	"github.com/nebulaim/telegramd/zproto"
+	// "github.com/nebulaim/telegramd/zproto"
 	"github.com/nebulaim/telegramd/grpc_util"
 )
 
@@ -321,7 +320,7 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 	}
 
 	// 初始化metadata
-	rpcMetadata := &zproto.RpcMetadata{}
+	rpcMetadata := &grpc_util.RpcMetadata{}
 	rpcMetadata.ServerId = 1
 	rpcMetadata.NetlibSessionId = int64(c.clientSession.clientSessionId)
 	rpcMetadata.UserId = c.authUserId
@@ -329,7 +328,7 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 	rpcMetadata.SessionId = c.sessionId
 	rpcMetadata.ClientAddr = md.ClientAddr
 	rpcMetadata.TraceId = md.TraceId
-	rpcMetadata.SpanId = id.NextId()
+	rpcMetadata.SpanId = NextId()
 	rpcMetadata.ReceiveTime = time.Now().Unix()
 
 	rpcResult, err := c.bizRPCClient.Invoke(rpcMetadata, request)

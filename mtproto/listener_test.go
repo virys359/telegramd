@@ -22,8 +22,8 @@ import (
 	"net"
 	"log"
 	"fmt"
-	net2 "github.com/nebulaim/telegramd/net"
-	"github.com/nebulaim/telegramd/net/codec"
+	net2 "github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/baselib/net2/codec"
 )
 
 func TTestListener(t *testing.T) {

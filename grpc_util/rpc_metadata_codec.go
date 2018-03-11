@@ -25,7 +25,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/zproto"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -34,7 +33,7 @@ var (
 )
 
 
-func RpcMetadataFromMD(md metadata.MD) (*zproto.RpcMetadata, error) {
+func RpcMetadataFromMD(md metadata.MD) (*RpcMetadata, error) {
 	val := metautils.NiceMD(md).Get(headerRpcMetadata)
 	if val == "" {
 		return nil, nil
@@ -48,7 +47,7 @@ func RpcMetadataFromMD(md metadata.MD) (*zproto.RpcMetadata, error) {
 			//	fmt.Sprintf("Base64 decode error, rpc_metadata: %s", val)))
 	}
 
-	rpcMetadata := &zproto.RpcMetadata{}
+	rpcMetadata := &RpcMetadata{}
 	err = proto.Unmarshal(buf, rpcMetadata)
 	if err != nil {
 		return nil, fmt.Errorf("RpcMetadata unmarshal error, rpc_metadata: %s, error: %v", val, err)
@@ -59,7 +58,7 @@ func RpcMetadataFromMD(md metadata.MD) (*zproto.RpcMetadata, error) {
 	return rpcMetadata, nil
 }
 
-func RpcMetadataFromIncoming(ctx context.Context) *zproto.RpcMetadata {
+func RpcMetadataFromIncoming(ctx context.Context) *RpcMetadata {
 	md2, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil
@@ -73,7 +72,7 @@ func RpcMetadataFromIncoming(ctx context.Context) *zproto.RpcMetadata {
 	return md
 }
 
-func RpcMetadatToOutgoing(ctx context.Context, md *zproto.RpcMetadata) (context.Context, error) {
+func RpcMetadatToOutgoing(ctx context.Context, md *RpcMetadata) (context.Context, error) {
 	buf, err := proto.Marshal(md)
 	if err != nil {
 		glog.Errorf("Marshal rpc_metadata error: %v", err)

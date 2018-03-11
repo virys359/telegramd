@@ -18,15 +18,15 @@
 package delivery
 
 import (
-	"context"
+	// "context"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/zproto"
+	// "github.com/nebulaim/telegramd/zproto"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/grpc_util"
 )
 
 type deliveryService struct {
-	client zproto.RPCSyncClient
+	// client zproto.RPCSyncClient
 }
 
 var (
@@ -39,52 +39,52 @@ func GetDeliveryInstance() *deliveryService {
 
 func InstallDeliveryInstance(discovery *service_discovery.ServiceDiscoveryClientConfig) {
 	conn, err := grpc_util.NewRPCClientByServiceDiscovery(discovery)
-
+	_ = conn
 	if err != nil {
 		glog.Error(err)
 		panic(err)
 	}
 
-	deliveryInstance.client = zproto.NewRPCSyncClient(conn)
+	// deliveryInstance.client = zproto.NewRPCSyncClient(conn)
 }
 
 func (d *deliveryService) DeliveryUpdates(authKeyId, sessionId, netlibSessionId int64, sendtoUserIdList []int32, rawData []byte) (err error) {
-	delivery := &zproto.DeliveryUpdatesToUsers{}
-	delivery.MyAuthKeyId = authKeyId
-	delivery.MySessionId = sessionId
-	delivery.MyNetlibSessionId = netlibSessionId
-	delivery.SendtoUserIdList = sendtoUserIdList
-	delivery.RawData = rawData
-
-	glog.Infof("DeliveryUpdates - delivery: %v", delivery)
-	_, err = d.client.DeliveryUpdates(context.Background(), delivery)
+	//delivery := &zproto.DeliveryUpdatesToUsers{}
+	//delivery.MyAuthKeyId = authKeyId
+	//delivery.MySessionId = sessionId
+	//delivery.MyNetlibSessionId = netlibSessionId
+	//delivery.SendtoUserIdList = sendtoUserIdList
+	//delivery.RawData = rawData
+	//
+	//glog.Infof("DeliveryUpdates - delivery: %v", delivery)
+	//_, err = d.client.DeliveryUpdates(context.Background(), delivery)
 	return
 }
 
 func (d *deliveryService) DeliveryUpdatesNotMe(authKeyId, sessionId, netlibSessionId int64, sendtoUserIdList []int32, rawData []byte) (err error) {
-	delivery := &zproto.DeliveryUpdatesToUsers{}
-	delivery.MyAuthKeyId = authKeyId
-	delivery.MySessionId = sessionId
-	delivery.MyNetlibSessionId = netlibSessionId
-	delivery.SendtoUserIdList = sendtoUserIdList
-	delivery.RawData = rawData
-
-	glog.Infof("DeliveryUpdatesNotMe - delivery: %v", delivery)
-	_, err = d.client.DeliveryUpdatesNotMe(context.Background(), delivery)
+	//delivery := &zproto.DeliveryUpdatesToUsers{}
+	//delivery.MyAuthKeyId = authKeyId
+	//delivery.MySessionId = sessionId
+	//delivery.MyNetlibSessionId = netlibSessionId
+	//delivery.SendtoUserIdList = sendtoUserIdList
+	//delivery.RawData = rawData
+	//
+	//glog.Infof("DeliveryUpdatesNotMe - delivery: %v", delivery)
+	//_, err = d.client.DeliveryUpdatesNotMe(context.Background(), delivery)
 	return
 }
 
-func (d *deliveryService) DeliveryUpdates2(authKeyId, sessionId, netlibSessionId int64, pushDatas []*zproto.PushUpdates) (err error) {
-	request := &zproto.UpdatesRequest{
-		SenderAuthKeyId:       authKeyId,
-		SenderSessionId:       sessionId,
-		SenderNetlibSessionId: netlibSessionId,
-		PushDatas:             pushDatas,
-	}
-	glog.Infof("DeliveryUpdates2 - delivery: %v", request)
-	_, err = d.client.DeliveryUpdates2(context.Background(), request)
-	return
-}
+//func (d *deliveryService) DeliveryUpdates2(authKeyId, sessionId, netlibSessionId int64, pushDatas []*zproto.PushUpdates) (err error) {
+//	request := &zproto.UpdatesRequest{
+//		SenderAuthKeyId:       authKeyId,
+//		SenderSessionId:       sessionId,
+//		SenderNetlibSessionId: netlibSessionId,
+//		PushDatas:             pushDatas,
+//	}
+//	glog.Infof("DeliveryUpdates2 - delivery: %v", request)
+//	_, err = d.client.DeliveryUpdates2(context.Background(), request)
+//	return
+//}
 
 //DeliveryUpdateShortMessage(ctx context.Context, in *UpdateShortMessageRequest, opts ...grpc.CallOption) (*DeliveryRsp, error)
 //DeliveryUpdatShortChatMessage(ctx context.Context, in *UpdatShortChatMessageRequest, opts ...grpc.CallOption) (*DeliveryRsp, error)

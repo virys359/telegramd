@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,11 +18,9 @@
 package main
 
 import (
-	server2 "github.com/nebulaim/telegramd/access/frontend/server"
+	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/access/frontend/server"
 	"flag"
-	"github.com/BurntSushi/toml"
-	"fmt"
-	"github.com/golang/glog"
 )
 
 func init() {
@@ -33,14 +31,6 @@ func init() {
 func main() {
 	flag.Parse()
 
-	frontendConfig := &server2.FrontendConfig{}
-	if _, err := toml.DecodeFile("./frontend.toml", frontendConfig); err != nil {
-		fmt.Errorf("%s\n", err)
-		return
-	}
-
-	glog.Info(frontendConfig)
-
-	server := server2.NewServer(frontendConfig)
-	server.Serve()
+	instance := server.NewFrontendServer("./frontend.toml")
+	app.DoMainAppInsance(instance)
 }

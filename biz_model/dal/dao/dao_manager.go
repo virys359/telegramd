@@ -21,7 +21,7 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/dal/dao/mysql_dao"
 	"github.com/jmoiron/sqlx"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/base/redis_client"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao/redis_dao"
 )
 

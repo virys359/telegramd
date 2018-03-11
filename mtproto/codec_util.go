@@ -19,7 +19,7 @@ package mtproto
 
 import (
 	"time"
-	"github.com/nebulaim/telegramd/base/crypto"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
 func GenerateMessageId() int64 {

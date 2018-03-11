@@ -24,17 +24,17 @@ option optimize_for = CODE_SIZE;
 
 import "google/protobuf/any.proto";
 
-package zproto;
+package grpc_util;
 
-message AuthKeyMetadata {
-    bytes nonce = 1;
-    bytes server_nonce = 2;
-    bytes new_nonce = 3;
-    bytes a = 4;
-    bytes p = 5;
-    int64 auth_key_id = 6;
-    bytes auth_key = 7;
-}
+//message AuthKeyMetadata {
+//    bytes nonce = 1;
+//    bytes server_nonce = 2;
+//    bytes new_nonce = 3;
+//    bytes a = 4;
+//    bytes p = 5;
+//    int64 auth_key_id = 6;
+//    bytes auth_key = 7;
+//}
 
 message RpcMetadata {
     int32 server_id	 = 1;

@@ -18,7 +18,7 @@
 package service_discovery
 
 import (
-	"github.com/nebulaim/telegramd/base/base"
+	"github.com/nebulaim/telegramd/baselib/base"
 )
 
 type ServiceDiscoveryServerConfig struct {

@@ -19,7 +19,7 @@ package model
 
 import (
 	"testing"
-	"github.com/nebulaim/telegramd/base/redis_client"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"time"
 )
 

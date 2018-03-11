@@ -20,10 +20,10 @@ package model
 import (
 	"testing"
 	"fmt"
-	"github.com/nebulaim/telegramd/base/mysql_client"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/base/logger"
+	"github.com/nebulaim/telegramd/baselib/logger"
 )
 
 func init()  {

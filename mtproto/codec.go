@@ -19,7 +19,7 @@ package mtproto
 
 import (
 	"io"
-	net2 "github.com/nebulaim/telegramd/net"
+	net2 "github.com/nebulaim/telegramd/baselib/net2"
 	"fmt"
 	"encoding/binary"
 	"net"
