@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-01-04 15:57:17
+-- Generation Time: 2018-03-11 14:14:02
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -11,6 +11,12 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `nebulaim`
@@ -121,6 +127,20 @@ CREATE TABLE `auth_keys` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `auth_op_logs`
+--
+
+CREATE TABLE `auth_op_logs` (
+  `id` bigint(20) NOT NULL,
+  `phone` int(11) NOT NULL,
+  `op_type` int(11) NOT NULL,
+  `log_text` varchar(512) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `auth_phone_transactions`
 --
 
@@ -130,8 +150,10 @@ CREATE TABLE `auth_phone_transactions` (
   `api_id` int(11) NOT NULL,
   `api_hash` varchar(255) NOT NULL,
   `phone_number` varchar(32) NOT NULL,
+  `auth_key_id` bigint(20) NOT NULL,
   `code` varchar(8) NOT NULL,
   `attempts` int(11) NOT NULL DEFAULT '0',
+  `created_time` bigint(20) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0'
@@ -213,6 +235,24 @@ CREATE TABLE `auth_users` (
   `region` varchar(64) NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `banned`
+--
+
+CREATE TABLE `banned` (
+  `id` int(11) NOT NULL,
+  `phone` varchar(32) NOT NULL,
+  `banned_time` bigint(20) NOT NULL,
+  `expires` bigint(20) NOT NULL,
+  `banned_reason` text NOT NULL,
+  `log` text NOT NULL,
+  `state` tinyint(4) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -545,10 +585,13 @@ CREATE TABLE `users` (
   `about` varchar(512) NOT NULL DEFAULT '',
   `state` int(11) NOT NULL DEFAULT '0',
   `is_bot` tinyint(1) NOT NULL DEFAULT '0',
+  `banned` bigint(20) NOT NULL,
+  `banned_reason` varchar(128) NOT NULL,
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `deleted_reason` varchar(500) NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `banned_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -751,6 +794,12 @@ ALTER TABLE `auth_keys`
   ADD UNIQUE KEY `auth_id` (`auth_id`);
 
 --
+-- Indexes for table `auth_op_logs`
+--
+ALTER TABLE `auth_op_logs`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `auth_phone_transactions`
 --
 ALTER TABLE `auth_phone_transactions`
@@ -784,6 +833,13 @@ ALTER TABLE `auth_updates_state`
 ALTER TABLE `auth_users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `auth_id` (`auth_id`);
+
+--
+-- Indexes for table `banned`
+--
+ALTER TABLE `banned`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`phone`);
 
 --
 -- Indexes for table `channels`
@@ -836,8 +892,7 @@ ALTER TABLE `file_parts`
 -- Indexes for table `messages`
 --
 ALTER TABLE `messages`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `sender_user_id` (`sender_user_id`,`peer_type`,`peer_id`,`random_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `message_boxes`
@@ -966,7 +1021,7 @@ ALTER TABLE `user_qts_updates`
 -- 使用表AUTO_INCREMENT `apps`
 --
 ALTER TABLE `apps`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- 使用表AUTO_INCREMENT `app_configs`
@@ -990,7 +1045,13 @@ ALTER TABLE `auths`
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=176;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
+
+--
+-- 使用表AUTO_INCREMENT `auth_op_logs`
+--
+ALTER TABLE `auth_op_logs`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `auth_phone_transactions`
@@ -1014,13 +1075,19 @@ ALTER TABLE `auth_seq_updates`
 -- 使用表AUTO_INCREMENT `auth_updates_state`
 --
 ALTER TABLE `auth_updates_state`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+
+--
+-- 使用表AUTO_INCREMENT `banned`
+--
+ALTER TABLE `banned`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `channels`
@@ -1038,13 +1105,13 @@ ALTER TABLE `channel_users`
 -- 使用表AUTO_INCREMENT `chats`
 --
 ALTER TABLE `chats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `chat_participants`
 --
 ALTER TABLE `chat_participants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `devices`
@@ -1056,25 +1123,25 @@ ALTER TABLE `devices`
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- 使用表AUTO_INCREMENT `file_parts`
 --
 ALTER TABLE `file_parts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=303;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=304;
 
 --
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=366;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1052;
 
 --
 -- 使用表AUTO_INCREMENT `message_boxes`
 --
 ALTER TABLE `message_boxes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=603;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=989;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1086,13 +1153,13 @@ ALTER TABLE `orgs`
 -- 使用表AUTO_INCREMENT `photo_datas`
 --
 ALTER TABLE `photo_datas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=385;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=389;
 
 --
 -- 使用表AUTO_INCREMENT `push_credentials`
 --
 ALTER TABLE `push_credentials`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `reports`
@@ -1158,7 +1225,7 @@ ALTER TABLE `user_privacys`
 -- 使用表AUTO_INCREMENT `user_pts_updates`
 --
 ALTER TABLE `user_pts_updates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=662;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1237;
 
 --
 -- 使用表AUTO_INCREMENT `user_qts_updates`
@@ -1166,3 +1233,7 @@ ALTER TABLE `user_pts_updates`
 ALTER TABLE `user_qts_updates`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
