@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	// "time"
+	// "github.com/nebulaim/telegramd/biz_model/model"
 )
 
 // account.updateStatus#6628562c offline:Bool = Bool;
@@ -32,20 +32,21 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AccountUpdateStatus - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	status := &model.SessionStatus{}
-	status.UserId = md.UserId
-	status.AuthKeyId = md.AuthId
-	status.SessionId = md.SessionId
-	status.ServerId = md.ServerId
-	status.Now = time.Now().Unix()
-
+	//status := &model.SessionStatus{}
+	//status.UserId = md.UserId
+	//status.AuthKeyId = md.AuthId
+	//status.SessionId = md.SessionId
+	//status.ServerId = md.ServerId
+	//status.Now = time.Now().Unix()
+	//
+	// 不是这个逻辑
 	// Offline可能为nil，由grpc中间件保证Offline必须设置值
 	// offline := request.GetOffline()
-	if mtproto.FromBool(request.GetOffline()) {
-		model.GetOnlineStatusModel().SetOnline(status)
-	} else {
-		model.GetOnlineStatusModel().SetOffline(status)
-	}
+	//if mtproto.FromBool(request.GetOffline()) {
+	//	model.GetOnlineStatusModel().SetOnline(status)
+	//} else {
+	//	model.GetOnlineStatusModel().SetOffline(status)
+	//}
 
 	// TODO(@benqi): broadcast online status???
 

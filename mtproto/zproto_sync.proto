@@ -106,8 +106,8 @@ message SessionServerConnectedRsp {
 message PushUpdatesData {
     PushClientID client_id = 1;
     ClientUpdatesState state = 2;
-    uint32 raw_data_header = 4;
-    bytes  raw_data = 5;
+    uint32 raw_data_header = 3;
+    bytes  raw_data = 4;
 }
 
 //message PushUpdatesDataRsp {
@@ -137,47 +137,85 @@ message PushUpdatesData {
 //    bytes  raw_data = 5;
 //}
 
+//message SyncPeerId {
+//    SyncType push_type = 1;
+//    int32 push_user_id = 2;
+//    int32 peer_type = 3;
+//    int32 peer_id = 4;
+//}
+
 ///////////////////////////////////////////////////////////////////////
 // UpdateShortMessage
-message PushShortMessage {
-    SyncType push_type = 1;
-    int32 push_user_id = 2;
-    TL_updateShortMessage push_data= 3;
-}
+//message PushShortMessage {
+//    SyncType push_type = 1;
+//    int32 pushto_user_id = 2;
+//    int32 peer_type = 4;
+//    int32 peer_id = 5;
+//    TL_updateShortMessage push_data= 3;
+//}
 
 message SyncShortMessageRequest {
     PushClientID client_id = 1;
-    int32 sender_user_id = 2;
-    int32 peer_user_id = 3;     // sender_user_id == peer_user_id检查是否是发送给自己
-    PushShortMessage push_data= 4;
+    SyncType push_type = 2;
+    int32 pushto_user_id = 3;
+    // int32 peer_type = 4;
+    int32 peer_id = 4;
+    TL_updateShortMessage push_data= 5;
 }
 
 // UpdateShortMessageRequest --> DeliveryRsp
 message UpdateShortMessageRequest {
-    int32 sender_user_id = 1;
-    int32 peer_user_id = 2;     // sender_user_id == peer_user_id检查是否是发送给自己
-    PushShortMessage push_data = 3;
+    SyncType push_type = 1;
+    int32 pushto_user_id = 2;
+    // int32 peer_type = 4;
+    int32 peer_id = 3;
+    TL_updateShortMessage push_data= 4;
 }
 
-// UpdateShortChatMessage
-message PushShortChatMessage {
-    SyncType push_type = 1;
-    int32 push_user_id = 2;
-    TL_updateShortChatMessage push_data= 3;
-}
+//// UpdateShortChatMessage
+//message PushShortChatMessage {
+//    SyncType push_type = 1;
+//    int32 push_user_id = 2;
+//    TL_updateShortChatMessage push_data= 3;
+//}
 
 // UpdatShortChatMessageRequest --> DeliveryRsp
 message SyncShortChatMessageRequest {
     PushClientID client_id = 1;
-    int32 sender_user_id = 2;
-    int32 peer_chat_id = 3;
-    PushShortChatMessage push_data = 4;
+    SyncType push_type = 2;
+    int32 pushto_user_id = 3;
+    int32 peer_chat_id = 4;
+    TL_updateShortChatMessage push_data = 5;
+//
+//    SyncType push_type = 1;
+//    int32 push_user_id = 2;
+//    TL_updateShortMessage push_data= 3;
 }
 
 message UpdateShortChatMessageRequest {
-    int32 sender_user_id = 1;
-    int32 peer_chat_id = 2;
-    repeated PushShortChatMessage push_datas = 3;
+    SyncType push_type = 1;
+    int32 pushto_user_id = 2;
+    int32 peer_chat_id = 3;
+    TL_updateShortChatMessage push_data = 4;
+}
+
+
+// UpdatShortChatMessageRequest --> DeliveryRsp
+message SyncUpdateRequest {
+    PushClientID client_id = 1;
+    SyncType push_type = 2;
+    int32 pushto_user_id = 3;
+    int32 peer_type = 4;
+    int32 peer_id = 5;
+    Update push_data = 6;
+}
+
+message PushUpdateRequest {
+    SyncType push_type = 1;
+    int32 pushto_user_id = 2;
+    int32 peer_type = 3;
+    int32 peer_id = 4;
+    Update push_data = 5;
 }
 
 /*
@@ -225,4 +263,7 @@ service RPCSync {
     rpc SyncUpdateShortChatMessage(SyncShortChatMessageRequest) returns (ClientUpdatesState);
     rpc PushUpdateShortChatMessage(UpdateShortChatMessageRequest) returns (VoidRsp);
     // rpc DeliveryUpdates2(UpdatesRequest) returns (DeliveryRsp);
+
+    rpc SyncUpdateData(SyncUpdateRequest) returns (ClientUpdatesState);
+    rpc PushUpdateData(PushUpdateRequest) returns (VoidRsp);
 }
