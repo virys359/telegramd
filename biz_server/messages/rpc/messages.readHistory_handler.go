@@ -25,7 +25,10 @@ import (
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"time"
+	"github.com/nebulaim/telegramd/biz_server/delivery"
+	"github.com/nebulaim/telegramd/biz_model/model"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 )
 
 /*
@@ -49,54 +52,42 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 	// 1. inbox，设置unread_count为0以及read_inbox_max_id
 	// inBoxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(md.UserId, int8(peer.PeerType), peer.PeerId)
 	dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateUnreadByPeer(request.GetMaxId(), md.UserId, int8(peer.PeerType), peer.PeerId)
-
-	updateReadHistoryInbox := mtproto.NewTLUpdateReadHistoryInbox()
-	updateReadHistoryInbox.SetPeer(peer.ToPeer())
-	//updateReadHistoryInbox.SetPts(pts)
-	//updateReadHistoryInbox.SetPtsCount(1)
-	updateReadHistoryInbox.SetMaxId(request.MaxId)
-
-	state, err := sync_client.GetSyncClient().SyncUpdateData(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, base.PEER_USER, md.UserId, updateReadHistoryInbox.To_Update())
-	if err != nil {
-		return nil, err
-	}
-
-	//// return me
-	//pts := int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(md.UserId)))
-	//model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, pts, base.PEER_USER, peer.PeerId, model.PTS_READ_HISTORY_INBOX, 0, request.GetMaxId())
+	// return me
+	pts := int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(md.UserId)))
+	model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, pts, base.PEER_USER, peer.PeerId, model.PTS_READ_HISTORY_INBOX, 0, request.GetMaxId())
 
 	affected := mtproto.NewTLMessagesAffectedMessages()
 	// pts = model.GetSequenceModel().NextPtsId(base2.Int32ToString(peer.PeerId))
-	affected.SetPts(int32(state.Pts))
-	affected.SetPtsCount(state.PtsCount)
+	affected.SetPts(int32(pts))
+	affected.SetPtsCount(1)
 
 	// outboxPeer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
 	// 	UserId: md.UserId,
 	// }}
 	// 消息漫游
-	//updateReadHistoryInbox := mtproto.NewTLUpdateReadHistoryInbox()
-	//updateReadHistoryInbox.SetPeer(peer.ToPeer())
-	//updateReadHistoryInbox.SetPts(pts)
-	//updateReadHistoryInbox.SetPtsCount(1)
-	//updateReadHistoryInbox.SetMaxId(request.MaxId)
-	//
-	//updates := mtproto.NewTLUpdates()
-	//updates.SetSeq(0)
-	//updates.SetDate(int32(time.Now().Unix()))
-	//updates.SetUpdates([]*mtproto.Update{updateReadHistoryInbox.To_Update()})
-	//
-	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-	//	md.AuthId,
-	//	md.SessionId,
-	//	md.NetlibSessionId,
-	//	[]int32{md.UserId},
-	//	updates.To_Updates().Encode())
+	updateReadHistoryInbox := mtproto.NewTLUpdateReadHistoryInbox()
+	updateReadHistoryInbox.SetPeer(peer.ToPeer())
+	updateReadHistoryInbox.SetPts(pts)
+	updateReadHistoryInbox.SetPtsCount(1)
+	updateReadHistoryInbox.SetMaxId(request.MaxId)
+
+	updates := mtproto.NewTLUpdates()
+	updates.SetSeq(0)
+	updates.SetDate(int32(time.Now().Unix()))
+	updates.SetUpdates([]*mtproto.Update{updateReadHistoryInbox.To_Update()})
+
+	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
+		md.AuthId,
+		md.SessionId,
+		md.NetlibSessionId,
+		[]int32{md.UserId},
+		updates.To_Updates().Encode())
 
 	// 2. outbox, 设置read_outbox_max_id
 	outboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
 	dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateReadOutboxMaxIdByPeer(outboxDO.TopMessage, peer.PeerId, int8(peer.PeerType), md.UserId)
-	// pts = int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(peer.PeerId)))
-	// model.GetUpdatesModel().AddPtsToUpdatesQueue(peer.PeerId, pts, base.PEER_USER, md.UserId, model.PTS_READ_HISTORY_OUTBOX, 0, outboxDO.TopMessage)
+	pts = int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(peer.PeerId)))
+	model.GetUpdatesModel().AddPtsToUpdatesQueue(peer.PeerId, pts, base.PEER_USER, md.UserId, model.PTS_READ_HISTORY_OUTBOX, 0, outboxDO.TopMessage)
 
 	updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
 	// oudboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
@@ -104,22 +95,20 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 		UserId: md.UserId,
 	}}
 	updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
-	// updateReadHistoryOutbox.SetPts(pts)
-	// updateReadHistoryOutbox.SetPtsCount(1)
+	updateReadHistoryOutbox.SetPts(pts)
+	updateReadHistoryOutbox.SetPtsCount(1)
 	updateReadHistoryOutbox.SetMaxId(outboxDO.TopMessage)
 
-	sync_client.GetSyncClient().PushUpdateData(peer.PeerId, base.PEER_USER, peer.PeerId, updateReadHistoryOutbox.To_Update())
-
-	//updates = mtproto.NewTLUpdates()
-	//updates.SetSeq(0)
-	//updates.SetDate(int32(time.Now().Unix()))
-	//updates.SetUpdates([]*mtproto.Update{updateReadHistoryOutbox.To_Update()})
-	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-	//	md.AuthId,
-	//	md.SessionId,
-	//	md.NetlibSessionId,
-	//	[]int32{peer.PeerId},
-	//	updates.To_Updates().Encode())
+	updates = mtproto.NewTLUpdates()
+	updates.SetSeq(0)
+	updates.SetDate(int32(time.Now().Unix()))
+	updates.SetUpdates([]*mtproto.Update{updateReadHistoryOutbox.To_Update()})
+	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
+		md.AuthId,
+		md.SessionId,
+		md.NetlibSessionId,
+		[]int32{peer.PeerId},
+		updates.To_Updates().Encode())
 
 	glog.Infof("MessagesReadHistory - reply: %s", logger.JsonDebugData(affected))
 	return affected.To_Messages_AffectedMessages(), nil

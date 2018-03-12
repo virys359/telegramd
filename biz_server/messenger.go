@@ -46,7 +46,7 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz_server/sync"
 )
 
 func init() {
@@ -101,7 +101,7 @@ func main() {
 	//}
 
 	delivery.InstallDeliveryInstance(bizServerConfig.SyncRpcClient1)
-	sync_client.InstallSyncClient(bizServerConfig.SyncRpcClient2)
+	sync.InstallSyncClient(bizServerConfig.SyncRpcClient2)
 	// Start server
 	grpcServer := grpc_util.NewRpcServer(bizServerConfig.Server.Addr, &bizServerConfig.Discovery)
 	grpcServer.Serve(func(s *grpc.Server) {

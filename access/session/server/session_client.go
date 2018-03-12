@@ -374,7 +374,7 @@ func (c *sessionClient) onUserOnline(serverId int32) {
 		ServerId:        serverId,
 		UserId:          c.authUserId,
 		AuthKeyId:       c.authKeyId,
-		SessionId:       int64(c.sessionId),
+		SessionId:       int64(c.clientSession.clientSessionId),
 		NetlibSessionId: int64(c.clientSession.conn.GetConnID()),
 		Now:             time.Now().Unix(),
 	}

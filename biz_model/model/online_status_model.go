@@ -52,8 +52,8 @@ import (
 //    - ......
 // auth_key_id ->
 const (
-	ONLINE_TIMEOUT = 60  			// 15秒
-	CHECK_ONLINE_TIMEOUT = 70  		// 17秒, 15+2秒的误差
+	ONLINE_TIMEOUT = 15  			// 15秒
+	CHECK_ONLINE_TIMEOUT = 17  		// 17秒, 15+2秒的误差
 	onlineKeyPrefix = "online"		//
 )
 

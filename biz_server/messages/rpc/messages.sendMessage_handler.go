@@ -26,8 +26,9 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/model"
+	// "github.com/nebulaim/telegramd/zproto"
 	"fmt"
-	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz_server/sync"
 )
 
 // 流程：
@@ -297,7 +298,7 @@ func sendPeerSelfMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 	// updates.SetPtsCount(1)
 	updates.SetMessage(request.Message)
 	updates.SetDate(message.GetDate())
-	state, err := sync_client.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
+	state, err := sync.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
 	if err != nil {
 		return nil, err
 	}
@@ -359,7 +360,7 @@ func sendPeerUserMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 	// updates.SetPtsCount(1)
 	updates.SetMessage(request.Message)
 	updates.SetDate(message.GetDate())
-	state, err := sync_client.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
+	state, err := sync.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
 	if err != nil {
 		return nil, err
 	}
@@ -382,10 +383,6 @@ func sendPeerUserMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 
 	// var myPts int = 0
 	for _, idPair := range ids {
-		if idPair.UserId == md.UserId {
-			continue
-		}
-
 		// model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, )
 		// 推给客户端的updates
 		updates2 := mtproto.NewTLUpdateShortMessage()
@@ -396,7 +393,7 @@ func sendPeerUserMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 		//updates.SetPtsCount(1)
 		updates2.SetMessage(request.Message)
 		updates2.SetDate(message.GetDate())
-		sync_client.GetSyncClient().PushUpdateShortMessage(idPair.UserId, md.UserId, updates2)
+		sync.GetSyncClient().PushUpdateShortMessage(md.UserId, idPair.UserId, updates2)
 	}
 
 	glog.Infof("MessagesSendMessage - reply: %s", logger.JsonDebugData(sentMessage))

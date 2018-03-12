@@ -40,7 +40,6 @@ func (s *AuthServiceImpl) AuthCheckPhone(ctx context.Context, request *mtproto.T
 
 	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	usersDO := usersDAO.SelectByPhoneNumber(phoneNumber)
-	glog.Infof("phoneNumber: %d, usersDO: {%v}", phoneNumber, usersDO)
 	checkedPhone := mtproto.TLAuthCheckedPhone{Data2: &mtproto.Auth_CheckedPhone_Data{
 		PhoneRegistered: mtproto.ToBool(usersDO != nil),
 	}}

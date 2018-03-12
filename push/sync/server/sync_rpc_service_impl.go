@@ -27,7 +27,6 @@ import (
 	"golang.org/x/net/context"
 	"sync"
 	"time"
-	"fmt"
 )
 
 type SyncServiceImpl struct {
@@ -82,7 +81,7 @@ func (s *SyncServiceImpl) pushToUserUpdates(userId int32, updates *mtproto.Updat
 }
 
 // 推送给该用户剔除指定设备后的所有设备
-func (s *SyncServiceImpl) pushToUserUpdatesNotMe(userId int32, sessionId int64, updates *mtproto.Updates) {
+func (s *SyncServiceImpl) pushToUserUpdatesNotMe(userId int32, netlibSessionId int64, updates *mtproto.Updates) {
 	// pushRawData := updates.Encode()
 
 	statusList, _ := model.GetOnlineStatusModel().GetOnlineByUserId(userId)
@@ -98,7 +97,7 @@ func (s *SyncServiceImpl) pushToUserUpdatesNotMe(userId int32, sessionId int64, 
 	rawData := updates.Encode()
 	for k, ss3 := range ss {
 		for _, ss4 := range ss3 {
-			if ss4.SessionId != sessionId {
+			if ss4.NetlibSessionId != netlibSessionId {
 				pushData := &mtproto.PushUpdatesData{
 					ClientId: &mtproto.PushClientID{
 						AuthKeyId:       ss4.AuthKeyId,
@@ -108,7 +107,6 @@ func (s *SyncServiceImpl) pushToUserUpdatesNotMe(userId int32, sessionId int64, 
 					// RawDataHeader:
 					RawData: rawData,
 				}
-				// _ = pushData
 				s.s.sendToSessionServer(int(k), pushData)
 			}
 		}
@@ -125,25 +123,27 @@ func (s *SyncServiceImpl) SyncUpdateShortMessage(ctx context.Context, request *m
 		updateType int32
 	)
 
-	userId = request.GetPushtoUserId()
-	shortMessage := request.GetPushData()
-	peerId = request.GetPeerId()
+	pushData := request.GetPushData()
+
+	userId = pushData.GetPushUserId()
+	shortMessage := pushData.GetPushData()
+	peerId = request.GetSenderUserId()
 	updateType = model.PTS_MESSAGE_OUTBOX
 
 	pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(userId)))
 	ptsCount = int32(1)
-	shortMessage.SetPts(pts)
+	pushData.GetPushData().SetPts(pts)
 	shortMessage.SetPtsCount(ptsCount)
 
 	// save pts
 	model.GetUpdatesModel().AddPtsToUpdatesQueue(userId, pts, base2.PEER_USER, peerId, updateType, shortMessage.GetId(), 0)
 
 	// push
-	// if request.GetPushType() == mtproto.SyncType_SYNC_TYPE_USER_NOTME {
-	s.pushToUserUpdatesNotMe(userId, request.GetClientId().GetSessionId(), shortMessage.To_Updates())
-	// } else {
-	//	s.pushToUserUpdates(userId, shortMessage.To_Updates())
-	//}
+	if pushData.GetPushType() == mtproto.SyncType_SYNC_TYPE_USER_NOTME {
+		s.pushToUserUpdatesNotMe(userId, request.GetClientId().GetNetlibSessionId(), shortMessage.To_Updates())
+	} else {
+		s.pushToUserUpdates(pushData.GetPushUserId(), shortMessage.To_Updates())
+	}
 
 	reply = &mtproto.ClientUpdatesState{
 		Pts:      pts,
@@ -164,20 +164,23 @@ func (s *SyncServiceImpl) PushUpdateShortMessage(ctx context.Context, request *m
 		updateType int32
 	)
 
-	userId = request.GetPushtoUserId()
-	shortMessage := request.GetPushData()
-	peerId = request.GetPeerId()
+	pushData := request.GetPushData()
+
+	userId = pushData.GetPushUserId()
+	shortMessage := pushData.GetPushData()
+	peerId = request.GetSenderUserId()
 	updateType = model.PTS_MESSAGE_INBOX
 
 	pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(userId)))
 	ptsCount = int32(1)
-	shortMessage.SetPts(pts)
+	pushData.GetPushData().SetPts(pts)
 	shortMessage.SetPtsCount(ptsCount)
 
 	// save pts
 	model.GetUpdatesModel().AddPtsToUpdatesQueue(userId, pts, base2.PEER_USER, peerId, updateType, shortMessage.GetId(), 0)
+
 	// push
-	s.pushToUserUpdates(userId, shortMessage.To_Updates())
+	s.pushToUserUpdates(pushData.GetPushUserId(), shortMessage.To_Updates())
 
 	reply = &mtproto.VoidRsp{}
 	glog.Infof("pushUpdateShortMessage - reply: %s", logger.JsonDebugData(reply))
@@ -187,23 +190,26 @@ func (s *SyncServiceImpl) PushUpdateShortMessage(ctx context.Context, request *m
 func (s *SyncServiceImpl) SyncUpdateShortChatMessage(ctx context.Context, request *mtproto.SyncShortChatMessageRequest) (reply *mtproto.ClientUpdatesState, err error) {
 	glog.Infof("syncUpdateShortChatMessage - request: {%v}", request)
 
+	// TODO(@benqi): Check deliver valid!
+	pushData := request.GetPushData()
+
 	var (
 		pts, ptsCount int32
 		updateType int32
 	)
 
-	shortChatMessage := request.GetPushData()
+	shortChatMessage := pushData.GetPushData()
 	// var outgoing = request.GetSenderUserId() == pushData.GetPushUserId()
 	updateType = model.PTS_MESSAGE_OUTBOX
 
-	pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(request.GetPushtoUserId())))
+	pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(pushData.GetPushUserId())))
 	ptsCount = int32(1)
-	shortChatMessage.SetPts(pts)
+	pushData.GetPushData().SetPts(pts)
 	shortChatMessage.SetPtsCount(ptsCount)
 
 	// save pts
-	model.GetUpdatesModel().AddPtsToUpdatesQueue(request.GetPushtoUserId(), pts, base2.PEER_CHAT, request.GetPeerChatId(), updateType, shortChatMessage.GetId(), 0)
-	s.pushToUserUpdatesNotMe(request.GetPushtoUserId(), request.GetClientId().GetSessionId(), shortChatMessage.To_Updates())
+	model.GetUpdatesModel().AddPtsToUpdatesQueue(pushData.GetPushUserId(), pts, base2.PEER_CHAT, request.GetPeerChatId(), updateType, shortChatMessage.GetId(), 0)
+	s.pushToUserUpdatesNotMe(pushData.GetPushUserId(), request.GetClientId().GetNetlibSessionId(), shortChatMessage.To_Updates())
 
 	reply = &mtproto.ClientUpdatesState{
 		Pts:      pts,
@@ -216,107 +222,33 @@ func (s *SyncServiceImpl) SyncUpdateShortChatMessage(ctx context.Context, reques
 
 func (s *SyncServiceImpl) PushUpdateShortChatMessage(ctx context.Context, request *mtproto.UpdateShortChatMessageRequest) (reply *mtproto.VoidRsp, err error) {
 	glog.Infof("pushUpdateShortChatMessage - request: {%v}", request)
+	return nil, nil
+
+
+	// TODO(@benqi): Check deliver valid!
+	pushDatas := request.GetPushDatas()
 
 	var (
 		pts, ptsCount int32
 		updateType int32
 	)
 
-	shortChatMessage := request.GetPushData()
-	updateType = model.PTS_MESSAGE_INBOX
+	for _, pushData := range pushDatas {
+		shortChatMessage := pushData.GetPushData()
+		updateType = model.PTS_MESSAGE_INBOX
 
-	pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(request.GetPushtoUserId())))
-	ptsCount = int32(1)
-	shortChatMessage.SetPts(pts)
-	shortChatMessage.SetPtsCount(ptsCount)
+		pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(pushData.GetPushUserId())))
+		ptsCount = int32(1)
+		pushData.GetPushData().SetPts(pts)
+		shortChatMessage.SetPtsCount(ptsCount)
 
-	// save pts
-	model.GetUpdatesModel().AddPtsToUpdatesQueue(request.GetPushtoUserId(), pts, base2.PEER_CHAT, request.GetPeerChatId(), updateType, shortChatMessage.GetId(), 0)
-	s.pushToUserUpdates(request.GetPushtoUserId(), shortChatMessage.To_Updates())
+		// save pts
+		model.GetUpdatesModel().AddPtsToUpdatesQueue(pushData.GetPushUserId(), pts, base2.PEER_CHAT, request.GetPeerChatId(), updateType, shortChatMessage.GetId(), 0)
+		s.pushToUserUpdates(pushData.GetPushUserId(), shortChatMessage.To_Updates())
+	}
 
 	reply = &mtproto.VoidRsp{}
 	glog.Infof("pushUpdateShortChatMessage - reply: %s", logger.JsonDebugData(reply))
-	return
-}
-
-func (s *SyncServiceImpl) SyncUpdateData(ctx context.Context, request *mtproto.SyncUpdateRequest) (reply *mtproto.ClientUpdatesState, err error) {
-	glog.Infof("syncUpdateData - request: {%v}", request)
-
-	// TODO(@benqi): Check deliver valid!
-	update := request.GetPushData()
-
-	var (
-		pts, ptsCount int32
-		updateType int32
-	)
-
-	switch update.GetConstructor() {
-	case mtproto.TLConstructor_CRC32_updateReadHistoryInbox:
-		updateType = model.PTS_READ_HISTORY_INBOX
-		updateReadHistoryInbox := update.To_UpdateReadHistoryInbox()
-
-		pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(request.GetPushtoUserId())))
-		ptsCount = int32(1)
-
-		updateReadHistoryInbox.SetPts(pts)
-		updateReadHistoryInbox.SetPts(ptsCount)
-
-		model.GetUpdatesModel().AddPtsToUpdatesQueue(request.GetPushtoUserId(), pts, base2.PEER_USER, request.GetPeerId(), updateType, 0, updateReadHistoryInbox.GetMaxId())
-
-		updates := mtproto.NewTLUpdates()
-		updates.SetSeq(0)
-		updates.SetDate(int32(time.Now().Unix()))
-		updates.SetUpdates([]*mtproto.Update{updateReadHistoryInbox.To_Update()})
-		s.pushToUserUpdatesNotMe(request.GetPushtoUserId(), request.GetClientId().GetSessionId(), updates.To_Updates())
-
-		reply = &mtproto.ClientUpdatesState{
-			Pts:      pts,
-			PtsCount: ptsCount,
-			Date:     int32(time.Now().Unix()),
-		}
-		glog.Infof("sync updateReadHistoryInbox - reply: %s", logger.JsonDebugData(reply))
-
-	default:
-		err = fmt.Errorf("invalid update")
-	}
-	return
-}
-
-func (s *SyncServiceImpl) PushUpdateData(ctx context.Context, request *mtproto.PushUpdateRequest) (reply *mtproto.VoidRsp, err error) {
-	glog.Infof("pushUpdateData - request: {%v}", request)
-
-	// TODO(@benqi): Check deliver valid!
-	update := request.GetPushData()
-
-	var (
-		pts, ptsCount int32
-		updateType int32
-	)
-
-	switch update.GetConstructor() {
-	case mtproto.TLConstructor_CRC32_updateReadHistoryOutbox:
-		updateType = model.PTS_READ_HISTORY_OUTBOX
-		updateReadHistoryOutbox := update.To_UpdateReadHistoryOutbox()
-
-		pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(request.GetPushtoUserId())))
-		ptsCount = int32(1)
-		updateReadHistoryOutbox.SetPts(pts)
-		updateReadHistoryOutbox.SetPts(ptsCount)
-
-		model.GetUpdatesModel().AddPtsToUpdatesQueue(request.GetPushtoUserId(), pts, base2.PEER_USER, request.GetPeerId(), updateType, 0, updateReadHistoryOutbox.GetMaxId())
-
-		updates := mtproto.NewTLUpdates()
-		updates.SetSeq(0)
-		updates.SetDate(int32(time.Now().Unix()))
-		updates.SetUpdates([]*mtproto.Update{updateReadHistoryOutbox.To_Update()})
-		s.pushToUserUpdates(request.GetPushtoUserId(), updates.To_Updates())
-
-		reply = &mtproto.VoidRsp{}
-		glog.Infof("push updateReadHistoryOutbox - reply: %s", logger.JsonDebugData(reply))
-	default:
-		err = fmt.Errorf("invalid update")
-	}
-
 	return
 }
 
