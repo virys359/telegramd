@@ -23,3 +23,6 @@ Thumbs.db
 *.swp
 *.swo
 access/session/session
+access/frontend/frontend
+biz_server/biz_server
+push/sync/sync
