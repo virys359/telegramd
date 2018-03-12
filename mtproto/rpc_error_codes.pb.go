@@ -1353,12 +1353,12 @@ It has these top-level messages:
 	ConnectToSessionServerReq
 	SessionServerConnectedRsp
 	PushUpdatesData
-	PushShortMessage
 	SyncShortMessageRequest
 	UpdateShortMessageRequest
-	PushShortChatMessage
 	SyncShortChatMessageRequest
 	UpdateShortChatMessageRequest
+	SyncUpdateRequest
+	PushUpdateRequest
 */
 package mtproto
 
