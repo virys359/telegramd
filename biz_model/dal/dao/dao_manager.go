@@ -62,6 +62,7 @@ type MysqlDAOList struct {
 	UserQtsUpdatesDAO        *mysql_dao.UserQtsUpdatesDAO
 	AuthSeqUpdatesDAO        *mysql_dao.AuthSeqUpdatesDAO
 	AuthUpdatesStateDAO		 *mysql_dao.AuthUpdatesStateDAO
+	UserPresencesDAO         *mysql_dao.UserPresencesDAO
 }
 
 // TODO(@benqi): 一主多从
@@ -107,6 +108,7 @@ func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
 		daoList.UserQtsUpdatesDAO = mysql_dao.NewUserQtsUpdatesDAO(v)
 		daoList.AuthSeqUpdatesDAO = mysql_dao.NewAuthSeqUpdatesDAO(v)
 
+		daoList.UserPresencesDAO = mysql_dao.NewUserPresencesDAO(v)
 		mysqlDAOManager.daoListMap[k] = daoList
 	}
 }
@@ -344,6 +346,15 @@ func GetAuthSeqUpdatesDAO(dbName string) (dao *mysql_dao.AuthSeqUpdatesDAO) {
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.AuthSeqUpdatesDAO
+	}
+	return
+}
+
+func GetUserPresencesDAO(dbName string) (dao *mysql_dao.UserPresencesDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.UserPresencesDAO
 	}
 	return
 }

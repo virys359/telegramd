@@ -1357,8 +1357,10 @@ It has these top-level messages:
 	UpdateShortMessageRequest
 	SyncShortChatMessageRequest
 	UpdateShortChatMessageRequest
-	SyncUpdateRequest
-	PushUpdateRequest
+	SyncUpdateMessageRequest
+	PushUpdateMessageRequest
+	PushUpdatesRequest
+	PushUpdateShortRequest
 */
 package mtproto
 

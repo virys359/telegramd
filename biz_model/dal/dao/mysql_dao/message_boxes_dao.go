@@ -329,10 +329,10 @@ func (dao *MessageBoxesDAO) SelectByMessageIdList(user_id int32, idList []int32)
 	return values
 }
 
-// select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, media_unread, date2 from message_boxed where user_id = :user_id and user_message_box_id = :user_message_box_id limit 1
+// select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, media_unread, date2 from message_boxes where user_id = :user_id and user_message_box_id = :user_message_box_id limit 1
 // TODO(@benqi): sqlmap
 func (dao *MessageBoxesDAO) SelectByUserIdAndMessageBoxId(user_id int32, user_message_box_id int32) *dataobject.MessageBoxesDO {
-	var query = "select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, media_unread, date2 from message_boxed where user_id = ? and user_message_box_id = ? limit 1"
+	var query = "select user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, media_unread, date2 from message_boxes where user_id = ? and user_message_box_id = ? limit 1"
 	rows, err := dao.db.Queryx(query, user_id, user_message_box_id)
 
 	if err != nil {
@@ -348,6 +348,35 @@ func (dao *MessageBoxesDAO) SelectByUserIdAndMessageBoxId(user_id int32, user_me
 		err = rows.StructScan(do)
 		if err != nil {
 			errDesc := fmt.Sprintf("StructScan in SelectByUserIdAndMessageBoxId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
+
+// select user_message_box_id from message_boxes where user_id = :user_id and message_id = :message_id limit 1
+// TODO(@benqi): sqlmap
+func (dao *MessageBoxesDAO) SelectMessageBoxIdByUserIdAndMessageId(user_id int32, message_id int32) *dataobject.MessageBoxesDO {
+	var query = "select user_message_box_id from message_boxes where user_id = ? and message_id = ? limit 1"
+	rows, err := dao.db.Queryx(query, user_id, message_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectMessageBoxIdByUserIdAndMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.MessageBoxesDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectMessageBoxIdByUserIdAndMessageId(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}

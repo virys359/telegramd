@@ -25,6 +25,9 @@ import (
 	"golang.org/x/net/context"
 	// "time"
 	// "github.com/nebulaim/telegramd/biz_model/model"
+	"time"
+	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 // account.updateStatus#6628562c offline:Bool = Bool;
@@ -32,23 +35,39 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AccountUpdateStatus - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	//status := &model.SessionStatus{}
-	//status.UserId = md.UserId
-	//status.AuthKeyId = md.AuthId
-	//status.SessionId = md.SessionId
-	//status.ServerId = md.ServerId
-	//status.Now = time.Now().Unix()
-	//
-	// 不是这个逻辑
-	// Offline可能为nil，由grpc中间件保证Offline必须设置值
-	// offline := request.GetOffline()
-	//if mtproto.FromBool(request.GetOffline()) {
-	//	model.GetOnlineStatusModel().SetOnline(status)
-	//} else {
-	//	model.GetOnlineStatusModel().SetOffline(status)
-	//}
+	var status *mtproto.UserStatus
 
-	// TODO(@benqi): broadcast online status???
+	offline := mtproto.FromBool(request.GetOffline())
+	if offline {
+		// pc端：离开应用程序激活状态（点击其他应用程序）
+		statusOffline := &mtproto.TLUserStatusOffline{Data2: &mtproto.UserStatus_Data{
+			WasOnline: int32(time.Now().Unix()),
+		}}
+		status = statusOffline.To_UserStatus()
+	} else {
+		// pc端：客户端应用程序激活（点击客户端窗口）
+		now := time.Now().Unix()
+		statusOnline := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
+			Expires: int32(now + 5*30),
+		}}
+		status = statusOnline.To_UserStatus()
+		model.GetUserModel().UpdateUserStatus(md.UserId, now)
+	}
+
+	updateUserStatus := &mtproto.TLUpdateUserStatus{Data2: &mtproto.Update_Data{
+		UserId: md.UserId,
+		Status: status,
+	}}
+	updates := &mtproto.TLUpdateShort{ Data2: &mtproto.Updates_Data{
+		Update: updateUserStatus.To_Update(),
+		Date:  int32(time.Now().Unix()),
+	}}
+
+	// push to other contacts.
+	contactIDList := model.GetContactModel().GetContactUserIDList(md.UserId)
+	for _, id := range contactIDList {
+		sync_client.GetSyncClient().PushUpdateShortData(id, updates)
+	}
 
 	glog.Infof("AccountUpdateStatus - reply: {true}")
 	return mtproto.ToBool(true), nil

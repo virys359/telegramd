@@ -134,11 +134,20 @@
             SELECT
                 user_id, user_message_box_id, message_id, sender_user_id, message_box_type, peer_type, peer_id, media_unread, date2
             FROM
-                message_boxed
+                message_boxes
             WHERE
                 user_id = :user_id AND user_message_box_id = :user_message_box_id LIMIT 1
         </sql>
     </operation>
 
-
+    <operation name="SelectMessageBoxIdByUserIdAndMessageId">
+        <sql>
+            SELECT
+                user_message_box_id
+            FROM
+                message_boxes
+            WHERE
+                user_id = :user_id AND message_id = :message_id LIMIT 1
+        </sql>
+    </operation>
 </table>

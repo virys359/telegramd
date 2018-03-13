@@ -412,3 +412,15 @@ func (m *messageModel) sendChatMessage(fromId, peerId int32, clientRandomId int6
 func (m *messageModel) sendChannelMessage(fromId, peerId int32, clientRandomId int64, message *mtproto.Message) (ids []*IDMessage) {
 	return
 }
+
+func (m *messageModel) GetPeerMessageBoxID(userId, boxID, peerId int32) int32 {
+	var id = int32(0)
+	do := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectByUserIdAndMessageBoxId(userId, boxID)
+	if do != nil {
+		do2 := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectMessageBoxIdByUserIdAndMessageId(peerId, do.MessageId)
+		if do2 != nil {
+			id = do2.UserMessageBoxId
+		}
+	}
+	return id
+}

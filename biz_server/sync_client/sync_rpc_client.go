@@ -95,8 +95,8 @@ func (c *syncClient) PushUpdateShortChatMessage(senderId, peerId int32, update *
 	return
 }
 
-func (c *syncClient) SyncUpdateData(authKeyId, sessionId, netlibSessionId int64, pushtoUserId, peerType, peerId int32, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
-	m := &mtproto.SyncUpdateRequest{
+func (c *syncClient) SyncUpdateMessageData(authKeyId, sessionId, netlibSessionId int64, pushtoUserId, peerType, peerId int32, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
+	m := &mtproto.SyncUpdateMessageRequest{
 		ClientId: &mtproto.PushClientID{
 			AuthKeyId:       authKeyId,
 			SessionId:       sessionId,
@@ -108,18 +108,38 @@ func (c *syncClient) SyncUpdateData(authKeyId, sessionId, netlibSessionId int64,
 		PeerId:       peerId,
 		PushData:     update,
 	}
-	reply, err = c.client.SyncUpdateData(context.Background(), m)
+	reply, err = c.client.SyncUpdateMessageData(context.Background(), m)
 	return
 }
 
-func (c *syncClient) PushUpdateData(pushtoUserId, peerType, peerId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
-	m := &mtproto.PushUpdateRequest{
+func (c *syncClient) PushUpdateMessageData(pushtoUserId, peerType, peerId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
+	m := &mtproto.PushUpdateMessageRequest{
 		PushType:     mtproto.SyncType_SYNC_TYPE_USER_NOTME,
 		PushtoUserId: pushtoUserId,
 		PeerType:     peerType,
 		PeerId:       peerId,
 		PushData:     update,
 	}
-	reply, err = c.client.PushUpdateData(context.Background(), m)
+	reply, err = c.client.PushUpdateMessageData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushUpdatesData(pushtoUserId int32, updates *mtproto.TLUpdates) (reply *mtproto.VoidRsp, err error) {
+	m := &mtproto.PushUpdatesRequest{
+		PushType:     mtproto.SyncType_SYNC_TYPE_USER,
+		PushtoUserId: pushtoUserId,
+		PushData:     updates,
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushUpdateShortData(pushtoUserId int32, update *mtproto.TLUpdateShort) (reply *mtproto.VoidRsp, err error) {
+	m := &mtproto.PushUpdateShortRequest{
+		PushType:     mtproto.SyncType_SYNC_TYPE_USER,
+		PushtoUserId: pushtoUserId,
+		PushData:     update,
+	}
+	reply, err = c.client.PushUpdateShortData(context.Background(), m)
 	return
 }

@@ -101,7 +101,9 @@ func (s *syncServer) RunLoop() {
 	go s.server.Serve(func(s2 *grpc.Server) {
 		// cache := cache2.NewAuthKeyCacheManager()
 		// mtproto.RegisterRPCAuthKeyServer(s, rpc.NewAuthKeyService(cache))
+		// mtproto.RegisterRPCSyncServer(s2, NewSyncService(s))
 		mtproto.RegisterRPCSyncServer(s2, NewSyncService(s))
+
 	})
 }
 

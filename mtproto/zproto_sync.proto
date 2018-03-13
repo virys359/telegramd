@@ -201,7 +201,7 @@ message UpdateShortChatMessageRequest {
 
 
 // UpdatShortChatMessageRequest --> DeliveryRsp
-message SyncUpdateRequest {
+message SyncUpdateMessageRequest {
     PushClientID client_id = 1;
     SyncType push_type = 2;
     int32 pushto_user_id = 3;
@@ -210,12 +210,24 @@ message SyncUpdateRequest {
     Update push_data = 6;
 }
 
-message PushUpdateRequest {
+message PushUpdateMessageRequest {
     SyncType push_type = 1;
     int32 pushto_user_id = 2;
     int32 peer_type = 3;
     int32 peer_id = 4;
     Update push_data = 5;
+}
+
+message PushUpdatesRequest {
+    SyncType push_type = 1;
+    int32 pushto_user_id = 2;
+    TL_updates push_data = 5;
+}
+
+message PushUpdateShortRequest {
+    SyncType push_type = 1;
+    int32 pushto_user_id = 2;
+    TL_updateShort push_data = 5;
 }
 
 /*
@@ -263,7 +275,9 @@ service RPCSync {
     rpc SyncUpdateShortChatMessage(SyncShortChatMessageRequest) returns (ClientUpdatesState);
     rpc PushUpdateShortChatMessage(UpdateShortChatMessageRequest) returns (VoidRsp);
     // rpc DeliveryUpdates2(UpdatesRequest) returns (DeliveryRsp);
+    rpc SyncUpdateMessageData(SyncUpdateMessageRequest) returns (ClientUpdatesState);
+    rpc PushUpdateMessageData(PushUpdateMessageRequest) returns (VoidRsp);
 
-    rpc SyncUpdateData(SyncUpdateRequest) returns (ClientUpdatesState);
-    rpc PushUpdateData(PushUpdateRequest) returns (VoidRsp);
+    rpc PushUpdatesData(PushUpdatesRequest) returns (VoidRsp);
+    rpc PushUpdateShortData(PushUpdateShortRequest) returns (VoidRsp);
 }

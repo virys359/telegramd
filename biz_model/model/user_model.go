@@ -24,6 +24,8 @@ import (
 	// "github.com/nebulaim/telegramd/base/base"
 	// "github.com/golang/glog"
 	// "github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
+	"github.com/nebulaim/telegramd/baselib/base"
 )
 
 type userModel struct {
@@ -152,6 +154,18 @@ func (m *userModel) GetUserFull(userId int32) (userFull *mtproto.TLUserFull) {
 	return nil
 }
 
-//func (m *UserModel) GetUserFullList(userId []int32) (user []*mtproto.TLUserFull) {
-//	return nil
-//}
+func (m *userModel) UpdateUserStatus(userId int32, lastSeenAt int64) {
+	presencesDAO := dao.GetUserPresencesDAO(dao.DB_MASTER)
+	// now := time.Now().Unix()
+	rows := presencesDAO.UpdateLastSeen(lastSeenAt, 0, userId)
+	if rows == 0 {
+		do := &dataobject.UserPresencesDO{
+			UserId: userId,
+			LastSeenAt: lastSeenAt,
+			LastSeenAuthKeyId: 0,
+			LastSeenIp: "",
+			CreatedAt: base.NowFormatYMDHMS(),
+		}
+		presencesDAO.Insert(do)
+	}
+}

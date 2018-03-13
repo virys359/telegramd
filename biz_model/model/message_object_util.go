@@ -79,3 +79,26 @@ func MakeMessageBySendMessage(m mtproto.TLObject) (message *mtproto.TLMessage, e
 	return
 }
 
+// updateShortMessage#914fbf11 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
+// message#44f9b43d flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true id:int from_id:flags.8?int to_id:Peer fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int edit_date:flags.15?int post_author:flags.16?string grouped_id:flags.17?long = Message;
+func MessageToUpdateShortMessage(message* mtproto.TLMessage) *mtproto.TLUpdateShortMessage {
+	shortMessage := &mtproto.TLUpdateShortMessage{Data2: &mtproto.Updates_Data{
+		// Out: true,
+		Mentioned: message.GetMentioned(),
+		// MediaUnread: ??,
+		Silent: message.GetSilent(),
+		Id:     message.GetId(),
+		// UserId: message.GetFromId(),
+		Message: message.GetMessage(),
+		// Pts:,
+		// PtsCount,
+		Date:         message.GetDate(),
+		FwdFrom:      message.GetFwdFrom(),
+		ViaBotId:     message.GetViaBotId(),
+		ReplyToMsgId: message.GetReplyToMsgId(),
+		Entities:     message.GetEntities(),
+	}}
+
+	return shortMessage
+}
+

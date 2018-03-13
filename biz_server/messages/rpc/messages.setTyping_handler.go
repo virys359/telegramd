@@ -25,7 +25,7 @@ import (
 	"golang.org/x/net/context"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 // messages.setTyping#a3825e50 peer:InputPeer action:SendMessageAction = Bool;
@@ -33,21 +33,17 @@ func (s *MessagesServiceImpl) MessagesSetTyping(ctx context.Context, request *mt
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesSetTyping - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesSetTyping logic
 	peer := base.FromInputPeer(request.GetPeer())
 	if peer.PeerType == base.PEER_SELF || peer.PeerType == base.PEER_USER {
-		typing := mtproto.NewTLUpdateUserTyping()
-		typing.SetUserId(md.UserId)
-		typing.SetAction(request.GetAction())
-		updates := mtproto.NewTLUpdateShort()
-		updates.SetUpdate(typing.To_Update())
-		updates.SetDate(int32(time.Now().Unix()))
-		delivery.GetDeliveryInstance().DeliveryUpdates(
-			md.AuthId,
-			md.SessionId,
-			md.NetlibSessionId,
-			[]int32{peer.PeerId},
-			updates.To_Updates().Encode())
+		typing := &mtproto.TLUpdateUserTyping{Data2: &mtproto.Update_Data{
+			UserId: md.UserId,
+			Action: request.GetAction(),
+		}}
+		updates := &mtproto.TLUpdateShort{ Data2: &mtproto.Updates_Data{
+			Update: typing.To_Update(),
+			Date:  int32(time.Now().Unix()),
+		}}
+		sync_client.GetSyncClient().PushUpdateShortData(peer.PeerId, updates)
 	} else {
 		// 其他的不需要推送
 	}

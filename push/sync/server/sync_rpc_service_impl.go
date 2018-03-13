@@ -25,9 +25,9 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"sync"
 	"time"
 	"fmt"
+	"sync"
 )
 
 type SyncServiceImpl struct {
@@ -39,8 +39,8 @@ type SyncServiceImpl struct {
 	// updates map[int32]chan *zproto.PushUpdatesNotify
 }
 
-func NewSyncService(sync *syncServer) *SyncServiceImpl {
-	s := &SyncServiceImpl{s: sync}
+func NewSyncService(sync2 *syncServer) *SyncServiceImpl {
+	s := &SyncServiceImpl{s: sync2}
 	// s.status = status
 	// s.updates = make(map[int32]chan *zproto.PushUpdatesNotify)
 	return s
@@ -65,6 +65,7 @@ func (s *SyncServiceImpl) pushToUserUpdates(userId int32, updates *mtproto.Updat
 	for k, ss3 := range ss {
 		//// glog.Infof("DeliveryUpdates: k: {%v}, v: {%v}", k, ss3)
 		//go s.withReadLock(func() {
+		// _ = k
 		for _, ss4 := range ss3 {
 			pushData := &mtproto.PushUpdatesData{
 				ClientId: &mtproto.PushClientID{
@@ -75,6 +76,7 @@ func (s *SyncServiceImpl) pushToUserUpdates(userId int32, updates *mtproto.Updat
 				// RawDataHeader:
 				RawData: rawData,
 			}
+			// _ = pushData
 			s.s.sendToSessionServer(int(k), pushData)
 		}
 		//})
@@ -97,6 +99,7 @@ func (s *SyncServiceImpl) pushToUserUpdatesNotMe(userId int32, sessionId int64, 
 
 	rawData := updates.Encode()
 	for k, ss3 := range ss {
+		_ = k
 		for _, ss4 := range ss3 {
 			if ss4.SessionId != sessionId {
 				pushData := &mtproto.PushUpdatesData{
@@ -108,13 +111,14 @@ func (s *SyncServiceImpl) pushToUserUpdatesNotMe(userId int32, sessionId int64, 
 					// RawDataHeader:
 					RawData: rawData,
 				}
-				// _ = pushData
-				s.s.sendToSessionServer(int(k), pushData)
+				_ = pushData
+				// s.s.sendToSessionServer(int(k), pushData)
 			}
 		}
 	}
 }
 
+//SyncUpdateShortMessage(context.Context, *SyncShortMessageRequest) (*ClientUpdatesState, error)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *SyncServiceImpl) SyncUpdateShortMessage(ctx context.Context, request *mtproto.SyncShortMessageRequest) (reply *mtproto.ClientUpdatesState, err error) {
 	glog.Infof("syncUpdateShortMessage - request: {%v}", request)
@@ -155,6 +159,7 @@ func (s *SyncServiceImpl) SyncUpdateShortMessage(ctx context.Context, request *m
 	return
 }
 
+//PushUpdateShortMessage(context.Context, *UpdateShortMessageRequest) (*VoidRsp, error)
 func (s *SyncServiceImpl) PushUpdateShortMessage(ctx context.Context, request *mtproto.UpdateShortMessageRequest) (reply *mtproto.VoidRsp, err error) {
 	glog.Infof("pushUpdateShortMessage - request: {%v}", request)
 
@@ -184,6 +189,7 @@ func (s *SyncServiceImpl) PushUpdateShortMessage(ctx context.Context, request *m
 	return
 }
 
+//SyncUpdateShortChatMessage(context.Context, *SyncShortChatMessageRequest) (*ClientUpdatesState, error)
 func (s *SyncServiceImpl) SyncUpdateShortChatMessage(ctx context.Context, request *mtproto.SyncShortChatMessageRequest) (reply *mtproto.ClientUpdatesState, err error) {
 	glog.Infof("syncUpdateShortChatMessage - request: {%v}", request)
 
@@ -214,6 +220,7 @@ func (s *SyncServiceImpl) SyncUpdateShortChatMessage(ctx context.Context, reques
 	return
 }
 
+//PushUpdateShortChatMessage(context.Context, *UpdateShortChatMessageRequest) (*VoidRsp, error)
 func (s *SyncServiceImpl) PushUpdateShortChatMessage(ctx context.Context, request *mtproto.UpdateShortChatMessageRequest) (reply *mtproto.VoidRsp, err error) {
 	glog.Infof("pushUpdateShortChatMessage - request: {%v}", request)
 
@@ -239,7 +246,8 @@ func (s *SyncServiceImpl) PushUpdateShortChatMessage(ctx context.Context, reques
 	return
 }
 
-func (s *SyncServiceImpl) SyncUpdateData(ctx context.Context, request *mtproto.SyncUpdateRequest) (reply *mtproto.ClientUpdatesState, err error) {
+//SyncUpdateMessageData(context.Context, *SyncUpdateMessageRequest) (*ClientUpdatesState, error)
+func (s *SyncServiceImpl) SyncUpdateMessageData(ctx context.Context, request *mtproto.SyncUpdateMessageRequest) (reply *mtproto.ClientUpdatesState, err error) {
 	glog.Infof("syncUpdateData - request: {%v}", request)
 
 	// TODO(@benqi): Check deliver valid!
@@ -282,7 +290,8 @@ func (s *SyncServiceImpl) SyncUpdateData(ctx context.Context, request *mtproto.S
 	return
 }
 
-func (s *SyncServiceImpl) PushUpdateData(ctx context.Context, request *mtproto.PushUpdateRequest) (reply *mtproto.VoidRsp, err error) {
+//PushUpdateMessageData(context.Context, *PushUpdateMessageRequest) (*VoidRsp, error)
+func (s *SyncServiceImpl) PushUpdateMessageData(ctx context.Context, request *mtproto.PushUpdateMessageRequest) (reply *mtproto.VoidRsp, err error) {
 	glog.Infof("pushUpdateData - request: {%v}", request)
 
 	// TODO(@benqi): Check deliver valid!
@@ -317,6 +326,50 @@ func (s *SyncServiceImpl) PushUpdateData(ctx context.Context, request *mtproto.P
 		err = fmt.Errorf("invalid update")
 	}
 
+	return
+}
+
+//PushUpdatesData(context.Context, *PushUpdatesRequest) (*VoidRsp, error)
+func (s *SyncServiceImpl) PushUpdatesData(ctx context.Context, request *mtproto.PushUpdatesRequest) (reply *mtproto.VoidRsp, err error) {
+	glog.Infof("pushUpdateData - request: {%v}", request)
+
+	// TODO(@benqi): Check deliver valid!
+	// update := request.GetPushData()
+	switch request.GetPushType() {
+	case mtproto.SyncType_SYNC_TYPE_USER:
+		s.pushToUserUpdates(request.GetPushtoUserId(), request.GetPushData().To_Updates())
+	case mtproto.SyncType_SYNC_TYPE_USER_NOTME:
+		// s.pushToUserUpdatesNotMe(request.GetPushtoUserId(), request.GetPushData().To_Updates())
+	case mtproto.SyncType_SYNC_TYPE_AUTH_KEY:
+	case mtproto.SyncType_SYNC_TYPE_AUTH_KEY_USER:
+	case mtproto.SyncType_SYNC_TYPE_AUTH_KEY_USERNOTME:
+	default:
+	}
+
+	reply = &mtproto.VoidRsp{}
+	glog.Infof("push updateReadHistoryOutbox - reply: %s", logger.JsonDebugData(reply))
+	return
+}
+
+//PushUpdateShortData(context.Context, *PushUpdateShortRequest) (*VoidRsp, error)
+func (s *SyncServiceImpl) PushUpdateShortData(ctx context.Context, request *mtproto.PushUpdateShortRequest) (reply *mtproto.VoidRsp, err error) {
+	glog.Infof("pushUpdateData - request: {%v}", request)
+
+	// TODO(@benqi): Check deliver valid!
+	// update := request.GetPushData()
+	switch request.GetPushType() {
+	case mtproto.SyncType_SYNC_TYPE_USER:
+		s.pushToUserUpdates(request.GetPushtoUserId(), request.GetPushData().To_Updates())
+	case mtproto.SyncType_SYNC_TYPE_USER_NOTME:
+		// s.pushToUserUpdatesNotMe(request.GetPushtoUserId(), request.GetPushData().To_Updates())
+	case mtproto.SyncType_SYNC_TYPE_AUTH_KEY:
+	case mtproto.SyncType_SYNC_TYPE_AUTH_KEY_USER:
+	case mtproto.SyncType_SYNC_TYPE_AUTH_KEY_USERNOTME:
+	default:
+	}
+
+	reply = &mtproto.VoidRsp{}
+	glog.Infof("push updateReadHistoryOutbox - reply: %s", logger.JsonDebugData(reply))
 	return
 }
 

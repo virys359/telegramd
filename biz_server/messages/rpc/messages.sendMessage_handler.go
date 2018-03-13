@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"fmt"
@@ -38,6 +37,11 @@ import (
 func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *mtproto.TLMessagesSendMessage) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesSendMessage - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+
+	// TODO(@benqi): ???
+	// request.NoWebpage
+	// request.Background
+	// request.ClearDraft
 
 	var (
 		sentMessage *mtproto.TLUpdateShortSentMessage
@@ -247,37 +251,9 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	 */
 }
 
-func makeMessageBySendMessage(request *mtproto.TLMessagesSendMessage) *mtproto.TLMessage {
-	// peer := base.FromInputPeer(request.GetPeer())
-	message := mtproto.NewTLMessage()
-
-	message.SetSilent(request.GetSilent())
-	//// TODO(@benqi): ???
-	//// request.Background
-	//// request.NoWebpage
-	//// request.ClearDraft
-	//message.SetFromId(md.UserId)
-	//if peer.PeerType == base.PEER_SELF {
-	//	to := &mtproto.TLPeerUser{ Data2: &mtproto.Peer_Data{
-	//		UserId: md.UserId,
-	//	}}
-	//	message.SetToId(to.To_Peer())
-	//} else {
-	//	message.SetToId(peer.ToPeer())
-	//}
-
-	message.SetMessage(request.Message)
-	message.SetReplyToMsgId(request.ReplyToMsgId)
-	message.SetReplyMarkup(request.ReplyMarkup)
-	message.SetEntities(request.Entities)
-	message.SetDate(int32(time.Now().Unix()))
-
-	return message
-}
-
 func sendPeerSelfMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
 	// message
-	message := makeMessageBySendMessage(request)
+	message, _ := model.MakeMessageBySendMessage(request)
 	message.SetFromId(md.UserId)
 	// peer
 	peer := &base.PeerUtil{PeerType: base.PEER_USER, PeerId: md.UserId}
@@ -288,16 +264,17 @@ func sendPeerSelfMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 
 	// model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, )
 	// 推给客户端的updates
-	updates := mtproto.NewTLUpdateShortMessage()
+	shortMessage := model.MessageToUpdateShortMessage(message)
+	// updates := mtproto.NewTLUpdateShortMessage()
 	// sentMessage.SetOut(true)
-	updates.SetId(ids[0].MessageBoxId)
-	updates.SetUserId(md.UserId)
+	shortMessage.SetId(ids[0].MessageBoxId)
+	shortMessage.SetUserId(md.UserId)
 	// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
 	// updates.SetPts(pts)
 	// updates.SetPtsCount(1)
-	updates.SetMessage(request.Message)
-	updates.SetDate(message.GetDate())
-	state, err := sync_client.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
+	// updates.SetMessage(request.Message)
+	// updates.SetDate(message.GetDate())
+	state, err := sync_client.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, shortMessage)
 	if err != nil {
 		return nil, err
 	}
@@ -312,24 +289,6 @@ func sendPeerSelfMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 	sentMessage.SetDate(message.GetDate())
 	sentMessage.SetMedia(mtproto.NewTLMessageMediaEmpty().To_MessageMedia())
 
-	////// 1. SaveMessage
-	////messageId := model.GetMessageModel().CreateHistoryMessage2(md.UserId, peer, request.RandomId, message.GetDate(), message.To_Message())
-	////// 2. MessageBoxes
-	////pts := model.GetMessageModel().CreateMessageBoxes(md.UserId, message.GetFromId(), peer.PeerType, md.UserId, false, messageId)
-	////// 3. dialog
-	////model.GetDialogModel().CreateOrUpdateByLastMessage(md.UserId, peer.PeerType, md.UserId, messageId, message.GetMentioned(), false)
-	//
-	//// 推送给sync
-	//pts := int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(md.UserId)))
-	//model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, pts, base.PEER_USER, md.UserId, model.PTS_MESSAGE_INBOX, ids[0].MessageBoxId, 0)
-	//
-	//
-	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-	//	md.AuthId,
-	//	md.SessionId,
-	//	md.NetlibSessionId,
-	//	[]int32{md.UserId},
-	//	updatesData)
 	//// 返回给客户端
 	glog.Infof("MessagesSendMessage - reply: %s", logger.JsonDebugData(sentMessage))
 	// reply = sentMessage.ToUpdates()
@@ -338,7 +297,7 @@ func sendPeerSelfMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 
 func sendPeerUserMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesSendMessage) (*mtproto.TLUpdateShortSentMessage, error) {
 	// message
-	message := makeMessageBySendMessage(request)
+	message, _ := model.MakeMessageBySendMessage(request)
 	message.SetFromId(md.UserId)
 	// peer
 	peer := &base.PeerUtil{PeerType: base.PEER_USER, PeerId: request.GetPeer().GetData2().GetUserId()}
@@ -347,19 +306,23 @@ func sendPeerUserMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 	// message
 	ids := model.GetMessageModel().SendMessage(md.UserId, base.PEER_USER, peer.PeerId, request.GetRandomId(), message.To_Message())
 
-
 	// model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, )
 	// 推给客户端的updates
-	updates := mtproto.NewTLUpdateShortMessage()
-	// sentMessage.SetOut(true)
-	updates.SetId(ids[0].MessageBoxId)
-	updates.SetUserId(md.UserId)
+	//updates := mtproto.NewTLUpdateShortMessage()
+	//// sentMessage.SetOut(true)
+	//updates.SetId(ids[0].MessageBoxId)
+	//updates.SetUserId(md.UserId)
 	// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
 	// updates.SetPts(pts)
 	// updates.SetPtsCount(1)
-	updates.SetMessage(request.Message)
-	updates.SetDate(message.GetDate())
-	state, err := sync_client.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, updates)
+
+	shortMessage := model.MessageToUpdateShortMessage(message)
+	shortMessage.SetOut(true)
+	shortMessage.SetId(ids[0].MessageBoxId)
+	shortMessage.SetUserId(md.UserId)
+	//updates.SetMessage(request.Message)
+	//updates.SetDate(message.GetDate())
+	state, err := sync_client.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, shortMessage)
 	if err != nil {
 		return nil, err
 	}
@@ -373,30 +336,29 @@ func sendPeerUserMessage(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesS
 	sentMessage.SetDate(message.GetDate())
 	sentMessage.SetMedia(mtproto.NewTLMessageMediaEmpty().To_MessageMedia())
 
-	//// 1. SaveMessage
-	//messageId := model.GetMessageModel().CreateHistoryMessage2(md.UserId, peer, request.RandomId, message.GetDate(), message.To_Message())
-	//// 2. MessageBoxes
-	//pts := model.GetMessageModel().CreateMessageBoxes(md.UserId, message.GetFromId(), peer.PeerType, md.UserId, false, messageId)
-	//// 3. dialog
-	//model.GetDialogModel().CreateOrUpdateByLastMessage(md.UserId, peer.PeerType, md.UserId, messageId, message.GetMentioned(), false)
-
 	// var myPts int = 0
 	for _, idPair := range ids {
 		if idPair.UserId == md.UserId {
 			continue
 		}
 
+		shortMessage.SetOut(false)
+		shortMessage.SetId(idPair.MessageBoxId)
+		shortMessage.SetUserId(md.UserId)
+		if request.GetReplyToMsgId() != 0 {
+			shortMessage.SetReplyToMsgId(model.GetMessageModel().GetPeerMessageBoxID(md.UserId, request.GetReplyToMsgId(), idPair.UserId))
+		}
 		// model.GetUpdatesModel().AddPtsToUpdatesQueue(md.UserId, )
 		// 推给客户端的updates
-		updates2 := mtproto.NewTLUpdateShortMessage()
-		updates2.SetId(idPair.MessageBoxId)
-		updates2.SetUserId(md.UserId)
-		// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
-		//updates.SetPts(pts)
-		//updates.SetPtsCount(1)
-		updates2.SetMessage(request.Message)
-		updates2.SetDate(message.GetDate())
-		sync_client.GetSyncClient().PushUpdateShortMessage(idPair.UserId, md.UserId, updates2)
+		//updates2 := mtproto.NewTLUpdateShortMessage()
+		//updates2.SetId(idPair.MessageBoxId)
+		//updates2.SetUserId(md.UserId)
+		//// TODO(@benqi): 暂时这样实现验证发消息是否有问题，有问题的
+		////updates.SetPts(pts)
+		////updates.SetPtsCount(1)
+		//updates2.SetMessage(request.Message)
+		//updates2.SetDate(message.GetDate())
+		sync_client.GetSyncClient().PushUpdateShortMessage(idPair.UserId, md.UserId, shortMessage)
 	}
 
 	glog.Infof("MessagesSendMessage - reply: %s", logger.JsonDebugData(sentMessage))
