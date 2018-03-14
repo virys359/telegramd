@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-03-11 14:14:02
+-- Generation Time: 2018-03-14 16:54:15
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -11,12 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `nebulaim`
@@ -399,6 +393,30 @@ CREATE TABLE `messages` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `messages2`
+--
+
+CREATE TABLE `messages2` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `user_message_box_id` int(11) NOT NULL,
+  `dialog_message_id` bigint(20) NOT NULL,
+  `sender_user_id` int(11) NOT NULL,
+  `message_box_type` tinyint(4) NOT NULL,
+  `peer_type` tinyint(4) NOT NULL,
+  `peer_id` int(11) NOT NULL,
+  `random_id` bigint(20) NOT NULL,
+  `message_type` tinyint(4) NOT NULL DEFAULT '0',
+  `message_data` text CHARACTER SET utf8mb4 NOT NULL,
+  `date2` int(11) NOT NULL DEFAULT '0',
+  `state` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `message_boxes`
 --
 
@@ -688,10 +706,12 @@ CREATE TABLE `user_notify_settings` (
 CREATE TABLE `user_presences` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL DEFAULT '0',
-  `last_seen_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `last_seen_at` bigint(20) NOT NULL,
+  `last_seen_auth_key_id` bigint(20) NOT NULL,
   `last_seen_ip` varchar(64) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `version` bigint(20) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -895,6 +915,12 @@ ALTER TABLE `messages`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `messages2`
+--
+ALTER TABLE `messages2`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `message_boxes`
 --
 ALTER TABLE `message_boxes`
@@ -991,7 +1017,7 @@ ALTER TABLE `user_notify_settings`
 --
 ALTER TABLE `user_presences`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`,`auth_id`),
+  ADD UNIQUE KEY `user_id` (`user_id`),
   ADD KEY `user_id_2` (`user_id`,`last_seen_at`);
 
 --
@@ -1045,7 +1071,7 @@ ALTER TABLE `auths`
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=197;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=205;
 
 --
 -- 使用表AUTO_INCREMENT `auth_op_logs`
@@ -1081,7 +1107,7 @@ ALTER TABLE `auth_updates_state`
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- 使用表AUTO_INCREMENT `banned`
@@ -1135,13 +1161,19 @@ ALTER TABLE `file_parts`
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1052;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `messages2`
+--
+ALTER TABLE `messages2`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- 使用表AUTO_INCREMENT `message_boxes`
 --
 ALTER TABLE `message_boxes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=989;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1195,7 +1227,7 @@ ALTER TABLE `user_contacts`
 -- 使用表AUTO_INCREMENT `user_dialogs`
 --
 ALTER TABLE `user_dialogs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- 使用表AUTO_INCREMENT `user_imported_contacts`
@@ -1213,7 +1245,7 @@ ALTER TABLE `user_notify_settings`
 -- 使用表AUTO_INCREMENT `user_presences`
 --
 ALTER TABLE `user_presences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- 使用表AUTO_INCREMENT `user_privacys`
@@ -1225,7 +1257,7 @@ ALTER TABLE `user_privacys`
 -- 使用表AUTO_INCREMENT `user_pts_updates`
 --
 ALTER TABLE `user_pts_updates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1237;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- 使用表AUTO_INCREMENT `user_qts_updates`
@@ -1233,7 +1265,3 @@ ALTER TABLE `user_pts_updates`
 ALTER TABLE `user_qts_updates`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
