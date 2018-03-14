@@ -26,7 +26,6 @@ import (
 	"github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"time"
-	"github.com/nebulaim/telegramd/baselib/logger"
 )
 
 var (
@@ -74,20 +73,20 @@ func dialogDOToDialog(dialogDO* dataobject.UserDialogsDO) *mtproto.TLDialog {
 	return dialog
 }
 
-func dialogDOListToDialogList(dialogDOList []dataobject.UserDialogsDO) (dialogs []*mtproto.TLDialog) {
+func dialogDOListToDialogList(dialogDOList []dataobject.UserDialogsDO) (dialogs []*mtproto.Dialog) {
 	draftIdList := make([]int32, 0)
 	for _, dialogDO := range dialogDOList {
 		if dialogDO.DraftId > 0 {
 			draftIdList = append(draftIdList, dialogDO.DraftId)
 		}
-		dialogs = append(dialogs, dialogDOToDialog(&dialogDO))
+		dialogs = append(dialogs, dialogDOToDialog(&dialogDO).To_Dialog())
 	}
 
 	// TODO(@benqi): fetch draft message list
 	return
 }
 
-func (m *dialogModel) GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int32) (dialogs []*mtproto.TLDialog) {
+func (m *dialogModel) GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int32) (dialogs []*mtproto.Dialog) {
 	dialogDOList := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPinnedAndOffset(
 		userId, base2.BoolToInt8(isPinned), offsetId, limit)
 	glog.Infof("GetDialogsByOffsetId - dialogDOList: {%v}, query: {userId: %d, isPinned: %d, offeetId: %d, limit: %d ", dialogDOList, userId, isPinned, offsetId, limit)
@@ -105,7 +104,7 @@ func (m *dialogModel) GetDialogsByOffsetId(userId int32, isPinned bool, offsetId
 //	return
 //}
 
-func (m *dialogModel) GetDialogsByUserIDAndType(userId, peerType int32) (dialogs []*mtproto.TLDialog) {
+func (m *dialogModel) GetDialogsByUserIDAndType(userId, peerType int32) (dialogs []*mtproto.Dialog) {
 	dialogsDAO := dao.GetUserDialogsDAO(dao.DB_SLAVE)
 
 	var dialogDOList []dataobject.UserDialogsDO
@@ -122,23 +121,32 @@ func (m *dialogModel) GetDialogsByUserIDAndType(userId, peerType int32) (dialogs
 	return
 }
 
-func (m *dialogModel) GetPinnedDialogs(userId int32) (dialogs []*mtproto.TLDialog) {
+func (m *dialogModel) GetPinnedDialogs(userId int32) (dialogs []*mtproto.Dialog) {
 	dialogDOList := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectPinnedDialogs(userId)
 	dialogs = dialogDOListToDialogList(dialogDOList)
 	return
 }
 
-func (m *dialogModel) CreateOrUpdateByLastMessage(userId int32, peerType int32, peerId int32, topMessage int32, unreadMentions, inbox bool) (dialogId int32) {
-	// TODO(@benqi): 事务
-	// 创建会话
-	slave := dao.GetUserDialogsDAO(dao.DB_SLAVE)
-	master := dao.GetUserDialogsDAO(dao.DB_MASTER)
+// 创建会话
+func (m *dialogModel) CreateOrUpdateByLastMessage(userId int32, peerType int32, peerId int32, topMessage int32, unreadMentions, inbox bool) {
+	var (
+		master = dao.GetUserDialogsDAO(dao.DB_MASTER)
+		affectedRows = int64(0)
+		date = int32(time.Now().Unix())
+	)
 
-	date := int32(time.Now().Unix())
+	if !unreadMentions && !inbox {
+		affectedRows = master.UpdateTopMessage(topMessage, date, userId, int8(peerType), peerId)
+	} else if unreadMentions && !inbox {
+		affectedRows = master.UpdateTopMessageAndMentions(topMessage, date, userId, int8(peerType), peerId)
+	} else if !unreadMentions && inbox {
+		affectedRows = master.UpdateTopMessageAndUnread(topMessage, date, userId, int8(peerType), peerId)
+	} else {
+		affectedRows = master.UpdateTopMessageAndUnreadAndMentions(topMessage, date, userId, int8(peerType), peerId)
+	}
 
-	dialog :=slave.SelectByPeer(userId, int8(peerType), peerId)
-	if dialog == nil {
-		dialog = &dataobject.UserDialogsDO{}
+	if affectedRows == 0 {
+		dialog := &dataobject.UserDialogsDO{}
 		dialog.UserId = userId
 		dialog.PeerType = int8(peerType)
 		dialog.PeerId = peerId
@@ -151,20 +159,6 @@ func (m *dialogModel) CreateOrUpdateByLastMessage(userId int32, peerType int32, 
 		dialog.TopMessage = topMessage
 		dialog.CreatedAt = base2.NowFormatYMDHMS()
 		dialog.Date2 = date
-		dialogId = int32(master.Insert(dialog))
-		glog.Infof("UpdateTopMessage(Insert) - %s", logger.JsonDebugData(dialog))
-	} else {
-		if unreadMentions {
-			dialog.UnreadMentionsCount += 1
-		}
-		if inbox {
-			dialog.UnreadCount += 1
-		}
-		dialog.TopMessage = topMessage
-		dialog.Date2 = date
-		dialogId = dialog.Id
-		master.UpdateTopMessage(topMessage, dialog.UnreadCount, dialog.UnreadMentionsCount, date, dialog.Id)
-		glog.Infof("UpdateTopMessage(update) - %s", logger.JsonDebugData(dialog))
 	}
 	return
 }

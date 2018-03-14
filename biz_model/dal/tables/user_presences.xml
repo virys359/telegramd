@@ -12,7 +12,7 @@
     <operation name="UpdateLastSeen">
         <sql>
             UPDATE user_presences SET
-                last_seen_at = :last_seen_at, last_seen_auth_key_id = :last_seen_auth_key_id
+                last_seen_at = :last_seen_at, last_seen_auth_key_id = :last_seen_auth_key_id, version = version+1
             WHERE
                 user_id = :user_id
         </sql>

@@ -19,86 +19,166 @@ package model
 
 import (
 	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
+	"encoding/json"
 	"github.com/golang/glog"
-	"time"
+	"fmt"
 )
-
-
-//messages.sendMedia#b8d1262b flags:# silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int media:InputMedia message:string random_id:long reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> = Updates;
-//messages.forwardMessages#708e0195 flags:# silent:flags.5?true background:flags.6?true with_my_score:flags.8?true grouped:flags.9?true from_peer:InputPeer id:Vector<int> random_id:Vector<long> to_peer:InputPeer = Updates;
-func sendMessageToMessageData(m *mtproto.TLMessagesSendMessage) *mtproto.TLMessage {
-	//messages.sendMessage#fa88427a flags:# no_webpage:flags.1?true silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> = Updates;
-
-	//// TODO(@benqi): ???
-	//// request.Background
-	//// request.NoWebpage
-	//// request.ClearDraft
-	//message.SetFromId(md.UserId)
-	//if peer.PeerType == base.PEER_SELF {
-	//	to := &mtproto.TLPeerUser{ Data2: &mtproto.Peer_Data{
-	//		UserId: md.UserId,
-	//	}}
-	//	message.SetToId(to.To_Peer())
-	//} else {
-	//	message.SetToId(peer.ToPeer())
-	//}
-
-	return &mtproto.TLMessage{ Data2: &mtproto.Message_Data{
-		Silent:       m.GetSilent(),
-		ReplyToMsgId: m.GetReplyToMsgId(),
-		Message:      m.GetMessage(),
-		ReplyMarkup:  m.GetReplyMarkup(),
-		Entities:     m.GetEntities(),
-		Date:         int32(time.Now().Unix()),
-	}}
-}
-
-func sendMediaToMessageData(m *mtproto.TLMessagesSendMedia) *mtproto.TLMessage {
-	return &mtproto.TLMessage{ Data2: &mtproto.Message_Data{
-		Silent:       m.GetSilent(),
-		ReplyToMsgId: m.GetReplyToMsgId(),
-		// Media:  m.GetMedia(),
-		// Message:      m.GetMessage(),
-		ReplyMarkup:  m.GetReplyMarkup(),
-		// Entities:     m.GetEntities(),
-		Date:         int32(time.Now().Unix()),
-	}}
-}
-
-func MakeMessageBySendMessage(m mtproto.TLObject) (message *mtproto.TLMessage, err error) {
-	switch m.(type) {
-	case *mtproto.TLMessagesSendMessage:
-		message = sendMessageToMessageData(m.(*mtproto.TLMessagesSendMessage))
-	case *mtproto.TLMessagesSendMedia:
-		message = sendMediaToMessageData(m.(*mtproto.TLMessagesSendMedia))
+// updateShortMessage#914fbf11 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
+// message#44f9b43d flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true id:int from_id:flags.8?int to_id:Peer fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int edit_date:flags.15?int post_author:flags.16?string grouped_id:flags.17?long = Message;
+func MessageToUpdateShortMessage(message2* mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
+	switch message2.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_message:
+		message := message2.To_Message()
+		shortMessage = &mtproto.TLUpdateShortMessage{Data2: &mtproto.Updates_Data{
+			Out: message.GetOut(),
+			Mentioned: message.GetMentioned(),
+			MediaUnread: message.GetMediaUnread(),
+			Silent: message.GetSilent(),
+			Id:     message.GetId(),
+			UserId: message.GetFromId(),
+			Message: message.GetMessage(),
+			// Pts:,
+			// PtsCount,
+			Date:         message.GetDate(),
+			FwdFrom:      message.GetFwdFrom(),
+			ViaBotId:     message.GetViaBotId(),
+			ReplyToMsgId: message.GetReplyToMsgId(),
+			Entities:     message.GetEntities(),
+		}}
+	case mtproto.TLConstructor_CRC32_messageService:
 	default:
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR), "internal server error")
-		glog.Error(err)
-		return
+		// TODO(@benqi): error
 	}
 	return
 }
 
-// updateShortMessage#914fbf11 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
-// message#44f9b43d flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true id:int from_id:flags.8?int to_id:Peer fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int edit_date:flags.15?int post_author:flags.16?string grouped_id:flags.17?long = Message;
-func MessageToUpdateShortMessage(message* mtproto.TLMessage) *mtproto.TLUpdateShortMessage {
-	shortMessage := &mtproto.TLUpdateShortMessage{Data2: &mtproto.Updates_Data{
-		// Out: true,
-		Mentioned: message.GetMentioned(),
-		// MediaUnread: ??,
-		Silent: message.GetSilent(),
-		Id:     message.GetId(),
-		// UserId: message.GetFromId(),
-		Message: message.GetMessage(),
-		// Pts:,
-		// PtsCount,
-		Date:         message.GetDate(),
-		FwdFrom:      message.GetFwdFrom(),
-		ViaBotId:     message.GetViaBotId(),
-		ReplyToMsgId: message.GetReplyToMsgId(),
-		Entities:     message.GetEntities(),
-	}}
-
-	return shortMessage
+//// updateShortSentMessage#11f1331c flags:# out:flags.1?true id:int pts:int pts_count:int date:int media:flags.9?MessageMedia entities:flags.7?Vector<MessageEntity> = Updates;
+func MessageToUpdateShortSentMessage(message2* mtproto.Message) (sentMessage *mtproto.TLUpdateShortSentMessage) {
+	switch message2.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_message:
+		message := message2.To_Message()
+		sentMessage = &mtproto.TLUpdateShortSentMessage{Data2: &mtproto.Updates_Data{
+			Out: message.GetOut(),
+			Id:   message.GetId(),
+			// Pts:,
+			// PtsCount,
+			Date:         message.GetDate(),
+			Media: message.GetMedia(),
+			Entities: message.GetEntities(),
+		}}
+	case mtproto.TLConstructor_CRC32_messageService:
+	default:
+		// TODO(@benqi): error
+	}
+	return
 }
 
+// messageDOToMessage
+func messageDOToMessage(do *dataobject.Messages2DO) (*mtproto.Message, error) {
+	message := &mtproto.Message{
+		Data2: &mtproto.Message_Data{},
+	}
+
+	switch do.MessageType {
+	case MESSAGE_TYPE_MESSAGE_EMPTY:
+		message.Constructor = mtproto.TLConstructor_CRC32_messageEmpty
+		// message = message2
+	case MESSAGE_TYPE_MESSAGE:
+		message.Constructor = mtproto.TLConstructor_CRC32_message
+		// err := proto.Unmarshal(messageDO.MessageData, message)
+		err := json.Unmarshal([]byte(do.MessageData), message)
+		if err != nil {
+			glog.Errorf("messageDOToMessage - Unmarshal message(%d)error: %v", do.Id, err)
+			return nil, err
+		}
+	case MESSAGE_TYPE_MESSAGE_SERVICE:
+		message.Constructor = mtproto.TLConstructor_CRC32_messageService
+		err := json.Unmarshal([]byte(do.MessageData), message)
+		if err != nil {
+			glog.Errorf("messageDOToMessage - Unmarshal message(%d)error: %v", do.Id, err)
+			return nil, err
+		}
+	default:
+		err := fmt.Errorf("messageDOToMessage - Invalid messageType, db's data error, message(%d)", do.Id)
+		glog.Error(err)
+		return nil, err
+	}
+
+	return message, nil
+}
+
+func PickAllIDListByDialogs(dialogs []*mtproto.Dialog) (messageIdList, userIdList, chatIdList, channelIdList []int32) {
+	if len(dialogs) == 0 {
+		messageIdList = []int32{}
+		userIdList = []int32{}
+		chatIdList = []int32{}
+		channelIdList = []int32{}
+	} else {
+		userIdList = make([]int32, 0, len(dialogs))
+		chatIdList = make([]int32, 0, len(dialogs))
+		channelIdList = make([]int32, 0, len(dialogs))
+
+		for _, d := range dialogs {
+			dialog := d.To_Dialog()
+			messageIdList = append(messageIdList, dialog.GetTopMessage())
+
+			p := dialog.GetPeer()
+			// TODO(@benqi): 先假设只有PEER_USER
+			switch p.GetConstructor() {
+			case mtproto.TLConstructor_CRC32_peerUser:
+				userIdList = append(userIdList, p.GetData2().GetUserId())
+			case mtproto.TLConstructor_CRC32_peerChat:
+				chatIdList = append(chatIdList, p.GetData2().GetChatId())
+			case mtproto.TLConstructor_CRC32_peerChannel:
+				channelIdList = append(channelIdList, p.GetData2().GetChannelId())
+			}
+		}
+	}
+	return
+}
+
+func PickAllIDListByMessages(messageList []*mtproto.Message) (userIdList, chatIdList, channelIdList []int32) {
+	if len(messageList) == 0 {
+		userIdList = []int32{}
+		chatIdList = []int32{}
+		channelIdList = []int32{}
+	} else {
+		userIdList = make([]int32, 0, len(messageList))
+		chatIdList = make([]int32, 0, len(messageList))
+		channelIdList = make([]int32, 0, len(messageList))
+
+		for _, m := range messageList {
+			switch m.GetConstructor()  {
+			case mtproto.TLConstructor_CRC32_message:
+				m2 := m.To_Message()
+				userIdList = append(userIdList, m2.GetFromId())
+
+				p := m2.GetToId()
+				switch p.GetConstructor() {
+				case mtproto.TLConstructor_CRC32_peerUser:
+					userIdList = append(userIdList, p.GetData2().GetUserId())
+				case mtproto.TLConstructor_CRC32_peerChat:
+					chatIdList = append(chatIdList, p.GetData2().GetChatId())
+				case mtproto.TLConstructor_CRC32_peerChannel:
+					channelIdList = append(chatIdList, p.GetData2().GetChannelId())
+				}
+			case mtproto.TLConstructor_CRC32_messageService:
+				m2 := m.To_MessageService()
+				userIdList = append(userIdList, m2.GetFromId())
+
+				p := m2.GetToId()
+				switch p.GetConstructor() {
+				case mtproto.TLConstructor_CRC32_peerUser:
+					userIdList = append(userIdList, p.GetData2().GetUserId())
+				case mtproto.TLConstructor_CRC32_peerChat:
+					chatIdList = append(chatIdList, p.GetData2().GetChatId())
+				case mtproto.TLConstructor_CRC32_peerChannel:
+					channelIdList = append(chatIdList, p.GetData2().GetChannelId())
+				}
+			case mtproto.TLConstructor_CRC32_messageEmpty:
+			}
+		}
+	}
+	return
+}

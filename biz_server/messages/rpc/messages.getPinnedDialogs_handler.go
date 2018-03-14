@@ -40,8 +40,9 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 	userIdList := []int32{md.UserId}
 	chatIdList := []int32{}
 
-	for _, dialog := range dialogs {
+	for _, dialog2 := range dialogs {
 		// dialog.Peer
+		dialog := dialog2.To_Dialog()
 		messageIdList = append(messageIdList, dialog.GetTopMessage())
 		peer := base.FromPeer(dialog.GetPeer())
 		// TODO(@benqi): 先假设只有PEER_USER
@@ -57,7 +58,7 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 
 	glog.Infof("messageIdList - %v", messageIdList)
 	if len(messageIdList) > 0 {
-		peerDialogs.SetMessages(model.GetMessageModel().GetMessagesByPeerAndMessageIdList(md.UserId, messageIdList))
+		peerDialogs.SetMessages(model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
 	}
 
 	users := model.GetUserModel().GetUserList(userIdList)

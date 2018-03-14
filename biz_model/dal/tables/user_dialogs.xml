@@ -92,11 +92,45 @@
             UPDATE
                 user_dialogs
             SET
-                top_message = :top_message, unread_count = :unread_count, unread_mentions_count = :unread_mentions_count, date2 = :date2
+                top_message = :top_message, date2 = :date2
             WHERE
-                id = :id
+                user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
         </sql>
     </operation>
+
+    <operation name="UpdateTopMessageAndUnread">
+        <sql>
+            UPDATE
+                user_dialogs
+            SET
+                top_message = :top_message, unread_count = unread_count+1, date2 = :date2
+            WHERE
+                user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
+        </sql>
+    </operation>
+
+    <operation name="UpdateTopMessageAndMentions">
+        <sql>
+            UPDATE
+                user_dialogs
+            SET
+                top_message = :top_message, unread_mentions_count = unread_mentions_count+1, date2 = :date2
+            WHERE
+                user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
+        </sql>
+    </operation>
+
+    <operation name="UpdateTopMessageAndUnreadAndMentions">
+        <sql>
+            UPDATE
+                user_dialogs
+            SET
+                top_message = :top_message, unread_count = unread_count+1, unread_mentions_count = unread_mentions_count+1, date2 = :date2
+            WHERE
+                user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
+        </sql>
+    </operation>
+
     <operation name="UpdateUnreadByPeer">
         <sql>
             UPDATE

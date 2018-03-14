@@ -23,11 +23,11 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
-	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	//"time"
+	//"github.com/nebulaim/telegramd/biz_model/model"
+	//"github.com/nebulaim/telegramd/biz_model/base"
+	//"github.com/nebulaim/telegramd/biz_server/delivery"
+	//"github.com/nebulaim/telegramd/biz_model/dal/dao"
 )
 
 // messages.sendMedia#c8f16791 flags:# silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int media:InputMedia random_id:long reply_markup:flags.2?ReplyMarkup = Updates;
@@ -35,6 +35,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesSendMedia - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+	/*
 	now := int32(time.Now().Unix())
 	peer := base.FromInputPeer(request.GetPeer())
 	message := mtproto.NewTLMessage()
@@ -317,4 +318,6 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	}
 	glog.Infof("MessagesSendMessage - reply: %s", logger.JsonDebugData(sentMessage))
 	return sentMessage.To_Updates(), nil
+	*/
+	return nil, nil
 }

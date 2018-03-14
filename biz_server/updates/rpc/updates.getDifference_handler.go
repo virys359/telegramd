@@ -25,8 +25,6 @@ import (
 	"golang.org/x/net/context"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 )
 
@@ -34,103 +32,26 @@ import (
 func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *mtproto.TLUpdatesGetDifference) (*mtproto.Updates_Difference, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("UpdatesGetDifference - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
-	difference := mtproto.NewTLUpdatesDifference()
-	otherUpdates := []*mtproto.Update{}
 
-	lastPts := request.GetPts()
-	doList := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(md.UserId, request.GetPts())
-	boxIDList := make([]int32, 0, len(doList))
-	for _, do := range doList {
-		switch do.UpdateType {
-		case model.PTS_READ_HISTORY_OUTBOX:
-			readHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
-			readHistoryOutbox.SetPeer(base.ToPeerByTypeAndID(do.PeerType, do.PeerId))
-			readHistoryOutbox.SetMaxId(do.MaxMessageBoxId)
-			readHistoryOutbox.SetPts(do.Pts)
-			readHistoryOutbox.SetPtsCount(0)
-			otherUpdates = append(otherUpdates, readHistoryOutbox.To_Update())
-		case model.PTS_READ_HISTORY_INBOX:
-			readHistoryInbox := mtproto.NewTLUpdateReadHistoryInbox()
-			readHistoryInbox.SetPeer(base.ToPeerByTypeAndID(do.PeerType, do.PeerId))
-			readHistoryInbox.SetMaxId(do.MaxMessageBoxId)
-			readHistoryInbox.SetPts(do.Pts)
-			readHistoryInbox.SetPtsCount(0)
-			otherUpdates = append(otherUpdates, readHistoryInbox.To_Update())
-		case model.PTS_MESSAGE_OUTBOX, model.PTS_MESSAGE_INBOX:
-			boxIDList = append(boxIDList, do.MessageBoxId)
-		}
+	otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
+	messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
+	userIdList, _, _ := model.PickAllIDListByMessages(messages)
+	userList := model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, userIdList)
 
-		if do.Pts > lastPts {
-			lastPts = do.Pts
-		}
-	}
+	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
+		Pts:         lastPts,
+		Date:        int32(time.Now().Unix()),
+		UnreadCount: 0,
+		Seq:         int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))),
+	}}
+	difference := &mtproto.TLUpdatesDifference{Data2: &mtproto.Updates_Difference_Data{
+		NewMessages:  messages,
+		OtherUpdates: otherUpdates,
+		Users:        userList,
+		// Chats:        nil,
+		State:        state.To_Updates_State(),
+	}}
 
-	if len(boxIDList) > 0 {
-		messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
-		// messages := model.GetMessageModel().GetMessagesByGtPts(md.UserId, request.Pts)
-		userIdList := []int32{}
-		chatIdList := []int32{}
-
-		for _, m := range messages {
-			switch m.GetConstructor()  {
-
-			case mtproto.TLConstructor_CRC32_message:
-				m2 := m.To_Message()
-				userIdList = append(userIdList, m2.GetFromId())
-				p := base.FromPeer(m2.GetToId())
-				switch p.PeerType {
-				case base.PEER_SELF, base.PEER_USER:
-					userIdList = append(userIdList, p.PeerId)
-				case base.PEER_CHAT:
-					chatIdList = append(chatIdList, p.PeerId)
-				case base.PEER_CHANNEL:
-					// TODO(@benqi): add channel
-				}
-				//peer := base.FromPeer(m2.GetToId())
-				//switch peer.PeerType {
-				//case base.PEER_USER:
-				//    userIdList = append(userIdList, peer.PeerId)
-				//case base.PEER_CHAT:
-				//    chatIdList = append(chatIdList, peer.PeerId)
-				//case base.PEER_CHANNEL:
-				//    // TODO(@benqi): add channel
-				//}
-			case mtproto.TLConstructor_CRC32_messageService:
-				m2 := m.To_MessageService()
-				userIdList = append(userIdList, m2.GetFromId())
-				chatIdList = append(chatIdList, m2.GetToId().GetData2().GetChatId())
-			case mtproto.TLConstructor_CRC32_messageEmpty:
-			}
-			difference.Data2.NewMessages = append(difference.Data2.NewMessages, m)
-		}
-
-		if len(userIdList) > 0 {
-			usersList := model.GetUserModel().GetUserList(userIdList)
-			for _, u := range usersList {
-				if u.GetId() == md.UserId {
-					u.SetSelf(true)
-				} else {
-					u.SetSelf(false)
-				}
-				u.SetContact(true)
-				u.SetMutualContact(true)
-				difference.Data2.Users = append(difference.Data2.Users, u.To_User())
-			}
-		}
-	}
-
-	difference.SetOtherUpdates(otherUpdates)
-
-	state := mtproto.NewTLUpdatesState()
-	// TODO(@benqi): Pts通过规则计算出来
-	state.SetPts(lastPts)
-	state.SetDate(int32(time.Now().Unix()))
-	state.SetUnreadCount(0)
-	state.SetSeq(int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))))
-
-	difference.SetState(state.To_Updates_State())
-
-	// dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).UpdateState(request.GetPts(), request.GetQts(), request.GetDate(), md.AuthId, md.UserId)
 	glog.Infof("UpdatesGetDifference - reply: %s", difference)
 	return difference.To_Updates_Difference(), nil
 }

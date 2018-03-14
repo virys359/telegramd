@@ -27,6 +27,7 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/nebulaim/telegramd/baselib/base"
+	base2 "github.com/nebulaim/telegramd/biz_model/base"
 )
 
 type updatesModel struct {
@@ -131,3 +132,42 @@ func (m *updatesModel) AddSeqToUpdatesQueue(authId int64, userId, seq, updateTyp
 //	return affected
 //}
 
+
+func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtproto.Update, boxIDList []int32, lastPts int32) {
+	lastPts = pts
+	doList := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(userId, pts)
+	if len(doList) > 0 {
+		otherUpdates = []*mtproto.Update{}
+		boxIDList = []int32{}
+	} else {
+		boxIDList = make([]int32, 0, len(doList))
+		otherUpdates = make([]*mtproto.Update, 0, len(doList))
+		for _, do := range doList {
+			switch do.UpdateType {
+			case PTS_READ_HISTORY_OUTBOX:
+				readHistoryOutbox := &mtproto.TLUpdateReadHistoryOutbox{Data2: &mtproto.Update_Data{
+					Peer_39:  base2.ToPeerByTypeAndID(do.PeerType, do.PeerId),
+					MaxId:    do.MaxMessageBoxId,
+					Pts:      do.Pts,
+					PtsCount: 0,
+				}}
+				otherUpdates = append(otherUpdates, readHistoryOutbox.To_Update())
+			case PTS_READ_HISTORY_INBOX:
+				readHistoryInbox := &mtproto.TLUpdateReadHistoryInbox{Data2: &mtproto.Update_Data{
+					Peer_39:  base2.ToPeerByTypeAndID(do.PeerType, do.PeerId),
+					MaxId:    do.MaxMessageBoxId,
+					Pts:      do.Pts,
+					PtsCount: 0,
+				}}
+				otherUpdates = append(otherUpdates, readHistoryInbox.To_Update())
+			case PTS_MESSAGE_OUTBOX, PTS_MESSAGE_INBOX:
+				boxIDList = append(boxIDList, do.MessageBoxId)
+			}
+
+			if do.Pts > lastPts {
+				lastPts = do.Pts
+			}
+		}
+	}
+	return
+}

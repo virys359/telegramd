@@ -34,7 +34,7 @@ func (s *MessagesServiceImpl) MessagesGetMessages(ctx context.Context, request *
 
 	userIdList := []int32{md.UserId}
 	chatIdList := []int32{}
-	messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList(md.UserId, request.Id)
+	messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, request.Id)
 	for _, message := range messages {
 		switch message.GetConstructor() {
 		case mtproto.TLConstructor_CRC32_message:

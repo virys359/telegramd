@@ -66,6 +66,32 @@ func (m *userModel) GetUser(userId int32) (user* mtproto.TLUser) {
 	return
 }
 
+func (m *userModel) GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtproto.User) {
+	if len(userIdList) == 0 {
+		users = []*mtproto.User{}
+	} else {
+		// usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
+		userDOList := dao.GetUsersDAO(dao.DB_SLAVE).SelectUsersByIdList(userIdList)
+		users = make([]*mtproto.User, 0, len(userDOList))
+		for _, userDO := range userDOList {
+			// TODO(@benqi): fill bot, photo, about...
+			user := &mtproto.TLUser{Data2: &mtproto.User_Data{
+				Self:          selfUserId == userDO.Id,
+				Id:            userDO.Id,
+				AccessHash:    userDO.AccessHash,
+				FirstName:     userDO.FirstName,
+				LastName:      userDO.LastName,
+				Username:      userDO.Username,
+				Phone:         userDO.Phone,
+				Contact:       true,
+				MutualContact: true,
+			}}
+			users = append(users, user.To_User())
+		}
+	}
+	return
+}
+
 func (m *userModel) GetUserList(userIdList []int32) (users []*mtproto.TLUser) {
 	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 

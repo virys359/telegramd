@@ -22,13 +22,15 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/golang/glog"
+	// "github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"time"
-	"github.com/nebulaim/telegramd/baselib/logger"
+	// "github.com/nebulaim/telegramd/baselib/logger"
 	"fmt"
 	"encoding/json"
+	"github.com/gogo/protobuf/proto"
+	"github.com/golang/glog"
 )
 
 const (
@@ -66,6 +68,7 @@ func GetMessageModel() *messageModel {
 	return messageInstance
 }
 
+/*
 func (m *messageModel) getMessagesByIDList(idList []int32, order bool) (messages []*mtproto.Message) {
 	// TODO(@benqi): Check messageDAO
 	messageDAO := dao.GetMessagesDAO(dao.DB_SLAVE)
@@ -281,7 +284,226 @@ type IDMessage struct {
 	UserId int32
 	MessageBoxId int32
 }
+*/
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Loadhistory
+func (m *messageModel) LoadBackwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
+	// TODO(@benqi): chat and channel
+	doList := dao.GetMessages2DAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
+	if len(doList) == 0 {
+		messages = []*mtproto.Message{}
+	} else {
+		messages = make([]*mtproto.Message, 0, len(doList))
+		for _, do := range doList {
+			// TODO(@benqi): check data
+			m, _ := messageDOToMessage(&do)
+			messages = append(messages, m)
+		}
+	}
+	return
+}
+
+func (m *messageModel) LoadForwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
+	// TODO(@benqi): chat and channel
+	doList := dao.GetMessages2DAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
+	if len(doList) == 0 {
+		messages = []*mtproto.Message{}
+	} else {
+		messages = make([]*mtproto.Message, 0, len(doList))
+		for _, do := range doList {
+			// TODO(@benqi): check data
+			m, _ := messageDOToMessage(&do)
+			messages = append(messages, m)
+		}
+	}
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+func (m *messageModel) GetMessageByPeerAndMessageId(userId int32, messageId int32) (message *mtproto.Message) {
+	do := dao.GetMessages2DAO(dao.DB_SLAVE).SelectByMessageId(userId, messageId)
+	if do != nil {
+		message, _ = messageDOToMessage(do)
+	}
+	return
+}
+
+func (m *messageModel) GetMessagesByPeerAndMessageIdList2(userId int32, idList []int32) (messages []*mtproto.Message) {
+	if len(idList) == 0 {
+		messages = []*mtproto.Message{}
+	} else {
+		doList := dao.GetMessages2DAO(dao.DB_SLAVE).SelectByMessageIdList(userId, idList)
+		messages = make([]*mtproto.Message, 0, len(doList))
+		for _, do := range doList {
+			// TODO(@benqi): check data
+			m, _ := messageDOToMessage(&do)
+			messages = append(messages, m)
+		}
+	}
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// sendMessage
+// 所有收件箱信息
+type InboxMessages struct {
+	UserIds []int32
+	Messages []*mtproto.Message
+}
+
+// SendMessage
+// 发送到发件箱
+func (m *messageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int64, message2 *mtproto.Message) (boxId int32, dialogMessageId int64) {
+	now := int32(time.Now().Unix())
+	messageDO := &dataobject.Messages2DO{
+		UserId:fromId,
+		UserMessageBoxId: int32(GetSequenceModel().NextMessageBoxId(base2.Int32ToString(fromId))),
+		DialogMessageId: base.NextSnowflakeId(),
+		SenderUserId: fromId,
+		MessageBoxType: MESSAGE_BOX_TYPE_OUTGOING,
+		PeerType: int8(peer.PeerType),
+		PeerId: peer.PeerId,
+		RandomId: clientRandomId,
+		Date2: now,
+		State: 0,
+	}
+
+	var mentioned = false
+
+	switch message2.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_messageEmpty:
+		messageDO.MessageType = MESSAGE_TYPE_MESSAGE_EMPTY
+	case mtproto.TLConstructor_CRC32_message:
+		messageDO.MessageType = MESSAGE_TYPE_MESSAGE
+		message := message2.To_Message()
+
+		mentioned = message.GetMentioned()
+		message.SetId(messageDO.UserMessageBoxId)
+	case mtproto.TLConstructor_CRC32_messageService:
+		messageDO.MessageType = MESSAGE_TYPE_MESSAGE_SERVICE
+		message := message2.To_MessageService()
+
+		mentioned = message.GetMentioned()
+		message.SetId(messageDO.UserMessageBoxId)
+	}
+
+	messageData, _ := json.Marshal(message2)
+	messageDO.MessageData = string(messageData)
+
+	// TODO(@benqi): rpocess clientRandomId dup
+	dao.GetMessages2DAO(dao.DB_MASTER).Insert(messageDO)
+
+	// dialog
+	GetDialogModel().CreateOrUpdateByLastMessage(fromId, peer.PeerType, peer.PeerId, messageDO.UserMessageBoxId, mentioned, false)
+
+	boxId = messageDO.UserMessageBoxId
+	dialogMessageId = messageDO.DialogMessageId
+	return
+}
+
+// 发送到收件箱
+func (m *messageModel) SendMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId, dialogMessageId int64, outboxMessage *mtproto.Message) (*InboxMessages, error) {
+	switch peer.PeerType {
+	case base.PEER_USER:
+		return m.sendUserMessageToInbox(fromId, peer, clientRandomId, dialogMessageId, outboxMessage)
+	case base.PEER_CHAT:
+		return m.sendChatMessageToInbox(fromId, peer, clientRandomId, dialogMessageId, outboxMessage)
+	case base.PEER_CHANNEL:
+		return m.sendUserMessageToInbox(fromId, peer, clientRandomId, dialogMessageId, outboxMessage)
+	default:
+		panic("invalid peer")
+		return nil, fmt.Errorf("")
+	}
+}
+
+// 发送到收件箱
+func (m *messageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId, dialogMessageId int64, outboxMessage *mtproto.Message) (*InboxMessages, error) {
+	now := int32(time.Now().Unix())
+	messageDO := &dataobject.Messages2DO{
+		UserId:peer.PeerId,
+		UserMessageBoxId: int32(GetSequenceModel().NextMessageBoxId(base2.Int32ToString(fromId))),
+		DialogMessageId: dialogMessageId,
+		SenderUserId: fromId,
+		MessageBoxType: MESSAGE_BOX_TYPE_INCOMING,
+		PeerType: int8(peer.PeerType),
+		PeerId: peer.PeerId,
+		RandomId: clientRandomId,
+		Date2: now,
+		State: 0,
+	}
+
+	inboxMessage := proto.Clone(outboxMessage).(*mtproto.Message)
+	var mentioned = false
+
+	switch outboxMessage.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_messageEmpty:
+		messageDO.MessageType = MESSAGE_TYPE_MESSAGE_EMPTY
+	case mtproto.TLConstructor_CRC32_message:
+		messageDO.MessageType = MESSAGE_TYPE_MESSAGE
+
+		m := inboxMessage.To_Message()
+		m.SetOut(false)
+		m.SetId(messageDO.UserMessageBoxId)
+		mentioned = m.GetMentioned()
+		// m.SetFromId()
+	case mtproto.TLConstructor_CRC32_messageService:
+		messageDO.MessageType = MESSAGE_TYPE_MESSAGE_SERVICE
+
+		m := inboxMessage.To_MessageService()
+		m.SetOut(false)
+		m.SetId(messageDO.UserMessageBoxId)
+
+		mentioned = m.GetMentioned()
+	}
+
+	messageData, _ := json.Marshal(inboxMessage)
+	messageDO.MessageData = string(messageData)
+
+	// TODO(@benqi): rpocess clientRandomId dup
+	dao.GetMessages2DAO(dao.DB_MASTER).Insert(messageDO)
+	// dialog
+	GetDialogModel().CreateOrUpdateByLastMessage(peer.PeerId, peer.PeerType, fromId, messageDO.UserMessageBoxId, mentioned, true)
+
+	return &InboxMessages{
+		UserIds:  []int32{messageDO.UserId},
+		Messages: []*mtproto.Message{inboxMessage},
+	}, nil
+}
+
+// 发送到收件箱
+func (m *messageModel) sendChatMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId, dialogMessageId int64, outboxMessage *mtproto.Message) (*InboxMessages, error) {
+	switch outboxMessage.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_message:
+	case mtproto.TLConstructor_CRC32_messageService:
+	default:
+		panic("invalid messageEmpty type")
+		// return
+	}
+	return &InboxMessages{
+		// UserIds: []int32{peer.PeerId},
+		// Messages: []*mtproto.Message{inboxMessage},
+	}, nil
+}
+
+// 发送到收件箱
+func (m *messageModel) sendChannelMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId, dialogMessageId int64, outboxMessage *mtproto.Message) (*InboxMessages, error) {
+	switch outboxMessage.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_message:
+	case mtproto.TLConstructor_CRC32_messageService:
+	default:
+		panic("invalid messageEmpty type")
+		// return
+	}
+	return &InboxMessages{
+		// UserIds: []int32{peer.PeerId},
+		// Messages: []*mtproto.Message{inboxMessage},
+	}, nil
+}
+
+/*
 // SendMessage
 func (m *messageModel) SendMessage(fromId int32, peerType int32, peerId int32, clientRandomId int64, message *mtproto.Message) (ids []*IDMessage) {
 	switch peerType {
@@ -296,22 +518,22 @@ func (m *messageModel) SendMessage(fromId int32, peerType int32, peerId int32, c
 	}
 
 	return
-/*
-	// TODO(@benqi): 重复插入出错处理
-	messageDO := &dataobject.MessagesDO{
-		SenderUserId: fromId,
-		PeerType:     peer.PeerType,
-		PeerId:       peer.PeerId,
-		RandomId:     randomId,
-		Date2:        date,
-	}
-
-	// TODO(@benqi): 测试阶段使用Json!!!
-	// messageDO.MessageData, _ = proto.Marshal(message)
-	messageData, _ := json.Marshal(message)
-	messageDO.MessageData = string(messageData)
-	messageId = int32(dao.GetMessagesDAO(dao.DB_MASTER).Insert(messageDO))
- */
+/// *
+//	// TODO(@benqi): 重复插入出错处理
+//	messageDO := &dataobject.MessagesDO{
+//		SenderUserId: fromId,
+//		PeerType:     peer.PeerType,
+//		PeerId:       peer.PeerId,
+//		RandomId:     randomId,
+//		Date2:        date,
+//	}
+//
+//	// TODO(@benqi): 测试阶段使用Json!!!
+//	// messageDO.MessageData, _ = proto.Marshal(message)
+//	messageData, _ := json.Marshal(message)
+//	messageDO.MessageData = string(messageData)
+//	messageId = int32(dao.GetMessagesDAO(dao.DB_MASTER).Insert(messageDO))
+// * /
 	// Insert
 }
 
@@ -424,3 +646,4 @@ func (m *messageModel) GetPeerMessageBoxID(userId, boxID, peerId int32) int32 {
 	}
 	return id
 }
+*/

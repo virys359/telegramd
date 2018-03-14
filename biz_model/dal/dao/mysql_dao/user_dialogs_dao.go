@@ -266,11 +266,11 @@ func (dao *UserDialogsDAO) SelectDialogsByPeerType(user_id int32, peer_type int8
 	return values
 }
 
-// update user_dialogs set top_message = :top_message, unread_count = :unread_count, unread_mentions_count = :unread_mentions_count, date2 = :date2 where id = :id
+// update user_dialogs set top_message = :top_message, date2 = :date2 where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id
 // TODO(@benqi): sqlmap
-func (dao *UserDialogsDAO) UpdateTopMessage(top_message int32, unread_count int32, unread_mentions_count int32, date2 int32, id int32) int64 {
-	var query = "update user_dialogs set top_message = ?, unread_count = ?, unread_mentions_count = ?, date2 = ? where id = ?"
-	r, err := dao.db.Exec(query, top_message, unread_count, unread_mentions_count, date2, id)
+func (dao *UserDialogsDAO) UpdateTopMessage(top_message int32, date2 int32, user_id int32, peer_type int8, peer_id int32) int64 {
+	var query = "update user_dialogs set top_message = ?, date2 = ? where user_id = ? and peer_type = ? and peer_id = ?"
+	r, err := dao.db.Exec(query, top_message, date2, user_id, peer_type, peer_id)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Exec in UpdateTopMessage(_), error: %v", err)
@@ -281,6 +281,72 @@ func (dao *UserDialogsDAO) UpdateTopMessage(top_message int32, unread_count int3
 	rows, err := r.RowsAffected()
 	if err != nil {
 		errDesc := fmt.Sprintf("RowsAffected in UpdateTopMessage(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update user_dialogs set top_message = :top_message, unread_count = unread_count + 1, date2 = :date2 where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id
+// TODO(@benqi): sqlmap
+func (dao *UserDialogsDAO) UpdateTopMessageAndUnread(top_message int32, date2 int32, user_id int32, peer_type int8, peer_id int32) int64 {
+	var query = "update user_dialogs set top_message = ?, unread_count = unread_count + 1, date2 = ? where user_id = ? and peer_type = ? and peer_id = ?"
+	r, err := dao.db.Exec(query, top_message, date2, user_id, peer_type, peer_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateTopMessageAndUnread(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateTopMessageAndUnread(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update user_dialogs set top_message = :top_message, unread_mentions_count = unread_mentions_count + 1, date2 = :date2 where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id
+// TODO(@benqi): sqlmap
+func (dao *UserDialogsDAO) UpdateTopMessageAndMentions(top_message int32, date2 int32, user_id int32, peer_type int8, peer_id int32) int64 {
+	var query = "update user_dialogs set top_message = ?, unread_mentions_count = unread_mentions_count + 1, date2 = ? where user_id = ? and peer_type = ? and peer_id = ?"
+	r, err := dao.db.Exec(query, top_message, date2, user_id, peer_type, peer_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateTopMessageAndMentions(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateTopMessageAndMentions(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update user_dialogs set top_message = :top_message, unread_count = unread_count + 1, unread_mentions_count = unread_mentions_count + 1, date2 = :date2 where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id
+// TODO(@benqi): sqlmap
+func (dao *UserDialogsDAO) UpdateTopMessageAndUnreadAndMentions(top_message int32, date2 int32, user_id int32, peer_type int8, peer_id int32) int64 {
+	var query = "update user_dialogs set top_message = ?, unread_count = unread_count + 1, unread_mentions_count = unread_mentions_count + 1, date2 = ? where user_id = ? and peer_type = ? and peer_id = ?"
+	r, err := dao.db.Exec(query, top_message, date2, user_id, peer_type, peer_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateTopMessageAndUnreadAndMentions(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateTopMessageAndUnreadAndMentions(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

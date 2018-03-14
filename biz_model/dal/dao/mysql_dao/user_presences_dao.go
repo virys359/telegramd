@@ -53,10 +53,10 @@ func (dao *UserPresencesDAO) Insert(do *dataobject.UserPresencesDO) int64 {
 	return id
 }
 
-// update user_presences set last_seen_at = :last_seen_at, last_seen_auth_key_id = :last_seen_auth_key_id where user_id = :user_id
+// update user_presences set last_seen_at = :last_seen_at, last_seen_auth_key_id = :last_seen_auth_key_id, version = version + 1 where user_id = :user_id
 // TODO(@benqi): sqlmap
 func (dao *UserPresencesDAO) UpdateLastSeen(last_seen_at int64, last_seen_auth_key_id int64, user_id int32) int64 {
-	var query = "update user_presences set last_seen_at = ?, last_seen_auth_key_id = ? where user_id = ?"
+	var query = "update user_presences set last_seen_at = ?, last_seen_auth_key_id = ?, version = version + 1 where user_id = ?"
 	r, err := dao.db.Exec(query, last_seen_at, last_seen_auth_key_id, user_id)
 
 	if err != nil {
