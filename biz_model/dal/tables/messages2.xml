@@ -23,7 +23,6 @@
         </sql>
     </operation>
 
-
     <operation name="SelectByMessageId">
         <sql>
             SELECT
@@ -88,7 +87,6 @@
         </sql>
     </operation>
 
-
     <operation name="SelectForwardByPeerUserOffsetLimit" result_set="list">
         <params>
             <param name="limit" type="int32" />
@@ -103,6 +101,20 @@
                 user_id = :user_id AND ((sender_user_id = :user_id AND peer_id = :peer_id) OR (sender_user_id = :peer_id AND peer_id = :user_id)) AND peer_type = :peer_type AND user_message_box_id >= :user_message_box_id
             ORDER BY user_message_box_id LIMIT :limit
             ]]>
+        </sql>
+    </operation>
+
+    <operation name="SelectPeerMessageId">
+        <params>
+            <param name="peerId" type="int32" />
+        </params>
+        <sql>
+            SELECT
+                user_message_box_id, message_box_type
+            FROM
+                messages2
+            WHERE
+                user_id = :peerId AND dialog_message_id = (SELECT dialog_message_id FROM messages2 WHERE user_id = :user_id AND user_message_box_id = :user_message_box_id LIMIT 1)
         </sql>
     </operation>
 

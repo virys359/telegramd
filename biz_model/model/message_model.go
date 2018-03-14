@@ -412,7 +412,7 @@ func (m *messageModel) SendMessageToInbox(fromId int32, peer *base.PeerUtil, cli
 	case base.PEER_CHAT:
 		return m.sendChatMessageToInbox(fromId, peer, clientRandomId, dialogMessageId, outboxMessage)
 	case base.PEER_CHANNEL:
-		return m.sendUserMessageToInbox(fromId, peer, clientRandomId, dialogMessageId, outboxMessage)
+		return m.sendChannelMessageToInbox(fromId, peer, clientRandomId, dialogMessageId, outboxMessage)
 	default:
 		panic("invalid peer")
 		return nil, fmt.Errorf("")
@@ -424,7 +424,7 @@ func (m *messageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil,
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.Messages2DO{
 		UserId:peer.PeerId,
-		UserMessageBoxId: int32(GetSequenceModel().NextMessageBoxId(base2.Int32ToString(fromId))),
+		UserMessageBoxId: int32(GetSequenceModel().NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
 		DialogMessageId: dialogMessageId,
 		SenderUserId: fromId,
 		MessageBoxType: MESSAGE_BOX_TYPE_INCOMING,
@@ -444,19 +444,22 @@ func (m *messageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil,
 	case mtproto.TLConstructor_CRC32_message:
 		messageDO.MessageType = MESSAGE_TYPE_MESSAGE
 
-		m := inboxMessage.To_Message()
-		m.SetOut(false)
-		m.SetId(messageDO.UserMessageBoxId)
-		mentioned = m.GetMentioned()
-		// m.SetFromId()
+		m2 := inboxMessage.To_Message()
+		m2.SetOut(false)
+		if m2.GetReplyToMsgId() != 0 {
+			replyMsgId := m.GetPeerMessageId(fromId, m2.GetReplyToMsgId(), peer.PeerId)
+			m2.SetReplyToMsgId(replyMsgId)
+		}
+		m2.SetId(messageDO.UserMessageBoxId)
+		mentioned = m2.GetMentioned()
 	case mtproto.TLConstructor_CRC32_messageService:
 		messageDO.MessageType = MESSAGE_TYPE_MESSAGE_SERVICE
 
-		m := inboxMessage.To_MessageService()
-		m.SetOut(false)
-		m.SetId(messageDO.UserMessageBoxId)
+		m2 := inboxMessage.To_MessageService()
+		m2.SetOut(false)
+		m2.SetId(messageDO.UserMessageBoxId)
 
-		mentioned = m.GetMentioned()
+		mentioned = m2.GetMentioned()
 	}
 
 	messageData, _ := json.Marshal(inboxMessage)
@@ -501,6 +504,17 @@ func (m *messageModel) sendChannelMessageToInbox(fromId int32, peer *base.PeerUt
 		// UserIds: []int32{peer.PeerId},
 		// Messages: []*mtproto.Message{inboxMessage},
 	}, nil
+}
+
+
+/////////////////////////////////////
+func (m *messageModel) GetPeerMessageId(userId, messageId, peerId int32) int32 {
+	do := dao.GetMessages2DAO(dao.DB_SLAVE).SelectPeerMessageId(peerId, userId, messageId)
+	if do == nil {
+		return 0
+	} else {
+		return do.UserMessageBoxId
+	}
 }
 
 /*

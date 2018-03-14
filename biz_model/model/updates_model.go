@@ -136,7 +136,7 @@ func (m *updatesModel) AddSeqToUpdatesQueue(authId int64, userId, seq, updateTyp
 func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtproto.Update, boxIDList []int32, lastPts int32) {
 	lastPts = pts
 	doList := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(userId, pts)
-	if len(doList) > 0 {
+	if len(doList) == 0 {
 		otherUpdates = []*mtproto.Update{}
 		boxIDList = []int32{}
 	} else {

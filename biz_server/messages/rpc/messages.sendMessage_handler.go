@@ -94,10 +94,12 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	sentMessage.SetPts(state.Pts)
 	sentMessage.SetPtsCount(state.PtsCount)
 
-	inBoxes, _ := model.GetMessageModel().SendMessageToInbox(md.UserId, peer, dialogMessageId, request.GetRandomId(), outbox.To_Message())
-	for i := 0; i < len(inBoxes.UserIds); i++ {
-		shortMessage := model.MessageToUpdateShortMessage(inBoxes.Messages[i])
-		sync_client.GetSyncClient().PushUpdateShortMessage(inBoxes.UserIds[i], md.UserId, shortMessage)
+	if request.GetPeer().GetConstructor() !=  mtproto.TLConstructor_CRC32_inputPeerSelf {
+		inBoxes, _ := model.GetMessageModel().SendMessageToInbox(md.UserId, peer, request.GetRandomId(), dialogMessageId, outbox.To_Message())
+		for i := 0; i < len(inBoxes.UserIds); i++ {
+			shortMessage := model.MessageToUpdateShortMessage(inBoxes.Messages[i])
+			sync_client.GetSyncClient().PushUpdateShortMessage(inBoxes.UserIds[i], md.UserId, shortMessage)
+		}
 	}
 
 	// 收件箱

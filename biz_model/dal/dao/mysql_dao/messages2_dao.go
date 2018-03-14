@@ -237,3 +237,32 @@ func (dao *Messages2DAO) SelectForwardByPeerUserOffsetLimit(user_id int32, peer_
 
 	return values
 }
+
+// select user_message_box_id, message_box_type from messages2 where user_id = :peerId and dialog_message_id = (select dialog_message_id from messages2 where user_id = :user_id and user_message_box_id = :user_message_box_id limit 1)
+// TODO(@benqi): sqlmap
+func (dao *Messages2DAO) SelectPeerMessageId(peerId int32, user_id int32, user_message_box_id int32) *dataobject.Messages2DO {
+	var query = "select user_message_box_id, message_box_type from messages2 where user_id = ? and dialog_message_id = (select dialog_message_id from messages2 where user_id = ? and user_message_box_id = ? limit 1)"
+	rows, err := dao.db.Queryx(query, peerId, user_id, user_message_box_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectPeerMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.Messages2DO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectPeerMessageId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
