@@ -159,6 +159,7 @@ func (m *dialogModel) CreateOrUpdateByLastMessage(userId int32, peerType int32, 
 		dialog.TopMessage = topMessage
 		dialog.CreatedAt = base2.NowFormatYMDHMS()
 		dialog.Date2 = date
+		master.Insert(dialog)
 	}
 	return
 }
