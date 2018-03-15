@@ -31,6 +31,12 @@ func checkAndGetPhoneNumber(number string) (phoneNumber string, err error) {
 		return
 	}
 
+	// Android客户端手机号格式为: 8611111111111, Parse结果为invalid country code
+	// 转换成+8611111111111，再进行Parse
+	if number[:1] != "+" {
+		number = "+" + number
+	}
+
 	// check phone invalid
 	var pnumber *libphonenumber.PhoneNumber
 	pnumber, err = libphonenumber.Parse(number, "")
