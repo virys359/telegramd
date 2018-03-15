@@ -158,7 +158,7 @@ func (s *handshake) onHandshake(conn *net2.TcpConnection, payload *mtproto.ZProt
 	case *mtproto.TLMsgsAck:
 		// func (s *handshake) onMsgsAck(state *mtproto.HandshakeState, request *mtproto.TLMsgsAck) error {
 		err = s.onMsgsAck(hmsg.State, hmsg.MTPMessage.Object.(*mtproto.TLMsgsAck))
-		// state.State = mtproto.STATE_dh_gen_res
+		return nil, err
 	default:
 		err = fmt.Errorf("invalid handshake type: %v", hmsg)
 		return nil, err

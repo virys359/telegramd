@@ -147,13 +147,17 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 				glog.Error(err)
 				return nil
 			}
-			res := &mtproto.ZProtoMessage{
-				SessionId: zmsg.SessionId,
-				SeqNum: 1,
-				Metadata: zmsg.Metadata,
-				Message:  hrsp,
+			if hrsp != nil {
+				res := &mtproto.ZProtoMessage{
+					SessionId: zmsg.SessionId,
+					SeqNum: 1,
+					Metadata: zmsg.Metadata,
+					Message:  hrsp,
+				}
+				return conn.Send(res)
+			} else {
+				return nil
 			}
-			return conn.Send(res)
 		case mtproto.SESSION_SESSION_DATA:
 			return s.sessionManager.onSessionData(conn, zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
 		case mtproto.SYNC_DATA:
