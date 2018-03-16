@@ -84,7 +84,7 @@ func MessageToUpdateShortSentMessage(message2* mtproto.Message) (sentMessage *mt
 }
 
 // messageDOToMessage
-func messageDOToMessage(do *dataobject.Messages2DO) (*mtproto.Message, error) {
+func messageDOToMessage(do *dataobject.MessagesDO) (*mtproto.Message, error) {
 	message := &mtproto.Message{
 		Data2: &mtproto.Message_Data{},
 	}

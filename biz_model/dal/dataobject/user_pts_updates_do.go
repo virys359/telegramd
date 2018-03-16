@@ -18,16 +18,12 @@
 package dataobject
 
 type UserPtsUpdatesDO struct {
-	Id              int64  `db:"id"`
-	UserId          int32  `db:"user_id"`
-	PeerType        int8   `db:"peer_type"`
-	PeerId          int32  `db:"peer_id"`
-	Pts             int32  `db:"pts"`
-	PtsCount        int32  `db:"pts_count"`
-	UpdateType      int8   `db:"update_type"`
-	UpdateData      string `db:"update_data"`
-	MessageBoxId    int32  `db:"message_box_id"`
-	MaxMessageBoxId int32  `db:"max_message_box_id"`
-	Date2           int32  `db:"date2"`
-	CreatedAt       string `db:"created_at"`
+	Id         int64  `db:"id"`
+	UserId     int32  `db:"user_id"`
+	Pts        int32  `db:"pts"`
+	PtsCount   int32  `db:"pts_count"`
+	UpdateType int8   `db:"update_type"`
+	UpdateData string `db:"update_data"`
+	Date2      int32  `db:"date2"`
+	CreatedAt  string `db:"created_at"`
 }

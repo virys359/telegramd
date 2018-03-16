@@ -19,24 +19,14 @@ package model
 
 import (
 	"sync"
-	//"github.com/nebulaim/telegramd/mtproto"
-	//"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	//"time"
 	"time"
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/nebulaim/telegramd/baselib/base"
-	base2 "github.com/nebulaim/telegramd/biz_model/base"
 	"encoding/json"
 	"github.com/golang/glog"
 )
-
-//const (
-//	PTS_TYPE_UNKNOWN = 0
-//	PTS_TYPE_PTS = 1
-//	PTS_TYPE_CHANNEL = 2
-//)
 
 const (
 	PTS_UPDATE_TYPE_UNKNOWN = 0
@@ -201,6 +191,7 @@ func (m *updatesModel) AddToPtsQueue(userId, pts, ptsCount int32, update *mtprot
 	return int32(dao.GetUserPtsUpdatesDAO(dao.DB_MASTER).Insert(do))
 }
 
+/*
 func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtproto.Update, boxIDList []int32, lastPts int32) {
 	lastPts = pts
 	doList := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(userId, pts)
@@ -240,6 +231,7 @@ func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtp
 	}
 	return
 }
+*/
 
 func (m *updatesModel) GetUpdateListByGtPts(userId, pts int32) []*mtproto.Update {
 	doList := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(userId, pts)

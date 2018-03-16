@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-03-14 16:54:15
+-- Generation Time: 2018-03-16 15:14:15
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -11,6 +11,12 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Database: `nebulaim`
@@ -29,7 +35,7 @@ CREATE TABLE `apps` (
   `title` varchar(128) NOT NULL,
   `short_name` varchar(128) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `deleted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='apps';
 
 -- --------------------------------------------------------
@@ -99,8 +105,8 @@ CREATE TABLE `auths` (
   `lang_pack` varchar(255) NOT NULL DEFAULT '',
   `lang_code` varchar(255) NOT NULL DEFAULT '',
   `connection_hash` bigint(20) NOT NULL DEFAULT '0' COMMENT 'initConnection消息hash值',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -148,8 +154,8 @@ CREATE TABLE `auth_phone_transactions` (
   `code` varchar(8) NOT NULL,
   `attempts` int(11) NOT NULL DEFAULT '0',
   `created_time` bigint(20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -164,8 +170,8 @@ CREATE TABLE `auth_salts` (
   `auth_id` bigint(20) NOT NULL,
   `salt` bigint(20) NOT NULL,
   `valid_since` int(11) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -200,8 +206,8 @@ CREATE TABLE `auth_updates_state` (
   `qts` int(11) NOT NULL DEFAULT '0',
   `seq` int(11) NOT NULL DEFAULT '0',
   `date2` int(11) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -296,8 +302,8 @@ CREATE TABLE `chats` (
   `topic` varchar(255) DEFAULT '',
   `is_hidden` tinyint(1) DEFAULT '0',
   `version` int(11) NOT NULL DEFAULT '1',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -315,8 +321,8 @@ CREATE TABLE `chat_participants` (
   `invited_at` int(11) NOT NULL DEFAULT '0',
   `joined_at` int(11) NOT NULL DEFAULT '0',
   `state` tinyint(4) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -332,8 +338,8 @@ CREATE TABLE `devices` (
   `token_type` tinyint(4) NOT NULL,
   `token` varchar(255) NOT NULL,
   `state` tinyint(4) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -379,26 +385,6 @@ CREATE TABLE `file_parts` (
 CREATE TABLE `messages` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `sender_user_id` int(11) NOT NULL,
-  `peer_type` int(11) NOT NULL,
-  `peer_id` int(11) NOT NULL,
-  `random_id` bigint(20) NOT NULL,
-  `message_type` tinyint(4) NOT NULL DEFAULT '0',
-  `message_data` text CHARACTER SET utf8mb4 NOT NULL,
-  `date2` int(11) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `messages2`
---
-
-CREATE TABLE `messages2` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
   `user_message_box_id` int(11) NOT NULL,
   `dialog_message_id` bigint(20) NOT NULL,
   `sender_user_id` int(11) NOT NULL,
@@ -411,30 +397,7 @@ CREATE TABLE `messages2` (
   `date2` int(11) NOT NULL DEFAULT '0',
   `state` tinyint(4) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `message_boxes`
---
-
-CREATE TABLE `message_boxes` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `user_message_box_id` int(11) NOT NULL,
-  `message_id` int(11) NOT NULL,
-  `sender_user_id` int(11) NOT NULL,
-  `message_box_type` tinyint(4) NOT NULL,
-  `peer_type` tinyint(4) NOT NULL DEFAULT '0',
-  `peer_id` int(11) NOT NULL,
-  `pts` int(11) NOT NULL,
-  `media_unread` tinyint(4) NOT NULL DEFAULT '0',
-  `state` tinyint(4) NOT NULL,
-  `date2` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -451,8 +414,8 @@ CREATE TABLE `orgs` (
   `mail` varchar(64) NOT NULL,
   `mobile` varchar(32) NOT NULL,
   `status` tinyint(4) NOT NULL DEFAULT '0',
-  `created_at` int(11) NOT NULL,
-  `updated_at` int(11) NOT NULL
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -489,8 +452,8 @@ CREATE TABLE `push_credentials` (
   `token_type` tinyint(4) NOT NULL,
   `token` varchar(255) NOT NULL,
   `state` tinyint(4) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -607,7 +570,7 @@ CREATE TABLE `users` (
   `banned_reason` varchar(128) NOT NULL,
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `deleted_reason` varchar(500) NOT NULL DEFAULT '',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `banned_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
@@ -626,8 +589,8 @@ CREATE TABLE `user_contacts` (
   `is_blocked` tinyint(1) NOT NULL DEFAULT '0',
   `date2` int(11) NOT NULL,
   `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -653,9 +616,11 @@ CREATE TABLE `user_dialogs` (
   `sound` varchar(128) NOT NULL DEFAULT 'default',
   `pts` int(11) NOT NULL DEFAULT '0',
   `draft_id` int(11) NOT NULL DEFAULT '0',
+  `draft_type` tinyint(4) NOT NULL DEFAULT '0',
+  `draft_message_data` text CHARACTER SET utf8mb4 NOT NULL,
   `date2` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -674,7 +639,7 @@ CREATE TABLE `user_imported_contacts` (
   `last_name` varchar(255) NOT NULL,
   `state` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='手机通信录';
 
 -- --------------------------------------------------------
@@ -693,8 +658,8 @@ CREATE TABLE `user_notify_settings` (
   `mute_until` int(11) NOT NULL DEFAULT '0',
   `sound` varchar(255) NOT NULL DEFAULT 'default',
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -710,7 +675,7 @@ CREATE TABLE `user_presences` (
   `last_seen_auth_key_id` bigint(20) NOT NULL,
   `last_seen_ip` varchar(64) NOT NULL,
   `version` bigint(20) NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -729,9 +694,9 @@ CREATE TABLE `user_privacys` (
   `chat_invite` tinyint(4) NOT NULL DEFAULT '0',
   `phone_call` tinyint(4) NOT NULL DEFAULT '0',
   `ttl` int(11) NOT NULL DEFAULT '0',
-  `ttl_created_at` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `ttl_created_at` int(11) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -743,13 +708,10 @@ CREATE TABLE `user_privacys` (
 CREATE TABLE `user_pts_updates` (
   `id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `peer_type` tinyint(4) NOT NULL,
-  `peer_id` int(11) NOT NULL,
   `pts` int(11) NOT NULL,
-  `update_type` int(11) NOT NULL,
-  `update_data` blob NOT NULL,
-  `message_box_id` int(11) NOT NULL DEFAULT '0',
-  `max_message_box_id` int(11) NOT NULL DEFAULT '0',
+  `pts_count` int(11) NOT NULL,
+  `update_type` tinyint(4) NOT NULL DEFAULT '0',
+  `update_data` mediumtext CHARACTER SET utf8mb4 NOT NULL,
   `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -915,19 +877,6 @@ ALTER TABLE `messages`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `messages2`
---
-ALTER TABLE `messages2`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `message_boxes`
---
-ALTER TABLE `message_boxes`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `message_id` (`message_id`,`sender_user_id`,`message_box_type`,`peer_type`,`peer_id`);
-
---
 -- Indexes for table `orgs`
 --
 ALTER TABLE `orgs`
@@ -1071,7 +1020,7 @@ ALTER TABLE `auths`
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=205;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=209;
 
 --
 -- 使用表AUTO_INCREMENT `auth_op_logs`
@@ -1107,7 +1056,7 @@ ALTER TABLE `auth_updates_state`
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- 使用表AUTO_INCREMENT `banned`
@@ -1149,31 +1098,19 @@ ALTER TABLE `devices`
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=121;
 
 --
 -- 使用表AUTO_INCREMENT `file_parts`
 --
 ALTER TABLE `file_parts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=304;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=353;
 
 --
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `messages2`
---
-ALTER TABLE `messages2`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
-
---
--- 使用表AUTO_INCREMENT `message_boxes`
---
-ALTER TABLE `message_boxes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=218;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1185,7 +1122,7 @@ ALTER TABLE `orgs`
 -- 使用表AUTO_INCREMENT `photo_datas`
 --
 ALTER TABLE `photo_datas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=389;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=517;
 
 --
 -- 使用表AUTO_INCREMENT `push_credentials`
@@ -1227,7 +1164,7 @@ ALTER TABLE `user_contacts`
 -- 使用表AUTO_INCREMENT `user_dialogs`
 --
 ALTER TABLE `user_dialogs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- 使用表AUTO_INCREMENT `user_imported_contacts`
@@ -1245,19 +1182,19 @@ ALTER TABLE `user_notify_settings`
 -- 使用表AUTO_INCREMENT `user_presences`
 --
 ALTER TABLE `user_presences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- 使用表AUTO_INCREMENT `user_privacys`
 --
 ALTER TABLE `user_privacys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用表AUTO_INCREMENT `user_pts_updates`
 --
 ALTER TABLE `user_pts_updates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=310;
 
 --
 -- 使用表AUTO_INCREMENT `user_qts_updates`
@@ -1265,3 +1202,7 @@ ALTER TABLE `user_pts_updates`
 ALTER TABLE `user_qts_updates`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

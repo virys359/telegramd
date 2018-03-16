@@ -47,9 +47,7 @@ type MysqlDAOList struct {
 	AuthPhoneTransactionsDAO *mysql_dao.AuthPhoneTransactionsDAO
 	UserDialogsDAO           *mysql_dao.UserDialogsDAO
 	UserContactsDAO          *mysql_dao.UserContactsDAO
-	MessageBoxesDAO          *mysql_dao.MessageBoxesDAO
 	MessagesDAO              *mysql_dao.MessagesDAO
-	Messages2DAO             *mysql_dao.Messages2DAO
 	UserNotifySettingsDAO    *mysql_dao.UserNotifySettingsDAO
 	ReportsDAO               *mysql_dao.ReportsDAO
 	UserPrivacysDAO          *mysql_dao.UserPrivacysDAO
@@ -92,9 +90,7 @@ func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
 		daoList.AuthPhoneTransactionsDAO = mysql_dao.NewAuthPhoneTransactionsDAO(v)
 		daoList.UserDialogsDAO = mysql_dao.NewUserDialogsDAO(v)
 		daoList.UserContactsDAO = mysql_dao.NewUserContactsDAO(v)
-		daoList.MessageBoxesDAO = mysql_dao.NewMessageBoxesDAO(v)
 		daoList.MessagesDAO = mysql_dao.NewMessagesDAO(v)
-		daoList.Messages2DAO = mysql_dao.NewMessages2DAO(v)
 		daoList.AuthUpdatesStateDAO = mysql_dao.NewAuthUpdatesStateDAO(v)
 		daoList.UserNotifySettingsDAO = mysql_dao.NewUserNotifySettingsDAO(v)
 		daoList.ReportsDAO = mysql_dao.NewReportsDAO(v)
@@ -217,29 +213,11 @@ func GetUserContactsDAO(dbName string) (dao *mysql_dao.UserContactsDAO) {
 	return
 }
 
-func GetMessageBoxesDAO(dbName string) (dao *mysql_dao.MessageBoxesDAO) {
-	daoList := GetMysqlDAOList(dbName)
-	// err := mysqlDAOManager.daoListMap[dbName]
-	if daoList != nil {
-		dao = daoList.MessageBoxesDAO
-	}
-	return
-}
-
 func GetMessagesDAO(dbName string) (dao *mysql_dao.MessagesDAO) {
 	daoList := GetMysqlDAOList(dbName)
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.MessagesDAO
-	}
-	return
-}
-
-func GetMessages2DAO(dbName string) (dao *mysql_dao.Messages2DAO) {
-	daoList := GetMysqlDAOList(dbName)
-	// err := mysqlDAOManager.daoListMap[dbName]
-	if daoList != nil {
-		dao = daoList.Messages2DAO
 	}
 	return
 }

@@ -290,7 +290,7 @@ type IDMessage struct {
 // Loadhistory
 func (m *messageModel) LoadBackwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
-	doList := dao.GetMessages2DAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+	doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
 	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
 	if len(doList) == 0 {
 		messages = []*mtproto.Message{}
@@ -307,7 +307,7 @@ func (m *messageModel) LoadBackwardHistoryMessages(userId int32, peerType , peer
 
 func (m *messageModel) LoadForwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
-	doList := dao.GetMessages2DAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+	doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
 	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
 	if len(doList) == 0 {
 		messages = []*mtproto.Message{}
@@ -324,7 +324,7 @@ func (m *messageModel) LoadForwardHistoryMessages(userId int32, peerType , peerI
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (m *messageModel) GetMessageByPeerAndMessageId(userId int32, messageId int32) (message *mtproto.Message) {
-	do := dao.GetMessages2DAO(dao.DB_SLAVE).SelectByMessageId(userId, messageId)
+	do := dao.GetMessagesDAO(dao.DB_SLAVE).SelectByMessageId(userId, messageId)
 	if do != nil {
 		message, _ = messageDOToMessage(do)
 	}
@@ -335,7 +335,7 @@ func (m *messageModel) GetMessagesByPeerAndMessageIdList2(userId int32, idList [
 	if len(idList) == 0 {
 		messages = []*mtproto.Message{}
 	} else {
-		doList := dao.GetMessages2DAO(dao.DB_SLAVE).SelectByMessageIdList(userId, idList)
+		doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectByMessageIdList(userId, idList)
 		messages = make([]*mtproto.Message, 0, len(doList))
 		for _, do := range doList {
 			// TODO(@benqi): check data
@@ -358,7 +358,7 @@ type InboxMessages struct {
 // 发送到发件箱
 func (m *messageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int64, message2 *mtproto.Message) (boxId int32, dialogMessageId int64) {
 	now := int32(time.Now().Unix())
-	messageDO := &dataobject.Messages2DO{
+	messageDO := &dataobject.MessagesDO{
 		UserId:fromId,
 		UserMessageBoxId: int32(GetSequenceModel().NextMessageBoxId(base2.Int32ToString(fromId))),
 		DialogMessageId: base.NextSnowflakeId(),
@@ -394,7 +394,7 @@ func (m *messageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, cl
 	messageDO.MessageData = string(messageData)
 
 	// TODO(@benqi): pocess clientRandomId dup
-	dao.GetMessages2DAO(dao.DB_MASTER).Insert(messageDO)
+	dao.GetMessagesDAO(dao.DB_MASTER).Insert(messageDO)
 
 	// dialog
 	// GetDialogModel().CreateOrUpdateByOutbox(fromId, peer.PeerType, peer.PeerId, messageDO.UserMessageBoxId, mentioned)
@@ -422,7 +422,7 @@ func (m *messageModel) SendMessageToInbox(fromId int32, peer *base.PeerUtil, cli
 // 发送到收件箱
 func (m *messageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId, dialogMessageId int64, outboxMessage *mtproto.Message) (*InboxMessages, error) {
 	now := int32(time.Now().Unix())
-	messageDO := &dataobject.Messages2DO{
+	messageDO := &dataobject.MessagesDO{
 		UserId:peer.PeerId,
 		UserMessageBoxId: int32(GetSequenceModel().NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
 		DialogMessageId: dialogMessageId,
@@ -466,7 +466,7 @@ func (m *messageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil,
 	messageDO.MessageData = string(messageData)
 
 	// TODO(@benqi): rpocess clientRandomId dup
-	dao.GetMessages2DAO(dao.DB_MASTER).Insert(messageDO)
+	dao.GetMessagesDAO(dao.DB_MASTER).Insert(messageDO)
 	// dialog
 	GetDialogModel().CreateOrUpdateByInbox(peer.PeerId, peer.PeerType, fromId, messageDO.UserMessageBoxId, mentioned)
 
@@ -509,7 +509,7 @@ func (m *messageModel) sendChannelMessageToInbox(fromId int32, peer *base.PeerUt
 
 /////////////////////////////////////
 func (m *messageModel) GetPeerMessageId(userId, messageId, peerId int32) int32 {
-	do := dao.GetMessages2DAO(dao.DB_SLAVE).SelectPeerMessageId(peerId, userId, messageId)
+	do := dao.GetMessagesDAO(dao.DB_SLAVE).SelectPeerMessageId(peerId, userId, messageId)
 	if do == nil {
 		return 0
 	} else {
