@@ -20,7 +20,6 @@ package model
 import (
 	"sync"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	// "github.com/cosiner/gohper/errors"
 	"github.com/disintegration/imaging"
 	"bytes"
 	"github.com/nebulaim/telegramd/mtproto"
@@ -111,11 +110,13 @@ func MakeResizeInfo(img image.Image) resizeInfo {
 	}
 }
 
-// TODO: @benqi
+// TODO(@benqi):
 // 	我们未来的图片存储系统可能会按facebook的Haystack论文来实现
 // 	mtproto协议也定义了一套自己的文件存储方案，fileLocation#53d69076 dc_id:int volume_id:long local_id:int secret:long = FileLocation;
 // 	在这里，我们重新定义mtproto的volume_id和local_id，对应Haystack的key和alternate_key，secret对应cookie
 //  在当前简单实现里，volume_id由sonwflake生成，local_id对应于图片类型，secret为access_hash
+// TODO(@benqi):
+//  参数使用mtproto.File
 func (m *photoModel) UploadPhoto(userId int32, photoId, fileId int64, parts int32, name, md5Checksum string) ([]*mtproto.PhotoSize, error) {
 	sizes := make([]*mtproto.PhotoSize, 0, 4)
 
@@ -224,4 +225,13 @@ func (m *photoModel) GetPhotoFileData(volumeId int64, localId int32, secret int6
 		glog.Errorf("GetPhotoDatasDAO nil")
 	}
 	return nil
+}
+
+func (m *photoModel) GetFileAccessHash(fileId int64, fileParts int32) int64 {
+	do := dao.GetFilesDAO(dao.DB_MASTER).SelectByIDAndParts(fileId, fileParts)
+	if do == nil {
+		return 0
+	} else {
+		return do.AccessHash
+	}
 }

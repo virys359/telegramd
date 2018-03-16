@@ -226,13 +226,12 @@ func (s *FrontendServer) OnNewConnection(conn *net2.TcpConnection) {
 		},
 	}
 
-	glog.Infof("OnNewConnection - peer(%s), ctx: {%v}", conn, conn.Context)
-
-	// glog.Infof("OnNewConnection %v", conn.RemoteAddr())
+	glog.Infof("onNewConnection - peer(%s), ctx: {%v}", conn, conn.Context)
 }
 
 func (s *FrontendServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg interface{}) error {
-	glog.Infof("OnConnectionDataArrived - peer(%s) recv data: %v", conn, msg)
+	glog.Infof("onConnectionDataArrived - peer(%s) recv data", conn)
+
 	ctx, _ := conn.Context.(*connContext)
 	message, ok := msg.(*mtproto.MTPRawMessage)
 
@@ -266,18 +265,17 @@ func (s *FrontendServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg i
 }
 
 func (s *FrontendServer) OnConnectionClosed(conn *net2.TcpConnection) {
-	glog.Infof("OnConnectionClosed - %v", conn.RemoteAddr())
+	glog.Infof("onConnectionClosed - peer(%s)", conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TcpClientCallBack
 func (s *FrontendServer) OnNewClient(client *net2.TcpClient) {
-	glog.Infof("OnNewConnection")
-	// client.Send("ping\n")
+	glog.Infof("onNewClient - peer(%s)", client.GetConnection())
 }
 
 func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
-	glog.Infof("OnClientDataArrived - recv data: %v", msg)
+	glog.Infof("onClientDataArrived - peer(%s) recv data", client.GetConnection())
 
 	zmsg, _ := msg.(*mtproto.ZProtoMessage)
 	conn := s.server443.GetConnection(zmsg.SessionId)
@@ -315,7 +313,7 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 }
 
 func (s *FrontendServer) OnClientClosed(client *net2.TcpClient) {
-	glog.Infof("OnConnectionClosed")
+	glog.Infof("onClientClosed - peer(%s) recv data", client.GetConnection())
 
 	if client.AutoReconnect() {
 		client.Reconnect()
@@ -329,7 +327,7 @@ func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
-	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data: %v", conn, mmsg)
+	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data", conn)
 	ctx.Lock()
 	if ctx.state == mtproto.STATE_CONNECTED2 {
 		ctx.state = mtproto.STATE_HANDSHAKE
@@ -352,12 +350,12 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 			Payload: hmsg.Encode(),
 		},
 	}
-	glog.Infof("sendToSessionClient: %v", zmsg)
+	// glog.Infof("sendToSessionClient: %v", zmsg)
 	return s.client.SendData("session", zmsg)
 }
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
-	glog.Infof("onEncryptedRawMessage - peer(%s) recv data: %v", conn, mmsg)
+	glog.Infof("onEncryptedRawMessage - peer(%s) recv data", conn)
 	// sentToClient
 	hmsg := &mtproto.ZProtoSessionData{
 		MTPMessage: mmsg,

@@ -29,9 +29,17 @@ import (
 	"time"
 )
 
-func (s *MessagesServiceImpl)makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMessage) *mtproto.TLMessage {
+func makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMessage) *mtproto.TLMessage {
+	var (
+		out = true
+	)
+
+	if peer.PeerType == base.PEER_USER && peer.PeerId == fromId {
+		out = false
+	}
+
 	return &mtproto.TLMessage{ Data2: &mtproto.Message_Data{
-		Out:          true,
+		Out:          out,
 		Silent:       request.GetSilent(),
 		FromId:       fromId,
 		ToId:         peer.ToPeer(),
@@ -80,29 +88,32 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	}
 
 	// 发件箱
-	// sendMessageToOutbox
-	outbox := s.makeOutboxMessageBySendMessage(md.UserId, peer, request)
-	_, dialogMessageId := model.GetMessageModel().SendMessageToOutbox(md.UserId, peer, request.GetRandomId(), outbox.To_Message())
+	outbox := makeOutboxMessageBySendMessage(md.UserId, peer, request)
+	messageId, dialogMessageId := model.GetMessageModel().SendMessageToOutbox(md.UserId, peer, request.GetRandomId(), outbox.To_Message())
 
 	shortMessage := model.MessageToUpdateShortMessage(outbox.To_Message())
-	state, err := sync_client.GetSyncClient().SyncUpdateShortMessage(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, md.UserId, shortMessage)
+	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
 	if err != nil {
+		glog.Error(err)
 		return nil, err
 	}
+	// 更新会话信息
+	model.GetDialogModel().CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outbox.GetMentioned(), request.GetClearDraft())
 
+	// 返回给客户端
 	sentMessage = model.MessageToUpdateShortSentMessage(outbox.To_Message())
 	sentMessage.SetPts(state.Pts)
 	sentMessage.SetPtsCount(state.PtsCount)
 
+	// 收件箱
 	if request.GetPeer().GetConstructor() !=  mtproto.TLConstructor_CRC32_inputPeerSelf {
 		inBoxes, _ := model.GetMessageModel().SendMessageToInbox(md.UserId, peer, request.GetRandomId(), dialogMessageId, outbox.To_Message())
 		for i := 0; i < len(inBoxes.UserIds); i++ {
 			shortMessage := model.MessageToUpdateShortMessage(inBoxes.Messages[i])
-			sync_client.GetSyncClient().PushUpdateShortMessage(inBoxes.UserIds[i], md.UserId, shortMessage)
+			sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes.UserIds[i], shortMessage.To_Updates())
 		}
 	}
 
-	// 收件箱
 	glog.Infof("MessagesSendMessage - reply: %s", logger.JsonDebugData(sentMessage))
 	return sentMessage.To_Updates(), nil
 }

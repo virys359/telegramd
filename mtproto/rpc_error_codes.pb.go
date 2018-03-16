@@ -1345,22 +1345,13 @@ It has these top-level messages:
 	TLDestroySession
 	TLContestSaveDeveloperInfo
 	AuthKeyMetadata
-	MessageDataEmpty
-	MessageData
 	VoidRsp
-	PushClientID
 	ClientUpdatesState
 	ConnectToSessionServerReq
 	SessionServerConnectedRsp
 	PushUpdatesData
-	SyncShortMessageRequest
-	UpdateShortMessageRequest
-	SyncShortChatMessageRequest
-	UpdateShortChatMessageRequest
-	SyncUpdateMessageRequest
-	PushUpdateMessageRequest
-	PushUpdatesRequest
-	PushUpdateShortRequest
+	UpdatesRequest
+	UpdatesListRequest
 */
 package mtproto
 

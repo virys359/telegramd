@@ -130,7 +130,7 @@ func protoToRawPayload(m proto.Message) (*mtproto.ZProtoRawPayload, error) {
 	x := mtproto.NewEncodeBuf(128)
 	x.UInt(mtproto.SYNC_DATA)
 	n := proto.MessageName(m)
-	glog.Infof("messageName: %s, d: {%v}", n, m)
+	// glog.Infof("messageName: %s, d: {%v}", n, m)
 	x.Int(int32(len(n)))
 	x.Bytes([]byte(n))
 	b, err := proto.Marshal(m)
@@ -155,7 +155,7 @@ func (s *syncServer) OnNewClient(client *net2.TcpClient) {
 }
 
 func (s *syncServer) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
-	glog.Infof("recv peer(%v) data: {%v}", client.GetRemoteAddress(), msg)
+	// glog.Infof("recv peer(%v) data: {%v}", client.GetRemoteAddress(), msg)
 	// var err error
 	zmsg, ok := msg.(*mtproto.ZProtoMessage)
 	if !ok {

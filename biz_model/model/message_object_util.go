@@ -24,22 +24,31 @@ import (
 	"github.com/golang/glog"
 	"fmt"
 )
+
 // updateShortMessage#914fbf11 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
 // message#44f9b43d flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true id:int from_id:flags.8?int to_id:Peer fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int edit_date:flags.15?int post_author:flags.16?string grouped_id:flags.17?long = Message;
 func MessageToUpdateShortMessage(message2* mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
+	// TODO(@benqi): check message2.ToId
+	var (
+		userId int32
+	)
+
 	switch message2.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_message:
 		message := message2.To_Message()
+		if message.GetOut() {
+			userId = message.GetToId().GetData2().GetUserId()
+		} else {
+			userId = message.GetFromId()
+		}
 		shortMessage = &mtproto.TLUpdateShortMessage{Data2: &mtproto.Updates_Data{
-			Out: message.GetOut(),
-			Mentioned: message.GetMentioned(),
-			MediaUnread: message.GetMediaUnread(),
-			Silent: message.GetSilent(),
-			Id:     message.GetId(),
-			UserId: message.GetFromId(),
-			Message: message.GetMessage(),
-			// Pts:,
-			// PtsCount,
+			Out:          message.GetOut(),
+			Mentioned:    message.GetMentioned(),
+			MediaUnread:  message.GetMediaUnread(),
+			Silent:       message.GetSilent(),
+			Id:           message.GetId(),
+			UserId:       userId,
+			Message:      message.GetMessage(),
 			Date:         message.GetDate(),
 			FwdFrom:      message.GetFwdFrom(),
 			ViaBotId:     message.GetViaBotId(),

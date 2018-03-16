@@ -33,10 +33,10 @@ func NewUserPtsUpdatesDAO(db *sqlx.DB) *UserPtsUpdatesDAO {
 	return &UserPtsUpdatesDAO{db}
 }
 
-// insert into user_pts_updates(user_id, pts, peer_type, peer_id, update_type, message_box_id, max_message_box_id, date2) values (:user_id, :pts, :peer_type, :peer_id, :update_type, :message_box_id, :max_message_box_id, :date2)
+// insert into user_pts_updates(user_id, pts, pts_count, update_type, update_data, date2) values (:user_id, :pts, :pts_count, :update_type, :update_data, :date2)
 // TODO(@benqi): sqlmap
 func (dao *UserPtsUpdatesDAO) Insert(do *dataobject.UserPtsUpdatesDO) int64 {
-	var query = "insert into user_pts_updates(user_id, pts, peer_type, peer_id, update_type, message_box_id, max_message_box_id, date2) values (:user_id, :pts, :peer_type, :peer_id, :update_type, :message_box_id, :max_message_box_id, :date2)"
+	var query = "insert into user_pts_updates(user_id, pts, pts_count, update_type, update_data, date2) values (:user_id, :pts, :pts_count, :update_type, :update_data, :date2)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -82,10 +82,10 @@ func (dao *UserPtsUpdatesDAO) SelectLastPts(user_id int32) *dataobject.UserPtsUp
 	return do
 }
 
-// select user_id, pts, peer_type, peer_id, update_type, message_box_id, max_message_box_id, date2 from user_pts_updates where user_id = :user_id and pts > :pts order by pts asc
+// select user_id, pts, pts_count, update_type, update_data from user_pts_updates where user_id = :user_id and pts > :pts order by pts asc
 // TODO(@benqi): sqlmap
 func (dao *UserPtsUpdatesDAO) SelectByGtPts(user_id int32, pts int32) []dataobject.UserPtsUpdatesDO {
-	var query = "select user_id, pts, peer_type, peer_id, update_type, message_box_id, max_message_box_id, date2 from user_pts_updates where user_id = ? and pts > ? order by pts asc"
+	var query = "select user_id, pts, pts_count, update_type, update_data from user_pts_updates where user_id = ? and pts > ? order by pts asc"
 	rows, err := dao.db.Queryx(query, user_id, pts)
 
 	if err != nil {

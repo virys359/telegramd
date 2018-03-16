@@ -83,7 +83,7 @@ func (s *syncHandler) onSyncData(conn *net2.TcpConnection, buf []byte)  (*mtprot
 
 		// TODO(@benqi): dispatch to session_client
 		pushData, _ := message.(*mtproto.PushUpdatesData)
-		dbuf := mtproto.NewDecodeBuf(pushData.RawData)
+		dbuf := mtproto.NewDecodeBuf(pushData.GetUpdatesData())
 		mdata := &messageData{
 			confirmFlag: true,
 			compressFlag: false,
@@ -94,7 +94,7 @@ func (s *syncHandler) onSyncData(conn *net2.TcpConnection, buf []byte)  (*mtprot
 		} else {
 			md := &mtproto.ZProtoMetadata{}
 			// push
-			s.smgr.pushToSessionData(pushData.GetClientId().GetAuthKeyId(), pushData.GetClientId().GetSessionId(), md, mdata)
+			s.smgr.pushToSessionData(pushData.GetAuthKeyId(), pushData.GetSessionId(), md, mdata)
 		}
 
 		return protoToRawPayload(&mtproto.VoidRsp{})

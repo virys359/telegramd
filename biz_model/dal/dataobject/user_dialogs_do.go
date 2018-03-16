@@ -34,6 +34,8 @@ type UserDialogsDO struct {
 	Sound               string `db:"sound"`
 	Pts                 int32  `db:"pts"`
 	DraftId             int32  `db:"draft_id"`
+	DraftType           int8   `db:"draft_type"`
+	DraftMessageData    string `db:"draft_message_data"`
 	Date2               int32  `db:"date2"`
 	CreatedAt           string `db:"created_at"`
 	UpdatedAt           string `db:"updated_at"`

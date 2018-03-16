@@ -20,13 +20,12 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/biz_model/base"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 // account.resetNotifySettings#db7e1747 = Bool;
@@ -47,16 +46,7 @@ func (s *AccountServiceImpl) AccountResetNotifySettings(ctx context.Context, req
 	updateSettings.SetSound("default")
 	update.SetNotifySettings(updateSettings.To_PeerNotifySettings())
 
-	updates := mtproto.NewTLUpdateShort()
-	updates.SetDate(int32(time.Now().Unix()))
-	updates.SetUpdate(update.To_Update())
-
-	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-		md.AuthId,
-		md.SessionId,
-		md.NetlibSessionId,
-		[]int32{md.UserId},
-		updates.To_Updates().Encode())
+	sync_client.GetSyncClient().PushToUserMeOneUpdateData(md.AuthId, md.SessionId, md.UserId, update.To_Update())
 
 	glog.Infof("AccountResetNotifySettings - reply: {true}")
 	return mtproto.ToBool(true), nil

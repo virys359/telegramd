@@ -48,98 +48,162 @@ func InstallSyncClient(discovery *service_discovery.ServiceDiscoveryClientConfig
 	syncInstance.client = mtproto.NewRPCSyncClient(conn)
 }
 
-func (c *syncClient) SyncUpdateShortMessage(authKeyId, sessionId, netlibSessionId int64, pushtoUserId, peerId int32, update *mtproto.TLUpdateShortMessage) (reply *mtproto.ClientUpdatesState, err error) {
-	m := &mtproto.SyncShortMessageRequest{
-		ClientId: &mtproto.PushClientID{
-			AuthKeyId:       authKeyId,
-			SessionId:       sessionId,
-			NetlibSessionId: netlibSessionId,
-		},
-		PushType:     mtproto.SyncType_SYNC_TYPE_USER_NOTME,
-		PushtoUserId: pushtoUserId,
-		PeerId:       peerId,
-		PushData:     update,
+func (c *syncClient) SyncOneUpdateData(authKeyId, sessionId int64, pushUserId int32, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
+	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{update},
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_NOTME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates.To_Updates(),
 	}
-	reply, err = c.client.SyncUpdateShortMessage(context.Background(), m)
+	reply, err = c.client.SyncUpdatesData(context.Background(), m)
 	return
 }
 
-func (c *syncClient) PushUpdateShortMessage(pushtoUserId, peerId int32, update *mtproto.TLUpdateShortMessage) (reply *mtproto.VoidRsp, err error) {
-	m := &mtproto.UpdateShortMessageRequest{
-		PushType:     mtproto.SyncType_SYNC_TYPE_USER,
-		PushtoUserId: pushtoUserId,
-		PeerId:       peerId,
-		PushData:     update,
-	}
-	reply, err = c.client.PushUpdateShortMessage(context.Background(), m)
-	return
-}
+func (c *syncClient) PushToUserNotMeOneUpdateData(authKeyId, sessionId int64, pushUserId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
+	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{update},
+	}}
 
-func (c *syncClient) SyncUpdateShortChatMessage(authKeyId, sessionId, netlibSessionId int64, pushtoUserId, peerId int32, update *mtproto.TLUpdateShortChatMessage) (reply *mtproto.ClientUpdatesState, err error) {
-	m := &mtproto.SyncShortChatMessageRequest{
-		ClientId: &mtproto.PushClientID{
-			AuthKeyId: authKeyId,
-			SessionId: sessionId,
-			NetlibSessionId: netlibSessionId,
-		},
-		PushType:     mtproto.SyncType_SYNC_TYPE_USER_NOTME,
-		PushtoUserId: pushtoUserId,
-		PeerChatId:   peerId,
-		PushData:     update,
-	}
-	reply, err = c.client.SyncUpdateShortChatMessage(context.Background(), m)
-	return
-}
-
-func (c *syncClient) PushUpdateShortChatMessage(senderId, peerId int32, update *mtproto.TLUpdateShortChatMessage) (reply *mtproto.VoidRsp, err error) {
-	return
-}
-
-func (c *syncClient) SyncUpdateMessageData(authKeyId, sessionId, netlibSessionId int64, pushtoUserId, peerType, peerId int32, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
-	m := &mtproto.SyncUpdateMessageRequest{
-		ClientId: &mtproto.PushClientID{
-			AuthKeyId:       authKeyId,
-			SessionId:       sessionId,
-			NetlibSessionId: netlibSessionId,
-		},
-		PushType:     mtproto.SyncType_SYNC_TYPE_USER_NOTME,
-		PushtoUserId: pushtoUserId,
-		PeerType:     peerType,
-		PeerId:       peerId,
-		PushData:     update,
-	}
-	reply, err = c.client.SyncUpdateMessageData(context.Background(), m)
-	return
-}
-
-func (c *syncClient) PushUpdateMessageData(pushtoUserId, peerType, peerId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
-	m := &mtproto.PushUpdateMessageRequest{
-		PushType:     mtproto.SyncType_SYNC_TYPE_USER_NOTME,
-		PushtoUserId: pushtoUserId,
-		PeerType:     peerType,
-		PeerId:       peerId,
-		PushData:     update,
-	}
-	reply, err = c.client.PushUpdateMessageData(context.Background(), m)
-	return
-}
-
-func (c *syncClient) PushUpdatesData(pushtoUserId int32, updates *mtproto.TLUpdates) (reply *mtproto.VoidRsp, err error) {
-	m := &mtproto.PushUpdatesRequest{
-		PushType:     mtproto.SyncType_SYNC_TYPE_USER,
-		PushtoUserId: pushtoUserId,
-		PushData:     updates,
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_NOTME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates.To_Updates(),
 	}
 	reply, err = c.client.PushUpdatesData(context.Background(), m)
 	return
 }
 
-func (c *syncClient) PushUpdateShortData(pushtoUserId int32, update *mtproto.TLUpdateShort) (reply *mtproto.VoidRsp, err error) {
-	m := &mtproto.PushUpdateShortRequest{
-		PushType:     mtproto.SyncType_SYNC_TYPE_USER,
-		PushtoUserId: pushtoUserId,
-		PushData:     update,
+func (c *syncClient) PushToUserMeOneUpdateData(authKeyId, sessionId int64, pushUserId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
+	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{update},
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_ME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates.To_Updates(),
 	}
-	reply, err = c.client.PushUpdateShortData(context.Background(), m)
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushToUserOneUpdateData(pushUserId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
+	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{update},
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER,
+		// AuthKeyId:  authKeyId,
+		// SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates.To_Updates(),
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushToUserNotMeUpdateShortData(authKeyId, sessionId int64, pushUserId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
+	updates := &mtproto.TLUpdateShort{Data2: &mtproto.Updates_Data{
+		Update: update,
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_NOTME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates.To_Updates(),
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushToUserMeUpdateShortData(authKeyId, sessionId int64, pushUserId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
+	updates := &mtproto.TLUpdateShort{Data2: &mtproto.Updates_Data{
+		Update: update,
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_ME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates.To_Updates(),
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushToUserUpdateShortData(pushUserId int32, update *mtproto.Update) (reply *mtproto.VoidRsp, err error) {
+	updates := &mtproto.TLUpdateShort{Data2: &mtproto.Updates_Data{
+		Update: update,
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER,
+		// AuthKeyId:  authKeyId,
+		// SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates.To_Updates(),
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) SyncUpdatesData(authKeyId, sessionId int64, pushUserId int32, updates *mtproto.Updates) (reply *mtproto.ClientUpdatesState, err error) {
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_NOTME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates,
+	}
+	reply, err = c.client.SyncUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushToUserNotMeUpdatesData(authKeyId, sessionId int64, pushUserId int32, updates *mtproto.Updates) (reply *mtproto.VoidRsp, err error) {
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_NOTME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates,
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushToUserMeUpdatesData(authKeyId, sessionId int64, pushUserId int32, updates *mtproto.Updates) (reply *mtproto.VoidRsp, err error) {
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER_ME,
+		AuthKeyId:  authKeyId,
+		SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates,
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
+	return
+}
+
+func (c *syncClient) PushToUserUpdatesData(pushUserId int32, updates *mtproto.Updates) (reply *mtproto.VoidRsp, err error) {
+	m := &mtproto.UpdatesRequest{
+		PushType:   mtproto.SyncType_SYNC_TYPE_USER,
+		// AuthKeyId:  authKeyId,
+		// SessionId:  sessionId,
+		PushUserId: pushUserId,
+		Updates:    updates,
+	}
+	reply, err = c.client.PushUpdatesData(context.Background(), m)
 	return
 }

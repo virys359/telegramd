@@ -23,8 +23,9 @@ type UserPtsUpdatesDO struct {
 	PeerType        int8   `db:"peer_type"`
 	PeerId          int32  `db:"peer_id"`
 	Pts             int32  `db:"pts"`
-	UpdateType      int32  `db:"update_type"`
-	UpdateData      []byte `db:"update_data"`
+	PtsCount        int32  `db:"pts_count"`
+	UpdateType      int8   `db:"update_type"`
+	UpdateData      string `db:"update_data"`
 	MessageBoxId    int32  `db:"message_box_id"`
 	MaxMessageBoxId int32  `db:"max_message_box_id"`
 	Date2           int32  `db:"date2"`

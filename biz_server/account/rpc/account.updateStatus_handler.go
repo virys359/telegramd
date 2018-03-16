@@ -66,7 +66,7 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 	// push to other contacts.
 	contactIDList := model.GetContactModel().GetContactUserIDList(md.UserId)
 	for _, id := range contactIDList {
-		sync_client.GetSyncClient().PushUpdateShortData(id, updates)
+		sync_client.GetSyncClient().PushToUserUpdatesData(id, updates.To_Updates())
 	}
 
 	glog.Infof("AccountUpdateStatus - reply: {true}")

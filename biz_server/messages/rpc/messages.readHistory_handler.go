@@ -56,7 +56,7 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 	//updateReadHistoryInbox.SetPtsCount(1)
 	updateReadHistoryInbox.SetMaxId(request.MaxId)
 
-	state, err := sync_client.GetSyncClient().SyncUpdateMessageData(md.AuthId, md.SessionId, md.NetlibSessionId, md.UserId, base.PEER_USER, md.UserId, updateReadHistoryInbox.To_Update())
+	state, err := sync_client.GetSyncClient().SyncOneUpdateData(md.AuthId, md.SessionId, md.UserId, updateReadHistoryInbox.To_Update())
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 	// updateReadHistoryOutbox.SetPtsCount(1)
 	updateReadHistoryOutbox.SetMaxId(outboxDO.TopMessage)
 
-	sync_client.GetSyncClient().PushUpdateMessageData(peer.PeerId, base.PEER_USER, peer.PeerId, updateReadHistoryOutbox.To_Update())
+	sync_client.GetSyncClient().PushToUserOneUpdateData(peer.PeerId, updateReadHistoryOutbox.To_Update())
 
 	//updates = mtproto.NewTLUpdates()
 	//updates.SetSeq(0)

@@ -371,7 +371,7 @@ func (m *messageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, cl
 		State: 0,
 	}
 
-	var mentioned = false
+	// var mentioned = false
 
 	switch message2.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_messageEmpty:
@@ -380,24 +380,24 @@ func (m *messageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, cl
 		messageDO.MessageType = MESSAGE_TYPE_MESSAGE
 		message := message2.To_Message()
 
-		mentioned = message.GetMentioned()
+		// mentioned = message.GetMentioned()
 		message.SetId(messageDO.UserMessageBoxId)
 	case mtproto.TLConstructor_CRC32_messageService:
 		messageDO.MessageType = MESSAGE_TYPE_MESSAGE_SERVICE
 		message := message2.To_MessageService()
 
-		mentioned = message.GetMentioned()
+		// mentioned = message.GetMentioned()
 		message.SetId(messageDO.UserMessageBoxId)
 	}
 
 	messageData, _ := json.Marshal(message2)
 	messageDO.MessageData = string(messageData)
 
-	// TODO(@benqi): rpocess clientRandomId dup
+	// TODO(@benqi): pocess clientRandomId dup
 	dao.GetMessages2DAO(dao.DB_MASTER).Insert(messageDO)
 
 	// dialog
-	GetDialogModel().CreateOrUpdateByLastMessage(fromId, peer.PeerType, peer.PeerId, messageDO.UserMessageBoxId, mentioned, false)
+	// GetDialogModel().CreateOrUpdateByOutbox(fromId, peer.PeerType, peer.PeerId, messageDO.UserMessageBoxId, mentioned)
 
 	boxId = messageDO.UserMessageBoxId
 	dialogMessageId = messageDO.DialogMessageId
@@ -468,7 +468,7 @@ func (m *messageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil,
 	// TODO(@benqi): rpocess clientRandomId dup
 	dao.GetMessages2DAO(dao.DB_MASTER).Insert(messageDO)
 	// dialog
-	GetDialogModel().CreateOrUpdateByLastMessage(peer.PeerId, peer.PeerType, fromId, messageDO.UserMessageBoxId, mentioned, true)
+	GetDialogModel().CreateOrUpdateByInbox(peer.PeerId, peer.PeerType, fromId, messageDO.UserMessageBoxId, mentioned)
 
 	return &InboxMessages{
 		UserIds:  []int32{messageDO.UserId},

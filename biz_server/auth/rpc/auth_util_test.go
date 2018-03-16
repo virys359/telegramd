@@ -23,7 +23,7 @@ import (
 	"fmt"
 )
 
-func TestRPCClient(t *testing.T) {
+func TestCheckPhoneNumber(t *testing.T) {
 	_, err := libphonenumber.Parse("+8611111111111", "")
 	fmt.Println(err)
 }

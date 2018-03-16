@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/baselib/base"
 )
 
@@ -80,17 +79,17 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 
-	var toId int32 = md.UserId
-	if md.UserId == callSession.adminId {
-		toId = callSession.participantId
-	}
+	//var toId int32 = md.UserId
+	//if md.UserId == callSession.adminId {
+	//	toId = callSession.participantId
+	//}
 
-	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-		md.AuthId,
-		md.SessionId,
-		md.NetlibSessionId,
-		[]int32{toId},
-		updates.To_Updates().Encode())
+	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
+	//	md.AuthId,
+	//	md.SessionId,
+	//	md.NetlibSessionId,
+	//	[]int32{toId},
+	//	updates.To_Updates().Encode())
 
 	for _, u := range users {
 		if u.GetId() == md.UserId {

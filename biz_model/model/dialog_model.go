@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"time"
+	"encoding/json"
 )
 
 var (
@@ -62,6 +63,14 @@ func dialogDOToDialog(dialogDO* dataobject.UserDialogsDO) *mtproto.TLDialog {
 	dialog.SetReadOutboxMaxId(dialogDO.ReadOutboxMaxId)
 	dialog.SetUnreadCount(dialogDO.UnreadCount)
 	dialog.SetUnreadMentionsCount(dialogDO.UnreadMentionsCount)
+
+	if dialogDO.DraftType == 2 {
+		draft := &mtproto.DraftMessage{}
+		err := json.Unmarshal([]byte(dialogDO.DraftMessageData), &draft)
+		if err == nil {
+			dialog.SetDraft(draft)
+		}
+	}
 
 	// NotifySettings
 	peerNotifySettings := mtproto.NewTLPeerNotifySettings()
@@ -127,25 +136,61 @@ func (m *dialogModel) GetPinnedDialogs(userId int32) (dialogs []*mtproto.Dialog)
 	return
 }
 
-// 创建会话
-func (m *dialogModel) CreateOrUpdateByLastMessage(userId int32, peerType int32, peerId int32, topMessage int32, unreadMentions, inbox bool) {
+
+// 发件箱
+func (m *dialogModel) CreateOrUpdateByOutbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions, clearDraft bool) {
 	var (
 		master = dao.GetUserDialogsDAO(dao.DB_MASTER)
 		affectedRows = int64(0)
 		date = int32(time.Now().Unix())
 	)
 
-	if !unreadMentions && !inbox {
-		affectedRows = master.UpdateTopMessage(topMessage, date, userId, int8(peerType), peerId)
-	} else if unreadMentions && !inbox {
+	if clearDraft && unreadMentions {
+		affectedRows = master.UpdateTopMessageAndMentionsAndClearDraft(topMessage, date, userId, int8(peerType), peerId)
+	} else if clearDraft && !unreadMentions {
+		affectedRows = master.UpdateTopMessageAndClearDraft(topMessage, date, userId, int8(peerType), peerId)
+	} else if !clearDraft && unreadMentions {
 		affectedRows = master.UpdateTopMessageAndMentions(topMessage, date, userId, int8(peerType), peerId)
-	} else if !unreadMentions && inbox {
-		affectedRows = master.UpdateTopMessageAndUnread(topMessage, date, userId, int8(peerType), peerId)
 	} else {
-		affectedRows = master.UpdateTopMessageAndUnreadAndMentions(topMessage, date, userId, int8(peerType), peerId)
+		affectedRows = master.UpdateTopMessage(topMessage, date, userId, int8(peerType), peerId)
 	}
 
 	if affectedRows == 0 {
+		// 创建会话
+		dialog := &dataobject.UserDialogsDO{}
+		dialog.UserId = userId
+		dialog.PeerType = int8(peerType)
+		dialog.PeerId = peerId
+		if unreadMentions {
+			dialog.UnreadMentionsCount = 1
+		} else {
+			dialog.UnreadMentionsCount = 0
+		}
+		dialog.UnreadCount = 0
+		dialog.TopMessage = topMessage
+		dialog.CreatedAt = base2.NowFormatYMDHMS()
+		dialog.Date2 = date
+		master.Insert(dialog)
+	}
+	return
+}
+
+// 收件箱
+func (m *dialogModel) CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions bool) {
+	var (
+		master = dao.GetUserDialogsDAO(dao.DB_MASTER)
+		affectedRows = int64(0)
+		date = int32(time.Now().Unix())
+	)
+
+	if unreadMentions {
+		affectedRows = master.UpdateTopMessageAndUnreadAndMentions(topMessage, date, userId, int8(peerType), peerId)
+	} else {
+		affectedRows = master.UpdateTopMessageAndUnread(topMessage, date, userId, int8(peerType), peerId)
+	}
+
+	if affectedRows == 0 {
+		// 创建会话
 		dialog := &dataobject.UserDialogsDO{}
 		dialog.UserId = userId
 		dialog.PeerType = int8(peerType)
@@ -162,4 +207,13 @@ func (m *dialogModel) CreateOrUpdateByLastMessage(userId int32, peerType int32, 
 		master.Insert(dialog)
 	}
 	return
+}
+
+func (m *dialogModel) SaveDraftMessage(userId int32, peerType int32, peerId int32, message *mtproto.DraftMessage) {
+	var (
+		master = dao.GetUserDialogsDAO(dao.DB_MASTER)
+	)
+
+	draft, _ := json.Marshal(message)
+	master.SaveDraft(string(draft), userId, int8(peerType), peerId)
 }

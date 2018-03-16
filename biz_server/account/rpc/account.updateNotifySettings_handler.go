@@ -23,10 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 // account.updateNotifySettings#84be5b93 peer:InputNotifyPeer settings:InputPeerNotifySettings = Bool;
@@ -48,18 +47,7 @@ func (s *AccountServiceImpl) AccountUpdateNotifySettings(ctx context.Context, re
 	updateSettings.SetSound(settings.GetSound())
 	update.SetNotifySettings(updateSettings.To_PeerNotifySettings())
 
-	updates := mtproto.NewTLUpdateShort()
-	updates.SetDate(int32(time.Now().Unix()))
-	updates.SetUpdate(update.To_Update())
-
-	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-		md.AuthId,
-		md.SessionId,
-		md.NetlibSessionId,
-		[]int32{md.UserId},
-		updates.To_Updates().Encode())
-	//glog.Infof("AccountUpdateNotifySettings - delivery: %v", delivery)
-	//_, _ = s.SyncRPCClient.Client.DeliveryUpdates(context.Background(), delivery)
+	sync_client.GetSyncClient().PushToUserMeOneUpdateData(md.AuthId, md.SessionId, md.UserId, update.To_Update())
 
 	glog.Infof("AccountUpdateNotifySettings - reply: {trur}")
 	return mtproto.ToBool(true), nil

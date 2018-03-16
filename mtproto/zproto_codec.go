@@ -146,7 +146,7 @@ func (c *ZProtoCodec) Receive() (interface{}, error) {
 			}
 		}
 
-		glog.Infof("mdLen: %d, md: {%v}, payload: %s%s", mdLen, md, hex.EncodeToString(c.headBuf), hex.EncodeToString(payload))
+		// glog.Infof("mdLen: %d, md: {%v}, payload: %s%s", mdLen, md, hex.EncodeToString(c.headBuf), hex.EncodeToString(payload))
 		packageType := binary.LittleEndian.Uint32(payload[mdLen+20 : mdLen+24])
 		m2 := NewZProtoMessage(packageType)
 		if m2 == nil {

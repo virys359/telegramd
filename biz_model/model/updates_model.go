@@ -28,6 +28,33 @@ import (
 	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
 	"github.com/nebulaim/telegramd/baselib/base"
 	base2 "github.com/nebulaim/telegramd/biz_model/base"
+	"encoding/json"
+	"github.com/golang/glog"
+)
+
+//const (
+//	PTS_TYPE_UNKNOWN = 0
+//	PTS_TYPE_PTS = 1
+//	PTS_TYPE_CHANNEL = 2
+//)
+
+const (
+	PTS_UPDATE_TYPE_UNKNOWN = 0
+
+	// pts
+	PTS_UPDATE_NEW_MESSAGE = 1
+	PTS_UPDATE_DELETE_MESSAGES = 2
+	PTS_UPDATE_READ_HISTORY_OUTBOX = 3
+	PTS_UPDATE_READ_HISTORY_INBOX = 4
+	PTS_UPDATE_WEBPAGE = 5
+	PTS_UPDATE_READ_MESSAGE_CONENTS = 6
+	PTS_UPDATE_EDIT_MESSAGE = 7
+
+	// channel pts
+	PTS_UPDATE_NEW_CHANNEL_MESSAGE = 9
+	PTS_UPDATE_DELETE_CHANNEL_MESSAGE = 9
+	PTS_UPDATE_EDIT_CHANNEL_MESSAGE = 10
+	PTS_UPDATE_EDIT_CHANNEL_WEBPAGE = 11
 )
 
 type updatesModel struct {
@@ -80,20 +107,20 @@ func (m *updatesModel) GetUpdatesState(authKeyId int64, userId int32) *mtproto.T
 	return state
 }
 
-func (m *updatesModel) AddPtsToUpdatesQueue(userId, pts, peerType, peerId, updateType, messageBoxId, maxMessageBoxId int32, ) int32 {
-	do := &dataobject.UserPtsUpdatesDO{
-		UserId:          userId,
-		PeerType:		 int8(peerType),
-		PeerId:			 peerId,
-		Pts:             pts,
-		UpdateType:      updateType,
-		MessageBoxId:    messageBoxId,
-		MaxMessageBoxId: maxMessageBoxId,
-		Date2:           int32(time.Now().Unix()),
-	}
-
-	return int32(dao.GetUserPtsUpdatesDAO(dao.DB_MASTER).Insert(do))
-}
+//func (m *updatesModel) AddPtsToUpdatesQueue(userId, pts, peerType, peerId, updateType, messageBoxId, maxMessageBoxId int32, ) int32 {
+//	do := &dataobject.UserPtsUpdatesDO{
+//		UserId:          userId,
+//		PeerType:		 int8(peerType),
+//		PeerId:			 peerId,
+//		Pts:             pts,
+//		UpdateType:      updateType,
+//		MessageBoxId:    messageBoxId,
+//		MaxMessageBoxId: maxMessageBoxId,
+//		Date2:           int32(time.Now().Unix()),
+//	}
+//
+//	return int32(dao.GetUserPtsUpdatesDAO(dao.DB_MASTER).Insert(do))
+//}
 
 func (m *updatesModel) AddQtsToUpdatesQueue(userId, qts, updateType int32, updateData []byte) int32 {
 	do := &dataobject.UserQtsUpdatesDO{
@@ -132,6 +159,47 @@ func (m *updatesModel) AddSeqToUpdatesQueue(authId int64, userId, seq, updateTyp
 //	return affected
 //}
 
+//func updateToQueueData(update *mtproto.Update) int8 {
+//	switch update.GetConstructor() {
+//	case mtproto.TLConstructor_crc32_
+//	}
+//}
+
+func getUpdateType(update *mtproto.Update) int8 {
+	switch update.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_updateNewMessage:
+		return PTS_UPDATE_NEW_MESSAGE
+	case mtproto.TLConstructor_CRC32_updateDeleteMessages:
+		return PTS_UPDATE_DELETE_MESSAGES
+	case mtproto.TLConstructor_CRC32_updateReadHistoryOutbox:
+		return PTS_UPDATE_READ_HISTORY_OUTBOX
+	case mtproto.TLConstructor_CRC32_updateReadHistoryInbox:
+		return PTS_UPDATE_READ_HISTORY_INBOX
+	case mtproto.TLConstructor_CRC32_updateWebPage:
+		return PTS_UPDATE_WEBPAGE
+	case mtproto.TLConstructor_CRC32_updateReadMessagesContents:
+		return PTS_UPDATE_READ_MESSAGE_CONENTS
+	case mtproto.TLConstructor_CRC32_updateEditMessage:
+		return PTS_UPDATE_EDIT_MESSAGE
+	}
+	return PTS_UPDATE_TYPE_UNKNOWN
+}
+
+func (m *updatesModel) AddToPtsQueue(userId, pts, ptsCount int32, update *mtproto.Update) int32 {
+	// TODO(@benqi): check error
+	updateData, _ := json.Marshal(update)
+
+	do := &dataobject.UserPtsUpdatesDO{
+		UserId:     userId,
+		Pts:        pts,
+		PtsCount:   ptsCount,
+		UpdateType: getUpdateType(update),
+		UpdateData: string(updateData),
+		Date2:      int32(time.Now().Unix()),
+	}
+
+	return int32(dao.GetUserPtsUpdatesDAO(dao.DB_MASTER).Insert(do))
+}
 
 func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtproto.Update, boxIDList []int32, lastPts int32) {
 	lastPts = pts
@@ -144,6 +212,7 @@ func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtp
 		otherUpdates = make([]*mtproto.Update, 0, len(doList))
 		for _, do := range doList {
 			switch do.UpdateType {
+			//  case PTS_UPDATE_SHORT_MESSAGE, PTS_UPDATE_SHORT_CHAT_MESSAGE:
 			case PTS_READ_HISTORY_OUTBOX:
 				readHistoryOutbox := &mtproto.TLUpdateReadHistoryOutbox{Data2: &mtproto.Update_Data{
 					Peer_39:  base2.ToPeerByTypeAndID(do.PeerType, do.PeerId),
@@ -160,8 +229,8 @@ func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtp
 					PtsCount: 0,
 				}}
 				otherUpdates = append(otherUpdates, readHistoryInbox.To_Update())
-			case PTS_MESSAGE_OUTBOX, PTS_MESSAGE_INBOX:
-				boxIDList = append(boxIDList, do.MessageBoxId)
+			//case PTS_MESSAGE_OUTBOX, PTS_MESSAGE_INBOX:
+			//	boxIDList = append(boxIDList, do.MessageBoxId)
 			}
 
 			if do.Pts > lastPts {
@@ -170,4 +239,27 @@ func (m *updatesModel) GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtp
 		}
 	}
 	return
+}
+
+func (m *updatesModel) GetUpdateListByGtPts(userId, pts int32) []*mtproto.Update {
+	doList := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(userId, pts)
+	if len(doList) == 0 {
+		return []*mtproto.Update{}
+	}
+
+	updates := make([]*mtproto.Update, 0, len(doList))
+	for _, do := range doList {
+		update := new(mtproto.Update)
+		err := json.Unmarshal([]byte(do.UpdateData), update)
+		if err != nil {
+			glog.Errorf("unmarshal pts's update(%d)error: %v", do.Id, err)
+			continue
+		}
+		if getUpdateType(update) != do.UpdateType {
+			glog.Errorf("update data error.")
+			continue
+		}
+		updates = append(updates, update)
+	}
+	return updates
 }

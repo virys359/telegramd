@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
 	"github.com/nebulaim/telegramd/biz_model/base"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
@@ -39,11 +38,7 @@ func (s *MessagesServiceImpl) MessagesSetTyping(ctx context.Context, request *mt
 			UserId: md.UserId,
 			Action: request.GetAction(),
 		}}
-		updates := &mtproto.TLUpdateShort{ Data2: &mtproto.Updates_Data{
-			Update: typing.To_Update(),
-			Date:  int32(time.Now().Unix()),
-		}}
-		sync_client.GetSyncClient().PushUpdateShortData(peer.PeerId, updates)
+		sync_client.GetSyncClient().PushToUserUpdateShortData(peer.PeerId, typing.To_Update())
 	} else {
 		// 其他的不需要推送
 	}

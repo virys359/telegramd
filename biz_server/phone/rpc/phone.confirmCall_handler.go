@@ -26,7 +26,6 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
 )
 
 /*
@@ -128,12 +127,12 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 
-	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-		md.AuthId,
-		md.SessionId,
-		md.NetlibSessionId,
-		[]int32{callSession.adminId},
-		updates.To_Updates().Encode())
+	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
+	//	md.AuthId,
+	//	md.SessionId,
+	//	md.NetlibSessionId,
+	//	[]int32{callSession.adminId},
+	//	updates.To_Updates().Encode())
 
 	// reply  phone.PhoneCall
 	phone_PoneCall := mtproto.NewTLPhonePhoneCall()

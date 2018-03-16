@@ -33,10 +33,40 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("UpdatesGetDifference - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
-	messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
+	var (
+		lastPts = request.GetPts()
+		otherUpdates []*mtproto.Update
+		messages []*mtproto.Message
+		userList []*mtproto.User
+	)
+
+	updateList := model.GetUpdatesModel().GetUpdateListByGtPts(md.UserId, lastPts)
+
+	for _, update := range updateList {
+		switch update.GetConstructor() {
+		case mtproto.TLConstructor_CRC32_updateNewMessage:
+			newMessage := update.To_UpdateNewMessage()
+			messages = append(messages, newMessage.GetMessage())
+		case mtproto.TLConstructor_CRC32_updateReadHistoryOutbox:
+			readHistoryOutbox := update.To_UpdateReadHistoryOutbox()
+			readHistoryOutbox.SetPtsCount(0)
+			otherUpdates = append(otherUpdates, readHistoryOutbox.To_Update())
+		case mtproto.TLConstructor_CRC32_updateReadHistoryInbox:
+			readHistoryInbox := update.To_UpdateReadHistoryInbox()
+			readHistoryInbox.SetPtsCount(0)
+			otherUpdates = append(otherUpdates, readHistoryInbox.To_Update())
+		default:
+			continue
+		}
+		if update.Data2.GetPts() > lastPts {
+			lastPts = update.Data2.GetPts()
+		}
+	}
+
+	//otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
+	//messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
 	userIdList, _, _ := model.PickAllIDListByMessages(messages)
-	userList := model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, userIdList)
+	userList = model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, userIdList)
 
 	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
 		Pts:         lastPts,

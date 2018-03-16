@@ -25,7 +25,6 @@ import (
 	"golang.org/x/net/context"
 	"time"
 	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/baselib/base"
 )
 
@@ -119,12 +118,12 @@ func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 
-	delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-		md.AuthId,
-		md.SessionId,
-		md.NetlibSessionId,
-		[]int32{callSession.adminId},
-		updates.To_Updates().Encode())
+	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
+	//	md.AuthId,
+	//	md.SessionId,
+	//	md.NetlibSessionId,
+	//	[]int32{callSession.adminId},
+	//	updates.To_Updates().Encode())
 
 	// TODO(@benqi): delivery to other phoneCallDiscarded
 	// 返回给客户端

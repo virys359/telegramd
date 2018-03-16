@@ -3,9 +3,9 @@
     <operation name="Insert">
         <sql>
             INSERT INTO user_pts_updates
-                (user_id, pts, peer_type, peer_id, update_type, message_box_id, max_message_box_id, date2)
+                (user_id, pts, pts_count, update_type, update_data, date2)
             VALUES
-                (:user_id, :pts, :peer_type, :peer_id, :update_type, :message_box_id, :max_message_box_id, :date2)
+                (:user_id, :pts, :pts_count, :update_type, :update_data, :date2)
         </sql>
     </operation>
 
@@ -18,7 +18,7 @@
     <operation name="SelectByGtPts" result_set="list">
         <sql>
             SELECT
-                user_id, pts, peer_type, peer_id, update_type, message_box_id, max_message_box_id, date2
+                user_id, pts, pts_count, update_type, update_data
             FROM
                 user_pts_updates
             WHERE

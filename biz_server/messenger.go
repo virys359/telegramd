@@ -42,7 +42,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"fmt"
 	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/biz_server/delivery"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
 	"google.golang.org/grpc"
@@ -100,7 +99,6 @@ func main() {
 	//	glog.Fatalf("failed to listen: %v", err)
 	//}
 
-	delivery.InstallDeliveryInstance(bizServerConfig.SyncRpcClient1)
 	sync_client.InstallSyncClient(bizServerConfig.SyncRpcClient2)
 	// Start server
 	grpcServer := grpc_util.NewRpcServer(bizServerConfig.Server.Addr, &bizServerConfig.Discovery)

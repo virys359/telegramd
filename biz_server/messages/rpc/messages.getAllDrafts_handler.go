@@ -29,7 +29,7 @@ import (
 // messages.getAllDrafts#6a3f8d65 = Updates;
 func (s *MessagesServiceImpl) MessagesGetAllDrafts(ctx context.Context, request *mtproto.TLMessagesGetAllDrafts) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetAllDrafts - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getAllDrafts#6a3f8d65 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl MessagesGetAllDrafts logic
 
