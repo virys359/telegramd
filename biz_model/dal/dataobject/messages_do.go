@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@ type MessagesDO struct {
 	MessageType      int8   `db:"message_type"`
 	MessageData      string `db:"message_data"`
 	Date2            int32  `db:"date2"`
-	State            int8   `db:"state"`
+	Deleted          int8   `db:"deleted"`
 	CreatedAt        string `db:"created_at"`
 	UpdatedAt        string `db:"updated_at"`
 }

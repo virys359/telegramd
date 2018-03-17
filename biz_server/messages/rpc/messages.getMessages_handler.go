@@ -24,53 +24,24 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_model/base"
 )
 
 // messages.getMessages#4222fa74 id:Vector<int> = messages.Messages;
 func (s *MessagesServiceImpl) MessagesGetMessages(ctx context.Context, request *mtproto.TLMessagesGetMessages) (*mtproto.Messages_Messages, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetMessages - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getMessages#4222fa74 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	userIdList := []int32{md.UserId}
-	chatIdList := []int32{}
 	messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, request.Id)
-	for _, message := range messages {
-		switch message.GetConstructor() {
-		case mtproto.TLConstructor_CRC32_message:
-			m := message.To_Message()
-			userIdList = append(userIdList, m.GetFromId())
-			p := base.FromPeer(m.GetToId())
-			switch p.PeerType {
-			case base.PEER_SELF, base.PEER_USER:
-				userIdList = append(userIdList, p.PeerId)
-			case base.PEER_CHAT:
-				chatIdList = append(chatIdList, p.PeerId)
-			case base.PEER_CHANNEL:
-				// TODO(@benqi): add channel
-			}
-		case mtproto.TLConstructor_CRC32_messageService:
-			m := message.To_MessageService()
-			userIdList = append(userIdList, m.GetFromId())
-			chatIdList = append(chatIdList, m.GetToId().GetData2().GetChatId())
-		}
-	}
-	messagesMessages := mtproto.NewTLMessagesMessages()
-	messagesMessages.SetMessages(messages)
-	if len(userIdList) > 0 {
-		users := model.GetUserModel().GetUserList(userIdList)
-		for _, u := range users {
-			if u.GetId() == md.UserId {
-				u.SetSelf(true)
-			}
-			u.SetContact(true)
-			messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
-		}
-	}
-	if len(chatIdList) > 0 {
-		messagesMessages.SetChats(model.GetChatModel().GetChatListByIDList(chatIdList))
-	}
+	userIdList, chatIdList, _ := model.PickAllIDListByMessages(messages)
+	userList := model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, userIdList)
+	chatList := model.GetChatModel().GetChatListByIDList(chatIdList)
 
-	glog.Infof("MessagesGetMessages - reply: %s", logger.JsonDebugData(messagesMessages))
+	messagesMessages := &mtproto.TLMessagesMessages{Data2: &mtproto.Messages_Messages_Data{
+		Messages: messages,
+		Users: userList,
+		Chats: chatList,
+	}}
+
+	glog.Infof("messages.getMessages#4222fa74 - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages.To_Messages_Messages(), nil
 }

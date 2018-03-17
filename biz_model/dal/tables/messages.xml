@@ -19,7 +19,7 @@
             FROM
                 messages
             WHERE
-                user_id = :user_id AND user_message_box_id IN (:idList)  ORDER BY user_message_box_id DESC
+                user_id = :user_id AND user_message_box_id IN (:idList) ORDER BY user_message_box_id DESC
         </sql>
     </operation>
 
@@ -46,7 +46,7 @@
             FROM
                 messages
             WHERE
-                user_id = :user_id AND peer_type = :peer_type AND peer_id = :peer_id AND user_message_box_id < :user_message_box_id
+                user_id = :user_id AND peer_type = :peer_type AND peer_id = :peer_id AND user_message_box_id < :user_message_box_id AND deleted = 0
             ORDER BY user_message_box_id DESC LIMIT :limit
             ]]>
         </sql>
@@ -63,7 +63,7 @@
             FROM
                 messages
             WHERE
-                user_id = :user_id AND ((sender_user_id = :user_id AND peer_id = :peer_id) OR (sender_user_id = :peer_id AND peer_id = :user_id)) AND peer_type = :peer_type AND user_message_box_id < :user_message_box_id
+                user_id = :user_id AND ((sender_user_id = :user_id AND peer_id = :peer_id) OR (sender_user_id = :peer_id AND peer_id = :user_id)) AND peer_type = :peer_type AND user_message_box_id < :user_message_box_id AND deleted = 0
             ORDER BY user_message_box_id DESC LIMIT :limit
             ]]>
         </sql>
@@ -81,7 +81,7 @@
             FROM
                 messages
             WHERE
-                user_id = :user_id AND peer_type = :peer_type AND peer_id = :peer_id AND user_message_box_id >= :user_message_box_id
+                user_id = :user_id AND peer_type = :peer_type AND peer_id = :peer_id AND user_message_box_id >= :user_message_box_id AND deleted = 0
             ORDER BY user_message_box_id LIMIT :limit
             ]]>
         </sql>
@@ -98,7 +98,7 @@
             FROM
                 messages
             WHERE
-                user_id = :user_id AND ((sender_user_id = :user_id AND peer_id = :peer_id) OR (sender_user_id = :peer_id AND peer_id = :user_id)) AND peer_type = :peer_type AND user_message_box_id >= :user_message_box_id
+                user_id = :user_id AND ((sender_user_id = :user_id AND peer_id = :peer_id) OR (sender_user_id = :peer_id AND peer_id = :user_id)) AND peer_type = :peer_type AND user_message_box_id >= :user_message_box_id AND deleted = 0
             ORDER BY user_message_box_id LIMIT :limit
             ]]>
         </sql>
@@ -115,6 +115,51 @@
                 messages
             WHERE
                 user_id = :peerId AND dialog_message_id = (SELECT dialog_message_id FROM messages WHERE user_id = :user_id AND user_message_box_id = :user_message_box_id LIMIT 1)
+        </sql>
+    </operation>
+
+    <operation name="SelectPeerDialogMessageIdList" result_set="list">
+        <params>
+            <param name="idList" type="[]int32" />
+        </params>
+        <sql>
+            <![CDATA[
+            SELECT
+                user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type
+            FROM
+                messages
+            WHERE
+                user_id <> :user_id AND dialog_message_id in (SELECT dialog_message_id FROM messages WHERE user_id = :user_id AND user_message_box_id in (:idList))
+            ]]>
+        </sql>
+    </operation>
+
+    <operation name="SelectLastTwoMessageId">
+        <sql>
+            SELECT user_message_box_id FROM messages WHERE user_id = :user_id ORDER BY user_message_box_id DESC LIMIT 2
+        </sql>
+    </operation>
+
+    <operation name="SelectDialogsByMessageIdList" result_set="list">
+        <params>
+            <param name="idList" type="[]int32" />
+        </params>
+        <sql>
+            SELECT
+                user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type
+            FROM
+                messages
+            WHERE
+                user_id = :user_id AND user_message_box_id IN (:idList)
+        </sql>
+    </operation>
+
+    <operation name="DeleteMessagesByMessageIdList">
+        <params>
+            <param name="idList" type="[]int32" />
+        </params>
+        <sql>
+            UPDATE messages SET deleted=1 WHERE user_id = :user_id AND user_message_box_id IN (:idList)
         </sql>
     </operation>
 

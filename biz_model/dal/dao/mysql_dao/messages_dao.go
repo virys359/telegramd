@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -114,10 +114,10 @@ func (dao *MessagesDAO) SelectByMessageId(user_id int32, user_message_box_id int
 	return do
 }
 
-// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id and user_message_box_id < :user_message_box_id order by user_message_box_id desc limit :limit
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id and user_message_box_id < :user_message_box_id and deleted = 0 order by user_message_box_id desc limit :limit
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectBackwardByPeerOffsetLimit(user_id int32, peer_type int8, peer_id int32, user_message_box_id int32, limit int32) []dataobject.MessagesDO {
-	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and peer_type = ? and peer_id = ? and user_message_box_id < ? order by user_message_box_id desc limit ?"
+	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and peer_type = ? and peer_id = ? and user_message_box_id < ? and deleted = 0 order by user_message_box_id desc limit ?"
 	rows, err := dao.db.Queryx(query, user_id, peer_type, peer_id, user_message_box_id, limit)
 
 	if err != nil {
@@ -145,10 +145,10 @@ func (dao *MessagesDAO) SelectBackwardByPeerOffsetLimit(user_id int32, peer_type
 	return values
 }
 
-// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and ((sender_user_id = :user_id and peer_id = :peer_id) or (sender_user_id = :peer_id and peer_id = :user_id)) and peer_type = :peer_type and user_message_box_id < :user_message_box_id order by user_message_box_id desc limit :limit
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and ((sender_user_id = :user_id and peer_id = :peer_id) or (sender_user_id = :peer_id and peer_id = :user_id)) and peer_type = :peer_type and user_message_box_id < :user_message_box_id and deleted = 0 order by user_message_box_id desc limit :limit
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectBackwardByPeerUserOffsetLimit(user_id int32, peer_id int32, peer_type int8, user_message_box_id int32, limit int32) []dataobject.MessagesDO {
-	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and ((sender_user_id = ? and peer_id = ?) or (sender_user_id = ? and peer_id = ?)) and peer_type = ? and user_message_box_id < ? order by user_message_box_id desc limit ?"
+	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and ((sender_user_id = ? and peer_id = ?) or (sender_user_id = ? and peer_id = ?)) and peer_type = ? and user_message_box_id < ? and deleted = 0 order by user_message_box_id desc limit ?"
 	rows, err := dao.db.Queryx(query, user_id, user_id, peer_id, peer_id, user_id, peer_type, user_message_box_id, limit)
 
 	if err != nil {
@@ -176,10 +176,10 @@ func (dao *MessagesDAO) SelectBackwardByPeerUserOffsetLimit(user_id int32, peer_
 	return values
 }
 
-// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id and user_message_box_id >= :user_message_box_id order by user_message_box_id asc limit :limit
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id and user_message_box_id >= :user_message_box_id and deleted = 0 order by user_message_box_id asc limit :limit
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectForwardByPeerOffsetLimit(user_id int32, peer_type int8, peer_id int32, user_message_box_id int32, limit int32) []dataobject.MessagesDO {
-	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and peer_type = ? and peer_id = ? and user_message_box_id >= ? order by user_message_box_id asc limit ?"
+	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and peer_type = ? and peer_id = ? and user_message_box_id >= ? and deleted = 0 order by user_message_box_id asc limit ?"
 	rows, err := dao.db.Queryx(query, user_id, peer_type, peer_id, user_message_box_id, limit)
 
 	if err != nil {
@@ -207,10 +207,10 @@ func (dao *MessagesDAO) SelectForwardByPeerOffsetLimit(user_id int32, peer_type 
 	return values
 }
 
-// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and ((sender_user_id = :user_id and peer_id = :peer_id) or (sender_user_id = :peer_id and peer_id = :user_id)) and peer_type = :peer_type and user_message_box_id >= :user_message_box_id order by user_message_box_id asc limit :limit
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and ((sender_user_id = :user_id and peer_id = :peer_id) or (sender_user_id = :peer_id and peer_id = :user_id)) and peer_type = :peer_type and user_message_box_id >= :user_message_box_id and deleted = 0 order by user_message_box_id asc limit :limit
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectForwardByPeerUserOffsetLimit(user_id int32, peer_id int32, peer_type int8, user_message_box_id int32, limit int32) []dataobject.MessagesDO {
-	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and ((sender_user_id = ? and peer_id = ?) or (sender_user_id = ? and peer_id = ?)) and peer_type = ? and user_message_box_id >= ? order by user_message_box_id asc limit ?"
+	var query = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and ((sender_user_id = ? and peer_id = ?) or (sender_user_id = ? and peer_id = ?)) and peer_type = ? and user_message_box_id >= ? and deleted = 0 order by user_message_box_id asc limit ?"
 	rows, err := dao.db.Queryx(query, user_id, user_id, peer_id, peer_id, user_id, peer_type, user_message_box_id, limit)
 
 	if err != nil {
@@ -265,4 +265,166 @@ func (dao *MessagesDAO) SelectPeerMessageId(peerId int32, user_id int32, user_me
 	}
 
 	return do
+}
+
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id != :user_id and dialog_message_id = (select dialog_message_id from messages where user_id = :user_id and user_message_box_id in (:idList))
+// TODO(@benqi): sqlmap
+func (dao *MessagesDAO) SelectPeerDialogMessageIdList(user_id int32, idList []int32) []dataobject.MessagesDO {
+	var q = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id != ? and dialog_message_id = (select dialog_message_id from messages where user_id = ? and user_message_box_id in (?))"
+	query, a, err := sqlx.In(q, user_id, user_id, idList)
+	rows, err := dao.db.Queryx(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectPeerDialogMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.MessagesDO
+	for rows.Next() {
+		v := dataobject.MessagesDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectPeerDialogMessageIdList(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
+// select user_message_box_id from messages where user_id = :user_id order by user_message_box_id desc limit 2
+// TODO(@benqi): sqlmap
+func (dao *MessagesDAO) SelectLastTwoMessageId(user_id int32) *dataobject.MessagesDO {
+	var query = "select user_message_box_id from messages where user_id = ? order by user_message_box_id desc limit 2"
+	rows, err := dao.db.Queryx(query, user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectLastTwoMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.MessagesDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectLastTwoMessageId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
+
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id = :user_id and user_message_box_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *MessagesDAO) SelectDialogsByMessageIdList(user_id int32, idList []int32) []dataobject.MessagesDO {
+	var q = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id = ? and user_message_box_id in (?)"
+	query, a, err := sqlx.In(q, user_id, idList)
+	rows, err := dao.db.Queryx(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectDialogsByMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.MessagesDO
+	for rows.Next() {
+		v := dataobject.MessagesDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectDialogsByMessageIdList(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
+// update messages set deleted = 1 where user_id = :user_id and user_message_box_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *MessagesDAO) DeleteMessagesByMessageIdList(user_id int32, idList []int32) int64 {
+	var q = "update messages set deleted = 1 where user_id = ? and user_message_box_id in (?)"
+	query, a, err := sqlx.In(q, user_id, idList)
+	r, err := dao.db.Exec(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in DeleteMessagesByMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in DeleteMessagesByMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update messages set deleted = 1 where user_id = :user_id and dialog_message_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *MessagesDAO) DeleteUserMessagesByDialogMessageIds(user_id int32, idList []int64) int64 {
+	var q = "update messages set deleted = 1 where user_id = ? and dialog_message_id in (?)"
+	query, a, err := sqlx.In(q, user_id, idList)
+	r, err := dao.db.Exec(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in DeleteUserMessagesByDialogMessageIds(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in DeleteUserMessagesByDialogMessageIds(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update messages set deleted = 1 where dialog_message_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *MessagesDAO) DeleteMessagesByDialogMessageIds(idList []int64) int64 {
+	var q = "update messages set deleted = 1 where dialog_message_id in (?)"
+	query, a, err := sqlx.In(q, idList)
+	r, err := dao.db.Exec(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in DeleteMessagesByDialogMessageIds(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in DeleteMessagesByDialogMessageIds(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
 }

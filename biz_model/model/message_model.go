@@ -368,7 +368,7 @@ func (m *messageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, cl
 		PeerId: peer.PeerId,
 		RandomId: clientRandomId,
 		Date2: now,
-		State: 0,
+		Deleted: 0,
 	}
 
 	// var mentioned = false
@@ -432,7 +432,7 @@ func (m *messageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil,
 		PeerId: peer.PeerId,
 		RandomId: clientRandomId,
 		Date2: now,
-		State: 0,
+		Deleted: 0,
 	}
 
 	inboxMessage := proto.Clone(outboxMessage).(*mtproto.Message)
