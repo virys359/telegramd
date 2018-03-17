@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-03-16 15:14:15
+-- Generation Time: 2018-03-17 15:52:48
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -395,7 +395,7 @@ CREATE TABLE `messages` (
   `message_type` tinyint(4) NOT NULL DEFAULT '0',
   `message_data` text CHARACTER SET utf8mb4 NOT NULL,
   `date2` int(11) NOT NULL DEFAULT '0',
-  `state` tinyint(4) NOT NULL,
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -619,6 +619,7 @@ CREATE TABLE `user_dialogs` (
   `draft_type` tinyint(4) NOT NULL DEFAULT '0',
   `draft_message_data` text CHARACTER SET utf8mb4 NOT NULL,
   `date2` int(11) NOT NULL,
+  `version` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1110,7 +1111,7 @@ ALTER TABLE `file_parts`
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=218;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=249;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1194,7 +1195,7 @@ ALTER TABLE `user_privacys`
 -- 使用表AUTO_INCREMENT `user_pts_updates`
 --
 ALTER TABLE `user_pts_updates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=310;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=368;
 
 --
 -- 使用表AUTO_INCREMENT `user_qts_updates`
