@@ -331,6 +331,22 @@ func (m *messageModel) GetMessageByPeerAndMessageId(userId int32, messageId int3
 	return
 }
 
+
+func (m *messageModel) GetPeerDialogMessageListByMessageId(userId int32, messageId int32) (messages *InboxMessages) {
+	doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectPeerDialogMessageListByMessageId(userId, messageId)
+	messages = &InboxMessages{
+		UserIds: make([]int32, 0, len(doList)),
+		Messages: make([]*mtproto.Message, 0, len(doList)),
+	}
+	for _, do := range doList {
+		// TODO(@benqi): check data
+		m, _ := messageDOToMessage(&do)
+		messages.Messages = append(messages.Messages, m)
+		messages.UserIds = append(messages.UserIds, do.UserId)
+	}
+	return
+}
+
 func (m *messageModel) GetMessagesByPeerAndMessageIdList2(userId int32, idList []int32) (messages []*mtproto.Message) {
 	if len(idList) == 0 {
 		messages = []*mtproto.Message{}
@@ -515,6 +531,13 @@ func (m *messageModel) GetPeerMessageId(userId, messageId, peerId int32) int32 {
 	} else {
 		return do.UserMessageBoxId
 	}
+}
+
+func (m *messageModel) SaveMessage(message *mtproto.Message, userId, messageId int32) error {
+	var err error
+	messageData, err := json.Marshal(message)
+	dao.GetMessagesDAO(dao.DB_MASTER).UpdateMessagesData(string(messageData), userId, messageId)
+	return err
 }
 
 /*
