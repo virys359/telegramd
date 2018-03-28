@@ -23,9 +23,11 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/base"
 	"math"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 //const (
@@ -103,6 +105,9 @@ import (
 	req.limit = 1;
 
  */
+
+// I0321 11:58:52.223930    6078 messages.getHistory_handler.go:109] MessagesGetHistory - metadata: {"server_id":1,"netlib_session_id":201,"client_addr":"127.0.0.1:61055","auth_id":-3802143301454569978,"session_id":-5666850920339925443,"trace_id":976307123237556225,"span_id":976307125238239232,"receive_time":1521604732,"user_id":2},
+//  request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
 // messages.getHistory#afa92846 peer:InputPeer offset_id:int offset_date:int add_offset:int limit:int max_id:int min_id:int = messages.Messages;
 func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *mtproto.TLMessagesGetHistory) (*mtproto.Messages_Messages, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
@@ -125,25 +130,25 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	if limit == 1 {
 		// 1. Load dialog last messag
 		offsetId = math.MaxInt32
-		messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
+		messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
 	} else {
 		if addOffset < 0 {
 			if addOffset + limit <= 0 {
 				// LOAD_HISTORY_TYPE_FORWARD
 				// Forward是按升序排
-				messages = model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+				messages = message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
 			} else {
 				// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
 				// 按升序排
-				messages1 := model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+				messages1 := message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
 				messages = append(messages, messages1...)
 				// 降序
-				messages2 := model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
+				messages2 := message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
 				messages = append(messages, messages2...)
 			}
 		} else {
 			// 降序
-			messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
+			messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
 		}
 		//// 2. getHistory
 		//loadType := calcLoadHistoryType(addOffset, limit)
@@ -194,7 +199,7 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	messagesMessages := mtproto.NewTLMessagesMessages()
 	messagesMessages.SetMessages(messages)
 	if len(userIdList) > 0 {
-		users := model.GetUserModel().GetUserList(userIdList)
+		users := user.GetUserList(userIdList)
 		for _, u := range users {
 			if u.GetId() == md.UserId {
 				u.SetSelf(true)
@@ -203,8 +208,9 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 			messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
 		}
 	}
+
 	if len(chatIdList) > 0 {
-		messagesMessages.SetChats(model.GetChatModel().GetChatListByIDList(chatIdList))
+		messagesMessages.SetChats(chat.GetChatListByIDList(chatIdList))
 	}
 	glog.Infof("MessagesGetHistory - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages.To_Messages_Messages(), nil

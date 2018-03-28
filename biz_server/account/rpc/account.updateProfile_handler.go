@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // account.updateProfile#78515775 flags:# first_name:flags.0?string last_name:flags.1?string about:flags.2?string = User;
@@ -45,7 +45,7 @@ func (s *AccountServiceImpl) AccountUpdateProfile(ctx context.Context, request *
 		// panic()
 	}
 
-	user := model.GetUserModel().GetUser(md.UserId)
+	user := user2.GetUser(md.UserId)
 	// TODO(@benqi): Delivery updateUserName updates
 
 	glog.Infof("AccountUpdateProfile - reply: {%v}\n", user)

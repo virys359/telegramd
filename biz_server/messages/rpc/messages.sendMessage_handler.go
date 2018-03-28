@@ -23,8 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/base"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 	"time"
 )
@@ -89,27 +90,27 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 
 	// 发件箱
 	outbox := makeOutboxMessageBySendMessage(md.UserId, peer, request)
-	messageId, dialogMessageId := model.GetMessageModel().SendMessageToOutbox(md.UserId, peer, request.GetRandomId(), outbox.To_Message())
+	messageId, dialogMessageId := message2.SendMessageToOutbox(md.UserId, peer, request.GetRandomId(), outbox.To_Message())
 
-	shortMessage := model.MessageToUpdateShortMessage(outbox.To_Message())
+	shortMessage := message2.MessageToUpdateShortMessage(outbox.To_Message())
 	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
 	// 更新会话信息
-	model.GetDialogModel().CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outbox.GetMentioned(), request.GetClearDraft())
+	user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outbox.GetMentioned(), request.GetClearDraft())
 
 	// 返回给客户端
-	sentMessage = model.MessageToUpdateShortSentMessage(outbox.To_Message())
+	sentMessage = message2.MessageToUpdateShortSentMessage(outbox.To_Message())
 	sentMessage.SetPts(state.Pts)
 	sentMessage.SetPtsCount(state.PtsCount)
 
 	// 收件箱
 	if request.GetPeer().GetConstructor() !=  mtproto.TLConstructor_CRC32_inputPeerSelf {
-		inBoxes, _ := model.GetMessageModel().SendMessageToInbox(md.UserId, peer, request.GetRandomId(), dialogMessageId, outbox.To_Message())
+		inBoxes, _ := message2.SendMessageToInbox(md.UserId, peer, request.GetRandomId(), dialogMessageId, outbox.To_Message())
 		for i := 0; i < len(inBoxes.UserIds); i++ {
-			shortMessage := model.MessageToUpdateShortMessage(inBoxes.Messages[i])
+			shortMessage := message2.MessageToUpdateShortMessage(inBoxes.Messages[i])
 			sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes.UserIds[i], shortMessage.To_Updates())
 		}
 	}

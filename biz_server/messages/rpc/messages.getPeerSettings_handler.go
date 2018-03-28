@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
@@ -29,9 +28,12 @@ import (
 // messages.getPeerSettings#3672e09c peer:InputPeer = PeerSettings;
 func (s *MessagesServiceImpl) MessagesGetPeerSettings(ctx context.Context, request *mtproto.TLMessagesGetPeerSettings) (*mtproto.PeerSettings, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetPeerSettings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getPeerSettings#3672e09c - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetPeerSettings logic
+	peerSettings := &mtproto.TLPeerSettings{Data2: &mtproto.PeerSettings_Data{
+		ReportSpam: false,
+	}}
 
-	return nil, fmt.Errorf("Not impl MessagesGetPeerSettings")
+	glog.Infof("messages.getPeerSettings#3672e09c - reply: %s", logger.JsonDebugData(peerSettings))
+	return peerSettings.To_PeerSettings(), nil
 }

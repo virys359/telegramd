@@ -19,7 +19,7 @@ package server
 
 import (
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/core"
 )
 
 //const (
@@ -47,7 +47,7 @@ func getConntctionType(tl mtproto.TLObject) int {
 	case *mtproto.TLAccountRegisterDevice:
 		// check android internal push connection
 		reg, _ := tl.(*mtproto.TLAccountRegisterDevice)
-		if reg.GetTokenType() == model.TOKEN_TYPE_INTERNAL_PUSH {
+		if reg.GetTokenType() == core.TOKEN_TYPE_INTERNAL_PUSH {
 			// android
 			return PUSH
 		} else {
@@ -109,6 +109,8 @@ func getConntctionType(tl mtproto.TLObject) int {
 // TL_account_getPasswordSettings
 func checkWithoutLogin(tl mtproto.TLObject) bool {
 	switch tl.(type) {
+	case *mtproto.TLMsgsAck:
+		return true
 	// TL_get_future_salts
 	case *mtproto.TLGetFutureSalts:
 		return true
@@ -150,5 +152,6 @@ func checkWithoutLogin(tl mtproto.TLObject) bool {
 		return true
 	}
 
+	// glog.Warning("")
 	return false
 }

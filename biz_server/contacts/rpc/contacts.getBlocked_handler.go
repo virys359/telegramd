@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // contacts.getBlocked#f57c350f offset:int limit:int = contacts.Blocked;
@@ -47,7 +47,7 @@ func (s *ContactsServiceImpl) ContactsGetBlocked(ctx context.Context, request *m
 			blockedIdList = append(blockedIdList, c.ContactUserId)
 		}
 
-		users := model.GetUserModel().GetUserList(blockedIdList)
+		users := user.GetUserList(blockedIdList)
 		for _, u := range users {
 			blocks.Data2.Users = append(blocks.Data2.Users, u.To_User())
 		}

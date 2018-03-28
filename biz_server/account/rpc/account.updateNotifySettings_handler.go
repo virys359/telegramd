@@ -23,9 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.updateNotifySettings#84be5b93 peer:InputNotifyPeer settings:InputPeerNotifySettings = Bool;
@@ -36,7 +36,7 @@ func (s *AccountServiceImpl) AccountUpdateNotifySettings(ctx context.Context, re
 	peer := base.FromInputNotifyPeer(request.GetPeer())
 	settings := request.GetSettings().To_InputPeerNotifySettings()
 
-	model.GetAccountModel().SetNotifySettings(md.UserId, peer, settings)
+	account.SetNotifySettings(md.UserId, peer, settings)
 
 	update := mtproto.NewTLUpdateNotifySettings()
 	update.SetPeer(peer.ToNotifyPeer())

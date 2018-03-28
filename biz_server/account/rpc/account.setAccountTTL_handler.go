@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
 )
 
 // account.setAccountTTL#2442485e ttl:AccountDaysTTL = Bool;

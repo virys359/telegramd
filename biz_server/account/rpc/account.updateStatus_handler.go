@@ -23,11 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	// "time"
-	// "github.com/nebulaim/telegramd/biz_model/model"
 	"time"
-	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // account.updateStatus#6628562c offline:Bool = Bool;
@@ -51,7 +49,7 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 			Expires: int32(now + 5*30),
 		}}
 		status = statusOnline.To_UserStatus()
-		model.GetUserModel().UpdateUserStatus(md.UserId, now)
+		user.UpdateUserStatus(md.UserId, now)
 	}
 
 	updateUserStatus := &mtproto.TLUpdateUserStatus{Data2: &mtproto.Update_Data{
@@ -64,7 +62,7 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 	}}
 
 	// push to other contacts.
-	contactIDList := model.GetContactModel().GetContactUserIDList(md.UserId)
+	contactIDList := user.GetContactUserIDList(md.UserId)
 	for _, id := range contactIDList {
 		sync_client.GetSyncClient().PushToUserUpdatesData(id, updates.To_Updates())
 	}

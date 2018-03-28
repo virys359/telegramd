@@ -23,8 +23,10 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_model/base"
+	"github.com/nebulaim/telegramd/biz/base"
+	chat2 "github.com/nebulaim/telegramd/biz/core/chat"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // messages.getFullChat#3b831c66 chat_id:int = messages.ChatFull;
@@ -32,14 +34,13 @@ func (s *MessagesServiceImpl) MessagesGetFullChat(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesGetFullChat - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetFullChat logic
 	messagesChatFull := &mtproto.TLMessagesChatFull{}
-	chatFull := model.GetChatModel().GetChatFull(request.ChatId)
+	chatFull := chat2.GetChatFull(request.ChatId)
 	peer := &base.PeerUtil{}
 	peer.PeerType = base.PEER_CHAT
 	peer.PeerId = request.ChatId
-	chatFull.SetNotifySettings(model.GetAccountModel().GetNotifySettings(md.UserId, peer))
-	chat := model.GetChatModel().GetChat(request.ChatId)
+	chatFull.SetNotifySettings(account.GetNotifySettings(md.UserId, peer))
+	chat := chat2.GetChat(request.ChatId)
 	// chat.ParticipantsCount = len(chatFull.GetParticipants().GetChatParticipants().GetParticipants())
 	chatUserIdList := make([]int32, 0)
 	participants := chatFull.GetParticipants().GetData2().GetParticipants()
@@ -54,7 +55,7 @@ func (s *MessagesServiceImpl) MessagesGetFullChat(ctx context.Context, request *
 		}
 	}
 	chat.SetParticipantsCount(int32(len(participants)))
-	users := model.GetUserModel().GetUserList(chatUserIdList)
+	users := user.GetUserList(chatUserIdList)
 	for _, u := range users {
 		if u.GetId() == md.UserId {
 			u.SetSelf(true)

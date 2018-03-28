@@ -26,6 +26,26 @@ import (
 	"golang.org/x/net/context"
 )
 
+/*
+ rpc_requst:
+	body: { photos_getUserPhotos
+	  user_id: { inputUserSelf },
+	  offset: 1 [INT],
+	  max_id: 0 [LONG],
+	  limit: 5 [INT],
+	},
+
+ rpc_result:
+  body: { rpc_result
+    req_msg_id: 6537205080566771468 [LONG],
+    result: { photos_photosSlice
+      count: 1 [INT],
+      photos: [ vector<0x0> ],
+      users: [ vector<0x0> ],
+    },
+  },
+
+ */
 // photos.getUserPhotos#91cd32a8 user_id:InputUser offset:int max_id:long limit:int = photos.Photos;
 func (s *PhotosServiceImpl) PhotosGetUserPhotos(ctx context.Context, request *mtproto.TLPhotosGetUserPhotos) (*mtproto.Photos_Photos, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

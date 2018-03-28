@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
@@ -32,6 +31,9 @@ func (s *ContactsServiceImpl) ContactsGetTopPeers(ctx context.Context, request *
 	glog.Infof("ContactsGetTopPeers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl ContactsGetTopPeers logic
+	topPeers := &mtproto.TLContactsTopPeers{Data2: &mtproto.Contacts_TopPeers_Data{
 
-	return nil, fmt.Errorf("Not impl ContactsGetTopPeers")
+	}}
+	return topPeers.To_Contacts_TopPeers(), nil
+	//return nil, fmt.Errorf("Not impl ContactsGetTopPeers")
 }

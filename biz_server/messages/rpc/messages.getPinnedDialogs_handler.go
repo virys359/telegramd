@@ -23,8 +23,11 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_model/base"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/chat"
+	"github.com/nebulaim/telegramd/biz/core/updates"
 )
 
 // messages.getPinnedDialogs#e254d64e = messages.PeerDialogs;
@@ -32,8 +35,7 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesGetPinnedDialogs - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetPinnedDialogs logic
-	dialogs := model.GetDialogModel().GetPinnedDialogs(md.UserId)
+	dialogs := user.GetPinnedDialogs(md.UserId)
 	peerDialogs := mtproto.NewTLMessagesPeerDialogs()
 
 	messageIdList := []int32{}
@@ -58,10 +60,10 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 
 	glog.Infof("messageIdList - %v", messageIdList)
 	if len(messageIdList) > 0 {
-		peerDialogs.SetMessages(model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
+		peerDialogs.SetMessages(message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
 	}
 
-	users := model.GetUserModel().GetUserList(userIdList)
+	users := user.GetUserList(userIdList)
 	for _, user := range users {
 		if user.GetId() == md.UserId {
 			user.SetSelf(true)
@@ -74,10 +76,10 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 	}
 
 	if len(chatIdList) > 0 {
-		peerDialogs.Data2.Chats = model.GetChatModel().GetChatListByIDList(chatIdList)
+		peerDialogs.Data2.Chats = chat.GetChatListByIDList(chatIdList)
 	}
 
-	state := model.GetUpdatesModel().GetUpdatesState(md.AuthId, md.UserId)
+	state := updates.GetUpdatesState(md.AuthId, md.UserId)
 	peerDialogs.SetState(state.To_Updates_State())
 
 	glog.Infof("MessagesGetPinnedDialogs - reply: %s", logger.JsonDebugData(peerDialogs))

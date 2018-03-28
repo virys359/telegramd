@@ -23,8 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"time"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/auth"
 )
 
 // auth.resendCode#3ef1a9bf phone_number:string phone_code_hash:string = auth.SentCode;
@@ -34,7 +35,7 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 
 	// 1. check number
 	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
-	phoneNumber, err := checkAndGetPhoneNumber(request.GetPhoneNumber())
+	phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -43,30 +44,14 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 	// <string name="PhoneNumberFlood">Sorry, you have deleted and re-created your account too many times recently.
 	//    Please wait for a few days before signing up again.</string>
 	//
-	userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
-	if userDO != nil && userDO.Banned != 0 {
+	banned := user.CheckBannedByPhoneNumber(phoneNumber)
+	if !banned {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
 		return nil, err
 	}
 
-	// 2. sentCode
-	// lastCreatedAt := time.Unix(time.Now().Unix()-15*60, 0).Format("2006-01-02 15:04:05")
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(request.GetPhoneCodeHash(), phoneNumber)
-	if do == nil {
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_HASH_EMPTY), "invalid phone number")
-		glog.Error(err)
-		return nil, err
-	}
-
-	if time.Now().Unix() > do.CreatedTime + 15*60 {
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EXPIRED), "code expired")
-		glog.Error(err)
-		return nil, err
-	}
-
-	if do.Attempts > 3 {
-		// TODO(@benqi): 输入了太多次错误的phone code
-		err = mtproto.NewFloodWaitX(15*60, "auth.sendCode#86aef0ec: too many attempts.")
+	code, err := auth.GetCodeByCodeHash(request.GetPhoneCodeHash(), phoneNumber)
+	if err != nil {
 		return nil, err
 	}
 
@@ -75,30 +60,30 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 	// TODO(@benqi): 有则使用sentCodeTypeFlashCall和entCodeTypeCall？？
 
 	// 使用app类型，code统一为123456
-	authSentCode := mtproto.NewTLAuthSentCode()
+	phoneRegistered := user.CheckPhoneNumberExist(phoneNumber)
 
-	phoneRegistered := userDO != nil
-	authSentCode.SetPhoneRegistered(phoneRegistered)
+	authSentCode := &mtproto.TLAuthSentCode{Data2: &mtproto.Auth_SentCode_Data{
+		PhoneRegistered: phoneRegistered,
+		PhoneCodeHash:   code.CodeHash,
+		Timeout:         60,	// TODO(@benqi): 默认60s
+	}}
 
 	if phoneRegistered {
 		// TODO(@benqi): check other session online
-		authSentCodeType := mtproto.NewTLAuthSentCodeTypeApp()
-		authSentCodeType.SetLength(6)
+		authSentCodeType := &mtproto.TLAuthSentCodeTypeApp{Data2: &mtproto.Auth_SentCodeType_Data{
+			Length: code.GetPhoneCodeLength(),
+		}}
 		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
 	} else {
 		// TODO(@benqi): sentCodeTypeFlashCall and sentCodeTypeCall, nextType
-		authSentCodeType := mtproto.NewTLAuthSentCodeTypeSms()
-		authSentCodeType.SetLength(6)
+		authSentCodeType := &mtproto.TLAuthSentCodeTypeSms{Data2: &mtproto.Auth_SentCodeType_Data{
+			Length: code.GetPhoneCodeLength(),
+		}}
 		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
 
 		// TODO(@benqi): nextType
 		// authSentCode.SetNextType()
 	}
-
-	authSentCode.SetPhoneCodeHash(do.TransactionHash)
-
-	// TODO(@benqi): 默认60s
-	authSentCode.SetTimeout(60)
 
 	glog.Infof("auth.resendCode#3ef1a9bf - reply: %s", logger.JsonDebugData(authSentCode))
 	return authSentCode.To_Auth_SentCode(), nil

@@ -20,8 +20,8 @@ package server
 import (
 	"github.com/golang/glog"
 	"encoding/base64"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/biz_model/dal/dataobject"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"fmt"
 )
 

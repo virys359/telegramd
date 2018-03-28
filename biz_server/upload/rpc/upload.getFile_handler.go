@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 )
 
 // upload.getFile#e3a6cfb5 location:InputFileLocation offset:int limit:int = upload.File;
@@ -43,7 +43,7 @@ func (s *UploadServiceImpl) UploadGetFile(ctx context.Context, request *mtproto.
 	switch request.GetLocation().GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputFileLocation:
 		inputFileLocation := request.GetLocation().To_InputFileLocation()
-		uploadfile := model.GetPhotoModel().GetPhotoFileData(inputFileLocation.GetVolumeId(),
+		uploadfile := photo2.GetPhotoFileData(inputFileLocation.GetVolumeId(),
 			inputFileLocation.GetLocalId(), inputFileLocation.GetSecret(), request.GetOffset(), request.GetLimit())
 
 		glog.Infof("UploadGetFile - reply: %s", logger.JsonDebugData(uploadfile))

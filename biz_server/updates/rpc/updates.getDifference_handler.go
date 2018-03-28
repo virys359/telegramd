@@ -24,8 +24,10 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/biz_model/model"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
+	// base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/core/updates"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/message"
 )
 
 // updates.getDifference#25939651 flags:# pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
@@ -40,13 +42,15 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 		userList []*mtproto.User
 	)
 
-	updateList := model.GetUpdatesModel().GetUpdateListByGtPts(md.UserId, lastPts)
+	updateList := updates.GetUpdateListByGtPts(md.UserId, lastPts)
 
 	for _, update := range updateList {
 		switch update.GetConstructor() {
 		case mtproto.TLConstructor_CRC32_updateNewMessage:
-			newMessage := update.To_UpdateNewMessage()
-			messages = append(messages, newMessage.GetMessage())
+			// newMessage := update.To_UpdateNewMessage()
+			// messages = append(messages, newMessage.GetMessage())
+			otherUpdates = append(otherUpdates, update)
+
 		case mtproto.TLConstructor_CRC32_updateReadHistoryOutbox:
 			readHistoryOutbox := update.To_UpdateReadHistoryOutbox()
 			readHistoryOutbox.SetPtsCount(0)
@@ -65,14 +69,15 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 
 	//otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
 	//messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
-	userIdList, _, _ := model.PickAllIDListByMessages(messages)
-	userList = model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, userIdList)
+	userIdList, _, _ := message.PickAllIDListByMessages(messages)
+	userList = user.GetUsersBySelfAndIDList(md.UserId, userIdList)
 
 	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
 		Pts:         lastPts,
 		Date:        int32(time.Now().Unix()),
 		UnreadCount: 0,
-		Seq:         int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))),
+		// Seq:         int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))),
+		Seq:         0,
 	}}
 	difference := &mtproto.TLUpdatesDifference{Data2: &mtproto.Updates_Difference_Data{
 		NewMessages:  messages,

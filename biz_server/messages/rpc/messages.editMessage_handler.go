@@ -23,14 +23,16 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
 	"time"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 func makeUpdateEditMessageUpdates(selfUserId int32, message *mtproto.Message) *mtproto.TLUpdates {
-	userIdList, _, _ := model.PickAllIDListByMessages([]*mtproto.Message{message})
-	userList := model.GetUserModel().GetUsersBySelfAndIDList(selfUserId, userIdList)
+	userIdList, _, _ := message2.PickAllIDListByMessages([]*mtproto.Message{message})
+	userList := user.GetUsersBySelfAndIDList(selfUserId, userIdList)
+
 	updateNew := &mtproto.TLUpdateEditMessage{Data2: &mtproto.Update_Data{
 		Message_1: message,
 	}}
@@ -63,7 +65,7 @@ func (s *MessagesServiceImpl) MessagesEditMessage(ctx context.Context, request *
 	glog.Infof("messages.editMessage#ce91e4ca - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// SelectDialogMessageListByMessageId
-	editOutbox := model.GetMessageModel().GetMessageByPeerAndMessageId(md.UserId, request.GetId())
+	editOutbox := message2.GetMessageByPeerAndMessageId(md.UserId, request.GetId())
 	// TODO(@benqi): check invalid
 
 	setEditMessageData(request, editOutbox)
@@ -74,10 +76,10 @@ func (s *MessagesServiceImpl) MessagesEditMessage(ctx context.Context, request *
 		return nil, err
 	}
 	SetupUpdatesState(state, syncUpdates)
-	model.GetMessageModel().SaveMessage(editOutbox, md.UserId, request.GetId())
+	message2.SaveMessage(editOutbox, md.UserId, request.GetId())
 
 	// push edit peer message
-	peerEditMessages := model.GetMessageModel().GetPeerDialogMessageListByMessageId(md.UserId, request.GetId())
+	peerEditMessages := message2.GetPeerDialogMessageListByMessageId(md.UserId, request.GetId())
 	for i := 0; i < len(peerEditMessages.UserIds); i++ {
 		editMessage := peerEditMessages.Messages[i]
 		editUserId := peerEditMessages.UserIds[i]
@@ -85,7 +87,7 @@ func (s *MessagesServiceImpl) MessagesEditMessage(ctx context.Context, request *
 		setEditMessageData(request, editMessage)
 		editUpdates := makeUpdateEditMessageUpdates(editUserId, editMessage)
 		sync_client.GetSyncClient().PushToUserUpdatesData(editUserId, editUpdates.To_Updates())
-		model.GetMessageModel().SaveMessage(editMessage, editUserId, editMessage.GetData2().GetId())
+		message2.SaveMessage(editMessage, editUserId, editMessage.GetData2().GetId())
 	}
 
 	glog.Infof("messages.editMessage#ce91e4ca - reply: %s", logger.JsonDebugData(syncUpdates))

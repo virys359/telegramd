@@ -20,10 +20,10 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.registerDevice#637ea878 token_type:int token:string = Bool;
@@ -32,7 +32,7 @@ func (s *AccountServiceImpl) AccountRegisterDevice(ctx context.Context, request 
 	glog.Infof("AccountRegisterDevice - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): check toke_type invalid
-	model.GetAccountModel().RegisterDevice(md.AuthId, md.UserId, int8(request.TokenType), request.Token)
+	account.RegisterDevice(md.AuthId, md.UserId, int8(request.TokenType), request.Token)
 
 	glog.Infof("AccountRegisterDevice - reply: {true}")
 	return mtproto.ToBool(true), nil

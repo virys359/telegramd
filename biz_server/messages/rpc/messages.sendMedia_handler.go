@@ -23,16 +23,18 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/base"
+	"github.com/nebulaim/telegramd/biz/base"
 	"time"
-	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 func makeMediaByInputMedia(selfUserId int32, media *mtproto.InputMedia) *mtproto.MessageMedia {
 	var (
 		now = int32(time.Now().Unix())
-		photoModel = model.GetPhotoModel()
+		// photoModel = model.GetPhotoModel()
 		uuid = base.NextSnowflakeId()
 	)
 
@@ -41,7 +43,7 @@ func makeMediaByInputMedia(selfUserId int32, media *mtproto.InputMedia) *mtproto
 		uploadedPhoto := media.To_InputMediaUploadedPhoto()
 		file := uploadedPhoto.GetFile()
 
-		sizes, err := model.GetPhotoModel().UploadPhoto(selfUserId, uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
+		sizes, err := photo2.UploadPhoto(selfUserId, uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 		if err != nil {
 			glog.Errorf("UploadPhoto error: %v, by %s", err, logger.JsonDebugData(media))
 		}
@@ -50,7 +52,7 @@ func makeMediaByInputMedia(selfUserId int32, media *mtproto.InputMedia) *mtproto
 		photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
 			Id:          base.NextSnowflakeId(),
 			HasStickers: len(uploadedPhoto.GetStickers()) > 0,
-			AccessHash:  photoModel.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+			AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 			Date:        now,
 			Sizes:       sizes,
 		}}
@@ -82,8 +84,8 @@ func makeOutboxMessageBySendMedia(fromId int32, peer *base.PeerUtil, request *mt
 }
 
 func makeUpdateNewMessageUpdates(selfUserId int32, message *mtproto.Message) *mtproto.TLUpdates {
-	userIdList, _, _ := model.PickAllIDListByMessages([]*mtproto.Message{message})
-	userList := model.GetUserModel().GetUsersBySelfAndIDList(selfUserId, userIdList)
+	userIdList, _, _ := message2.PickAllIDListByMessages([]*mtproto.Message{message})
+	userList := user.GetUsersBySelfAndIDList(selfUserId, userIdList)
 	updateNew := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
 		Message_1: message,
 	}}
@@ -93,6 +95,7 @@ func makeUpdateNewMessageUpdates(selfUserId int32, message *mtproto.Message) *mt
 		Date:    int32(time.Now().Unix()),
 		Seq:     0,
 	}}
+
 }
 
 // TODO(@benqi): check error
@@ -153,7 +156,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	// 发件箱
 	// sendMessageToOutbox
 	outbox := makeOutboxMessageBySendMedia(md.UserId, peer, request)
-	messageId, dialogMessageId := model.GetMessageModel().SendMessageToOutbox(md.UserId, peer, request.GetRandomId(), outbox.To_Message())
+	messageId, dialogMessageId := message2.SendMessageToOutbox(md.UserId, peer, request.GetRandomId(), outbox.To_Message())
 
 	syncUpdates := makeUpdateNewMessageUpdates(md.UserId, outbox.To_Message())
 	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
@@ -171,12 +174,12 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	reply.SetUpdates(updateList)
 
 	// 更新会话
-	model.GetDialogModel().CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, request.GetClearDraft())
+	user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, request.GetClearDraft())
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 收件箱
 	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
-		inBoxes, _ := model.GetMessageModel().SendMessageToInbox(md.UserId, peer, request.GetRandomId(), dialogMessageId, outbox.To_Message())
+		inBoxes, _ := message2.SendMessageToInbox(md.UserId, peer, request.GetRandomId(), dialogMessageId, outbox.To_Message())
 		for i := 0; i < len(inBoxes.UserIds); i++ {
 			syncUpdates = makeUpdateNewMessageUpdates(inBoxes.UserIds[i], inBoxes.Messages[i])
 			sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes.UserIds[i], syncUpdates.To_Updates())

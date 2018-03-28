@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/app"
 	"github.com/golang/glog"
 	"fmt"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/grpc_util"
 )
 

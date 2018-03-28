@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // account.updateUsername#3e0bdd7c username:string = User;
@@ -39,7 +39,7 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 		// panic()
 	}
 
-	user := model.GetUserModel().GetUser(md.UserId)
+	user := user2.GetUser(md.UserId)
 	// TODO(@benqi): Delivery updateUserName updates
 
 	glog.Infof("AccountReportPeer - reply: %s", logger.JsonDebugData(user))

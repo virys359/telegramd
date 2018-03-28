@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/dal/dao"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // contacts.getContacts#c023849f hash:int = contacts.Contacts;
@@ -47,7 +47,7 @@ func (s *ContactsServiceImpl) ContactsGetContacts(ctx context.Context, request *
 		userIdList = append(userIdList, contact.GetUserId())
 	}
 
-	users := model.GetUserModel().GetUserList(userIdList)
+	users := user.GetUserList(userIdList)
 	for _, u := range users {
 		if u.GetId() == md.UserId {
 			u.SetSelf(true)

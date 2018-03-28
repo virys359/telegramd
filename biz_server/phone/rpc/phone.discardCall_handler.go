@@ -23,8 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
 )
 
 /*
@@ -56,7 +57,7 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	// TODO(@benqi): notify relay_server's connection_id
 
 	participantIds := []int32{callSession.adminId, callSession.participantId}
-	users := model.GetUserModel().GetUserList(participantIds)
+	users := user.GetUserList(participantIds)
 
 	// delivey
 	updates := mtproto.NewTLUpdates()
@@ -75,7 +76,7 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	}
 
 	// TODO(@benqi): seq
-	seq := int32(model.GetSequenceModel().NextSeqId(base.Int32ToString(callSession.adminId)))
+	seq := int32(updates2.NextSeqId(base.Int32ToString(callSession.adminId)))
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 

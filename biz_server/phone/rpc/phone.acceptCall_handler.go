@@ -24,8 +24,9 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/biz_model/model"
 	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
 )
 
 /*
@@ -103,7 +104,7 @@ func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto
 	updates.Data2.Updates = append(updates.Data2.Updates, updatePhoneCall.To_Update())
 
 	participantIds := []int32{callSession.adminId, callSession.participantId}
-	users := model.GetUserModel().GetUserList(participantIds)
+	users := user.GetUserList(participantIds)
 	for _, u := range users {
 		if u.GetId() == md.UserId {
 			u.SetSelf(false)
@@ -114,7 +115,7 @@ func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto
 		updates.Data2.Users = append(updates.Data2.Users, u.To_User())
 	}
 
-	seq := int32(model.GetSequenceModel().NextSeqId(base.Int32ToString(callSession.adminId)))
+	seq := int32(updates2.NextSeqId(base.Int32ToString(callSession.adminId)))
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 

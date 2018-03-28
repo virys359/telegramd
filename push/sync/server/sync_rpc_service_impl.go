@@ -18,7 +18,7 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"sync"
@@ -27,6 +27,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/base"
 	"time"
 	"fmt"
+	updates3 "github.com/nebulaim/telegramd/biz/core/updates"
 )
 
 type SyncServiceImpl struct {
@@ -48,11 +49,11 @@ func NewSyncService(sync2 *syncServer) *SyncServiceImpl {
 // 推送给该用户所有设备
 
 func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState, updates *mtproto.UpdatesRequest) {
-	statusList, _ := model.GetOnlineStatusModel().GetOnlineByUserId(updates.GetPushUserId())
-	ss := make(map[int32][]*model.SessionStatus)
+	statusList, _ := user.GetOnlineByUserId(updates.GetPushUserId())
+	ss := make(map[int32][]*user.SessionStatus)
 	for _, status := range statusList {
 		if _, ok := ss[status.ServerId]; !ok {
-			ss[status.ServerId] = []*model.SessionStatus{}
+			ss[status.ServerId] = []*user.SessionStatus{}
 		}
 		ss[status.ServerId] = append(ss[status.ServerId], status)
 	}
@@ -185,18 +186,18 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 	switch updates.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_updateShortMessage:
 		shortMessage := updates.To_UpdateShortMessage()
-		pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(pushUserId)))
+		pts = int32(updates3.NextPtsId(base.Int32ToString(pushUserId)))
 		ptsCount = 1
 		shortMessage.SetPts(pts)
 		shortMessage.SetPtsCount(ptsCount)
-		model.GetUpdatesModel().AddToPtsQueue(pushUserId, pts, ptsCount, updateShortToUpdateNewMessage(pushUserId, shortMessage))
+		updates3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortToUpdateNewMessage(pushUserId, shortMessage))
 	case mtproto.TLConstructor_CRC32_updateShortChatMessage:
 		shortMessage := updates.To_UpdateShortChatMessage()
-		pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(pushUserId)))
+		pts = int32(updates3.NextPtsId(base.Int32ToString(pushUserId)))
 		ptsCount = 1
 		shortMessage.SetPts(pts)
 		shortMessage.SetPtsCount(ptsCount)
-		model.GetUpdatesModel().AddToPtsQueue(pushUserId, pts, ptsCount, updateShortChatToUpdateNewMessage(pushUserId, shortMessage))
+		updates3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortChatToUpdateNewMessage(pushUserId, shortMessage))
 	case mtproto.TLConstructor_CRC32_updateShort:
 		short := updates.To_UpdateShort()
 		short.SetDate(date)
@@ -213,14 +214,14 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 				 mtproto.TLConstructor_CRC32_updateReadMessagesContents,
 				 mtproto.TLConstructor_CRC32_updateEditMessage:
 
-				pts = int32(model.GetSequenceModel().NextPtsId(base.Int32ToString(pushUserId)))
+				pts = int32(updates3.NextPtsId(base.Int32ToString(pushUserId)))
 				ptsCount = 1
 				totalPtsCount += 1
 
 				// @benqi: 以上都有Pts和PtsCount
 				update.Data2.Pts = pts
 				update.Data2.PtsCount = ptsCount
-				model.GetUpdatesModel().AddToPtsQueue(pushUserId, pts, ptsCount, update)
+				updates3.AddToPtsQueue(pushUserId, pts, ptsCount, update)
 			}
 		}
 

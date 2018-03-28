@@ -23,8 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
 	"math"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/message"
 )
 
 // android client request source code
@@ -116,13 +117,13 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 		}
 	 */
 
- 	dialogs := model.GetDialogModel().GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
+ 	dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
 	glog.Infof("dialogs - {%v}", dialogs)
 
-	messageIdList, userIdList, _, _ := model.PickAllIDListByDialogs(dialogs)
+	messageIdList, userIdList, _, _ := message.PickAllIDListByDialogs(dialogs)
 
-	messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
-	users := model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, userIdList)
+	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
+	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
 
 	messageDialogs := mtproto.TLMessagesDialogs{Data2: &mtproto.Messages_Dialogs_Data{
 		Dialogs:  dialogs,

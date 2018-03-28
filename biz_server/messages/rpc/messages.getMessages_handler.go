@@ -23,7 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 // messages.getMessages#4222fa74 id:Vector<int> = messages.Messages;
@@ -31,10 +33,10 @@ func (s *MessagesServiceImpl) MessagesGetMessages(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.getMessages#4222fa74 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, request.Id)
-	userIdList, chatIdList, _ := model.PickAllIDListByMessages(messages)
-	userList := model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, userIdList)
-	chatList := model.GetChatModel().GetChatListByIDList(chatIdList)
+	messages :=message.GetMessagesByPeerAndMessageIdList2(md.UserId, request.Id)
+	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
+	userList := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+	chatList := chat.GetChatListByIDList(chatIdList)
 
 	messagesMessages := &mtproto.TLMessagesMessages{Data2: &mtproto.Messages_Messages_Data{
 		Messages: messages,

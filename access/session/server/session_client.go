@@ -22,9 +22,8 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"time"
-	"github.com/nebulaim/telegramd/biz_model/model"
-	// "github.com/nebulaim/telegramd/zproto"
 	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 type sessionClient struct {
@@ -277,7 +276,11 @@ func (c *sessionClient) onRpcDropAnswer(md *mtproto.ZProtoMetadata, msgId int64,
 	rpcDropAnswer, _ := request.(*mtproto.TLRpcDropAnswer)
 	glog.Info("processRpcDropAnswer - request data: ", rpcDropAnswer.String())
 
+	rpcAnswer := &mtproto.RpcDropAnswer{Data2: &mtproto.RpcDropAnswer_Data{
+	}}
 	// TODO(@benqi): 实现rpcDropAnswer处理逻辑
+	c.sendMessageList = append(c.sendMessageList, &messageData{false, false, rpcAnswer})
+
 	return
 	// return nil
 }
@@ -370,7 +373,7 @@ func (c *sessionClient) onUserOnline(serverId int32) {
 		}
 	}()
 
-	status := &model.SessionStatus{
+	status := &user.SessionStatus{
 		ServerId:        serverId,
 		UserId:          c.authUserId,
 		AuthKeyId:       c.authKeyId,
@@ -379,6 +382,6 @@ func (c *sessionClient) onUserOnline(serverId int32) {
 		Now:             time.Now().Unix(),
 	}
 
-	model.GetOnlineStatusModel().SetOnline(status)
+	user.SetOnline(status)
 }
 

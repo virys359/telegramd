@@ -18,116 +18,86 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/chat"
+	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
+
+func makeUpdatesByChatMessage(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *updates2.UpdatesLogic {
+	updates := updates2.NewUpdatesLogic(selfUserId)
+	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
+	}}
+	updates.AddUpdate(updateChatParticipants.To_Update())
+	updates.AddUpdateNewMessage(box.Message)
+	updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
+	return updates
+}
+
+func makeUpdatesByChatMessageAndMessageId(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *updates2.UpdatesLogic {
+	updates := updates2.NewUpdatesLogic(selfUserId)
+	updates.AddUpdateMessageId(box.MessageId, box.RandomId)
+	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
+	}}
+	updates.AddUpdate(updateChatParticipants.To_Update())
+	updates.AddUpdateNewMessage(box.Message)
+	updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
+	return updates
+}
 
 // messages.addChatUser#f9a0aa09 chat_id:int user_id:InputUser fwd_limit:int = Updates;
 func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *mtproto.TLMessagesAddChatUser) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesAddChatUser - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	//// TODO(@benqi): Impl MessagesAddChatUser logic
-	//chat := model.GetChatModel().GetChat(request.ChatId)
-	//participants := model.GetChatModel().GetChatParticipants(chat.Id)
-	//var addChatUserId int32
-	//// peer := base.fr(request.UserId)
-	//switch request.UserId.Payload.(type) {
-	//case *mtproto.InputUser_InputUser:
-	//	addChatUserId = request.GetUserId().GetInputUser().GetUserId()
-	//case *mtproto.InputUser_InputUserSelf:
-	//	addChatUserId = md.UserId
-	//case *mtproto.InputUser_InputUserEmpty:
-	//	panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid"))
-	//}
-	//addChatParticipant := &mtproto.TLChatParticipant{}
-	//addChatParticipant.UserId = addChatUserId
-	//addChatParticipant.InviterId = md.UserId
-	//addChatParticipant.Date = int32(time.Now().Unix())
-	//model.GetChatModel().AddChatParticipant(chat.Id, addChatParticipant.UserId, addChatParticipant.UserId, 0)
-	//dao.GetChatsDAO(dao.DB_MASTER).UpdateParticipantCount(chat.ParticipantsCount+1, chat.Version+1, chat.Id)
-	//chat.ParticipantsCount += 1
-	//chat.Version += 1
-	//participants.Version = chat.Version
-	//// participantUsers := participants.GetParticipants()
-	//participants.Participants = append(participants.Participants, addChatParticipant.ToChatParticipant())
-	//chatUserIdList := mtproto.GetUserIdListByChatParticipants(participants)
-	//peer := &base.PeerUtil{}
-	//peer.PeerType = base.PEER_CHAT
-	//peer.PeerId = chat.Id
-	//messageService := &mtproto.TLMessageService{}
-	//messageService.Out = true
-	//messageService.Date = chat.Date
-	//messageService.FromId = md.UserId
-	//messageService.ToId = peer.ToPeer()
-	//// mtproto.MakePeer(&mtproto.TLPeerChat{chat.Id})
-	//action := &mtproto.TLMessageActionChatAddUser {}
-	//action.Users = append(action.Users, addChatUserId)
-	//messageService.Action = action.ToMessageAction()
-	//messageServiceId := model.GetMessageModel().CreateHistoryMessageService(md.UserId, peer, md.ClientMsgId, messageService)
-	//messageService.Id = int32(messageServiceId)
-	//users := model.GetUserModel().GetUserList(chatUserIdList)
-	//updateUsers := make([]*mtproto.User, 0, len(users))
-	//for _, u := range users {
-	//	u.Self = true
-	//	updates := &mtproto.TLUpdates{}
-	//	// 2. MessageBoxes
-	//	pts := model.GetMessageModel().CreateMessageBoxes(u.Id, md.UserId, peer.PeerType, peer.PeerId, false, messageServiceId)
-	//	// 3. dialog
-	//	model.GetDialogModel().CreateOrUpdateByLastMessage(u.Id, peer.PeerType, peer.PeerId, messageServiceId, false)
-	//	if u.GetId() == md.UserId {
-	//		updateMessageID := &mtproto.TLUpdateMessageID{}
-	//		updateMessageID.Id = int32(messageServiceId)
-	//		updateMessageID.RandomId = md.ClientMsgId
-	//		updates.Updates = append(updates.Updates, updateMessageID.ToUpdate())
-	//		updates.Seq = 0
-	//	} else {
-	//		// TODO(@benqi): seq++
-	//		updates.Seq = 0
-	//	}
-	//	updateChatParticipants := &mtproto.TLUpdateChatParticipants{}
-	//	updateChatParticipants.Participants = participants.ToChatParticipants()
-	//	updates.Updates = append(updates.Updates, updateChatParticipants.ToUpdate())
-	//	updateNewMessage := &mtproto.TLUpdateNewMessage{}
-	//	updateNewMessage.Pts = pts
-	//	updateNewMessage.PtsCount = 1
-	//	updateNewMessage.Message = messageService.ToMessage()
-	//	updates.Updates = append(updates.Updates, updateNewMessage.ToUpdate())
-	//	updates.Users = updateUsers
-	//	updates.Date = chat.Date
-	//	if u.Id == md.UserId {
-	//		// TODO(@benqi): Delete me
-	//		updates.Chats = append(updates.Chats, chat.ToChat())
-	//		reply = updates.ToUpdates()
-	//		delivery2.GetDeliveryInstance().DeliveryUpdatesNotMe(
-	//			md.AuthId,
-	//			md.SessionId,
-	//			md.NetlibSessionId,
-	//			[]int32{u.Id},
-	//			updates.ToUpdates().Encode())
-	//	} else {
-	//		updates.Chats = append(updates.Chats, chat.ToChat())
-	//		delivery2.GetDeliveryInstance().DeliveryUpdates(
-	//			md.AuthId,
-	//			md.SessionId,
-	//			md.NetlibSessionId,
-	//			[]int32{u.Id},
-	//			updates.ToUpdates().Encode())
-	//	}
-	//	u.Self = false
-	//}
-	//for _, u := range users {
-	//	// updates := &mtproto.TLUpdates{}
-	//	if u.Id == md.UserId {
-	//		u.Self = true
-	//	}
-	//	updateUsers = append(updateUsers, u.ToUser())
-	//}
-	//glog.Infof("MessagesAddChatUser - reply: {%v}", reply)
-	//return
-	return nil, fmt.Errorf("Not impl MessagesAddChatUser")
+	var (
+		addChatUserId int32
+	)
+
+	switch request.GetUserId().GetConstructor() {
+	case mtproto.TLConstructor_CRC32_inputUserEmpty:
+	case mtproto.TLConstructor_CRC32_inputUserSelf:
+	case mtproto.TLConstructor_CRC32_inputUser:
+		addChatUserId = request.GetUserId().GetData2().GetUserId()
+	}
+
+	chatLogic := chat.NewChatLogicById(request.GetChatId())
+	chatLogic.AddChatUser(md.UserId, addChatUserId)
+
+	peer := &base.PeerUtil{
+		PeerType: base.PEER_CHAT,
+		PeerId: chatLogic.Chat.GetId(),
+	}
+
+	addUserMessage := chatLogic.MakeAddUserMessage(md.UserId, addChatUserId)
+	randomId := base.NextSnowflakeId()
+	outbox := message.InsertMessageToOutbox(md.UserId, peer, randomId, addUserMessage)
+	// TODO(@benqi): update dialog
+
+	syncUpdates := makeUpdatesByChatMessage(chatLogic, md.UserId, outbox)
+	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
+
+	replyUpdates := makeUpdatesByChatMessageAndMessageId(chatLogic, md.UserId, outbox)
+	// replyUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
+	replyUpdates.SetupState(state)
+	// reply := syncUpdates.ToUpdates()
+
+	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer)
+	for _, inbox := range inboxList {
+		// TODO(@benqi): update dialog
+		pushUpdates := makeUpdatesByChatMessage(chatLogic, inbox.UserId, inbox)
+		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, pushUpdates.ToUpdates())
+	}
+
+	glog.Infof("messages.createChat#9cb126e - reply: {%v}", replyUpdates)
+	return replyUpdates.ToUpdates(), nil
 }

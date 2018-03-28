@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/model"
-	"github.com/nebulaim/telegramd/biz_model/base"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
@@ -34,7 +34,7 @@ func (s *AccountServiceImpl) AccountResetNotifySettings(ctx context.Context, req
 	glog.Infof("AccountResetNotifySettings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl AccountResetNotifySettings logic
-	model.GetAccountModel().ResetNotifySettings(md.UserId)
+	account.ResetNotifySettings(md.UserId)
 	peer := &base.PeerUtil{}
 	peer.PeerType = base.PEER_ALL
 	update := mtproto.NewTLUpdateNotifySettings()

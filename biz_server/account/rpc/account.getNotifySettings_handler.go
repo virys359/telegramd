@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz_model/base"
-	"github.com/nebulaim/telegramd/biz_model/model"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.getNotifySettings#12b3ad31 peer:InputNotifyPeer = PeerNotifySettings;
@@ -34,7 +34,7 @@ func (s *AccountServiceImpl) AccountGetNotifySettings(ctx context.Context, reque
 
 	// TODO(@benqi): Impl AccountGetNotifySettings logic
 	peer := base.FromInputNotifyPeer(request.GetPeer())
-	reply := model.GetAccountModel().GetNotifySettings(md.UserId, peer)
+	reply := account.GetNotifySettings(md.UserId, peer)
 
 	glog.Infof("AccountReportPeer - reply: %s", logger.JsonDebugData(reply))
 	return reply, nil

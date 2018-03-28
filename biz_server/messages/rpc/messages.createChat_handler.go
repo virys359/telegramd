@@ -18,52 +18,181 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	// "time"
+	"github.com/nebulaim/telegramd/biz/core/chat"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/updates"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
+
+
+type createChatUpdates mtproto.TLUpdates
+
+func makeCreateChatUpdates() *createChatUpdates {
+	return nil
+}
+
+//func (this *createChatUpdates) addChat() {
+//}
+
+func (this *createChatUpdates) addChat() {
+}
+
+// sync: updateMessageId
+// createChatMessageService
+// participants
+// users
+// chats
+//func makeCreateChatUpdates(selfUserId int32, participants *mtproto.ChatParticipants, message *mtproto.Message) *mtproto.TLUpdates {
+//	userIdList, _, _ := model.PickAllIDListByMessages([]*mtproto.Message{message})
+//	userList := model.GetUserModel().GetUsersBySelfAndIDList(selfUserId, userIdList)
+//	updateNew := &mtproto.TLUpdateEditMessage{Data2: &mtproto.Update_Data{
+//		Message_1: message,
+//	}}
+//
+//	return &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+//		Updates: []*mtproto.Update{updateNew.To_Update()},
+//		Users:   userList,
+//		Date:    int32(time.Now().Unix()),
+//		Seq:     0,
+//	}}
+//}
+
+//type messagesCreateChatHandler struct {
+//	md      *grpc_util.RpcMetadata
+//	request *mtproto.TLMessagesCreateChat
+//	result  *mtproto.Updates
+//	err     error
+//}
+//
+//func (h *messagesCreateChatHandler) onPreInit() bool {
+//	return true
+//}
+//
+//func (h *messagesCreateChatHandler) onExecute() bool {
+//	return true
+//}
+//
+//func (h *messagesCreateChatHandler) onPost() bool {
+//	return true
+//}
 
 // messages.createChat#9cb126e users:Vector<InputUser> title:string = Updates;
 func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *mtproto.TLMessagesCreateChat) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesCreateChat - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.createChat#9cb126e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+	// logic.NewChatLogicByCreateChat()
 	//// TODO(@benqi): Impl MessagesCreateChat logic
 	//randomId := md.ClientMsgId
-	//chatUserIdList := make([]int32, 0, len(request.GetUsers())+1)
-	//// chatUserIdList = append(chatUserIdList, md.UserId)
-	//for _, u := range request.Users {
-	//	switch u.Payload.(type) {
-	//	case *mtproto.InputUser_InputUserEmpty:
-	//		// TODO(@benqi): ignore??
-	//		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid"))
-	//	case *mtproto.InputUser_InputUserSelf:
-	//		chatUserIdList = append(chatUserIdList, md.UserId)
-	//	case *mtproto.InputUser_InputUser:
-	//		chatUserIdList = append(chatUserIdList, u.GetInputUser().UserId)
-	//	}
+
+	chatUserIdList := make([]int32, 0, len(request.GetUsers()))
+	chatUserIdList = append(chatUserIdList, md.UserId)
+	for _, u := range request.GetUsers() {
+		switch u.GetConstructor() {
+		case mtproto.TLConstructor_CRC32_inputUser:
+			chatUserIdList = append(chatUserIdList, u.GetData2().GetUserId())
+		default:
+			// TODO(@benqi): chatUser不能是inputUser和inputUserSelf
+			return nil, mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid")
+		}
+	}
+
+	chat := chat.NewChatLogicByCreateChat(md.UserId, chatUserIdList, request.GetTitle())
+
+	peer := &base.PeerUtil{
+		PeerType: base.PEER_CHAT,
+		PeerId: chat.Chat.GetId(),
+	}
+
+	createChatMessage := chat.MakeCreateChatMessage(md.UserId)
+	randomId := base.NextSnowflakeId()
+	outbox := message.InsertMessageToOutbox(md.UserId, peer, randomId, createChatMessage)
+
+	syncUpdates := updates.NewUpdatesLogic(md.UserId)
+	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+		Participants: chat.GetChatParticipants().To_ChatParticipants(),
+	}}
+	syncUpdates.AddUpdate(updateChatParticipants.To_Update())
+	syncUpdates.AddUpdateNewMessage(createChatMessage)
+	syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+	syncUpdates.AddChat(chat.Chat.To_Chat())
+
+	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
+	syncUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
+	syncUpdates.SetupState(state)
+	reply := syncUpdates.ToUpdates()
+
+	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer)
+	for _, inbox := range inboxList {
+		updates := updates.NewUpdatesLogic(md.UserId)
+		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+			Participants: chat.GetChatParticipants().To_ChatParticipants(),
+		}}
+		updates.AddUpdate(updateChatParticipants.To_Update())
+		updates.AddUpdateNewMessage(inbox.Message)
+		updates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+		updates.AddChat(chat.Chat.To_Chat())
+		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
+	}
+
+	glog.Infof("messages.createChat#9cb126e - reply: {%v}", reply)
+	return reply, nil
+
+/*
+	// logic2.InsertMessageToOutbox()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	//createChatMessageList := chat.MakeCreateChatMessageList()
+	//model.GetMessageModel().SendMessageToOutbox(md.UserId, peer, 0, createChatMessageList[0].Message)
+	//
+	//chat, _ := model.GetChatModel().CreateChat(md.UserId, request.Title, chatUserIdList, md.ClientMsgId)
+	//
+	//peer := &base.PeerUtil{
+	//	PeerType: base.PEER_CHAT,
+	//	PeerId:   chat.GetId(),
 	//}
-	//chat, participants := model.GetChatModel().CreateChat(md.UserId, request.Title, chatUserIdList, md.ClientMsgId)
-	//chatUserIdList = append(chatUserIdList, md.UserId)
-	//peer := &base.PeerUtil{}
-	//peer.PeerType = base.PEER_CHAT
-	//peer.PeerId = chat.Id
-	//messageService := &mtproto.TLMessageService{}
+
+	// mtproto.MakePeer(&mtproto.TLPeerChat{chat.Id})
+	action := &mtproto.TLMessageActionChatCreate{Data2: &mtproto.MessageAction_Data{
+		Title: request.GetTitle(),
+		Users: chatUserIdList,
+	}}
+
+	messageService := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
+		Out: true,
+		Date: chat.GetDate(),
+		FromId: md.UserId,
+		ToId: peer.ToPeer(),
+		Action: action.To_MessageAction(),
+	}}
+
+	createChatMessageId, _ := model.GetMessageModel().SendMessageToOutbox(md.UserId, peer, 0, messageService.To_Message())
+	messageService.SetId(createChatMessageId)
+
 	//messageService.Out = true
 	//messageService.Date = chat.Date
 	//messageService.FromId = md.UserId
 	//messageService.ToId = peer.ToPeer()
-	//// mtproto.MakePeer(&mtproto.TLPeerChat{chat.Id})
-	//action := &mtproto.TLMessageActionChatCreate{}
-	//action.Title = request.Title
-	//action.Users = chatUserIdList
-	//messageService.Action = action.ToMessageAction()
+	//
 	//messageServiceId := model.GetMessageModel().CreateHistoryMessageService(md.UserId, peer, md.ClientMsgId, messageService)
 	//messageService.Id = int32(messageServiceId)
-	//users := model.GetUserModel().GetUserList(chatUserIdList)
+	_ = model.GetUserModel().GetUsersBySelfAndIDList(md.UserId, chatUserIdList)
+
+	// sync
+	// update dialog
+
+	// 遍历所有参与者，创建服务消息并推送
+
 	//updateUsers := make([]*mtproto.User, 0, len(users))
 	//for _, u := range users {
 	//	u.Self = true
@@ -118,7 +247,8 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 	//	}
 	//	updateUsers = append(updateUsers, u.ToUser())
 	//}
-	//glog.Infof("MessagesCreateChat - reply: {%v}", reply)
+	//glog.Infof("messages.createChat#9cb126e - reply: {%v}", reply)
 	//return
 	return nil, fmt.Errorf("Not impl MessagesCreateChat")
+ */
 }
