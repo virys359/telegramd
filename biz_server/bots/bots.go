@@ -17,8 +17,8 @@
 
 package main
 
-import "github.com/nebulaim/telegramd/biz_server/bots/rpc"
+// import "github.com/nebulaim/telegramd/biz_server/bots/rpc"
 
 func main()  {
-	rpc.DoMainServer()
+	// rpc.DoMainServer()
 }

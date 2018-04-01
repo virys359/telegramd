@@ -26,7 +26,7 @@ import (
 	"net"
 	"time"
 	"github.com/golang/glog"
-	net2 "github.com/nebulaim/telegramd/net"
+	net2 "github.com/nebulaim/telegramd/baselib/net2"
 	"bufio"
 	"sync"
 	"os"

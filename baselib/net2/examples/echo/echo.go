@@ -95,7 +95,7 @@ func (c* EchoClient) OnClientClosed(client *net2.TcpClient) {
 	glog.Infof("OnConnectionClosed")
 }
 
-func (c* EchoClient) OnTimer(client *net2.TcpClient) {
+func (c* EchoClient) OnClientTimer(client *net2.TcpClient) {
 	glog.Infof("OnTimer")
 }
 

@@ -15,24 +15,29 @@
  * limitations under the License.
  */
 
-package rpc
+syntax = "proto3";
 
-import (
-	"flag"
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/mtproto"
-	"google.golang.org/grpc"
-	"net"
-)
+option java_multiple_files = true;
+option java_package = "com.nebulaim.zproto";
+option java_outer_classname = "ZProtoChatTest";
+option optimize_for = CODE_SIZE;
 
-func DoMainServer() {
-	flag.Parse()
-	lis, err := net.Listen("tcp", "localhost:10001")
-	if err != nil {
-		glog.Fatalf("failed to listen: %v", err)
-	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
-	mtproto.RegisterRPCUpdatesServer(grpcServer, &UpdatesServiceImpl{})
-	grpcServer.Serve(lis)
+package zproto;
+
+// Interface exported by the server.
+service ChatTest {
+    rpc Connect(ChatSession) returns (stream ChatMessage);
+    rpc SendChat(ChatMessage) returns (VoidRsp2);
+}
+
+message ChatMessage {
+    string sender_session_id = 1;
+    string message_data = 3;
+}
+
+message ChatSession {
+    string session_id = 1;
+}
+
+message VoidRsp2 {
 }

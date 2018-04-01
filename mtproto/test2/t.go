@@ -26,8 +26,6 @@ import (
 	"errors"
 	"crypto/rand"
 	"math/big"
-	"crypto/sha1"
-	"encoding/hex"
 )
 
 type Message interface {
@@ -310,43 +308,43 @@ func main()  {
  */
 
 
-	rsa := mtproto.NewRSACryptor()
-
-	var PQ = string([]byte{0x17, 0xED, 0x48, 0x94, 0x1A, 0x08, 0xF9, 0x81})
-	var P = string([]byte{0x49, 0x4C, 0x55, 0x3B})
-	var Q = string([]byte{0x53, 0x91, 0x10, 0x73})
-
-	pqInnerData := &mtproto.TLPQInnerData{}
-	pqInnerData.Nonce = mtproto.GenerateNonce(16)
-	pqInnerData.ServerNonce = mtproto.GenerateNonce(16)
-	pqInnerData.NewNonce = mtproto.GenerateNonce(32)
-	pqInnerData.P = P
-	pqInnerData.Q = Q
-	pqInnerData.Pq = PQ
-	fmt.Println(pqInnerData)
-
-	b := pqInnerData.Encode()
-	sha1_b := sha1.Sum(b)
-
-	b = append(sha1_b[:],b...)
-	fmt.Println(hex.EncodeToString(b))
-
-	e_b := rsa.Encrypt(b)
-	fmt.Println(hex.EncodeToString(e_b))
-
-	d_b := rsa.Decrypt(e_b)
-	fmt.Println(hex.EncodeToString(d_b))
-
-	dPQInnerData := &mtproto.TLPQInnerData{}
-	dbuf := mtproto.NewDecodeBuf(d_b[24:])
-	// dbuf.Int()
-	err := dPQInnerData.Decode(dbuf)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println(dPQInnerData)
+	//rsa := mtproto.NewRSACryptor()
+	//
+	//var PQ = string([]byte{0x17, 0xED, 0x48, 0x94, 0x1A, 0x08, 0xF9, 0x81})
+	//var P = string([]byte{0x49, 0x4C, 0x55, 0x3B})
+	//var Q = string([]byte{0x53, 0x91, 0x10, 0x73})
+	//
+	//pqInnerData := &mtproto.TLPQInnerData{}
+	//pqInnerData.Nonce = mtproto.GenerateNonce(16)
+	//pqInnerData.ServerNonce = mtproto.GenerateNonce(16)
+	//pqInnerData.NewNonce = mtproto.GenerateNonce(32)
+	//pqInnerData.P = P
+	//pqInnerData.Q = Q
+	//pqInnerData.Pq = PQ
+	//fmt.Println(pqInnerData)
+	//
+	//b := pqInnerData.Encode()
+	//sha1_b := sha1.Sum(b)
+	//
+	//b = append(sha1_b[:],b...)
+	//fmt.Println(hex.EncodeToString(b))
+	//
+	//e_b := rsa.Encrypt(b)
+	//fmt.Println(hex.EncodeToString(e_b))
+	//
+	//d_b := rsa.Decrypt(e_b)
+	//fmt.Println(hex.EncodeToString(d_b))
+	//
+	//dPQInnerData := &mtproto.TLPQInnerData{}
+	//dbuf := mtproto.NewDecodeBuf(d_b[24:])
+	//// dbuf.Int()
+	//err := dPQInnerData.Decode(dbuf)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	//
+	//fmt.Println(dPQInnerData)
 
 	// pqInnerData.
 	// mtproto.TLServer_DHInnerData{}

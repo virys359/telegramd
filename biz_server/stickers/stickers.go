@@ -17,8 +17,8 @@
 
 package main
 
-import "github.com/nebulaim/telegramd/biz_server/stickers/rpc"
+// import "github.com/nebulaim/telegramd/biz_server/stickers/rpc"
 
 func main()  {
-	rpc.DoMainServer()
+	// rpc.DoMainServer()
 }

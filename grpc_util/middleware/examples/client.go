@@ -20,11 +20,11 @@ package main
 import (
 	"time"
 	"fmt"
-	"github.com/nebulaim/telegramd/zproto"
+	"github.com/nebulaim/telegramd/grpc_util/middleware/examples/zproto"
 	"io"
 	"math/rand"
 	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/base/base"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"context"
 )
 
