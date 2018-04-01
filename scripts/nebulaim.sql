@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-03-17 15:52:48
+-- Generation Time: 2018-04-01 14:03:56
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -145,13 +145,18 @@ CREATE TABLE `auth_op_logs` (
 --
 
 CREATE TABLE `auth_phone_transactions` (
-  `id` int(11) NOT NULL,
+  `id` bigint(20) NOT NULL,
+  `auth_key_id` bigint(20) NOT NULL,
+  `phone_number` varchar(32) NOT NULL,
+  `code` varchar(8) NOT NULL,
+  `code_expired` int(11) NOT NULL DEFAULT '0',
   `transaction_hash` varchar(255) NOT NULL,
+  `sent_code_type` tinyint(4) NOT NULL DEFAULT '0',
+  `flash_call_pattern` varchar(64) NOT NULL DEFAULT '',
+  `next_code_type` tinyint(4) NOT NULL DEFAULT '0',
+  `state` tinyint(4) NOT NULL DEFAULT '0',
   `api_id` int(11) NOT NULL,
   `api_hash` varchar(255) NOT NULL,
-  `phone_number` varchar(32) NOT NULL,
-  `auth_key_id` bigint(20) NOT NULL,
-  `code` varchar(8) NOT NULL,
   `attempts` int(11) NOT NULL DEFAULT '0',
   `created_time` bigint(20) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -561,7 +566,7 @@ CREATE TABLE `users` (
   `last_name` varchar(255) NOT NULL DEFAULT '',
   `username` varchar(255) NOT NULL,
   `phone` varchar(32) NOT NULL,
-  `country_code` varchar(2) NOT NULL,
+  `country_code` varchar(3) NOT NULL,
   `bio` varchar(255) NOT NULL,
   `about` varchar(512) NOT NULL DEFAULT '',
   `state` int(11) NOT NULL DEFAULT '0',
@@ -586,9 +591,13 @@ CREATE TABLE `user_contacts` (
   `id` int(11) NOT NULL,
   `owner_user_id` int(11) NOT NULL,
   `contact_user_id` int(11) NOT NULL,
+  `contact_phone` varchar(32) NOT NULL DEFAULT '',
+  `contact_first_name` varchar(255) NOT NULL DEFAULT '',
+  `contact_last_name` varchar(255) NOT NULL DEFAULT '',
+  `mutual` tinyint(4) NOT NULL DEFAULT '0',
   `is_blocked` tinyint(1) NOT NULL DEFAULT '0',
-  `date2` int(11) NOT NULL,
   `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -627,21 +636,17 @@ CREATE TABLE `user_dialogs` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `user_imported_contacts`
+-- 表的结构 `user_import_contacts`
 --
 
-CREATE TABLE `user_imported_contacts` (
-  `id` int(11) NOT NULL,
+CREATE TABLE `user_import_contacts` (
+  `id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL,
-  `client_id` bigint(20) NOT NULL,
-  `phone` varchar(255) NOT NULL,
-  `first_name` varchar(255) NOT NULL,
-  `last_name` varchar(255) NOT NULL,
-  `state` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='手机通信录';
+  `contact_phone` varchar(32) NOT NULL,
+  `contact_first_name` varchar(64) NOT NULL DEFAULT '',
+  `contact_last_name` varchar(64) NOT NULL DEFAULT '',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -940,7 +945,8 @@ ALTER TABLE `users`
 --
 ALTER TABLE `user_contacts`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `owner_user_id` (`owner_user_id`,`contact_user_id`);
+  ADD UNIQUE KEY `owner_user_id_2` (`owner_user_id`,`contact_phone`),
+  ADD KEY `owner_user_id` (`owner_user_id`,`contact_user_id`);
 
 --
 -- Indexes for table `user_dialogs`
@@ -950,10 +956,11 @@ ALTER TABLE `user_dialogs`
   ADD UNIQUE KEY `user_id` (`user_id`,`peer_type`,`peer_id`);
 
 --
--- Indexes for table `user_imported_contacts`
+-- Indexes for table `user_import_contacts`
 --
-ALTER TABLE `user_imported_contacts`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `user_import_contacts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`,`contact_phone`);
 
 --
 -- Indexes for table `user_notify_settings`
@@ -1021,7 +1028,7 @@ ALTER TABLE `auths`
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=209;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=216;
 
 --
 -- 使用表AUTO_INCREMENT `auth_op_logs`
@@ -1033,7 +1040,7 @@ ALTER TABLE `auth_op_logs`
 -- 使用表AUTO_INCREMENT `auth_phone_transactions`
 --
 ALTER TABLE `auth_phone_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- 使用表AUTO_INCREMENT `auth_salts`
@@ -1057,7 +1064,7 @@ ALTER TABLE `auth_updates_state`
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- 使用表AUTO_INCREMENT `banned`
@@ -1099,19 +1106,19 @@ ALTER TABLE `devices`
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=121;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
 
 --
 -- 使用表AUTO_INCREMENT `file_parts`
 --
 ALTER TABLE `file_parts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=353;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=354;
 
 --
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=249;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1165,13 +1172,13 @@ ALTER TABLE `user_contacts`
 -- 使用表AUTO_INCREMENT `user_dialogs`
 --
 ALTER TABLE `user_dialogs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- 使用表AUTO_INCREMENT `user_imported_contacts`
+-- 使用表AUTO_INCREMENT `user_import_contacts`
 --
-ALTER TABLE `user_imported_contacts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `user_import_contacts`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `user_notify_settings`
@@ -1195,7 +1202,7 @@ ALTER TABLE `user_privacys`
 -- 使用表AUTO_INCREMENT `user_pts_updates`
 --
 ALTER TABLE `user_pts_updates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=368;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- 使用表AUTO_INCREMENT `user_qts_updates`
