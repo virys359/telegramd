@@ -28,7 +28,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
-	"github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 //type InboxMessageList struct {
@@ -53,7 +53,7 @@ func InsertMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:fromId,
-		UserMessageBoxId: int32(updates.NextMessageBoxId(base2.Int32ToString(fromId))),
+		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(fromId))),
 		DialogMessageId: base.NextSnowflakeId(),
 		SenderUserId: fromId,
 		MessageBoxType: MESSAGE_BOX_TYPE_OUTGOING,
@@ -132,7 +132,7 @@ func (this *MessageBox) insertUserMessageToInbox(fromId int32, peer *base.PeerUt
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:peer.PeerId,
-		UserMessageBoxId: int32(updates.NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
+		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
 		DialogMessageId: this.DialogMessageId,
 		SenderUserId: this.UserId,
 		MessageBoxType: MESSAGE_BOX_TYPE_INCOMING,

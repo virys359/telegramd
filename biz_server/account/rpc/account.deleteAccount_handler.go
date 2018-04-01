@@ -27,6 +27,25 @@ import (
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 )
 
+/*
+  reset my account?
+  delete成功，转到注册页面，失败处理:
+
+	if (error.text.equals("2FA_RECENT_CONFIRM")) {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ResetAccountCancelledAlert", R.string.ResetAccountCancelledAlert));
+	} else if (error.text.startsWith("2FA_CONFIRM_WAIT_")) {
+		Bundle params = new Bundle();
+		params.putString("phoneFormated", requestPhone);
+		params.putString("phoneHash", phoneHash);
+		params.putString("code", phoneCode);
+		params.putInt("startTime", ConnectionsManager.getInstance().getCurrentTime());
+		params.putInt("waitTime", Utilities.parseInt(error.text.replace("2FA_CONFIRM_WAIT_", "")));
+		setPage(8, true, params, false);
+	} else {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+	}
+ */
+
 // account.deleteAccount#418d4e0b reason:string = Bool;
 func (s *AccountServiceImpl) AccountDeleteAccount(ctx context.Context, request *mtproto.TLAccountDeleteAccount) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

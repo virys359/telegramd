@@ -24,16 +24,40 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/auth"
 )
+
+/*
+ Android client auth.resendCode#3ef1a9bf, handler error
+	if (error.text != null) {
+		if (error.text.contains("PHONE_NUMBER_INVALID")) {
+			needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
+		} else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {
+			needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidCode", R.string.InvalidCode));
+		} else if (error.text.contains("PHONE_CODE_EXPIRED")) {
+			onBackPressed();
+			setPage(0, true, null, true);
+			needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("CodeExpired", R.string.CodeExpired));
+		} else if (error.text.startsWith("FLOOD_WAIT")) {
+			needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("FloodWait", R.string.FloodWait));
+		} else if (error.code != -1000) {
+			needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + "\n" + error.text);
+		}
+	}
+ */
 
 // auth.resendCode#3ef1a9bf phone_number:string phone_code_hash:string = auth.SentCode;
 func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.TLAuthResendCode) (*mtproto.Auth_SentCode, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AuthResendCode - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// 1. check number
+	// 1. check phone code
+	if request.PhoneCodeHash == "" {
+		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "auth.resendCode#3ef1a9bf: phone code hash empty.")
+		return nil, err
+	}
+
+	// 2. check number
 	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
 	phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
 	if err != nil {
@@ -41,49 +65,28 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 		return nil, err
 	}
 
+	// TODO(@benqi): PHONE_NUMBER_FLOOD
 	// <string name="PhoneNumberFlood">Sorry, you have deleted and re-created your account too many times recently.
 	//    Please wait for a few days before signing up again.</string>
 	//
-	banned := user.CheckBannedByPhoneNumber(phoneNumber)
+
+	// PHONE_NUMBER_BANNED: Banned phone number
+	banned := auth.CheckBannedByPhoneNumber(phoneNumber)
 	if !banned {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
 		return nil, err
 	}
 
-	code, err := auth.GetCodeByCodeHash(request.GetPhoneCodeHash(), phoneNumber)
+	code := auth.MakeCodeDataByHash(md.AuthId, phoneNumber, request.GetPhoneCodeHash())
+	err = code.DoReSendCode()
 	if err != nil {
+		glog.Error(err)
 		return nil, err
 	}
 
-	// 如果手机号已经注册，检查是否有其他设备在线，有则使用sentCodeTypeApp
-	// 否则使用sentCodeTypeSms
-	// TODO(@benqi): 有则使用sentCodeTypeFlashCall和entCodeTypeCall？？
-
 	// 使用app类型，code统一为123456
-	phoneRegistered := user.CheckPhoneNumberExist(phoneNumber)
-
-	authSentCode := &mtproto.TLAuthSentCode{Data2: &mtproto.Auth_SentCode_Data{
-		PhoneRegistered: phoneRegistered,
-		PhoneCodeHash:   code.CodeHash,
-		Timeout:         60,	// TODO(@benqi): 默认60s
-	}}
-
-	if phoneRegistered {
-		// TODO(@benqi): check other session online
-		authSentCodeType := &mtproto.TLAuthSentCodeTypeApp{Data2: &mtproto.Auth_SentCodeType_Data{
-			Length: code.GetPhoneCodeLength(),
-		}}
-		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
-	} else {
-		// TODO(@benqi): sentCodeTypeFlashCall and sentCodeTypeCall, nextType
-		authSentCodeType := &mtproto.TLAuthSentCodeTypeSms{Data2: &mtproto.Auth_SentCodeType_Data{
-			Length: code.GetPhoneCodeLength(),
-		}}
-		authSentCode.SetType(authSentCodeType.To_Auth_SentCodeType())
-
-		// TODO(@benqi): nextType
-		// authSentCode.SetNextType()
-	}
+	phoneRegistered := auth.CheckPhoneNumberExist(phoneNumber)
+	authSentCode := code.ToAuthSentCode(phoneRegistered)
 
 	glog.Infof("auth.resendCode#3ef1a9bf - reply: %s", logger.JsonDebugData(authSentCode))
 	return authSentCode.To_Auth_SentCode(), nil

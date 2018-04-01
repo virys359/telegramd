@@ -17,6 +17,7 @@
 
 package nsq_client
 
+/*
 import (
 	"errors"
 	"github.com/nsqio/go-nsq"
@@ -143,3 +144,4 @@ func (p *producer) DeferPublish(topic string, msg interface{}, deferSecond int64
 func (p *producer) Stop() {
 	p.producer.Stop()
 }
+*/

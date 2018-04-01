@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/baselib/base"
 	base2 "github.com/nebulaim/telegramd/biz/base"
 	"math/rand"
@@ -153,7 +153,7 @@ func (s *PhoneServiceImpl) PhoneRequestCall(ctx context.Context, request *mtprot
 		updates.Data2.Users = append(updates.Data2.Users, u.To_User())
 	}
 
-	seq := int32(updates2.NextSeqId(base.Int32ToString(callSession.participantId)))
+	seq := int32(update2.NextSeqId(base.Int32ToString(callSession.participantId)))
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 

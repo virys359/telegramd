@@ -40,6 +40,9 @@ func (s *ContactsServiceImpl) ContactsUnblock(ctx context.Context, request *mtpr
 		dao.GetUserContactsDAO(dao.DB_MASTER).UpdateBlock(0, md.UserId, request.GetId().GetData2().GetUserId())
 	}
 
+	// TODO(@benqi): sync updateUserBlocked
+	// updates ==> (updates[updateUserBlocked], users[blocked])
+
 	glog.Infof("ContactsUnblock - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

@@ -27,11 +27,12 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 )
 
-// auth.checkPhone#6fe51dfb phone_number:string = auth.CheckedPhone;
 // tdesktop客户端会调用，android客户端未使用
+
+// auth.checkPhone#6fe51dfb phone_number:string = auth.CheckedPhone;
 func (s *AuthServiceImpl) AuthCheckPhone(ctx context.Context, request *mtproto.TLAuthCheckPhone) (*mtproto.Auth_CheckedPhone, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AuthCheckPhone - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("uth.checkPhone#6fe51dfb - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
 	if err != nil {
@@ -44,6 +45,6 @@ func (s *AuthServiceImpl) AuthCheckPhone(ctx context.Context, request *mtproto.T
 		PhoneRegistered: mtproto.ToBool(registered),
 	}}
 
-	glog.Infof("AuthCheckPhone - reply: %s\n", checkedPhone)
+	glog.Infof("uth.checkPhone#6fe51dfb - reply: %s\n", checkedPhone)
 	return checkedPhone.To_Auth_CheckedPhone(), nil
 }

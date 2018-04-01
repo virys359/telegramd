@@ -17,12 +17,14 @@
 
 package nsq_client
 
+/*
 import (
 	"errors"
 	"time"
 	"github.com/nsqio/go-nsq"
 	"github.com/golang/glog"
 )
+
 
 // 使用者可以使用快速的配置进行事件的消费
 // 配置
@@ -324,3 +326,4 @@ func (c *consumer) Initialize(config *ConsumerConfig) (err error) {
 var (
 	Consumer = newConsumer()
 )
+*/

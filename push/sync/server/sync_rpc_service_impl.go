@@ -27,7 +27,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/base"
 	"time"
 	"fmt"
-	updates3 "github.com/nebulaim/telegramd/biz/core/updates"
+	update3 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 type SyncServiceImpl struct {
@@ -179,6 +179,7 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 	var (
 		pushUserId = request.GetPushUserId()
 		pts, ptsCount int32
+		seq = int32(0)
 		updates = request.GetUpdates()
 		date = int32(time.Now().Unix())
 	)
@@ -186,18 +187,18 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 	switch updates.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_updateShortMessage:
 		shortMessage := updates.To_UpdateShortMessage()
-		pts = int32(updates3.NextPtsId(base.Int32ToString(pushUserId)))
+		pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
 		ptsCount = 1
 		shortMessage.SetPts(pts)
 		shortMessage.SetPtsCount(ptsCount)
-		updates3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortToUpdateNewMessage(pushUserId, shortMessage))
+		update3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortToUpdateNewMessage(pushUserId, shortMessage))
 	case mtproto.TLConstructor_CRC32_updateShortChatMessage:
 		shortMessage := updates.To_UpdateShortChatMessage()
-		pts = int32(updates3.NextPtsId(base.Int32ToString(pushUserId)))
+		pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
 		ptsCount = 1
 		shortMessage.SetPts(pts)
 		shortMessage.SetPtsCount(ptsCount)
-		updates3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortChatToUpdateNewMessage(pushUserId, shortMessage))
+		update3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortChatToUpdateNewMessage(pushUserId, shortMessage))
 	case mtproto.TLConstructor_CRC32_updateShort:
 		short := updates.To_UpdateShort()
 		short.SetDate(date)
@@ -214,21 +215,21 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 				 mtproto.TLConstructor_CRC32_updateReadMessagesContents,
 				 mtproto.TLConstructor_CRC32_updateEditMessage:
 
-				pts = int32(updates3.NextPtsId(base.Int32ToString(pushUserId)))
+				pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
 				ptsCount = 1
 				totalPtsCount += 1
 
 				// @benqi: 以上都有Pts和PtsCount
 				update.Data2.Pts = pts
 				update.Data2.PtsCount = ptsCount
-				updates3.AddToPtsQueue(pushUserId, pts, ptsCount, update)
+				update3.AddToPtsQueue(pushUserId, pts, ptsCount, update)
 			}
 		}
 
 		// 有可能有多个
 		ptsCount = totalPtsCount
 		updates2.SetDate(date)
-		updates2.SetSeq(0)
+		updates2.SetSeq(seq)
 	default:
 		err := fmt.Errorf("invalid updates data: {%d}", updates.GetConstructor())
 		// glog.Error(err)

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewAuthPhoneTransactionsDAO(db *sqlx.DB) *AuthPhoneTransactionsDAO {
 	return &AuthPhoneTransactionsDAO{db}
 }
 
-// insert into auth_phone_transactions(transaction_hash, api_id, api_hash, phone_number, auth_key_id, code, created_time, created_at) values (:transaction_hash, :api_id, :api_hash, :phone_number, :auth_key_id, :code, :created_time, :created_at)
+// insert into auth_phone_transactions(auth_key_id, phone_number, code, code_expired, transaction_hash, sent_code_type, flash_call_pattern, next_code_type, api_id, api_hash) values (:auth_key_id, :phone_number, :code, :code_expired, :transaction_hash, :sent_code_type, :flash_call_pattern, :next_code_type, :api_id, :api_hash)
 // TODO(@benqi): sqlmap
 func (dao *AuthPhoneTransactionsDAO) Insert(do *dataobject.AuthPhoneTransactionsDO) int64 {
-	var query = "insert into auth_phone_transactions(transaction_hash, api_id, api_hash, phone_number, auth_key_id, code, created_time, created_at) values (:transaction_hash, :api_id, :api_hash, :phone_number, :auth_key_id, :code, :created_time, :created_at)"
+	var query = "insert into auth_phone_transactions(auth_key_id, phone_number, code, code_expired, transaction_hash, sent_code_type, flash_call_pattern, next_code_type, api_id, api_hash) values (:auth_key_id, :phone_number, :code, :code_expired, :transaction_hash, :sent_code_type, :flash_call_pattern, :next_code_type, :api_id, :api_hash)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,69 +53,11 @@ func (dao *AuthPhoneTransactionsDAO) Insert(do *dataobject.AuthPhoneTransactions
 	return id
 }
 
-// select transaction_hash, attempts from auth_phone_transactions where phone_number = :phone_number and api_id = :api_id and api_hash = :api_hash and created_at < :created_at and is_deleted = 0 limit 1
+// select id, code, code_expired, sent_code_type, flash_call_pattern, next_code_type, attempts, state from auth_phone_transactions where auth_key_id = :auth_key_id and phone_number = :phone_number and transaction_hash = :transaction_hash
 // TODO(@benqi): sqlmap
-func (dao *AuthPhoneTransactionsDAO) SelectByPhoneAndApiIdAndHash(phone_number string, api_id int32, api_hash string, created_at string) *dataobject.AuthPhoneTransactionsDO {
-	var query = "select transaction_hash, attempts from auth_phone_transactions where phone_number = ? and api_id = ? and api_hash = ? and created_at < ? and is_deleted = 0 limit 1"
-	rows, err := dao.db.Queryx(query, phone_number, api_id, api_hash, created_at)
-
-	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectByPhoneAndApiIdAndHash(_), error: %v", err)
-		glog.Error(errDesc)
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
-	}
-
-	defer rows.Close()
-
-	do := &dataobject.AuthPhoneTransactionsDO{}
-	if rows.Next() {
-		err = rows.StructScan(do)
-		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectByPhoneAndApiIdAndHash(_), error: %v", err)
-			glog.Error(errDesc)
-			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
-		}
-	} else {
-		return nil
-	}
-
-	return do
-}
-
-// select id from auth_phone_transactions where transaction_hash = :transaction_hash and code = :code and phone_number = :phone_number and is_deleted = 0
-// TODO(@benqi): sqlmap
-func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCode(transaction_hash string, code string, phone_number string) *dataobject.AuthPhoneTransactionsDO {
-	var query = "select id from auth_phone_transactions where transaction_hash = ? and code = ? and phone_number = ? and is_deleted = 0"
-	rows, err := dao.db.Queryx(query, transaction_hash, code, phone_number)
-
-	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectByPhoneCode(_), error: %v", err)
-		glog.Error(errDesc)
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
-	}
-
-	defer rows.Close()
-
-	do := &dataobject.AuthPhoneTransactionsDO{}
-	if rows.Next() {
-		err = rows.StructScan(do)
-		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectByPhoneCode(_), error: %v", err)
-			glog.Error(errDesc)
-			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
-		}
-	} else {
-		return nil
-	}
-
-	return do
-}
-
-// select code, attempts, created_at from auth_phone_transactions where transaction_hash = :transaction_hash and phone_number = :phone_number and is_deleted = 0
-// TODO(@benqi): sqlmap
-func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCodeHash(transaction_hash string, phone_number string) *dataobject.AuthPhoneTransactionsDO {
-	var query = "select code, attempts, created_at from auth_phone_transactions where transaction_hash = ? and phone_number = ? and is_deleted = 0"
-	rows, err := dao.db.Queryx(query, transaction_hash, phone_number)
+func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCodeHash(auth_key_id int64, phone_number string, transaction_hash string) *dataobject.AuthPhoneTransactionsDO {
+	var query = "select id, code, code_expired, sent_code_type, flash_call_pattern, next_code_type, attempts, state from auth_phone_transactions where auth_key_id = ? and phone_number = ? and transaction_hash = ?"
+	rows, err := dao.db.Queryx(query, auth_key_id, phone_number, transaction_hash)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Queryx in SelectByPhoneCodeHash(_), error: %v", err)
@@ -138,4 +80,70 @@ func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCodeHash(transaction_hash stri
 	}
 
 	return do
+}
+
+// update auth_phone_transactions set state = :state where id = :id
+// TODO(@benqi): sqlmap
+func (dao *AuthPhoneTransactionsDAO) UpdateState(state int8, id int64) int64 {
+	var query = "update auth_phone_transactions set state = ? where id = ?"
+	r, err := dao.db.Exec(query, state, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateState(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateState(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update auth_phone_transactions set state = :state where auth_key_id = :auth_key_id and phone_number = :phone_number and transaction_hash = :transaction_hash
+// TODO(@benqi): sqlmap
+func (dao *AuthPhoneTransactionsDAO) Delete(state int8, auth_key_id int64, phone_number string, transaction_hash string) int64 {
+	var query = "update auth_phone_transactions set state = ? where auth_key_id = ? and phone_number = ? and transaction_hash = ?"
+	r, err := dao.db.Exec(query, state, auth_key_id, phone_number, transaction_hash)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in Delete(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in Delete(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update auth_phone_transactions set attempts = attempts + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *AuthPhoneTransactionsDAO) UpdateAttempts(id int64) int64 {
+	var query = "update auth_phone_transactions set attempts = attempts + 1 where id = ?"
+	r, err := dao.db.Exec(query, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateAttempts(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateAttempts(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
 }

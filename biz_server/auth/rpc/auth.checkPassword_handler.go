@@ -26,6 +26,23 @@ import (
 	"golang.org/x/net/context"
 )
 
+/*
+	if (error.text.equals("PASSWORD_HASH_INVALID")) {
+		onPasscodeError(true);
+	} else if (error.text.startsWith("FLOOD_WAIT")) {
+		int time = Utilities.parseInt(error.text);
+		String timeString;
+		if (time < 60) {
+			timeString = LocaleController.formatPluralString("Seconds", time);
+		} else {
+			timeString = LocaleController.formatPluralString("Minutes", time / 60);
+		}
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+	} else {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+	}
+ */
+
 // auth.checkPassword#a63011e password_hash:bytes = auth.Authorization;
 func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtproto.TLAuthCheckPassword) (*mtproto.Auth_Authorization, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

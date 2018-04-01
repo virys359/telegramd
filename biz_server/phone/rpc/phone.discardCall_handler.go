@@ -25,7 +25,7 @@ import (
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/core/user"
-	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 /*
@@ -76,7 +76,7 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	}
 
 	// TODO(@benqi): seq
-	seq := int32(updates2.NextSeqId(base.Int32ToString(callSession.adminId)))
+	seq := int32(update2.NextSeqId(base.Int32ToString(callSession.adminId)))
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 

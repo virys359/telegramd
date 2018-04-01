@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/core/user"
 )
@@ -92,7 +92,7 @@ func (s *PhoneServiceImpl) PhoneReceivedCall(ctx context.Context, request *mtpro
 	}
 
 	// TODO(@benqi): seq
-	seq := int32(updates2.NextSeqId(base.Int32ToString(callSession.adminId)))
+	seq := int32(update2.NextSeqId(base.Int32ToString(callSession.adminId)))
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 

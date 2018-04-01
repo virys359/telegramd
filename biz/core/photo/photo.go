@@ -57,10 +57,6 @@ const (
 	storage.fileWebp#1081464c = storage.FileType;
  */
 
-type photoModel struct {
-	// usersDAO *dao.UsersDAO
-}
-
 var sizeList = []int{PHOTO_SIZE_SMALL_SIZE, PHOTO_SIZE_MEDIUMN_SIZE, PHOTO_SIZE_XLARGE_SIZE, PHOTO_SIZE_YLARGE_SIZE}
 func getSizeType(idx int) string {
 	switch idx {

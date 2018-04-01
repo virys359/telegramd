@@ -25,7 +25,7 @@ import (
 	"golang.org/x/net/context"
 	"time"
 	// base2 "github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
 )
@@ -42,7 +42,7 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 		userList []*mtproto.User
 	)
 
-	updateList := updates.GetUpdateListByGtPts(md.UserId, lastPts)
+	updateList := update2.GetUpdateListByGtPts(md.UserId, lastPts)
 
 	for _, update := range updateList {
 		switch update.GetConstructor() {

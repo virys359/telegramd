@@ -122,9 +122,10 @@ message UpdatesRequest {
     Updates updates = 5;
 }
 
-message UpdatesListRequest {
-    repeated UpdatesRequest updates_list = 1;
-}
+// message
+//message UpdatesListRequest {
+//    repeated UpdatesRequest updates_list = 1;
+//}
 
 // Interface exported by the server.
 service RPCSync {

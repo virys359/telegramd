@@ -46,24 +46,6 @@ func CheckBannedByPhoneNumber(phoneNumber string) bool {
 	return do != nil && do.Banned != 0
 }
 
-func CheckPhoneNumberExist(phoneNumber string) bool {
-	return nil != dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
-}
-
-func GetUserByPhoneNumber(phoneNumber string) *userData {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
-	if do == nil {
-		return nil
-	} else {
-		data := &userData{ TLUser: &mtproto.TLUser{ Data2: &mtproto.User_Data{
-				Id:        do.Id,
-				FirstName: do.FirstName,
-				LastName:  do.LastName,
-		}}}
-		return data
-	}
-}
-
 func GetUser(userId int32) (user* mtproto.TLUser) {
 	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	userDO := usersDAO.SelectById(userId)

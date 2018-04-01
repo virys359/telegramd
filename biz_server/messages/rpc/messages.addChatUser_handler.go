@@ -24,15 +24,15 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/chat"
-	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
-func makeUpdatesByChatMessage(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *updates2.UpdatesLogic {
-	updates := updates2.NewUpdatesLogic(selfUserId)
+func makeUpdatesByChatMessage(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
+	updates := update2.NewUpdatesLogic(selfUserId)
 	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
 		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
 	}}
@@ -42,8 +42,8 @@ func makeUpdatesByChatMessage(chatLogic *chat.ChatLogic, selfUserId int32, box *
 	return updates
 }
 
-func makeUpdatesByChatMessageAndMessageId(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *updates2.UpdatesLogic {
-	updates := updates2.NewUpdatesLogic(selfUserId)
+func makeUpdatesByChatMessageAndMessageId(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
+	updates := update2.NewUpdatesLogic(selfUserId)
 	updates.AddUpdateMessageId(box.MessageId, box.RandomId)
 	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
 		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),

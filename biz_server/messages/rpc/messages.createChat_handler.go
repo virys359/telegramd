@@ -27,7 +27,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/chat"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 	"github.com/nebulaim/telegramd/biz/core/user"
 )
@@ -116,7 +116,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 	randomId := base.NextSnowflakeId()
 	outbox := message.InsertMessageToOutbox(md.UserId, peer, randomId, createChatMessage)
 
-	syncUpdates := updates.NewUpdatesLogic(md.UserId)
+	syncUpdates := update2.NewUpdatesLogic(md.UserId)
 	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
 		Participants: chat.GetChatParticipants().To_ChatParticipants(),
 	}}
@@ -132,7 +132,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 
 	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer)
 	for _, inbox := range inboxList {
-		updates := updates.NewUpdatesLogic(md.UserId)
+		updates := update2.NewUpdatesLogic(md.UserId)
 		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
 			Participants: chat.GetChatParticipants().To_ChatParticipants(),
 		}}

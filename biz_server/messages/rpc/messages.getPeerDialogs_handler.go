@@ -27,7 +27,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/chat"
-	"github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 // messages.getPeerDialogs#2d9776b9 peers:Vector<InputPeer> = messages.PeerDialogs;
@@ -80,7 +80,7 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 		peerDialogs.Data2.Chats = chat.GetChatListByIDList(chatIdList)
 	}
 
-	state := updates.GetUpdatesState(md.AuthId, md.UserId)
+	state := update2.GetUpdatesState(md.AuthId, md.UserId)
 	peerDialogs.SetState(state.To_Updates_State())
 
 	glog.Infof("messages.getPeerDialogs#2d9776b9 - reply: %s", logger.JsonDebugData(peerDialogs))

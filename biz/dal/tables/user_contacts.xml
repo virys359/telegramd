@@ -2,12 +2,30 @@
 <table sqlname="user_contacts">
     <operation name="Insert">
         <sql>
-            INSERT INTO user_contacts (owner_user_id, contact_user_id, date2, created_at) VALUES (:owner_user_id, :contact_user_id, :date2, :created_at)
+            INSERT INTO
+                user_contacts (owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual)
+            VALUES
+                (:owner_user_id, :contact_user_id, :contact_phone, :contact_first_name, :contact_last_name, :mutual)
         </sql>
     </operation>
     <operation name="SelectUserContacts" result_set="list">
         <sql>
-            SELECT contact_user_id, date2 FROM user_contacts WHERE owner_user_id=:owner_user_id AND is_deleted = 0
+            SELECT
+                contact_user_id, date2
+            FROM
+                user_contacts
+            WHERE
+                owner_user_id=:owner_user_id AND is_deleted = 0
+        </sql>
+    </operation>
+    <operation name="SelectUserContacts" result_set="list">
+        <sql>
+            SELECT
+                id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name
+            FROM
+                user_contacts
+            WHERE
+                owner_user_id=:owner_user_id AND is_deleted = 0
         </sql>
     </operation>
     <operation name="SelectBlockedList" result_set="list">
@@ -18,9 +36,50 @@
             SELECT contact_user_id FROM user_contacts WHERE owner_user_id=:owner_user_id AND date2>:date2 ORDER BY date2 LIMIT :limit
         </sql>
     </operation>
+    <operation name="UpdateContactNameById">
+        <sql>
+            UPDATE
+                user_contacts
+            SET
+                contact_first_name = :contact_first_name, contact_last_name = :contact_last_name
+            WHERE
+                id = :id
+        </sql>
+    </operation>
+    <operation name="UpdateContactUserId">
+        <sql>
+            <![CDATA[
+            UPDATE
+                user_contacts
+            SET
+                contact_user_id = :contact_user_id, mutual = :mutual
+            WHERE
+                contact_user_id = 0 AND owner_user_id = :owner_user_id AND contact_phone = :contact_phone
+            ]]>
+        </sql>
+    </operation>
+    <operation name="UpdateMutual">
+        <sql>
+            <![CDATA[
+            UPDATE
+                user_contacts
+            SET
+                mutual = :mutual
+            WHERE
+                contact_user_id <> 0 AND (owner_user_id = :owner_user_id AND contact_user_id = :contact_user_id)
+            ]]>
+        </sql>
+    </operation>
     <operation name="UpdateBlock">
         <sql>
-            UPDATE user_contacts SET is_blocked = :is_blocked WHERE owner_user_id = :owner_user_id AND contact_user_id = :contact_user_id
+            <![CDATA[
+            UPDATE
+                user_contacts
+            SET
+                is_blocked = :is_blocked
+            WHERE
+                contact_user_id <> 0 AND (owner_user_id = :owner_user_id AND contact_user_id = :contact_user_id)
+            ]]>
         </sql>
     </operation>
     <operation name="DeleteContacts">
@@ -28,7 +87,14 @@
             <param name="id_list" type="[]int32" />
         </params>
         <sql>
-            UPDATE user_contacts SET is_deleted = 1 WHERE owner_user_id = :owner_user_id AND contact_user_id in (:id_list)
+            <![CDATA[
+            UPDATE
+                user_contacts
+            SET
+                is_deleted = 1
+            WHERE
+                contact_user_id <> 0 AND (owner_user_id = :owner_user_id AND contact_user_id in (:id_list))
+            ]]>
         </sql>
     </operation>
 </table>

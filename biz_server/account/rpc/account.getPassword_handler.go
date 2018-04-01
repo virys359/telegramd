@@ -25,6 +25,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+// 客户端调用auth.signIn时返回SESSION_PASSWORD_NEEDED时会触发
+
 // account.getPassword#548a30f5 = account.Password;
 func (s *AccountServiceImpl) AccountGetPassword(ctx context.Context, request *mtproto.TLAccountGetPassword) (*mtproto.Account_Password, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

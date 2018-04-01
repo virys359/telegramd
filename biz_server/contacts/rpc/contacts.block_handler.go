@@ -40,6 +40,10 @@ func (s *ContactsServiceImpl) ContactsBlock(ctx context.Context, request *mtprot
 		dao.GetUserContactsDAO(dao.DB_MASTER).UpdateBlock(1, md.UserId, request.GetId().GetData2().GetUserId())
 	}
 
+	// TODO(@benqi): sync updateUserBlocked
+	// updates ==> (updates[updateUserBlocked], users[blocked])
+
+	// Blocked会影响收件箱
 	glog.Infof("ContactsBlock - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

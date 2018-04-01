@@ -30,7 +30,7 @@ import (
 	"encoding/json"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 const (
@@ -385,7 +385,7 @@ func SendMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int64
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:fromId,
-		UserMessageBoxId: int32(updates.NextMessageBoxId(base2.Int32ToString(fromId))),
+		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(fromId))),
 		DialogMessageId: base.NextSnowflakeId(),
 		SenderUserId: fromId,
 		MessageBoxType: MESSAGE_BOX_TYPE_OUTGOING,
@@ -449,7 +449,7 @@ func sendUserMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId, d
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:peer.PeerId,
-		UserMessageBoxId: int32(updates.NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
+		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
 		DialogMessageId: dialogMessageId,
 		SenderUserId: fromId,
 		MessageBoxType: MESSAGE_BOX_TYPE_INCOMING,

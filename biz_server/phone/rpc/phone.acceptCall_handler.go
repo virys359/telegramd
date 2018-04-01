@@ -26,7 +26,7 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/core/user"
-	updates2 "github.com/nebulaim/telegramd/biz/core/updates"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 /*
@@ -115,7 +115,7 @@ func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto
 		updates.Data2.Users = append(updates.Data2.Users, u.To_User())
 	}
 
-	seq := int32(updates2.NextSeqId(base.Int32ToString(callSession.adminId)))
+	seq := int32(update2.NextSeqId(base.Int32ToString(callSession.adminId)))
 	updates.SetSeq(seq)
 	updates.SetDate(callSession.date)
 

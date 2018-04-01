@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 )
 
-// 3. check number
+// Check number
 // 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
 func CheckAndGetPhoneNumber(number string) (phoneNumber string, err error) {
 	if number == "" {
@@ -42,14 +42,16 @@ func CheckAndGetPhoneNumber(number string) (phoneNumber string, err error) {
 	pnumber, err = libphonenumber.Parse(number, "")
 	if err != nil {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), fmt.Sprintf("invalid phone number: %v", err))
-		// return
 	} else {
 		if !libphonenumber.IsValidNumber(pnumber) {
 			err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "invalid phone number")
-			// return nil, err
 		}
 	}
 
-	phoneNumber = libphonenumber.NormalizeDigitsOnly(number)
+	if err != nil {
+		// DB里存储归一化的phone
+		phoneNumber = libphonenumber.NormalizeDigitsOnly(number)
+	}
+
 	return
 }

@@ -26,6 +26,23 @@ import (
 	"golang.org/x/net/context"
 )
 
+/*
+	if (error.text.startsWith("CODE_INVALID")) {
+		onPasscodeError(true);
+	} else if (error.text.startsWith("FLOOD_WAIT")) {
+		int time = Utilities.parseInt(error.text);
+		String timeString;
+		if (time < 60) {
+			timeString = LocaleController.formatPluralString("Seconds", time);
+		} else {
+			timeString = LocaleController.formatPluralString("Minutes", time / 60);
+		}
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+	} else {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+	}
+ */
+
 // auth.recoverPassword#4ea56e92 code:string = auth.Authorization;
 func (s *AuthServiceImpl) AuthRecoverPassword(ctx context.Context, request *mtproto.TLAuthRecoverPassword) (*mtproto.Auth_Authorization, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

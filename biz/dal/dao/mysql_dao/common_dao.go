@@ -18,9 +18,9 @@
 package mysql_dao
 
 import (
-	"github.com/jmoiron/sqlx"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/jmoiron/sqlx"
 	"strings"
 )
 

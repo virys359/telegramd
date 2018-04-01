@@ -18,63 +18,91 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/ttacon/libphonenumber"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/auth"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
+
+/*
+ 1. PHONE_NUMBER_UNOCCUPIED ==> setPage(5, true, params, false);
+ 2. SESSION_PASSWORD_NEEDED ==> invoke rpc: TL_account_getPassword
+ 3. error:
+	if (error.text.contains("PHONE_NUMBER_INVALID")) {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
+	} else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidCode", R.string.InvalidCode));
+	} else if (error.text.contains("PHONE_CODE_EXPIRED")) {
+		onBackPressed();
+		setPage(0, true, null, true);
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("CodeExpired", R.string.CodeExpired));
+	} else if (error.text.startsWith("FLOOD_WAIT")) {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("FloodWait", R.string.FloodWait));
+	} else {
+		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + "\n" + error.text);
+	}
+ */
 
 // auth.signIn#bcd51581 phone_number:string phone_code_hash:string phone_code:string = auth.Authorization;
 func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAuthSignIn) (*mtproto.Auth_Authorization, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AuthSignIn - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("auth.signIn#bcd51581 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
-	phoneNumber := libphonenumber.NormalizeDigitsOnly(request.PhoneNumber)
-
-	// Check code
-	authPhoneTransactionsDAO := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE)
-	do1 := authPhoneTransactionsDAO.SelectByPhoneCode(request.PhoneCodeHash, request.PhoneCode, phoneNumber)
-	if do1 == nil {
-	    err := fmt.Errorf("SelectByPhoneCode(_) return empty in request: {}%v", request)
-	    glog.Error(err)
-	    return nil, err
+	//// 3. check number
+	//// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
+	phoneNumber, err :=  base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
+	if err != nil {
+		// PHONE_NUMBER_INVALID
+		glog.Error(err)
+		return nil, err
 	}
 
-	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
-	do2 := usersDAO.SelectByPhoneNumber(phoneNumber)
-	if do2 == nil {
-	    err := fmt.Errorf("SelectByPhoneNumber(_) return empty in request {%v}", request)
-	    glog.Error(err)
-	    return nil, err
+	if request.PhoneCode == "" {
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EMPTY), "code empty")
+		glog.Error(err)
+		return nil, err
+	}
+	// TODO(@benqi): check phoneCode rule: number, length etc ...
+
+	code := auth.MakeCodeDataByHash(md.AuthId, phoneNumber, request.PhoneCodeHash)
+	phoneRegistered := auth.CheckPhoneNumberExist(phoneNumber)
+	err = code.DoSignIn(request.PhoneCode, phoneRegistered)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
 	}
 
-	do3 := dao.GetAuthUsersDAO(dao.DB_SLAVE).SelectByAuthId(md.AuthId)
-	if do3 == nil {
-	    do3 := &dataobject.AuthUsersDO{}
-	    do3.AuthId = md.AuthId
-	    do3.UserId = do2.Id
-		// TODO(@benqi): 插入关联数据表
-		dao.GetAuthUsersDAO(dao.DB_MASTER).Insert(do3)
+	// signIn sucess, check phoneRegistered.
+	if !phoneRegistered {
+		//  not register, next step: auth.singIn
+		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_UNOCCUPIED), "phone number unoccupied")
+		glog.Info("auth.signIn#bcd51581 - not register: ", err)
+		return nil, err
 	}
 
-	// TODO(@benqi): 从数据库加载
-	authAuthorization := mtproto.NewTLAuthAuthorization()
-	user := mtproto.NewTLUser()
-	user.SetSelf(true)
-	user.SetId(do2.Id)
-	user.SetAccessHash(do2.AccessHash)
-	user.SetFirstName(do2.FirstName)
-	user.SetLastName(do2.LastName)
-	user.SetUsername(do2.Username)
-	user.SetPhone(phoneNumber)
-	authAuthorization.SetUser(user.To_User())
+	//// TODO(@benqi): check SESSION_PASSWORD_NEEDED
+	//sessionPasswordNeeded := true
+	//if sessionPasswordNeeded {
+	//	err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_SESSION_PASSWORD_NEEDED), "session password needed")
+	//	glog.Info("auth.signIn#bcd51581 - not register: ", err)
+	//	return nil, err
+	//}
 
-	glog.Infof("AuthSignIn - reply: %s\n", logger.JsonDebugData(authAuthorization))
+	// do signIn...
+	user := user2.GetUserByPhoneNumber(true, phoneNumber)
+
+	// Bind authKeyId and userId
+	auth.BindAuthKeyAndUser(md.AuthId, user.GetId())
+	// TODO(@benqi): check and set authKeyId state
+
+	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
+		User: user.To_User(),
+	}}
+
+	glog.Infof("auth.signIn#bcd51581 - reply: %s\n", logger.JsonDebugData(authAuthorization))
 	return authAuthorization.To_Auth_Authorization(), nil
 }

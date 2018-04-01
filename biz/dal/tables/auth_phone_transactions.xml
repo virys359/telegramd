@@ -3,46 +3,36 @@
     <operation name="Insert">
         <sql>
             INSERT INTO auth_phone_transactions
-                (transaction_hash, api_id, api_hash, phone_number, auth_key_id, code, created_time, created_at)
+                (auth_key_id, phone_number, code, code_expired, transaction_hash, sent_code_type, flash_call_pattern, next_code_type, api_id, api_hash)
             VALUES
-                (:transaction_hash, :api_id, :api_hash, :phone_number, :auth_key_id, :code, :created_time, :created_at)
-        </sql>
-    </operation>
-    <operation name="SelectByPhoneAndApiIdAndHash">
-        <sql>
-            <![CDATA[
-
-            SELECT
-                transaction_hash, attempts
-            FROM
-                auth_phone_transactions
-            WHERE
-                phone_number = :phone_number AND api_id = :api_id AND api_hash = :api_hash AND created_at < :created_at AND is_deleted = 0
-            LIMIT 1
-
-            ]]>
-        </sql>
-    </operation>
-    <operation name="SelectByPhoneCode">
-        <sql>
-            SELECT
-                id
-            FROM
-                auth_phone_transactions
-            WHERE
-                transaction_hash = :transaction_hash AND code = :code AND phone_number = :phone_number AND is_deleted = 0
+                (:auth_key_id, :phone_number, :code, :code_expired, :transaction_hash, :sent_code_type, :flash_call_pattern, :next_code_type, :api_id, :api_hash)
         </sql>
     </operation>
     <operation name="SelectByPhoneCodeHash">
         <sql>
-            <![CDATA[
             SELECT
-                code, attempts, created_at
+                id, code, code_expired, sent_code_type, flash_call_pattern, next_code_type, attempts, state
             FROM
                 auth_phone_transactions
             WHERE
-                transaction_hash = :transaction_hash AND phone_number = :phone_number AND is_deleted = 0
-            ]]>
+                auth_key_id = :auth_key_id AND phone_number = :phone_number AND transaction_hash = :transaction_hash
+        </sql>
+    </operation>
+    <operation name="UpdateState">
+        <sql>
+            UPDATE auth_phone_transactions SET state = :state WHERE id = :id
+        </sql>
+    </operation>
+    <operation name="Delete">
+        <sql>
+            UPDATE auth_phone_transactions SET state = :state
+            WHERE
+                auth_key_id = :auth_key_id AND phone_number = :phone_number AND transaction_hash = :transaction_hash
+        </sql>
+    </operation>
+    <operation name="UpdateAttempts">
+        <sql>
+            UPDATE auth_phone_transactions SET attempts = attempts + 1 WHERE id = :id
         </sql>
     </operation>
 </table>

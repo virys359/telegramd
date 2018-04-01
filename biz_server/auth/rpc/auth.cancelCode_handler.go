@@ -18,20 +18,39 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/auth"
 )
+
+// 客户端不处理错误码
 
 // auth.cancelCode#1f040578 phone_number:string phone_code_hash:string = Bool;
 func (s *AuthServiceImpl) AuthCancelCode(ctx context.Context, request *mtproto.TLAuthCancelCode) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AuthCancelCode - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("auth.cancelCode#1f040578 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AuthCancelCode logic
+	// 1. check phone code
+	if request.PhoneCodeHash == "" {
+		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "auth.resendCode#3ef1a9bf: phone code hash empty.")
+		return nil, err
+	}
 
-	return nil, fmt.Errorf("Not impl AuthCancelCode")
+	// 2. check number
+	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
+	phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+
+	code := auth.MakeCancelCodeData(md.AuthId, phoneNumber, request.PhoneCodeHash)
+	canceled := mtproto.ToBool(code.DoCancelCode())
+
+	glog.Infof("auth.cancelCode#1f040578 -  - reply: %s", logger.JsonDebugData(canceled))
+	return canceled, nil
 }
