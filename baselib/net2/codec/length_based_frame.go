@@ -83,7 +83,7 @@ func (c *LengthBasedFrameCodec) Send(msg interface{}) error {
 }
 
 func (c *LengthBasedFrameCodec) Receive() (interface{}, error) {
-	line, err := c.stream.r.ReadString('\n');
+	line, err := c.stream.r.ReadString('\n')
 	return line, err
 }
 
