@@ -25,15 +25,15 @@ import (
 )
 
 func init() {
-	net2.RegisterProtocol("length_based_frame", NewLengthBasedFrame(kDedaultReadBufferSize))
+	net2.RegisterProtocol("length_based_frame", NewLengthBasedFrame(kDefaultReadBufferSize))
 }
 
 const (
-	kDedaultReadBufferSize = 1024
+	kDefaultReadBufferSize = 1024
 )
 func NewLengthBasedFrame(readBuf int) net2.Protocol {
 	if readBuf <=0 {
-		readBuf = kDedaultReadBufferSize
+		readBuf = kDefaultReadBufferSize
 	}
 
 	return &LengthBasedFrame{
