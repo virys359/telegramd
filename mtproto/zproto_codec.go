@@ -28,7 +28,7 @@ import (
 )
 
 func init() {
-	net2.RegisterPtotocol("zproto", &ZProto{})
+	net2.RegisterProtocol("zproto", &ZProto{})
 }
 
 type ZProto struct {

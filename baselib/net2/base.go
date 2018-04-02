@@ -53,18 +53,18 @@ type ClearSendChan interface {
 }
 
 var (
-	protolRegisters = make(map[string]Protocol)
+	protocolRegisters = make(map[string]Protocol)
 )
 
-func RegisterPtotocol(name string, protocol Protocol) {
-	glog.Info("RegisterPtotocol: ", name)
-	protolRegisters[name] = protocol
+func RegisterProtocol(name string, protocol Protocol) {
+	glog.Info("RegisterProtocol: ", name)
+	protocolRegisters[name] = protocol
 }
 
 func NewCodecByName(name string, rw io.ReadWriter) (Codec, error) {
-	protocol, ok := protolRegisters[name]
+	protocol, ok := protocolRegisters[name]
 	if !ok {
-		return nil, fmt.Errorf("not found protocol name: ", name)
+		return nil, fmt.Errorf("not found protocol name: %s", name)
 	}
 	return protocol.NewCodec(rw)
 }

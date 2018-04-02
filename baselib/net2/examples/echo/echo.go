@@ -26,7 +26,7 @@ import (
 )
 
 func init() {
-	net2.RegisterPtotocol("echo", codec.NewLengthBasedFrame(1024))
+	net2.RegisterProtocol("echo", codec.NewLengthBasedFrame(1024))
 }
 
 type EchoServer struct {

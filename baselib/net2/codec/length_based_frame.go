@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	net2.RegisterPtotocol("length_based_frame", NewLengthBasedFrame(kDedaultReadBufferSize))
+	net2.RegisterProtocol("length_based_frame", NewLengthBasedFrame(kDedaultReadBufferSize))
 }
 
 const (

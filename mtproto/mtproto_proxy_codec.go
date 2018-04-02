@@ -69,7 +69,7 @@ const (
 )
 
 func init() {
-	net2.RegisterPtotocol("mtproto", &MTProtoProxy{})
+	net2.RegisterProtocol("mtproto", &MTProtoProxy{})
 }
 
 // 服务端MTPProto代理
