@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-04-01 14:03:56
+-- Generation Time: 2018-04-03 13:38:05
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -671,6 +671,29 @@ CREATE TABLE `user_notify_settings` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `user_passwords`
+--
+
+CREATE TABLE `user_passwords` (
+  `id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `server_salt` varchar(64) NOT NULL DEFAULT '',
+  `hash` varchar(128) NOT NULL DEFAULT '',
+  `salt` varchar(64) NOT NULL DEFAULT '',
+  `hint` varchar(64) NOT NULL DEFAULT '',
+  `email` varchar(64) NOT NULL DEFAULT '',
+  `has_recovery` tinyint(4) NOT NULL DEFAULT '0',
+  `code` varchar(32) NOT NULL DEFAULT '',
+  `code_expired` int(11) NOT NULL DEFAULT '0',
+  `attempts` int(11) NOT NULL DEFAULT '0',
+  `state` tinyint(4) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `user_presences`
 --
 
@@ -970,6 +993,13 @@ ALTER TABLE `user_notify_settings`
   ADD UNIQUE KEY `user_id` (`user_id`,`peer_type`,`peer_id`);
 
 --
+-- Indexes for table `user_passwords`
+--
+ALTER TABLE `user_passwords`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `user_presences`
 --
 ALTER TABLE `user_presences`
@@ -1028,7 +1058,7 @@ ALTER TABLE `auths`
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=216;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=237;
 
 --
 -- 使用表AUTO_INCREMENT `auth_op_logs`
@@ -1040,7 +1070,7 @@ ALTER TABLE `auth_op_logs`
 -- 使用表AUTO_INCREMENT `auth_phone_transactions`
 --
 ALTER TABLE `auth_phone_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- 使用表AUTO_INCREMENT `auth_salts`
@@ -1064,7 +1094,7 @@ ALTER TABLE `auth_updates_state`
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- 使用表AUTO_INCREMENT `banned`
@@ -1160,7 +1190,7 @@ ALTER TABLE `tmp_passwords`
 -- 使用表AUTO_INCREMENT `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- 使用表AUTO_INCREMENT `user_contacts`
@@ -1187,10 +1217,16 @@ ALTER TABLE `user_notify_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- 使用表AUTO_INCREMENT `user_passwords`
+--
+ALTER TABLE `user_passwords`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- 使用表AUTO_INCREMENT `user_presences`
 --
 ALTER TABLE `user_presences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用表AUTO_INCREMENT `user_privacys`
