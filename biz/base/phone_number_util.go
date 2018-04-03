@@ -48,7 +48,7 @@ func CheckAndGetPhoneNumber(number string) (phoneNumber string, err error) {
 		}
 	}
 
-	if err != nil {
+	if err == nil {
 		// DB里存储归一化的phone
 		phoneNumber = libphonenumber.NormalizeDigitsOnly(number)
 	}
