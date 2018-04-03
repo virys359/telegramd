@@ -22,13 +22,15 @@ package grpc_recovery2
 
 var (
 	defaultOptions = &options{
-		unaryRecoveryHandlerFunc: nil,
+		unaryRecoveryHandlerFunc:  nil,
+		unaryRecoveryHandlerFunc2: nil,
 		streamRecoveryHandlerFunc: nil,
 	}
 )
 
 type options struct {
 	unaryRecoveryHandlerFunc UnaryRecoveryHandlerFunc
+	unaryRecoveryHandlerFunc2 UnaryRecoveryHandlerFunc
 	streamRecoveryHandlerFunc StreamRecoveryHandlerFunc
 }
 
@@ -47,6 +49,12 @@ type Option func(*options)
 func WithUnaryRecoveryHandler(f UnaryRecoveryHandlerFunc) Option {
 	return func(o *options) {
 		o.unaryRecoveryHandlerFunc = f
+	}
+}
+
+func WithUnaryRecoveryHandler2(f UnaryRecoveryHandlerFunc) Option {
+	return func(o *options) {
+		o.unaryRecoveryHandlerFunc2 = f
 	}
 }
 

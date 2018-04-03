@@ -32,7 +32,6 @@ var (
 	headerRpcMetadata = "rpc_metadata"
 )
 
-
 func RpcMetadataFromMD(md metadata.MD) (*RpcMetadata, error) {
 	val := metautils.NiceMD(md).Get(headerRpcMetadata)
 	if val == "" {
@@ -42,7 +41,7 @@ func RpcMetadataFromMD(md metadata.MD) (*RpcMetadata, error) {
 	// proto.Marshal()
 	buf, err := base64.StdEncoding.DecodeString(val)
 	if err != nil {
-		return nil, fmt.Errorf("Base64 decode error, rpc_metadata: %s, error: %v", val, err)
+		return nil, fmt.Errorf("base64 decode error, rpc_metadata: %s, error: %v", val, err)
 			//panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_OTHER2),
 			//	fmt.Sprintf("Base64 decode error, rpc_metadata: %s", val)))
 	}
@@ -72,7 +71,7 @@ func RpcMetadataFromIncoming(ctx context.Context) *RpcMetadata {
 	return md
 }
 
-func RpcMetadatToOutgoing(ctx context.Context, md *RpcMetadata) (context.Context, error) {
+func RpcMetadataToOutgoing(ctx context.Context, md *RpcMetadata) (context.Context, error) {
 	buf, err := proto.Marshal(md)
 	if err != nil {
 		glog.Errorf("Marshal rpc_metadata error: %v", err)

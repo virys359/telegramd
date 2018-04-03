@@ -59,7 +59,7 @@ func NewRpcServer(addr string, discovery *service_discovery.ServiceDiscoveryServ
 		// return nil
 	}
 
-	s := grpc_recovery2.NewRecoveryServer(BizUnaryRecoveryHandler, BizStreamRecoveryHandler)
+	s := grpc_recovery2.NewRecoveryServer2(BizUnaryRecoveryHandler, BizUnaryRecoveryHandler2, BizStreamRecoveryHandler)
 	rs := &RPCServer{
 		addr:     addr,
 		registry: registry,

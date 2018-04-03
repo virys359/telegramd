@@ -342,10 +342,7 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 
 	if err != nil {
 		glog.Error(err)
-		reply.Result = &mtproto.TLRpcError { Data2: &mtproto.RpcError_Data {
-			ErrorCode: mtproto.RPC_INTERNAL_ERROR,
-			ErrorMessage: "INTERNAL_ERROR",
-		}}
+		reply.Result = err.(*mtproto.TLRpcError)
 	} else {
 		glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
 		reply.Result = rpcResult

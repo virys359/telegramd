@@ -43,7 +43,14 @@ func UnaryServerInterceptor(opts ...Option) grpc.UnaryServerInterceptor {
 			}
 		}()
 
-		return handler(ctx, req)
+		// TODO(@benqi): 加一层
+		r, err2 := handler(ctx, req)
+		if err2 != nil {
+			err = unaryRecoverFrom(ctx, err2, o.unaryRecoveryHandlerFunc2)
+			return r, err
+		} else {
+			return r, nil
+		}
 	}
 }
 
@@ -67,6 +74,14 @@ func unaryRecoverFrom(ctx context.Context, p interface{}, f UnaryRecoveryHandler
 	}
 	return f(ctx, p)
 }
+
+//func unaryRecoverFrom2(ctx context.Context, p interface{}, f UnaryRecoveryHandlerFunc) error {
+//	if f == nil {
+//		return status.Errorf(codes.Internal, "%s", p)
+//	}
+//	return f(ctx, p)
+//}
+//
 
 func streamRecoverFrom(stream grpc.ServerStream, p interface{}, f StreamRecoveryHandlerFunc) error {
 	if f == nil {

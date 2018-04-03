@@ -45,6 +45,20 @@ func BizUnaryRecoveryHandler(ctx context.Context, p interface{}) (err error) {
 	return
 }
 
+func BizUnaryRecoveryHandler2(ctx context.Context, p interface{}) (err error) {
+	switch p.(type) {
+	case *mtproto.TLRpcError:
+		code, _ := p.(*mtproto.TLRpcError)
+		md, _ := RpcErrorToMD(code)
+		grpc.SetTrailer(ctx, md)
+		err = p.(*mtproto.TLRpcError)
+		// err = status.Errorf(codes.Unknown, "panic triggered rpc_error: {%v}", p)
+	default:
+		err = status.Errorf(codes.Unknown, "panic unknown triggered: %v", p)
+	}
+	return
+}
+
 func BizStreamRecoveryHandler(stream grpc.ServerStream, p interface{}) (err error) {
 	return
 }

@@ -33,6 +33,7 @@ var (
 
 // Server To Client
 func RpcErrorFromMD(md metadata.MD) (rpcErr *mtproto.TLRpcError) {
+	glog.Info("rpc error from md: ", md)
 	val := metautils.NiceMD(md).Get(headerRpcErrpor)
 	if val == "" {
 		// TODO(@benqi): 未设置rpc_error
@@ -60,7 +61,7 @@ func RpcErrorFromMD(md metadata.MD) (rpcErr *mtproto.TLRpcError) {
 		return
 	}
 
-	glog.Errorf("%v", rpcErr)
+	// glog.Errorf("%v", rpcErr)
 	return rpcErr
 }
 
@@ -71,5 +72,5 @@ func RpcErrorToMD(md *mtproto.TLRpcError) (metadata.MD, error) {
 		return nil, err
 	}
 
-	return metadata.Pairs(headerRpcMetadata, base64.StdEncoding.EncodeToString(buf)), nil
+	return metadata.Pairs(headerRpcErrpor, base64.StdEncoding.EncodeToString(buf)), nil
 }

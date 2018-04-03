@@ -100,7 +100,9 @@ func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (m
 	t := mtproto.FindRPCContextTuple(object)
 	if t == nil {
 		err := fmt.Errorf("Invoke error: %v not regist!\n", object)
-		return nil, err
+		glog.Error(err)
+		return nil, mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL), "INTERNAL_SERVER_ERROR")
+		// return nil, err
 	}
 
 	glog.Infof("Invoke - method: {%s}, req: {%v}", t.Method, object)
@@ -111,24 +113,27 @@ func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (m
 
 	// ctx := context.Background()
 	// glog.Infof("Invoke - NewReplyFunc: {%v}\n", r)
-	ctx, _ := RpcMetadatToOutgoing(context.Background(), rpcMetaData)
+	ctx, _ := RpcMetadataToOutgoing(context.Background(), rpcMetaData)
 	glog.Infof("Invoke - NewReplyFunc: {%v}\n", r)
 	err := c.conn.Invoke(ctx, t.Method, object, r, grpc.Header(&header), grpc.Trailer(&trailer))
+
+	glog.Infof("header: {%v}, trailer: {%v}", header, trailer)
+
 	// TODO(@benqi): process header from server
 	// grpc.Header(&header)
 	// glog.Infof("Invoke - error: {%v}", err)
 
 	if err != nil {
+		glog.Errorf("RPC method: %s,  >> %v.Invoke(_) = _, %v: \n", t.Method, c.conn, err)
 		// TODO(@benqi): 哪些情况需要断开客户端连接
-		if s, ok := status.FromError(err); !ok {
+		if s, ok := status.FromError(err); ok {
 			switch s.Code() {
 			// TODO(@benqi): Rpc error, trailer has rpc_error metadata
 			case codes.Unknown:
-				return RpcErrorFromMD(trailer), nil
+				return nil, RpcErrorFromMD(trailer)
 			}
 		}
-		glog.Errorf("RPC method: %s,  >> %v.Invoke(_) = _, %v: \n", t.Method, c.conn, err)
-		return mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL), "INTERNAL_SERVER_ERROR"), nil
+		return nil, mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL), "INTERNAL_SERVER_ERROR")
 	} else {
 		glog.Infof("Invoke - Invoke reply: {%v}\n", r)
 		reply, ok := r.(mtproto.TLObject)
@@ -138,7 +143,7 @@ func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (m
 		if !ok {
 			err = fmt.Errorf("Invalid reply type, maybe server side bug, %v\n", reply)
 			glog.Error(err)
-			return mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL), "INTERNAL_SERVER_ERROR"), nil
+			return nil, mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL), "INTERNAL_SERVER_ERROR")
 		}
 
 		return reply, nil
