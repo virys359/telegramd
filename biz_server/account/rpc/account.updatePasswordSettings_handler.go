@@ -18,20 +18,38 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.updatePasswordSettings#fa7c4b86 current_password_hash:bytes new_settings:account.PasswordInputSettings = Bool;
 func (s *AccountServiceImpl) AccountUpdatePasswordSettings(ctx context.Context, request *mtproto.TLAccountUpdatePasswordSettings) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountUpdatePasswordSettings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.updatePasswordSettings#fa7c4b86 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AccountUpdatePasswordSettings logic
+	passwordInputSetting := request.NewSettings.To_AccountPasswordInputSettings()
 
-	return nil, fmt.Errorf("Not impl AccountUpdatePasswordSettings")
+	passwordLogic, err := account.MakePasswordData(md.UserId)
+	if err == nil {
+		err = passwordLogic.UpdatePasswordSetting(request.CurrentPasswordHash,
+			passwordInputSetting.GetNewSalt(),
+			passwordInputSetting.GetNewPasswordHash(),
+			passwordInputSetting.GetHint(),
+			passwordInputSetting.GetEmail())
+
+		// 未注册：error_message: "EMAIL_UNCONFIRMED" [STRING],
+	}
+
+	if err != nil {
+		glog.Error("account.updatePasswordSettings#fa7c4b86 - error: ", err)
+		return nil, err
+	}
+
+	reply := mtproto.ToBool(true)
+	glog.Infof("account.getPassword#548a30f5 - reply: {}", logger.JsonDebugData(reply))
+	return reply, nil
 }

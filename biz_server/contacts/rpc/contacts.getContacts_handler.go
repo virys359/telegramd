@@ -35,6 +35,12 @@ func (s *ContactsServiceImpl) ContactsGetContacts(ctx context.Context, request *
 	contacts := mtproto.NewTLContactsContacts()
 
 	contactsDOList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(md.UserId)
+	if len(contactsDOList) == 0 {
+		// contacts is nil
+		contacts.SetSavedCount(0)
+		return contacts.To_Contacts_Contacts(), nil
+	}
+
 	contacts.SetSavedCount(int32(len(contactsDOList)))
 
 	userIdList := make([]int32, 0, len(contactsDOList))

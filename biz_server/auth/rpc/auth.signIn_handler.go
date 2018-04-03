@@ -79,8 +79,8 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 	// signIn sucess, check phoneRegistered.
 	if !phoneRegistered {
 		//  not register, next step: auth.singIn
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_UNOCCUPIED), "phone number unoccupied")
-		glog.Info("auth.signIn#bcd51581 - not register: ", err)
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_NUMBER_UNOCCUPIED)
+		glog.Info("auth.signIn#bcd51581 - not registered, next step auth.signIn, ", err)
 		return nil, err
 	}
 

@@ -104,7 +104,9 @@ func (s *AuthServiceImpl) AuthSignUp(ctx context.Context, request *mtproto.TLAut
 	auth.BindAuthKeyAndUser(md.AuthId, user.GetId())
 	// TODO(@benqi): check and set authKeyId state
 	// TODO(@benqi): 修改那些将我的phoneNumber加到他们的联系人列表里的联系人的状态
+
 	// TODO(@benqi): 创建新帐号后执行的事件
+	user2.CreateNewUserPassword(user.GetId())
 
 	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
 		User: user.To_User(),

@@ -43,6 +43,8 @@ import (
 	}
  */
 
+// 客户端调用auth.signIn时返回SESSION_PASSWORD_NEEDED时会触发
+
 // auth.checkPassword#a63011e password_hash:bytes = auth.Authorization;
 func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtproto.TLAuthCheckPassword) (*mtproto.Auth_Authorization, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

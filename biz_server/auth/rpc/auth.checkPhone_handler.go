@@ -32,7 +32,7 @@ import (
 // auth.checkPhone#6fe51dfb phone_number:string = auth.CheckedPhone;
 func (s *AuthServiceImpl) AuthCheckPhone(ctx context.Context, request *mtproto.TLAuthCheckPhone) (*mtproto.Auth_CheckedPhone, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("uth.checkPhone#6fe51dfb - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("auth.checkPhone#6fe51dfb - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
 	if err != nil {

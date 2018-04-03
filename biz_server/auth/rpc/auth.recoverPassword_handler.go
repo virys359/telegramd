@@ -18,37 +18,41 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
-
-/*
-	if (error.text.startsWith("CODE_INVALID")) {
-		onPasscodeError(true);
-	} else if (error.text.startsWith("FLOOD_WAIT")) {
-		int time = Utilities.parseInt(error.text);
-		String timeString;
-		if (time < 60) {
-			timeString = LocaleController.formatPluralString("Seconds", time);
-		} else {
-			timeString = LocaleController.formatPluralString("Minutes", time / 60);
-		}
-		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
-	} else {
-		needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
-	}
- */
 
 // auth.recoverPassword#4ea56e92 code:string = auth.Authorization;
 func (s *AuthServiceImpl) AuthRecoverPassword(ctx context.Context, request *mtproto.TLAuthRecoverPassword) (*mtproto.Auth_Authorization, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AuthRecoverPassword - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("auth.recoverPassword#4ea56e92 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AuthRecoverPassword logic
+	var (
+		err error = nil
+	)
 
-	return nil, fmt.Errorf("Not impl AuthRecoverPassword")
+	if request.Code == "" {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CODE_INVALID)
+		glog.Error(err)
+		return nil, err
+	} else {
+		err = account.CheckRecoverCode(md.UserId, request.Code)
+		if err != nil {
+			glog.Error(err)
+			return nil, err
+		}
+	}
+
+	user := user2.GetUser(md.UserId)
+	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
+		User: user.To_User(),
+	}}
+
+	glog.Infof("auth.recoverPassword#4ea56e92 - reply: %s\n", logger.JsonDebugData(authAuthorization))
+	return authAuthorization.To_Auth_Authorization(), nil
 }

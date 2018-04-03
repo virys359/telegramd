@@ -23,6 +23,8 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/baselib/crypto"
+	"encoding/hex"
 )
 
 func CheckUserAccessHash(id int32, hash int64) bool {
@@ -38,7 +40,7 @@ func makeUserStatusOnline() *mtproto.UserStatus {
 	status := &mtproto.UserStatus{
 		Constructor: mtproto.TLConstructor_CRC32_userStatusOnline,
 		Data2: &mtproto.UserStatus_Data{
-			WasOnline: int32(now),
+			// WasOnline: int32(now),
 			Expires:   int32(now + 60),
 		},
 	}
@@ -51,14 +53,12 @@ func GetUserByPhoneNumber(self bool, phoneNumber string) *userData {
 		return nil
 	} else {
 		var (
-			self = false
 			contact = false
 			mutalContact = false
 			status *mtproto.UserStatus
 		)
 
 		if self {
-			self = true
 			contact = true
 			mutalContact = true
 			status = makeUserStatusOnline()
@@ -110,4 +110,13 @@ func CreateNewUser(phoneNumber, firstName, lastName string) *mtproto.TLUser {
 		Status:        makeUserStatusOnline(),
 	}}
 	return user
+}
+
+func CreateNewUserPassword(userId int32) {
+	// gen server_nonce
+	do := &dataobject.UserPasswordsDO{
+		UserId:     userId,
+		ServerSalt: hex.EncodeToString(crypto.GenerateNonce(8)),
+	}
+	dao.GetUserPasswordsDAO(dao.DB_MASTER).Insert(do)
 }

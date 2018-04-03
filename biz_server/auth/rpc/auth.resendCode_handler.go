@@ -54,6 +54,7 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 	// 1. check phone code
 	if request.PhoneCodeHash == "" {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "auth.resendCode#3ef1a9bf: phone code hash empty.")
+		glog.Error(err)
 		return nil, err
 	}
 
@@ -72,8 +73,9 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 
 	// PHONE_NUMBER_BANNED: Banned phone number
 	banned := auth.CheckBannedByPhoneNumber(phoneNumber)
-	if !banned {
+	if banned {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
+		glog.Error(err)
 		return nil, err
 	}
 

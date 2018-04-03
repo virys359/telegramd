@@ -20,11 +20,11 @@ package auth
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/mtproto"
 	"time"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
 // TODO(@benqi): 当前测试环境code统一为"123456"
@@ -209,6 +209,10 @@ func MakeCodeDataByHash(authKeyId int64, phoneNumber, codeHash string) *phoneCod
 	return code
 }
 
+func (code *phoneCodeData) String() string {
+	return fmt.Sprintf("{authKeyId: %d, phoneNumber: %s, codeHash: %s, state: %d}", code.authKeyId, code.phoneNumber, code.codeHash, code.state)
+}
+
 func (code *phoneCodeData) checkDataType(validType int) {
 	// TODO(@benqi): panic
 	if code.dataType != validType {
@@ -250,10 +254,9 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 	// 使用最简单的办法，每次新建
 	sentCodeType, nextCodeType := makeCodeType(phoneRegistered, allowFlashCall, currentNumber)
 	// TODO(@benqi): gen rand number
-	code.code = "12345"
-	// TODO(@benqi): 生成一个32字节的随机字串
-	code.codeHash = fmt.Sprintf("%20d", base.NextSnowflakeId())
-	//
+	code.code = "123456"
+	// code.codeHash = fmt.Sprintf("%20d", base.NextSnowflakeId())
+	code.codeHash = crypto.GenerateStringNonce(16)
 	code.codeExpired = int32(time.Now().Unix() + 15*60)
 	code.sentCodeType = sentCodeType
 	code.nextCodeType = nextCodeType
@@ -274,6 +277,7 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 		SentCodeType:     int8(code.sentCodeType),
 		FlashCallPattern: code.flashCallPattern,
 		NextCodeType:     int8(code.nextCodeType),
+		State: 			  kCodeStateSent,
 		ApiId:            apiId,
 		ApiHash:          apiHash,
 	}
@@ -293,7 +297,7 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 func (code *phoneCodeData) DoReSendCode() error {
 	code.checkDataType(kDBTypeLoad)
 
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.codeHash, code.phoneNumber)
+	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
 	if do == nil {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "invalid phone number")
 		glog.Error(err)
@@ -365,24 +369,24 @@ func (code *phoneCodeData) DoSignIn(phoneCode string, phoneRegistered bool) erro
 
 	code.checkDataType(kDBTypeLoad)
 
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.codeHash, code.phoneNumber)
+	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
 	if do == nil {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "invalid phone number")
-		glog.Error(err)
+		glog.Error(code, ", error: ", err)
 		return err
 	}
 	code.tableId = do.Id
 
-	// TODO(@benqi): attempts
-	if do.Attempts > 3 {
-		// TODO(@benqi): 输入了太多次错误的phone code
-		err := mtproto.NewFloodWaitX(15*60, "too many attempts.")
-		return err
-	}
+	//// TODO(@benqi): attempts
+	//if do.Attempts > 3 {
+	//	// TODO(@benqi): 输入了太多次错误的phone code
+	//	err := mtproto.NewFloodWaitX(15*60, "too many attempts.")
+	//	return err
+	//}
 
 	// TODO(@benqi): 重复请求处理...
 	// check state invalid.
-	if do.State != kCodeStateSent {
+	if do.State != kCodeStateSent && do.State != kCodeStateSignIn {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR), "code state error")
 		glog.Error(err)
 		return err
@@ -435,7 +439,7 @@ func (code *phoneCodeData) DoSignUp(phoneCode string) error {
 
 	code.checkDataType(kDBTypeLoad)
 
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.codeHash, code.phoneNumber)
+	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
 	if do == nil {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "invalid phone number")
 		glog.Error(err)
@@ -444,15 +448,15 @@ func (code *phoneCodeData) DoSignUp(phoneCode string) error {
 	code.tableId = do.Id
 
 	// TODO(@benqi): attempts
-	if do.Attempts > 3 {
-		// TODO(@benqi): 输入了太多次错误的phone code
-		err := mtproto.NewFloodWaitX(15*60, "too many attempts.")
-		return err
-	}
+	//if do.Attempts > 3 {
+	//	// TODO(@benqi): 输入了太多次错误的phone code
+	//	err := mtproto.NewFloodWaitX(15*60, "too many attempts.")
+	//	return err
+	//}
 
 	// TODO(@benqi): 重复请求处理...
 	// check state invalid.
-	if do.State != kCodeStateSignIn {
+	if do.State != kCodeStateSignIn && do.State != kCodeStateDeleted {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR), "code state error")
 		glog.Error(err)
 		return err

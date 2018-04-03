@@ -18,37 +18,33 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
-/*
-  Forgot password?
-
-	if (error.text.startsWith("FLOOD_WAIT")) {
-		int time = Utilities.parseInt(error.text);
-		String timeString;
-		if (time < 60) {
-			timeString = LocaleController.formatPluralString("Seconds", time);
-		} else {
-			timeString = LocaleController.formatPluralString("Minutes", time / 60);
-		}
-		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
-	} else {
-		needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
-	}
- */
+// Forgot password?
 
 // auth.requestPasswordRecovery#d897bc66 = auth.PasswordRecovery;
 func (s *AuthServiceImpl) AuthRequestPasswordRecovery(ctx context.Context, request *mtproto.TLAuthRequestPasswordRecovery) (*mtproto.Auth_PasswordRecovery, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AuthRequestPasswordRecovery - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("auth.requestPasswordRecovery#d897bc66 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AuthRequestPasswordRecovery logic
+	passwordLogic, err := account.MakePasswordData(md.UserId)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
 
-	return nil, fmt.Errorf("Not impl AuthRequestPasswordRecovery")
+	passwordRecovery, err := passwordLogic.RequestPasswordRecovery()
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+
+	glog.Infof("auth.requestPasswordRecovery#d897bc66 - reply: %s\n", logger.JsonDebugData(passwordRecovery))
+	return passwordRecovery, nil
 }

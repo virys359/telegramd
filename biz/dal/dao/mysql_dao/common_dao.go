@@ -40,11 +40,13 @@ func (dao *CommonDAO) CheckExists(table string, params map[string]interface{}) b
 		return false
 	}
 
-	names := make([]string, len(params))
-	for k, _ := range params {
+	names := make([]string, 0, len(params))
+	for k, v := range params {
 		names = append(names, k+" = :"+k)
+		glog.Info("k: ", k, ", v: ", v)
 	}
-	sql := fmt.Sprintf("SELECT 1 FROM %s WHERE %s limit 1", table, strings.Join(names, " AND "))
+	sql := fmt.Sprintf("SELECT 1 FROM %s WHERE %s LIMIT 1", table, strings.Join(names, " AND "))
+	glog.Info("checkExists - sql: ", sql, ", params: ", params)
 	rows, err := dao.db.NamedQuery(sql, params)
 	if err != nil {
 		glog.Errorf("CheckExists - [%s] error: %s", table, err)

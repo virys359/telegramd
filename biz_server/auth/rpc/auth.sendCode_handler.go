@@ -100,6 +100,7 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	currentNumber := mtproto.FromBool(request.GetCurrentNumber())
 	if !currentNumber && request.GetAllowFlashcall() {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "auth.sendCode#86aef0ec: current_number is true but allow_flashcall is false.")
+		glog.Error(err)
 		return nil, err
 	}
 
@@ -108,10 +109,12 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	//    Please wait for a few days before signing up again.</string>
 	//
 
+	// glog.Info("phoneNumber: ", phoneNumber)
 	// PHONE_NUMBER_BANNED: Banned phone number
 	banned := auth.CheckBannedByPhoneNumber(phoneNumber)
-	if !banned {
+	if banned {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
+		glog.Error(err)
 		return nil, err
 	}
 

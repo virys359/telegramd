@@ -3,9 +3,9 @@
     <operation name="Insert">
         <sql>
             INSERT INTO auth_phone_transactions
-                (auth_key_id, phone_number, code, code_expired, transaction_hash, sent_code_type, flash_call_pattern, next_code_type, api_id, api_hash)
+                (auth_key_id, phone_number, code, code_expired, transaction_hash, sent_code_type, flash_call_pattern, next_code_type, state, api_id, api_hash)
             VALUES
-                (:auth_key_id, :phone_number, :code, :code_expired, :transaction_hash, :sent_code_type, :flash_call_pattern, :next_code_type, :api_id, :api_hash)
+                (:auth_key_id, :phone_number, :code, :code_expired, :transaction_hash, :sent_code_type, :flash_call_pattern, :next_code_type, :state, :api_id, :api_hash)
         </sql>
     </operation>
     <operation name="SelectByPhoneCodeHash">
