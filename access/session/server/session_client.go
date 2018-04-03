@@ -135,6 +135,12 @@ func (c *sessionClient) sendDataListToClient(md *mtproto.ZProtoMetadata, message
  */
 func (c *sessionClient) onSessionClientData(sessDataList *sessionDataList) {
 	for _, message := range sessDataList.messages {
+
+		// TODO(@benqi): 暂时这么用
+		if c.authUserId == 0 {
+			c.authUserId = getUserIDByAuthKeyID(c.authKeyId)
+		}
+
 		// check new_session_created
 		if c.state == kSessionStateCreated {
 			c.onNewSessionCreated(message.MsgId, message.Seqno, message.Object)

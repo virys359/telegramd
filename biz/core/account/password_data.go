@@ -365,3 +365,13 @@ func CheckRecoverCode(userId int32, code string) error {
 	}
 	return nil
 }
+
+// SESSION_PASSWORD_NEEDED
+func CheckSessionPasswordNeeded(userId int32) bool {
+	// TODO(@benqi):  仅仅从数据库里取state字段
+	do := dao.GetUserPasswordsDAO(dao.DB_SLAVE).SelectByUserId(userId)
+	if do == nil {
+		return false
+	}
+	return do.State == kStateNoRecoveryPassword || do.State == kStateConfirmedPassword
+}

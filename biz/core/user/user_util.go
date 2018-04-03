@@ -85,6 +85,44 @@ func GetUserByPhoneNumber(self bool, phoneNumber string) *userData {
 	}
 }
 
+func GetUserById(self bool, userId int32) *userData {
+	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(userId)
+	if do == nil {
+		return nil
+	} else {
+		var (
+			contact = false
+			mutalContact = false
+			status *mtproto.UserStatus
+		)
+
+		if self {
+			contact = true
+			mutalContact = true
+			status = makeUserStatusOnline()
+		} else {
+			// TODO(@benqi): check contacts, getUserStatus
+		}
+
+		// Status: &mtproto.T
+		data := &userData{ TLUser: &mtproto.TLUser{ Data2: &mtproto.User_Data{
+			Id:            do.Id,
+			Self:          self,
+			Contact:       contact,
+			MutualContact: mutalContact,
+			AccessHash:    do.AccessHash,
+			FirstName:     do.FirstName,
+			LastName:      do.LastName,
+			Username:      do.Username,
+			Phone:         do.Phone,
+			// TODO(@benqi): Load from db
+			Photo:         mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto(),
+			Status:        status,
+		}}}
+		return data
+	}
+}
+
 func CreateNewUser(phoneNumber, firstName, lastName string) *mtproto.TLUser {
 	// usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	do := &dataobject.UsersDO{

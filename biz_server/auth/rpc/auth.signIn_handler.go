@@ -26,6 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core/auth"
 	user2 "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 /*
@@ -84,20 +85,19 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 		return nil, err
 	}
 
-	//// TODO(@benqi): check SESSION_PASSWORD_NEEDED
-	//sessionPasswordNeeded := true
-	//if sessionPasswordNeeded {
-	//	err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_SESSION_PASSWORD_NEEDED), "session password needed")
-	//	glog.Info("auth.signIn#bcd51581 - not register: ", err)
-	//	return nil, err
-	//}
-
 	// do signIn...
 	user := user2.GetUserByPhoneNumber(true, phoneNumber)
-
 	// Bind authKeyId and userId
 	auth.BindAuthKeyAndUser(md.AuthId, user.GetId())
 	// TODO(@benqi): check and set authKeyId state
+
+	// Check SESSION_PASSWORD_NEEDED
+	sessionPasswordNeeded := account.CheckSessionPasswordNeeded(user.GetId())
+	if sessionPasswordNeeded {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_SESSION_PASSWORD_NEEDED)
+		glog.Info("auth.signIn#bcd51581 - registered, next step auth.checkPassword, ", err)
+		return nil, err
+	}
 
 	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
 		User: user.To_User(),

@@ -18,12 +18,13 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
 
 /*
@@ -48,9 +49,36 @@ import (
 // auth.checkPassword#a63011e password_hash:bytes = auth.Authorization;
 func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtproto.TLAuthCheckPassword) (*mtproto.Auth_Authorization, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AuthCheckPassword - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("auth.checkPassword#a63011e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AuthCheckPassword logic
+	var (
+		err error
+	)
 
-	return nil, fmt.Errorf("Not impl AuthCheckPassword")
+	if len(request.PasswordHash) == 0 {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PASSWORD_HASH_INVALID)
+		glog.Error(err)
+		return nil, err
+	}
+
+	passwordLogic, err := account.MakePasswordData(md.UserId)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+
+	ok := passwordLogic.CheckPassword(request.PasswordHash)
+	if !ok {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PASSWORD_HASH_INVALID)
+		glog.Error(err)
+		return nil, err
+	}
+
+	user := user2.GetUserById(true, md.UserId)
+	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
+		User: user.To_User(),
+	}}
+
+	glog.Infof("auth.checkPassword#a63011e - reply: %s\n", logger.JsonDebugData(authAuthorization))
+	return authAuthorization.To_Auth_Authorization(), nil
 }
