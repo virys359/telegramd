@@ -32,6 +32,7 @@ import (
 //	TLConstructor_CRC32_gzip_packed 	= 0x3072cfa1
 //)
 
+///////////////////////////////////////////////////////////////////////////////
 //message2 msg_id:long seqno:int bytes:int body:Object = Message2; // parsed manually
 type TLMessage2 struct {
 	MsgId 	int64
@@ -72,6 +73,7 @@ func (m *TLMessage2) Decode(dbuf *DecodeBuf) error {
 	return dbuf2.err
 }
 
+///////////////////////////////////////////////////////////////////////////////
 //msg_container#73f1f8dc messages:vector<message2> = MessageContainer; // parsed manually
 type TLMsgContainer struct {
 	Messages []TLMessage2
@@ -114,6 +116,7 @@ func (m *TLMsgContainer) Decode(dbuf *DecodeBuf) error {
 	return dbuf.err
 }
 
+///////////////////////////////////////////////////////////////////////////////
 //msg_copy#e06046b2 orig_message:Message2 = MessageCopy; // parsed manually, not used - use msg_container
 type TLMsgCopy struct {
 	OrigMessage TLMessage2
@@ -137,6 +140,7 @@ func (m *TLMsgCopy) Decode(dbuf *DecodeBuf) error {
 	return dbuf.err
 }
 
+///////////////////////////////////////////////////////////////////////////////
 //gzip_packed#3072cfa1 packed_data:string = Object; // parsed manually
 type TLGzipPacked struct {
 	PackedData []byte
@@ -172,6 +176,7 @@ func (m *TLGzipPacked) Decode(dbuf *DecodeBuf) error {
 	return dbuf.err
 }
 
+///////////////////////////////////////////////////////////////////////////////
 //rpc_result#f35c6d01 req_msg_id:long result:Object = RpcResult; // parsed manually
 type TLRpcResult struct {
 	ReqMsgId int64
@@ -196,4 +201,298 @@ func (m *TLRpcResult) Decode(dbuf *DecodeBuf) error {
 	return dbuf.err
 }
 
-// contacts.getContacts2#22c6aa08 hash:string = contacts.Contacts;
+///////////////////////////////////////////////////////////////////////////////
+// contacts.getContactsLayer70#22c6aa08 hash:string = contacts.Contacts;
+func NewTLContactsGetContactsLayer70() *TLContactsGetContactsLayer70 {
+	return &TLContactsGetContactsLayer70{}
+}
+
+func (m *TLContactsGetContactsLayer70) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_contacts_getContactsLayer70))
+
+	x.String(m.Hash)
+
+	return x.buf
+}
+
+func (m *TLContactsGetContactsLayer70) Decode(dbuf *DecodeBuf) error {
+	m.Hash = dbuf.String()
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Vector
+
+////////////////////////////////////////////////////////////////////////////////
+//// Vector api result type
+//message Vector_WallPaper {
+//    repeated WallPaper datas = 1;
+//}
+func NewVector_WallPaper() *Vector_WallPaper {
+	return &Vector_WallPaper{}
+}
+
+func (m *Vector_WallPaper) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_WallPaper) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*WallPaper, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &WallPaper{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_User {
+//    repeated User datas = 1;
+//}
+func NewVector_User() *Vector_User {
+	return &Vector_User{}
+}
+func (m *Vector_User) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_User) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*User, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &User{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_ContactStatus {
+//    repeated ContactStatus datas = 1;
+//}
+func NewVector_ContactStatus() *Vector_ContactStatus {
+	return &Vector_ContactStatus{}
+}
+func (m *Vector_ContactStatus) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_ContactStatus) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*ContactStatus, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &ContactStatus{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_int {
+//    repeated int32 datas = 1;
+//}
+func NewVectorInt() *VectorInt {
+	return &VectorInt{}
+}
+
+func (m *VectorInt) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.VectorInt(m.Datas)
+	return x.buf
+}
+
+func (m *VectorInt) Decode(dbuf *DecodeBuf) error {
+	// dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	m.Datas = dbuf.VectorInt()
+	return dbuf.err
+}
+
+//message Vector_ReceivedNotifyMessage {
+//    repeated ReceivedNotifyMessage datas = 1;
+//}
+func NewVector_ReceivedNotifyMessage() *Vector_ReceivedNotifyMessage {
+	return &Vector_ReceivedNotifyMessage{}
+}
+func (m *Vector_ReceivedNotifyMessage) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_ReceivedNotifyMessage) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*ReceivedNotifyMessage, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &ReceivedNotifyMessage{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_long {
+//    repeated int64 datas = 1;
+//}
+func NewVectorLong() *VectorLong {
+	return &VectorLong{}
+}
+func (m *VectorLong) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.VectorLong(m.Datas)
+	return x.buf
+}
+
+func (m *VectorLong) Decode(dbuf *DecodeBuf) error {
+	m.Datas = dbuf.VectorLong()
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_StickerSetCovered {
+//    repeated StickerSetCovered datas = 1;
+//}
+func NewVector_StickerSetCovered() *Vector_StickerSetCovered {
+	return &Vector_StickerSetCovered{}
+}
+func (m *Vector_StickerSetCovered) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_StickerSetCovered) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*StickerSetCovered, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &StickerSetCovered{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_CdnFileHash {
+//    repeated CdnFileHash datas = 1;
+//}
+func NewVector_CdnFileHash() *Vector_CdnFileHash {
+	return &Vector_CdnFileHash{}
+}
+func (m *Vector_CdnFileHash) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_CdnFileHash) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*CdnFileHash, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &CdnFileHash{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_LangPackString {
+//    repeated LangPackString datas = 1;
+//}
+func NewVector_LangPackString() *Vector_LangPackString {
+	return &Vector_LangPackString{}
+}
+func (m *Vector_LangPackString) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_LangPackString) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*LangPackString, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &LangPackString{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//message Vector_LangPackLanguage {
+//    repeated LangPackLanguage datas = 1;
+//}
+func NewVector_LangPackLanguage() *Vector_LangPackLanguage {
+	return &Vector_LangPackLanguage{}
+}
+func (m *Vector_LangPackLanguage) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_LangPackLanguage) Decode(dbuf *DecodeBuf) error {
+	dbuf.Int() // TODO(@benqi): Check crc32 invalid
+	l1 := dbuf.Int()
+	m.Datas = make([]*LangPackLanguage, l1)
+	for i := int32(0); i < l1; i++ {
+		m.Datas[i] = &LangPackLanguage{}
+		(*m.Datas[i]).Decode(dbuf)
+	}
+
+	return dbuf.err
+}

@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
@@ -29,9 +28,18 @@ import (
 // langpack.getStrings#2e1ee318 lang_code:string keys:Vector<string> = Vector<LangPackString>;
 func (s *LangpackServiceImpl) LangpackGetStrings(ctx context.Context, request *mtproto.TLLangpackGetStrings) (*mtproto.Vector_LangPackString, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("LangpackGetStrings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("langpack.getStrings#2e1ee318 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl LangpackGetStrings logic
+	// TODO(@benqi): Query from langpack config db
+	langpackStrings := &mtproto.Vector_LangPackString{}
+	for _, s := range request.Keys {
+		s2 := &mtproto.TLLangPackString{Data2: &mtproto.LangPackString_Data{
+			Key:   s,
+			Value: s, // TODO(@benqi): Query value by key
+		}}
+		langpackStrings.Datas = append(langpackStrings.Datas, s2.To_LangPackString())
+	}
 
-	return nil, fmt.Errorf("Not impl LangpackGetStrings")
+	glog.Infof("langpack.getStrings#2e1ee318 - reply: %s", logger.JsonDebugData(langpackStrings))
+	return langpackStrings, nil
 }
