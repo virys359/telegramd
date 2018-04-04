@@ -26,6 +26,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+// 客户端未使用
+
 // auth.sendInvites#771c1d97 phone_numbers:Vector<string> message:string = Bool;
 func (s *AuthServiceImpl) AuthSendInvites(ctx context.Context, request *mtproto.TLAuthSendInvites) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

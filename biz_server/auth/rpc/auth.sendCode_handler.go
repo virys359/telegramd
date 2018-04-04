@@ -97,12 +97,17 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	// CurrentNumber: 是否为本机电话号码
 
 	// if allow_flashcall is true then current_number is true
-	currentNumber := mtproto.FromBool(request.GetCurrentNumber())
-	if !currentNumber && request.GetAllowFlashcall() {
-		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "auth.sendCode#86aef0ec: current_number is true but allow_flashcall is false.")
-		glog.Error(err)
-		return nil, err
+	var currentNumber bool
+	if request.GetCurrentNumber() == nil {
+		currentNumber = false
+	} else {
+		currentNumber = mtproto.FromBool(request.GetCurrentNumber())
 	}
+	//if !currentNumber && request.GetAllowFlashcall() {
+	//	err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "auth.sendCode#86aef0ec: current_number is true but allow_flashcall is false.")
+	//	glog.Error(err)
+	//	return nil, err
+	//}
 
 	// TODO(@benqi): PHONE_NUMBER_FLOOD
 	// <string name="PhoneNumberFlood">Sorry, you have deleted and re-created your account too many times recently.
