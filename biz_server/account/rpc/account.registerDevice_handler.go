@@ -24,16 +24,31 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/biz/core"
 )
 
 // account.registerDevice#637ea878 token_type:int token:string = Bool;
 func (s *AccountServiceImpl) AccountRegisterDevice(ctx context.Context, request *mtproto.TLAccountRegisterDevice) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountRegisterDevice - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.registerDevice#637ea878 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+
+	// Check token format by token_type
+	// TODO(@benqi): check token format by token_type
+	if request.Token == "" {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err)
+		return nil, err
+	}
 
 	// TODO(@benqi): check toke_type invalid
-	account.RegisterDevice(md.AuthId, md.UserId, int8(request.TokenType), request.Token)
+	if request.TokenType < core.TOKEN_TYPE_APNS || request.TokenType > core.TOKEN_TYPE_INTERNAL_PUSH {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err)
+		return nil, err
+	}
 
-	glog.Infof("AccountRegisterDevice - reply: {true}")
-	return mtproto.ToBool(true), nil
+	registered := account.RegisterDevice(md.AuthId, md.UserId, int8(request.TokenType), request.Token)
+
+	glog.Infof("account.registerDevice#637ea878 - reply: {true}")
+	return mtproto.ToBool(registered), nil
 }

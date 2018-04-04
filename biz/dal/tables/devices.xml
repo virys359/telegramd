@@ -2,13 +2,29 @@
 <table sqlname="devices">
     <operation name="Insert">
         <sql>
-            INSERT INTO devices (auth_id, user_id, token_type, token, state) VALUES (:auth_id, :user_id, :token_type, :token, :state)
+            INSERT INTO devices (auth_key_id, user_id, token_type, token) VALUES (:auth_key_id, :user_id, :token_type, :token)
         </sql>
     </operation>
 
-    <operation name="SelectId">
+    <operation name="SelectByToken">
         <sql>
-            SELECT id FROM devices WHERE auth_id = :auth_id AND token_type = :token_type AND token = :token limit 1
+            SELECT
+                id, auth_key_id, user_id, token_type, token
+            FROM
+                devices
+            WHERE
+                token_type = :token_type AND token = :token
+        </sql>
+    </operation>
+
+    <operation name="SelectListById" result_set="list">
+        <sql>
+            SELECT
+                id, auth_key_id, user_id, token_type, token
+            FROM
+                devices
+            WHERE
+                token_type = :token_type AND token = :token AND state=1
         </sql>
     </operation>
 
@@ -18,9 +34,9 @@
         </sql>
     </operation>
 
-    <operation name="UpdateState">
+    <operation name="UpdateStateByToken">
         <sql>
-            UPDATE devices SET state = :state WHERE  auth_id = :auth_id AND token_type = :token_type AND token = :token
+            UPDATE devices SET state = :state WHERE  token_type = :token_type AND token = :token
         </sql>
     </operation>
 </table>

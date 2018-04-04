@@ -26,6 +26,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+// 客户端未使用
+
 // account.updateDeviceLocked#38df3532 period:int = Bool;
 func (s *AccountServiceImpl) AccountUpdateDeviceLocked(ctx context.Context, request *mtproto.TLAccountUpdateDeviceLocked) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

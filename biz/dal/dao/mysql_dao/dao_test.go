@@ -36,6 +36,6 @@ func TestReflectTLObject(t *testing.T) {
 
 	userDialogsDAO := NewUserDialogsDAO(db)
 
-	vals, err := userDialogsDAO.SelectPinnedDialogs(1)
+	vals := userDialogsDAO.SelectPinnedDialogs(1)
 	fmt.Println(vals)
 }

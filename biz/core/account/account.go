@@ -21,45 +21,8 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/biz/base"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/mtproto"
 )
-//
-//const (
-//	TOKEN_TYPE_APNS = 1
-//	TOKEN_TYPE_GCM = 2
-//	TOKEN_TYPE_MPNS = 3
-//	TOKEN_TYPE_SIMPLE_PUSH = 4
-//	TOKEN_TYPE_UBUNTU_PHONE = 5
-//	TOKEN_TYPE_BLACKBERRY = 6
-//	// Android里使用
-//	TOKEN_TYPE_INTERNAL_PUSH = 7
-//)
-
-func RegisterDevice(authKeyId int64, userId int32, tokenType int8, token string) {
-	slave := dao.GetDevicesDAO(dao.DB_SLAVE)
-	master := dao.GetDevicesDAO(dao.DB_MASTER)
-	do := slave.SelectId(authKeyId, tokenType, token)
-	if do == nil {
-		do = &dataobject.DevicesDO{
-			AuthId: authKeyId,
-			UserId: userId,
-			TokenType: tokenType,
-			State: 0,
-			CreatedAt: base2.NowFormatYMDHMS(),
-		}
-		master.Insert(do)
-	} else {
-		master.UpdateStateById(1, do.Id)
-	}
-}
-
-func UnRegisterDevice(authKeyId int64, userId int32, tokenType int8, token string) bool {
-	master := dao.GetDevicesDAO(dao.DB_MASTER)
-	rows := master.UpdateState(tokenType, authKeyId, tokenType, token)
-	return rows == 1
-
-}
 
 func GetNotifySettings(userId int32, peer *base.PeerUtil) *mtproto.PeerNotifySettings {
 	do := dao.GetUserNotifySettingsDAO(dao.DB_SLAVE).SelectByPeer(userId, int8(peer.PeerType), peer.PeerId)

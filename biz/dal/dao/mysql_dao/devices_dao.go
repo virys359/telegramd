@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewDevicesDAO(db *sqlx.DB) *DevicesDAO {
 	return &DevicesDAO{db}
 }
 
-// insert into devices(auth_id, user_id, token_type, token, state) values (:auth_id, :user_id, :token_type, :token, :state)
+// insert into devices(auth_key_id, user_id, token_type, token) values (:auth_key_id, :user_id, :token_type, :token)
 // TODO(@benqi): sqlmap
 func (dao *DevicesDAO) Insert(do *dataobject.DevicesDO) int64 {
-	var query = "insert into devices(auth_id, user_id, token_type, token, state) values (:auth_id, :user_id, :token_type, :token, :state)"
+	var query = "insert into devices(auth_key_id, user_id, token_type, token) values (:auth_key_id, :user_id, :token_type, :token)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,14 +53,14 @@ func (dao *DevicesDAO) Insert(do *dataobject.DevicesDO) int64 {
 	return id
 }
 
-// select id from devices where auth_id = :auth_id and token_type = :token_type and token = :token limit 1
+// select id, auth_key_id, user_id, token_type, token from devices where token_type = :token_type and token = :token
 // TODO(@benqi): sqlmap
-func (dao *DevicesDAO) SelectId(auth_id int64, token_type int8, token string) *dataobject.DevicesDO {
-	var query = "select id from devices where auth_id = ? and token_type = ? and token = ? limit 1"
-	rows, err := dao.db.Queryx(query, auth_id, token_type, token)
+func (dao *DevicesDAO) SelectByToken(token_type int8, token string) *dataobject.DevicesDO {
+	var query = "select id, auth_key_id, user_id, token_type, token from devices where token_type = ? and token = ?"
+	rows, err := dao.db.Queryx(query, token_type, token)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectId(_), error: %v", err)
+		errDesc := fmt.Sprintf("Queryx in SelectByToken(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -71,7 +71,7 @@ func (dao *DevicesDAO) SelectId(auth_id int64, token_type int8, token string) *d
 	if rows.Next() {
 		err = rows.StructScan(do)
 		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectId(_), error: %v", err)
+			errDesc := fmt.Sprintf("StructScan in SelectByToken(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
@@ -82,9 +82,40 @@ func (dao *DevicesDAO) SelectId(auth_id int64, token_type int8, token string) *d
 	return do
 }
 
+// select id, auth_key_id, user_id, token_type, token from devices where token_type = :token_type and token = :token and state = 1
+// TODO(@benqi): sqlmap
+func (dao *DevicesDAO) SelectListById(token_type int8, token string) []dataobject.DevicesDO {
+	var query = "select id, auth_key_id, user_id, token_type, token from devices where token_type = ? and token = ? and state = 1"
+	rows, err := dao.db.Queryx(query, token_type, token)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectListById(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.DevicesDO
+	for rows.Next() {
+		v := dataobject.DevicesDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectListById(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
 // update devices set state = :state where id = :id
 // TODO(@benqi): sqlmap
-func (dao *DevicesDAO) UpdateStateById(state int8, id int32) int64 {
+func (dao *DevicesDAO) UpdateStateById(state int8, id int64) int64 {
 	var query = "update devices set state = ? where id = ?"
 	r, err := dao.db.Exec(query, state, id)
 
@@ -104,21 +135,21 @@ func (dao *DevicesDAO) UpdateStateById(state int8, id int32) int64 {
 	return rows
 }
 
-// update devices set state = :state where auth_id = :auth_id and token_type = :token_type and token = :token
+// update devices set state = :state where token_type = :token_type and token = :token
 // TODO(@benqi): sqlmap
-func (dao *DevicesDAO) UpdateState(state int8, auth_id int64, token_type int8, token string) int64 {
-	var query = "update devices set state = ? where auth_id = ? and token_type = ? and token = ?"
-	r, err := dao.db.Exec(query, state, auth_id, token_type, token)
+func (dao *DevicesDAO) UpdateStateByToken(state int8, token_type int8, token string) int64 {
+	var query = "update devices set state = ? where token_type = ? and token = ?"
+	r, err := dao.db.Exec(query, state, token_type, token)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in UpdateState(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdateStateByToken(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in UpdateState(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdateStateByToken(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
