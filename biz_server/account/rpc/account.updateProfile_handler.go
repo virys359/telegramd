@@ -23,31 +23,49 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	user2 "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 // account.updateProfile#78515775 flags:# first_name:flags.0?string last_name:flags.1?string about:flags.2?string = User;
 func (s *AccountServiceImpl) AccountUpdateProfile(ctx context.Context, request *mtproto.TLAccountUpdateProfile) (*mtproto.User, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountUpdateProfile - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.updateProfile#78515775 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	affected := dao.GetUsersDAO(dao.DB_SLAVE).UpdateProfile(
-		request.GetFirstName(),
-		request.GetLastName(),
-		request.GetAbout(),
-		md.UserId)
+	// TODO(@benqi): Check first_name and last_name invalid. has err: FIRSTNAME_INVALID, LASTNAME_INVALID
 
-	ok := affected == 1
-
-	if !ok {
-		// TODO(@benqi): return rpc error!
-		// panic()
+	// Check format
+	// about长度<70并且可以为emtpy
+	// first_name必须有值
+	if len(request.FirstName) > 0 && len(request.About) > 0 {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_FIRSTNAME_INVALID)
+		glog.Error(err)
+		return nil, err
 	}
 
-	user := user2.GetUser(md.UserId)
-	// TODO(@benqi): Delivery updateUserName updates
+	user := user2.GetUserById(true, md.UserId)
 
-	glog.Infof("AccountUpdateProfile - reply: {%v}\n", user)
+	if len(request.FirstName) > 0 {
+		account.UpdateFirstAndLastName(md.UserId, request.FirstName, request.LastName)
+
+		// return new first_name and last_name.
+		user.SetFirstName(request.FirstName)
+		user.SetLastName(request.LastName)
+	} else {
+		account.UpdateAbout(md.UserId, request.About)
+	}
+
+	// sync to other sessions
+	// updateUserName#a7332b73 user_id:int first_name:string last_name:string username:string = Update;
+	updateUserName := &mtproto.TLUpdateUserName{Data2: &mtproto.Update_Data{
+		UserId:    md.UserId,
+		FirstName: user.GetFirstName(),
+		LastName:  user.GetLastName(),
+		Username:  user.GetUsername(),
+	}}
+	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserName.To_Update())
+
+	glog.Infof("account.updateProfile#78515775 - reply: {%v}", user)
 	return user.To_User(), nil
 }

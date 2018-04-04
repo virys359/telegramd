@@ -23,25 +23,58 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	user2 "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 // account.updateUsername#3e0bdd7c username:string = User;
 func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request *mtproto.TLAccountUpdateUsername) (*mtproto.User, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountUpdateUsername - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.updateUsername#3e0bdd7c - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	affected := dao.GetUsersDAO(dao.DB_MASTER).UpdateUsername(request.GetUsername(), md.UserId)
-	ok := affected == 1
+	// TODO(@benqi): wrapper checkUserName func
 
-	if !ok {
-		// panic()
+	// Check username format
+	// You can choose a username on Telegram.
+	// If you do, other people will be able to find
+	// you by this username and contact you
+	// without knowing your phone number.
+	//
+	// You can use a-z, 0-9 and underscores.
+	// Minimum length is 5 characters.";
+	//
+	if len(request.Username) < kMinimumUserNameLen || base.IsAlNumString(request.Username) {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
+		glog.Error("account.updateUsername#3e0bdd7c - format error: ", err)
+		return nil, err
+	} else {
+		userId := account.GetUserIdByUserName(request.Username)
+		if userId != md.UserId {
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_OCCUPIED)
+			glog.Error("account.updateUsername#3e0bdd7c - exists username: ", err)
+			return nil, err
+		}
 	}
 
-	user := user2.GetUser(md.UserId)
-	// TODO(@benqi): Delivery updateUserName updates
+	// affected
+	account.ChangeUserNameByUserId(md.UserId, request.Username)
 
-	glog.Infof("AccountReportPeer - reply: %s", logger.JsonDebugData(user))
+	user := user2.GetUserById(true, md.UserId)
+	// 要考虑到数据库主从同步问题
+	user.SetUsername(request.Username)
+
+	// sync to other sessions
+	// updateUserName#a7332b73 user_id:int first_name:string last_name:string username:string = Update;
+	updateUserName := &mtproto.TLUpdateUserName{Data2: &mtproto.Update_Data{
+		UserId:    md.UserId,
+		FirstName: user.GetFirstName(),
+		LastName:  user.GetLastName(),
+		Username:  request.Username,
+	}}
+	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserName.To_Update())
+
+	glog.Infof("account.updateUsername#3e0bdd7c - reply: %s", logger.JsonDebugData(user))
 	return user.To_User(), nil
 }

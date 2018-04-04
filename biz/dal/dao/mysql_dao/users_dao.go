@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -240,6 +240,50 @@ func (dao *UsersDAO) UpdateUsername(username string, id int32) int64 {
 	return rows
 }
 
+// update users set first_name = :first_name, last_name = :last_name where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) UpdateFirstAndLastName(first_name string, last_name string, id int32) int64 {
+	var query = "update users set first_name = ?, last_name = ? where id = ?"
+	r, err := dao.db.Exec(query, first_name, last_name, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateFirstAndLastName(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateFirstAndLastName(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update users set about = :about where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) UpdateAbout(about string, id int32) int64 {
+	var query = "update users set about = ? where id = ?"
+	r, err := dao.db.Exec(query, about, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateAbout(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateAbout(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
 // update users set first_name = :first_name, last_name = :last_name, about = :about where id = :id
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) UpdateProfile(first_name string, last_name string, about string, id int32) int64 {
@@ -260,4 +304,33 @@ func (dao *UsersDAO) UpdateProfile(first_name string, last_name string, about st
 	}
 
 	return rows
+}
+
+// select id from users where username = :username limit 1
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) SelectByUsername(username string) *dataobject.UsersDO {
+	var query = "select id from users where username = ? limit 1"
+	rows, err := dao.db.Queryx(query, username)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByUsername(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.UsersDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByUsername(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
 }

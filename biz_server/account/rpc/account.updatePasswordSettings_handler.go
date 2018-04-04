@@ -33,6 +33,8 @@ func (s *AccountServiceImpl) AccountUpdatePasswordSettings(ctx context.Context, 
 
 	passwordInputSetting := request.NewSettings.To_AccountPasswordInputSettings()
 
+	// TODO(@benqi): check request invalid
+
 	passwordLogic, err := account.MakePasswordData(md.UserId)
 	if err == nil {
 		err = passwordLogic.UpdatePasswordSetting(request.CurrentPasswordHash,

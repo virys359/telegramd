@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018, https://github.com/nebulaim
+ *  Copyright (c) 2017, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +15,25 @@
  * limitations under the License.
  */
 
-package dataobject
+package mysql_dao
 
-type DevicesDO struct {
-	Id        int64  `db:"id"`
-	AuthKeyId int64  `db:"auth_key_id"`
-	UserId    int32  `db:"user_id"`
-	TokenType int8   `db:"token_type"`
-	Token     string `db:"token"`
-	State     int8   `db:"state"`
-	CreatedAt string `db:"created_at"`
-	UpdatedAt string `db:"updated_at"`
+import (
+	"fmt"
+	"strings"
+	"testing"
+)
+
+func TestCheckExists(t *testing.T) {
+	params := make(map[string]interface{})
+	params["username"] = "n1"
+	params["username2"] = "n2"
+
+	names := make([]string, 0, len(params))
+	fmt.Println(len(names))
+	for k, v := range params {
+		names = append(names, k+" = :"+k)
+		fmt.Println("k: ", k, ", v: ", v)
+	}
+	sql := fmt.Sprintf("SELECT 1 FROM users WHERE %s LIMIT 1", strings.Join(names, " AND "))
+	fmt.Println("checkExists - sql: {", sql, "}, params: ", params)
 }

@@ -23,18 +23,43 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/core/account"
+)
+
+const (
+	kMinimumUserNameLen = 5
 )
 
 // account.checkUsername#2714d86c username:string = Bool;
 func (s *AccountServiceImpl) AccountCheckUsername(ctx context.Context, request *mtproto.TLAccountCheckUsername) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountCheckUsername - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.checkUsername#2714d86c - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	params := make(map[string]interface{})
-	params["username"] = request.GetUsername()
-	r := dao.GetCommonDAO(dao.DB_SLAVE).CheckExists("users", params)
+	// Check username format
+	// You can choose a username on Telegram.
+	// If you do, other people will be able to find
+	// you by this username and contact you
+	// without knowing your phone number.
+	//
+	// You can use a-z, 0-9 and underscores.
+	// Minimum length is 5 characters.";
+	//
+	if len(request.Username) < kMinimumUserNameLen || !base.IsAlNumString(request.Username) {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
+		glog.Error("account.checkUsername#2714d86c - format error: ", err)
+		return nil, err
+	} else {
+		// userId == 0 为username不存在
+		userId := account.GetUserIdByUserName(request.Username)
+		// username不存在或者不是自身
+		if userId > 0 && userId != md.UserId {
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_OCCUPIED)
+			glog.Error("account.checkUsername#2714d86c - exists username: ", err)
+			return nil, err
+		}
+	}
 
-	glog.Infof("AccountReportPeer - reply: {%v}", r)
-	return mtproto.ToBool(r), nil
+	glog.Infof("account.checkUsername#2714d86c - reply: {true}")
+	return mtproto.ToBool(true), nil
 }

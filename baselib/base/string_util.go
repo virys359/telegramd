@@ -86,3 +86,22 @@ func JoinUint64List(s []uint64, sep string) string {
 	}
 	return string(buf)
 }
+
+// IsAlNumString returns true if an alpha numeric string consists of characters a-zA-Z0-9
+func IsAlNumString(s string) bool {
+	c := 0
+	for _, r := range s {
+		switch {
+		case '0' <= r && r <= '9':
+			c++
+			break
+		case 'a' <= r && r <= 'z':
+			c++
+			break
+		case 'A' <= r && r <= 'Z':
+			c++
+			break
+		}
+	}
+	return len(s) == c
+}

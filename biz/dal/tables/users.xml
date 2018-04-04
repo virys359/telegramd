@@ -52,9 +52,27 @@
         </sql>
     </operation>
 
+    <operation name="UpdateFirstAndLastName">
+        <sql>
+            UPDATE users SET first_name = :first_name, last_name = :last_name WHERE id=:id
+        </sql>
+    </operation>
+
+    <operation name="UpdateAbout">
+        <sql>
+            UPDATE users SET about = :about WHERE id=:id
+        </sql>
+    </operation>
+
     <operation name="UpdateProfile">
         <sql>
             UPDATE users SET first_name = :first_name, last_name = :last_name, about = :about WHERE id=:id
+        </sql>
+    </operation>
+
+    <operation name="SelectByUsername">
+        <sql>
+            SELECT id FROM users WHERE username=:username LIMIT 1
         </sql>
     </operation>
 </table>
