@@ -31,7 +31,7 @@ type MySQLConfig struct {
 }
 
 func NewSqlxDB(c* MySQLConfig) (db *sqlx.DB) {
-	db, err := sqlx.Connect("mysql", c.DSN);
+	db, err := sqlx.Connect("mysql", c.DSN)
 	if err != nil {
 		glog.Errorf("Connect db error: %s", err)
 	}
