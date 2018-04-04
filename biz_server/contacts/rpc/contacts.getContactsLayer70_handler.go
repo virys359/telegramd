@@ -24,7 +24,7 @@ import (
 //"fmt"
 )
 
-/*
+
 import (
 	"fmt"
 	"github.com/golang/glog"
@@ -35,8 +35,8 @@ import (
 )
 
 // @benqi: Android client
-// contacts.getContacts#22c6aa08 hash:string = contacts.Contacts;
-func (s *ContactsServiceImpl) ContactsGetContacts2(ctx context.Context, request *mtproto.TLContactsGetContacts2) (*mtproto.Contacts_Contacts, error) {
+// contacts.getContactsLayer70#22c6aa08 hash:string = contacts.Contacts;
+func (s *ContactsServiceImpl) ContactsGetContactsLayer70(ctx context.Context, request *mtproto.TLContactsGetContactsLayer70) (*mtproto.Contacts_Contacts, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("ContactsGetContacts - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
@@ -81,4 +81,3 @@ func (s *ContactsServiceImpl) ContactsGetContacts2(ctx context.Context, request 
 	return nil, fmt.Errorf("Not impl ContactsGetContacts")
 
 }
-*/

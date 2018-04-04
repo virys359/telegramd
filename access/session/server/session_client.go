@@ -321,6 +321,11 @@ func (c *sessionClient) onMsgResendReq(md *mtproto.ZProtoMetadata, msgId int64, 
 }
 
 func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
+	// TODO(@benqi): request error.
+	if request == nil {
+		return
+	}
+
 	glog.Infof("onRpcRequest - request: {%s}", request)
 
 	if c.sessionType == UNKNOWN {

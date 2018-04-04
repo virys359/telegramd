@@ -385,6 +385,11 @@ message TL_contacts_getContacts {
     int32 hash = 1;
 }
 
+// contacts.getContactsLayer70#22c6aa08 hash:string = contacts.Contacts;
+message TL_contacts_getContactsLayer70 {
+    string hash = 1;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // contacts.importContacts#2c800be5 contacts:Vector<InputContact> = contacts.ImportedContacts;
 message TL_contacts_importContacts {
@@ -2036,6 +2041,8 @@ service RPCContacts {
     rpc contacts_getStatuses(TL_contacts_getStatuses) returns (Vector_ContactStatus) {}
 // contacts.getContacts#c023849f hash:int = contacts.Contacts;
     rpc contacts_getContacts(TL_contacts_getContacts) returns (contacts_Contacts) {}
+// contacts.getContactsLayer70#22c6aa08 hash:string = contacts.Contacts;
+    rpc contacts_getContactsLayer70(TL_contacts_getContactsLayer70) returns (contacts_Contacts) {}
 // contacts.importContacts#2c800be5 contacts:Vector<InputContact> = contacts.ImportedContacts;
     rpc contacts_importContacts(TL_contacts_importContacts) returns (contacts_ImportedContacts) {}
 // contacts.deleteContact#8e953744 id:InputUser = contacts.Link;
