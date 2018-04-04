@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-04-03 13:38:05
+-- Generation Time: 2018-04-04 16:19:45
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -337,8 +337,8 @@ CREATE TABLE `chat_participants` (
 --
 
 CREATE TABLE `devices` (
-  `id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL,
+  `auth_key_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
   `token_type` tinyint(4) NOT NULL,
   `token` varchar(255) NOT NULL,
@@ -883,7 +883,8 @@ ALTER TABLE `chat_participants`
 -- Indexes for table `devices`
 --
 ALTER TABLE `devices`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token_type` (`token_type`,`token`);
 
 --
 -- Indexes for table `files`
@@ -1058,7 +1059,7 @@ ALTER TABLE `auths`
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=237;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=249;
 
 --
 -- 使用表AUTO_INCREMENT `auth_op_logs`
@@ -1070,7 +1071,7 @@ ALTER TABLE `auth_op_logs`
 -- 使用表AUTO_INCREMENT `auth_phone_transactions`
 --
 ALTER TABLE `auth_phone_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- 使用表AUTO_INCREMENT `auth_salts`
@@ -1094,7 +1095,7 @@ ALTER TABLE `auth_updates_state`
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- 使用表AUTO_INCREMENT `banned`
@@ -1130,7 +1131,7 @@ ALTER TABLE `chat_participants`
 -- 使用表AUTO_INCREMENT `devices`
 --
 ALTER TABLE `devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `files`
@@ -1226,7 +1227,7 @@ ALTER TABLE `user_passwords`
 -- 使用表AUTO_INCREMENT `user_presences`
 --
 ALTER TABLE `user_presences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- 使用表AUTO_INCREMENT `user_privacys`
