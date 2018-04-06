@@ -15,19 +15,21 @@
  * limitations under the License.
  */
 
-package dataobject
+package account
 
-type UserContactsDO struct {
-	Id               int32  `db:"id"`
-	OwnerUserId      int32  `db:"owner_user_id"`
-	ContactUserId    int32  `db:"contact_user_id"`
-	ContactPhone     string `db:"contact_phone"`
-	ContactFirstName string `db:"contact_first_name"`
-	ContactLastName  string `db:"contact_last_name"`
-	Mutual           int8   `db:"mutual"`
-	IsBlocked        int8   `db:"is_blocked"`
-	IsDeleted        int8   `db:"is_deleted"`
-	Date2            int32  `db:"date2"`
-	CreatedAt        string `db:"created_at"`
-	UpdatedAt        string `db:"updated_at"`
+import (
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+)
+
+func InsertReportData(userId, peerType, peerId, reason int32, text string) bool {
+	do := &dataobject.ReportsDO{
+		UserId: userId,
+		PeerType: peerType,
+		PeerId: peerId,
+		Reason: int8(reason),
+		Content: text,
+	}
+	do.Id = dao.GetReportsDAO(dao.DB_MASTER).Insert(do)
+	return do.Id > 0
 }

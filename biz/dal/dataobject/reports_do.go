@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,7 @@
 package dataobject
 
 type ReportsDO struct {
-	Id        int32  `db:"id"`
-	AuthId    int64  `db:"auth_id"`
+	Id        int64  `db:"id"`
 	UserId    int32  `db:"user_id"`
 	PeerType  int32  `db:"peer_type"`
 	PeerId    int32  `db:"peer_id"`

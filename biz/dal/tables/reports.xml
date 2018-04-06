@@ -3,9 +3,9 @@
     <operation name="Insert">
         <sql>
             INSERT INTO
-                reports (auth_id, user_id, peer_type, peer_id, reason, content)
+                reports (user_id, peer_type, peer_id, reason, content)
             VALUES
-                (:auth_id, :user_id, :peer_type, :peer_id, :reason, :content)
+                (:user_id, :peer_type, :peer_id, :reason, :content)
         </sql>
     </operation>
 </table>

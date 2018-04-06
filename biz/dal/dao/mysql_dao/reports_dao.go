@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewReportsDAO(db *sqlx.DB) *ReportsDAO {
 	return &ReportsDAO{db}
 }
 
-// insert into reports(auth_id, user_id, peer_type, peer_id, reason, content) values (:auth_id, :user_id, :peer_type, :peer_id, :reason, :content)
+// insert into reports(user_id, peer_type, peer_id, reason, content) values (:user_id, :peer_type, :peer_id, :reason, :content)
 // TODO(@benqi): sqlmap
 func (dao *ReportsDAO) Insert(do *dataobject.ReportsDO) int64 {
-	var query = "insert into reports(auth_id, user_id, peer_type, peer_id, reason, content) values (:auth_id, :user_id, :peer_type, :peer_id, :reason, :content)"
+	var query = "insert into reports(user_id, peer_type, peer_id, reason, content) values (:user_id, :peer_type, :peer_id, :reason, :content)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)

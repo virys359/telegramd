@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewUserContactsDAO(db *sqlx.DB) *UserContactsDAO {
 	return &UserContactsDAO{db}
 }
 
-// insert into user_contacts(owner_user_id, contact_user_id, date2, created_at) values (:owner_user_id, :contact_user_id, :date2, :created_at)
+// insert into user_contacts(owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, date2) values (:owner_user_id, :contact_user_id, :contact_phone, :contact_first_name, :contact_last_name, :mutual, :date2)
 // TODO(@benqi): sqlmap
 func (dao *UserContactsDAO) Insert(do *dataobject.UserContactsDO) int64 {
-	var query = "insert into user_contacts(owner_user_id, contact_user_id, date2, created_at) values (:owner_user_id, :contact_user_id, :date2, :created_at)"
+	var query = "insert into user_contacts(owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, date2) values (:owner_user_id, :contact_user_id, :contact_phone, :contact_first_name, :contact_last_name, :mutual, :date2)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,70 @@ func (dao *UserContactsDAO) Insert(do *dataobject.UserContactsDO) int64 {
 	return id
 }
 
-// select contact_user_id, date2 from user_contacts where owner_user_id = :owner_user_id and is_deleted = 0
+// select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = :owner_user_id and contact_user_id = :contact_user_id
+// TODO(@benqi): sqlmap
+func (dao *UserContactsDAO) SelectUserContact(owner_user_id int32, contact_user_id int32) *dataobject.UserContactsDO {
+	var query = "select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = ? and contact_user_id = ?"
+	rows, err := dao.db.Queryx(query, owner_user_id, contact_user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectUserContact(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.UserContactsDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectUserContact(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
+
+// select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = :owner_user_id
+// TODO(@benqi): sqlmap
+func (dao *UserContactsDAO) SelectAllUserContacts(owner_user_id int32) []dataobject.UserContactsDO {
+	var query = "select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = ?"
+	rows, err := dao.db.Queryx(query, owner_user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectAllUserContacts(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.UserContactsDO
+	for rows.Next() {
+		v := dataobject.UserContactsDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectAllUserContacts(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
+// select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = :owner_user_id and is_deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *UserContactsDAO) SelectUserContacts(owner_user_id int32) []dataobject.UserContactsDO {
-	var query = "select contact_user_id, date2 from user_contacts where owner_user_id = ? and is_deleted = 0"
+	var query = "select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = ? and is_deleted = 0"
 	rows, err := dao.db.Queryx(query, owner_user_id)
 
 	if err != nil {
@@ -115,10 +175,76 @@ func (dao *UserContactsDAO) SelectBlockedList(owner_user_id int32, date2 int32, 
 	return values
 }
 
-// update user_contacts set is_blocked = :is_blocked where owner_user_id = :owner_user_id and contact_user_id = :contact_user_id
+// update user_contacts set contact_first_name = :contact_first_name, contact_last_name = :contact_last_name, is_deleted = 0 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UserContactsDAO) UpdateContactNameById(contact_first_name string, contact_last_name string, id int32) int64 {
+	var query = "update user_contacts set contact_first_name = ?, contact_last_name = ?, is_deleted = 0 where id = ?"
+	r, err := dao.db.Exec(query, contact_first_name, contact_last_name, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateContactNameById(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateContactNameById(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update user_contacts set contact_user_id = :contact_user_id, mutual = :mutual where contact_user_id = 0 and owner_user_id = :owner_user_id and contact_phone = :contact_phone
+// TODO(@benqi): sqlmap
+func (dao *UserContactsDAO) UpdateContactUserId(contact_user_id int32, mutual int8, owner_user_id int32, contact_phone string) int64 {
+	var query = "update user_contacts set contact_user_id = ?, mutual = ? where contact_user_id = 0 and owner_user_id = ? and contact_phone = ?"
+	r, err := dao.db.Exec(query, contact_user_id, mutual, owner_user_id, contact_phone)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateContactUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateContactUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update user_contacts set mutual = :mutual where contact_user_id != 0 and (owner_user_id = :owner_user_id and contact_user_id = :contact_user_id)
+// TODO(@benqi): sqlmap
+func (dao *UserContactsDAO) UpdateMutual(mutual int8, owner_user_id int32, contact_user_id int32) int64 {
+	var query = "update user_contacts set mutual = ? where contact_user_id != 0 and (owner_user_id = ? and contact_user_id = ?)"
+	r, err := dao.db.Exec(query, mutual, owner_user_id, contact_user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateMutual(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateMutual(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update user_contacts set is_blocked = :is_blocked where contact_user_id != 0 and (owner_user_id = :owner_user_id and contact_user_id = :contact_user_id)
 // TODO(@benqi): sqlmap
 func (dao *UserContactsDAO) UpdateBlock(is_blocked int8, owner_user_id int32, contact_user_id int32) int64 {
-	var query = "update user_contacts set is_blocked = ? where owner_user_id = ? and contact_user_id = ?"
+	var query = "update user_contacts set is_blocked = ? where contact_user_id != 0 and (owner_user_id = ? and contact_user_id = ?)"
 	r, err := dao.db.Exec(query, is_blocked, owner_user_id, contact_user_id)
 
 	if err != nil {
@@ -137,10 +263,10 @@ func (dao *UserContactsDAO) UpdateBlock(is_blocked int8, owner_user_id int32, co
 	return rows
 }
 
-// update user_contacts set is_deleted = 1 where owner_user_id = :owner_user_id and contact_user_id in (:id_list)
+// update user_contacts set is_deleted = 1 where contact_user_id != 0 and (owner_user_id = :owner_user_id and contact_user_id in (:id_list))
 // TODO(@benqi): sqlmap
 func (dao *UserContactsDAO) DeleteContacts(owner_user_id int32, id_list []int32) int64 {
-	var q = "update user_contacts set is_deleted = 1 where owner_user_id = ? and contact_user_id in (?)"
+	var q = "update user_contacts set is_deleted = 1 where contact_user_id != 0 and (owner_user_id = ? and contact_user_id in (?))"
 	query, a, err := sqlx.In(q, owner_user_id, id_list)
 	r, err := dao.db.Exec(query, a...)
 

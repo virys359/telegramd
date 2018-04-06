@@ -24,31 +24,42 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
+/*
+ Android client source code:
+	if (ChatObject.isChannel(currentChat) && !currentChat.creator && (!currentChat.megagroup || currentChat.username != null && currentChat.username.length() > 0)) {
+		headerItem.addSubItem(report, LocaleController.getString("ReportChat", R.string.ReportChat));
+	}
+ */
 // account.reportPeer#ae189d5f peer:InputPeer reason:ReportReason = Bool;
 func (s *AccountServiceImpl) AccountReportPeer(ctx context.Context, request *mtproto.TLAccountReportPeer) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountReportPeer - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.reportPeer#ae189d5f - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	peer := base.FromInputPeer(request.GetPeer())
+	// TODO(@benqi): Check peer invalid
+	peer := request.Peer
+	// TODO(@benqi): Check peer access_hash
+	if peer.GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerChannel {
+		// TODO(@benqi): Add INPUT_PEER_INVALID code
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err)
+		return nil, err
+	} else {
+		// TODO(@benqi): !currentChat.creator && (!currentChat.megagroup || currentChat.username != null && currentChat.username.length() > 0)
+	}
+
+	// peer := base.FromInputPeer(request.GetPeer())
 	reason := base.FromReportReason(request.GetReason())
 
-	// Insert to db
-	do := &dataobject.ReportsDO{}
-	do.AuthId = md.AuthId
-	do.UserId = md.UserId
-	do.PeerType = peer.PeerType
-	do.PeerId = peer.PeerId
-	do.Reason = int8(reason)
+	text := ""
 	if reason == base.REASON_OTHER {
-		reason := request.GetReason().To_InputReportReasonOther()
-		do.Content = reason.GetText()
+		text = request.GetReason().GetData2().GetText()
 	}
-	dao.GetReportsDAO(dao.DB_MASTER).Insert(do)
 
-	glog.Infof("AccountReportPeer - reply: {true}",)
+	account.InsertReportData(md.UserId, base.PEER_CHANNEL, peer.GetData2().GetChannelId(), int32(reason), text)
+
+	glog.Infof("account.reportPeer#ae189d5f - reply: {true}",)
 	return mtproto.ToBool(true), nil
 }
