@@ -30,12 +30,12 @@ import (
 // account.getNotifySettings#12b3ad31 peer:InputNotifyPeer = PeerNotifySettings;
 func (s *AccountServiceImpl) AccountGetNotifySettings(ctx context.Context, request *mtproto.TLAccountGetNotifySettings) (*mtproto.PeerNotifySettings, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountGetNotifySettings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.getNotifySettings#12b3ad31 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl AccountGetNotifySettings logic
 	peer := base.FromInputNotifyPeer(request.GetPeer())
 	reply := account.GetNotifySettings(md.UserId, peer)
 
-	glog.Infof("AccountReportPeer - reply: %s", logger.JsonDebugData(reply))
+	glog.Infof("account.getNotifySettings#12b3ad31 - reply: %s", logger.JsonDebugData(reply))
 	return reply, nil
 }

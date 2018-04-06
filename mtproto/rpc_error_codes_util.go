@@ -130,10 +130,15 @@ func NewRpcError(code int32, message string) (err *TLRpcError) {
 				}}
 				glog.Error(err)
 			default:
+				code2 := code / 1000
+				if code2 == 0 {
+					code2 = code
+				}
+
 				err = &TLRpcError{Data2: &RpcError_Data{
 					// subcode = code * 1000 + i
-					ErrorCode: code / 1000,
-					ErrorMessage: fmt.Sprintf("%s: %s", name, message),
+					ErrorCode: int32(code2),
+					ErrorMessage: name,
 				}}
 			}
 		}
@@ -175,9 +180,14 @@ func NewRpcError2(code TLRpcErrorCodes) (err *TLRpcError) {
 				}}
 				glog.Error(err)
 			default:
+				code2 := code / 1000
+				if code2 == 0 {
+					code2 = code
+				}
+
 				err = &TLRpcError{Data2: &RpcError_Data{
 					// subcode = code * 1000 + i
-					ErrorCode: int32(code) / 1000,
+					ErrorCode: int32(code2),
 					ErrorMessage: name,
 				}}
 			}

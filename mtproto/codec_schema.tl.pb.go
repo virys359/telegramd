@@ -719,6 +719,7 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_users_getFullUser):                                func() TLObject { return NewTLUsersGetFullUser() },
 	int32(TLConstructor_CRC32_contacts_getStatuses):                             func() TLObject { return NewTLContactsGetStatuses() },
 	int32(TLConstructor_CRC32_contacts_getContacts):                             func() TLObject { return NewTLContactsGetContacts() },
+	int32(TLConstructor_CRC32_contacts_getContactsLayer70):                      func() TLObject { return NewTLContactsGetContactsLayer70() },
 	int32(TLConstructor_CRC32_contacts_importContacts):                          func() TLObject { return NewTLContactsImportContacts() },
 	int32(TLConstructor_CRC32_contacts_deleteContact):                           func() TLObject { return NewTLContactsDeleteContact() },
 	int32(TLConstructor_CRC32_contacts_deleteContacts):                          func() TLObject { return NewTLContactsDeleteContacts() },

@@ -28,11 +28,15 @@ import (
 // messages.getFeaturedStickers#2dacca4f hash:int = messages.FeaturedStickers;
 func (s *MessagesServiceImpl) MessagesGetFeaturedStickers(ctx context.Context, request *mtproto.TLMessagesGetFeaturedStickers) (*mtproto.Messages_FeaturedStickers, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetFeaturedStickers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getFeaturedStickers#2dacca4f - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl MessagesGetFeaturedStickers logic
-	stickers := mtproto.NewTLMessagesFeaturedStickersNotModified()
+	stickers := &mtproto.TLMessagesFeaturedStickers{Data2: &mtproto.Messages_FeaturedStickers_Data{
+		Hash: request.Hash,
+		Sets: []*mtproto.StickerSetCovered{},
+		Unread: []int64{},
+	}}
 
-	glog.Infof("MessagesGetFeaturedStickers - reply: %s", logger.JsonDebugData(stickers))
+	glog.Infof("messages.getFeaturedStickers#2dacca4f - reply: %s", logger.JsonDebugData(stickers))
 	return stickers.To_Messages_FeaturedStickers(), nil
 }

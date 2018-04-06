@@ -18,66 +18,54 @@
 package rpc
 
 import (
-//"github.com/nebulaim/telegramd/grpc_util"
-//"github.com/golang/glog"
-//"github.com/nebulaim/telegramd/baselib/logger"
-//"fmt"
-)
-
-
-import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // @benqi: Android client
 // contacts.getContactsLayer70#22c6aa08 hash:string = contacts.Contacts;
 func (s *ContactsServiceImpl) ContactsGetContactsLayer70(ctx context.Context, request *mtproto.TLContactsGetContactsLayer70) (*mtproto.Contacts_Contacts, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsGetContacts - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.getContactsLayer70#22c6aa08 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	//// TODO(@benqi): Logout逻辑处理，失效AuthKey
-	//// reply := mtproto.MakeBool(&mtproto.TLBoolTrue{})
-	//
-	//contacts := &mtproto.TLContactsContacts{}
-	//
-	//contactsDOList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(md.UserId)
-	//contacts.SavedCount = int32(len(contactsDOList))
-	//
-	//for _, do := range contactsDOList {
-	//	contact := &mtproto.TLContact{}
-	//	contact.UserId = do.ContactUserId
-	//	contact.Mutual = mtproto.MakeBool(&mtproto.TLBoolFalse{})
-	//
-	//	contacts.Contacts = append(contacts.Contacts, mtproto.MakeContact(contact))
-	//
-	//	userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(do.ContactUserId)
-	//	user := &mtproto.TLUser{}
-	//	user.Id = userDO.Id
-	//	if user.Id == md.UserId {
-	//		user.Self = true
-	//	} else {
-	//		user.Self = false
-	//	}
-	//	user.Contact = true
-	//	user.AccessHash = userDO.AccessHash
-	//	user.FirstName = userDO.FirstName
-	//	user.LastName = userDO.LastName
-	//	user.Username = userDO.Username
-	//	user.Phone = userDO.Phone
-	//
-	//	contacts.Users = append(contacts.Users, mtproto.MakeUser(user))
-	//}
-	//
-	//reply := mtproto.MakeContacts_Contacts(contacts)
-	//
-	//glog.Infof("ContactsGetContacts2 - reply: {%v}\n", reply)
-	//return reply, nil
+	contacts := mtproto.NewTLContactsContacts()
 
-	return nil, fmt.Errorf("Not impl ContactsGetContacts")
+	contactsDOList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(md.UserId)
+	if len(contactsDOList) == 0 {
+		// contacts is nil
+		contacts.SetSavedCount(0)
+		return contacts.To_Contacts_Contacts(), nil
+	}
 
+	contacts.SetSavedCount(int32(len(contactsDOList)))
+
+	userIdList := make([]int32, 0, len(contactsDOList))
+
+	for _, do := range contactsDOList {
+		contact := mtproto.NewTLContact()
+		contact.SetUserId(do.ContactUserId)
+		contact.SetMutual(mtproto.ToBool(true))
+		contacts.Data2.Contacts = append(contacts.Data2.Contacts, contact.To_Contact())
+		userIdList = append(userIdList, contact.GetUserId())
+	}
+
+	users := user.GetUserList(userIdList)
+	for _, u := range users {
+		if u.GetId() == md.UserId {
+			u.SetSelf(true)
+		} else {
+			u.SetSelf(false)
+		}
+		u.SetContact(true)
+		contacts.Data2.Users = append(contacts.Data2.Users, u.To_User())
+	}
+	// reply := mtproto.MakeContacts_Contacts(contacts)
+
+	glog.Infof("contacts.getContactsLayer70#22c6aa08 - reply: %s\n", logger.JsonDebugData(contacts))
+	return contacts.To_Contacts_Contacts(), nil
 }

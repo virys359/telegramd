@@ -64,7 +64,9 @@ func (s *AccountServiceImpl) AccountUpdateProfile(ctx context.Context, request *
 		LastName:  user.GetLastName(),
 		Username:  user.GetUsername(),
 	}}
+
 	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserName.To_Update())
+	// TODO(@benqi): push to other contacts
 
 	glog.Infof("account.updateProfile#78515775 - reply: {%v}", user)
 	return user.To_User(), nil

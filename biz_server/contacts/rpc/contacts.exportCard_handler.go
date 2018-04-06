@@ -26,6 +26,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+// 客户端未使用
+
 // contacts.exportCard#84e53737 = Vector<int>;
 func (s *ContactsServiceImpl) ContactsExportCard(ctx context.Context, request *mtproto.TLContactsExportCard) (*mtproto.VectorInt, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

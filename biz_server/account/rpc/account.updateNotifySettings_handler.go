@@ -31,7 +31,7 @@ import (
 // account.updateNotifySettings#84be5b93 peer:InputNotifyPeer settings:InputPeerNotifySettings = Bool;
 func (s *AccountServiceImpl) AccountUpdateNotifySettings(ctx context.Context, request *mtproto.TLAccountUpdateNotifySettings) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountUpdateNotifySettings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.updateNotifySettings#84be5b93 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	peer := base.FromInputNotifyPeer(request.GetPeer())
 	settings := request.GetSettings().To_InputPeerNotifySettings()
@@ -49,6 +49,6 @@ func (s *AccountServiceImpl) AccountUpdateNotifySettings(ctx context.Context, re
 
 	sync_client.GetSyncClient().PushToUserMeOneUpdateData(md.AuthId, md.SessionId, md.UserId, update.To_Update())
 
-	glog.Infof("AccountUpdateNotifySettings - reply: {trur}")
+	glog.Infof("account.updateNotifySettings#84be5b93 - reply: {trur}")
 	return mtproto.ToBool(true), nil
 }

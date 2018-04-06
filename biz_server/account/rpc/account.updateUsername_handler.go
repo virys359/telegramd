@@ -45,13 +45,15 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 	// You can use a-z, 0-9 and underscores.
 	// Minimum length is 5 characters.";
 	//
-	if len(request.Username) < kMinimumUserNameLen || base.IsAlNumString(request.Username) {
+	if len(request.Username) < kMinimumUserNameLen || !base.IsAlNumString(request.Username) {
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
 		glog.Error("account.updateUsername#3e0bdd7c - format error: ", err)
 		return nil, err
 	} else {
+		// userId == 0 为username不存在
 		userId := account.GetUserIdByUserName(request.Username)
-		if userId != md.UserId {
+		// username不存在或者不是自身
+		if userId > 0 && userId != md.UserId {
 			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_OCCUPIED)
 			glog.Error("account.updateUsername#3e0bdd7c - exists username: ", err)
 			return nil, err
@@ -74,6 +76,8 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 		Username:  request.Username,
 	}}
 	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserName.To_Update())
+
+	// TODO(@benqi): push to other contacts
 
 	glog.Infof("account.updateUsername#3e0bdd7c - reply: %s", logger.JsonDebugData(user))
 	return user.To_User(), nil

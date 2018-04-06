@@ -48,7 +48,11 @@ func (s *sessionManager) onSessionData(conn *net2.TcpConnection, sessionID uint6
 	sess, ok := s.sessions[authKeyId]
 	if !ok {
 		authKey := s.cache.GetAuthKey(authKeyId)
-		glog.Infof("onSessionData - authKeyId: {%d}, authKey: {%v}", authKeyId, authKey)
+		if authKey == nil {
+			err := fmt.Errorf("onSessionData - not found authKeyId: {%d}", authKeyId)
+			glog.Error(err)
+			return err
+		}
 		sess = newSessionClientList(authKeyId, authKey)
 		s.sessions[authKeyId] = sess
 		// sess.onNewClient(sessionID)

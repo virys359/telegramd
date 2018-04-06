@@ -28,13 +28,13 @@ import (
 )
 
 var (
-	headerRpcErrpor = "rpc_error"
+	headerRpcError = "rpc_error"
 )
 
 // Server To Client
 func RpcErrorFromMD(md metadata.MD) (rpcErr *mtproto.TLRpcError) {
 	glog.Info("rpc error from md: ", md)
-	val := metautils.NiceMD(md).Get(headerRpcErrpor)
+	val := metautils.NiceMD(md).Get(headerRpcError)
 	if val == "" {
 		// TODO(@benqi): 未设置rpc_error
 		rpcErr = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL),
@@ -72,5 +72,5 @@ func RpcErrorToMD(md *mtproto.TLRpcError) (metadata.MD, error) {
 		return nil, err
 	}
 
-	return metadata.Pairs(headerRpcErrpor, base64.StdEncoding.EncodeToString(buf)), nil
+	return metadata.Pairs(headerRpcError, base64.StdEncoding.EncodeToString(buf)), nil
 }
