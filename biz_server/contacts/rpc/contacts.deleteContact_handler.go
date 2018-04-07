@@ -18,136 +18,89 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/contact"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
-
-/*
- Request:
-	body: { contacts_deleteContact
-	  id: { inputUser
-		user_id: 448603711 [INT],
-		access_hash: 13014512641679536571 [LONG],
-	  },
-	},
-
- RpcResult:
-    result: { contacts_link
-      my_link: { contactLinkHasPhone },
-      foreign_link: { contactLinkHasPhone },
-      user: { user
-        flags: 123 [INT],
-        self: [ SKIPPED BY BIT 10 IN FIELD flags ],
-        contact: [ SKIPPED BY BIT 11 IN FIELD flags ],
-        mutual_contact: [ SKIPPED BY BIT 12 IN FIELD flags ],
-        deleted: [ SKIPPED BY BIT 13 IN FIELD flags ],
-        bot: [ SKIPPED BY BIT 14 IN FIELD flags ],
-        bot_chat_history: [ SKIPPED BY BIT 15 IN FIELD flags ],
-        bot_nochats: [ SKIPPED BY BIT 16 IN FIELD flags ],
-        verified: [ SKIPPED BY BIT 17 IN FIELD flags ],
-        restricted: [ SKIPPED BY BIT 18 IN FIELD flags ],
-        min: [ SKIPPED BY BIT 20 IN FIELD flags ],
-        bot_inline_geo: [ SKIPPED BY BIT 21 IN FIELD flags ],
-        id: 448603711 [INT],
-        access_hash: 13014512641679536571 [LONG],
-        first_name: "xxxx" [STRING],
-        last_name: [ SKIPPED BY BIT 2 IN FIELD flags ],
-        username: "xxxx" [STRING],
-        phone: "xxxx" [STRING],
-        photo: { userProfilePhoto
-          photo_id: 1926738268065474473 [LONG],
-          photo_small: { fileLocation
-            dc_id: 5 [INT],
-            volume_id: 852524509 [LONG],
-            local_id: 178719 [INT],
-            secret: 17693880416897175419 [LONG],
-          },
-          photo_big: { fileLocation
-            dc_id: 5 [INT],
-            volume_id: 852524509 [LONG],
-            local_id: 178721 [INT],
-            secret: 112291147053671954 [LONG],
-          },
-        },
-        status: { userStatusOffline
-          was_online: 1522415924 [INT],
-        },
-        bot_info_version: [ SKIPPED BY BIT 14 IN FIELD flags ],
-        restriction_reason: [ SKIPPED BY BIT 18 IN FIELD flags ],
-        bot_inline_placeholder: [ SKIPPED BY BIT 19 IN FIELD flags ],
-        lang_code: [ SKIPPED BY BIT 22 IN FIELD flags ],
-      },
-    },
-
- Updates:
-  body: { updates
-    updates: [ vector<0x0>
-      { updateContactLink
-        user_id: 264696845 [INT],
-        my_link: { contactLinkContact },
-        foreign_link: { contactLinkHasPhone },
-      },
-    ],
-    users: [ vector<0x0>
-      { user
-        flags: 6267 [INT],
-        self: [ SKIPPED BY BIT 10 IN FIELD flags ],
-        contact: YES [ BY BIT 11 IN FIELD flags ],
-        mutual_contact: YES [ BY BIT 12 IN FIELD flags ],
-        deleted: [ SKIPPED BY BIT 13 IN FIELD flags ],
-        bot: [ SKIPPED BY BIT 14 IN FIELD flags ],
-        bot_chat_history: [ SKIPPED BY BIT 15 IN FIELD flags ],
-        bot_nochats: [ SKIPPED BY BIT 16 IN FIELD flags ],
-        verified: [ SKIPPED BY BIT 17 IN FIELD flags ],
-        restricted: [ SKIPPED BY BIT 18 IN FIELD flags ],
-        min: [ SKIPPED BY BIT 20 IN FIELD flags ],
-        bot_inline_geo: [ SKIPPED BY BIT 21 IN FIELD flags ],
-        id: 264696845 [INT],
-        access_hash: 13587416540126710881 [LONG],
-        first_name: "xxxx" [STRING],
-        last_name: [ SKIPPED BY BIT 2 IN FIELD flags ],
-        username: "xxxx" [STRING],
-        phone: "xxxx" [STRING],
-        photo: { userProfilePhoto
-          photo_id: 1136864293085620140 [LONG],
-          photo_small: { fileLocation
-            dc_id: 5 [INT],
-            volume_id: 852715620 [LONG],
-            local_id: 217304 [INT],
-            secret: 7641812730259272198 [LONG],
-          },
-          photo_big: { fileLocation
-            dc_id: 5 [INT],
-            volume_id: 852715620 [LONG],
-            local_id: 217306 [INT],
-            secret: 17483086520490969958 [LONG],
-          },
-        },
-        status: { userStatusOnline
-          expires: 1522416235 [INT],
-        },
-        bot_info_version: [ SKIPPED BY BIT 14 IN FIELD flags ],
-        restriction_reason: [ SKIPPED BY BIT 18 IN FIELD flags ],
-        bot_inline_placeholder: [ SKIPPED BY BIT 19 IN FIELD flags ],
-        lang_code: [ SKIPPED BY BIT 22 IN FIELD flags ],
-      },
-    ],
-    chats: [ vector<0x0> ],
-    date: 1522415944 [INT],
-    seq: 4058 [INT],
-  },
- */
 
 // contacts.deleteContact#8e953744 id:InputUser = contacts.Link;
 func (s *ContactsServiceImpl) ContactsDeleteContact(ctx context.Context, request *mtproto.TLContactsDeleteContact) (*mtproto.Contacts_Link, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsDeleteContact - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.deleteContact#8e953744 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ContactsDeleteContact logic
+	var (
+		deleteId int32
+		id = request.Id
+	)
 
-	return nil, fmt.Errorf("Not impl ContactsDeleteContact")
+	switch id.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_inputUserSelf:
+		deleteId = md.UserId
+	case mtproto.TLConstructor_CRC32_inputUser:
+		// Check access hash
+		if ok := user2.CheckAccessHashByUserId(id.GetData2().GetUserId(), id.GetData2().GetAccessHash()); !ok {
+			// TODO(@benqi): Add ACCESS_HASH_INVALID codes
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+			glog.Error(err, ": is access_hash error")
+			return nil, err
+		}
+
+		deleteId = id.GetData2().GetUserId()
+		// TODO(@benqi): contact exist
+	default:
+		// mtproto.TLConstructor_CRC32_inputUserEmpty:
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err, ": is inputUserEmpty")
+		return nil, err
+	}
+
+	// selfUser := user2.GetUserById(md.UserId, md.UserId)
+	deleteUser := user2.GetUserById(md.UserId, deleteId)
+
+	contactLogic := contact.MakeContactLogic(md.UserId)
+	needUpdate := contactLogic.DeleteContact(deleteId, deleteUser.GetMutualContact())
+
+	selfUpdates := updates2.NewUpdatesLogic(md.UserId)
+	contactLink := &mtproto.TLUpdateContactLink{Data2: &mtproto.Update_Data{
+		UserId:      deleteId,
+		MyLink:      mtproto.NewTLContactLinkHasPhone().To_ContactLink(),
+		ForeignLink: mtproto.NewTLContactLinkHasPhone().To_ContactLink(),
+	}}
+	selfUpdates.AddUpdate(contactLink.To_Update())
+	selfUpdates.AddUser(deleteUser.To_User())
+	// TODO(@benqi): handle seq
+	sync_client.GetSyncClient().PushToUserUpdatesData(md.UserId, selfUpdates.ToUpdates())
+
+	// TODO(@benqi): 推给联系人逻辑需要再考虑考虑
+	if needUpdate {
+		// TODO(@benqi): push to contact user update contact link
+		contactUpdates := updates2.NewUpdatesLogic(deleteUser.GetId())
+		contactLink2 := &mtproto.TLUpdateContactLink{Data2: &mtproto.Update_Data{
+			UserId:      md.UserId,
+			MyLink:      mtproto.NewTLContactLinkContact().To_ContactLink(),
+			ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
+		}}
+		contactUpdates.AddUpdate(contactLink2.To_Update())
+
+		selfUser := user2.GetUserById(md.UserId, md.UserId)
+		contactUpdates.AddUser(selfUser.To_User())
+		// TODO(@benqi): handle seq
+		sync_client.GetSyncClient().PushToUserUpdatesData(deleteId, contactUpdates.ToUpdates())
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	contactsLink := &mtproto.TLContactsLink{Data2: &mtproto.Contacts_Link_Data{
+		MyLink:      mtproto.NewTLContactLinkHasPhone().To_ContactLink(),
+		ForeignLink: mtproto.NewTLContactLinkHasPhone().To_ContactLink(),
+		User:        user2.GetUserById(md.UserId, md.UserId).To_User(),
+	}}
+
+	glog.Infof("contacts.deleteContact#8e953744 - reply: %s", logger.JsonDebugData(contactsLink))
+	return contactsLink.To_Contacts_Link(), nil
 }

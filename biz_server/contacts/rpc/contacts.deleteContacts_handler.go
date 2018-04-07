@@ -29,9 +29,8 @@ import (
 // contacts.deleteContacts#59ab389e id:Vector<InputUser> = Bool;
 func (s *ContactsServiceImpl) ContactsDeleteContacts(ctx context.Context, request *mtproto.TLContactsDeleteContacts) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsDeleteContacts - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.deleteContacts#59ab389e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ContactsDeleteContacts logic
 	idList := make([]int32, 0, len(request.GetId()))
 	for _, inputPeer := range request.GetId() {
 		switch inputPeer.GetConstructor() {
@@ -45,6 +44,6 @@ func (s *ContactsServiceImpl) ContactsDeleteContacts(ctx context.Context, reques
 	}
 	dao.GetUserContactsDAO(dao.DB_MASTER).DeleteContacts(md.UserId, idList)
 
-	glog.Infof("ContactsDeleteContacts - reply: {true}")
+	glog.Infof("contacts.deleteContacts#59ab389e - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

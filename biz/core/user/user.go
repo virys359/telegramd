@@ -22,6 +22,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/baselib/base"
+	"time"
 )
 
 //type accountData struct {
@@ -195,3 +196,24 @@ func UpdateUserStatus(userId int32, lastSeenAt int64) {
 		presencesDAO.Insert(do)
 	}
 }
+
+func GetUserStatus(userId int32) *mtproto.UserStatus {
+	now := time.Now().Unix()
+	do := dao.GetUserPresencesDAO(dao.DB_SLAVE).SelectByUserID(userId)
+	if do == nil {
+		return mtproto.NewTLUserStatusEmpty().To_UserStatus()
+	}
+
+	if now <= do.LastSeenAt + 5*60 {
+		status := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
+			Expires: int32(do.LastSeenAt + 5*30),
+		}}
+		return status.To_UserStatus()
+	} else {
+		status := &mtproto.TLUserStatusOffline{Data2: &mtproto.UserStatus_Data{
+			WasOnline: int32(do.LastSeenAt),
+		}}
+		return status.To_UserStatus()
+	}
+}
+

@@ -25,6 +25,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/hex"
+	contact2 "github.com/nebulaim/telegramd/biz/core/contact"
 )
 
 func CheckUserAccessHash(id int32, hash int64) bool {
@@ -47,67 +48,24 @@ func makeUserStatusOnline() *mtproto.UserStatus {
 	return status
 }
 
-func GetUserByPhoneNumber(self bool, phoneNumber string) *userData {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 	if do == nil {
 		return nil
 	} else {
 		var (
-			contact = false
-			mutalContact = false
 			status *mtproto.UserStatus
 		)
 
-		if self {
-			contact = true
-			mutalContact = true
+		if selfId == do.Id {
 			status = makeUserStatusOnline()
 		} else {
-			// TODO(@benqi): check contacts, getUserStatus
+			status = GetUserStatus(do.Id)
 		}
 
-		// Status: &mtproto.T
+		contact, mutalContact := contact2.CheckContactAndMutualByUserId(selfId, do.Id)
 		data := &userData{ TLUser: &mtproto.TLUser{ Data2: &mtproto.User_Data{
 			Id:            do.Id,
-			Self:          self,
-			Contact:       contact,
-			MutualContact: mutalContact,
-			AccessHash:    do.AccessHash,
-			FirstName:     do.FirstName,
-			LastName:      do.LastName,
-			Username:      do.Username,
-			Phone:         phoneNumber,
-			// TODO(@benqi): Load from db
-			Photo:         mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto(),
-			Status:        status,
-		}}}
-		return data
-	}
-}
-
-func GetUserById(self bool, userId int32) *userData {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(userId)
-	if do == nil {
-		return nil
-	} else {
-		var (
-			contact = false
-			mutalContact = false
-			status *mtproto.UserStatus
-		)
-
-		if self {
-			contact = true
-			mutalContact = true
-			status = makeUserStatusOnline()
-		} else {
-			// TODO(@benqi): check contacts, getUserStatus
-		}
-
-		// Status: &mtproto.T
-		data := &userData{ TLUser: &mtproto.TLUser{ Data2: &mtproto.User_Data{
-			Id:            do.Id,
-			Self:          self,
+			Self:          selfId == do.Id,
 			Contact:       contact,
 			MutualContact: mutalContact,
 			AccessHash:    do.AccessHash,
@@ -121,6 +79,21 @@ func GetUserById(self bool, userId int32) *userData {
 		}}}
 		return data
 	}
+}
+
+func GetUserByPhoneNumber(selfId int32, phoneNumber string) *userData {
+	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+	return makeUserDataByDO(selfId, do)
+}
+
+func GetMyUserByPhoneNumber(phoneNumber string) *userData {
+	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+	return makeUserDataByDO(do.Id, do)
+}
+
+func GetUserById(selfId int32, userId int32) *userData {
+	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(userId)
+	return makeUserDataByDO(selfId, do)
 }
 
 func CreateNewUser(phoneNumber, firstName, lastName string) *mtproto.TLUser {
@@ -157,4 +130,12 @@ func CreateNewUserPassword(userId int32) {
 		ServerSalt: hex.EncodeToString(crypto.GenerateNonce(8)),
 	}
 	dao.GetUserPasswordsDAO(dao.DB_MASTER).Insert(do)
+}
+
+func CheckAccessHashByUserId(userId int32, accessHash int64) bool {
+	params := map[string]interface{}{
+		"id":          userId,
+		"access_hash": accessHash,
+	}
+	return dao.GetCommonDAO(dao.DB_SLAVE).CheckExists("users", params)
 }

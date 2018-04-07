@@ -23,48 +23,50 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/contact"
 )
 
 // contacts.getContacts#c023849f hash:int = contacts.Contacts;
 func (s *ContactsServiceImpl) ContactsGetContacts(ctx context.Context, request *mtproto.TLContactsGetContacts) (*mtproto.Contacts_Contacts, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsGetContacts - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.getContacts#c023849f - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	contacts := mtproto.NewTLContactsContacts()
+	var (
+		contacts *mtproto.Contacts_Contacts
+	)
+	contactLogic := contact.MakeContactLogic(md.UserId)
 
-	contactsDOList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(md.UserId)
-	if len(contactsDOList) == 0 {
-		// contacts is nil
-		contacts.SetSavedCount(0)
-		return contacts.To_Contacts_Contacts(), nil
-	}
-
-	contacts.SetSavedCount(int32(len(contactsDOList)))
-
-	userIdList := make([]int32, 0, len(contactsDOList))
-
-	for _, do := range contactsDOList {
-		contact := mtproto.NewTLContact()
-		contact.SetUserId(do.ContactUserId)
-		contact.SetMutual(mtproto.ToBool(true))
-		contacts.Data2.Contacts = append(contacts.Data2.Contacts, contact.To_Contact())
-		userIdList = append(userIdList, contact.GetUserId())
-	}
-
-	users := user.GetUserList(userIdList)
-	for _, u := range users {
-		if u.GetId() == md.UserId {
-			u.SetSelf(true)
-		} else {
-			u.SetSelf(false)
+	contactList := contactLogic.GetContactList()
+	// 避免查询数据库时IN()条件为empty
+	if len(contactList) > 0 {
+		idList := make([]int32, 0, len(contactList))
+		cList := make([]*mtproto.Contact, 0, len(contactList))
+		for _, c := range contactList {
+			idList = append(idList, c.Id)
+			c2 := &mtproto.Contact{
+				Constructor: mtproto.TLConstructor_CRC32_contact,
+				Data2: &mtproto.Contact_Data{
+					UserId: c.Id,
+					Mutual: mtproto.ToBool(c.Mutual == 1),
+				},
+			}
+			cList = append(cList, c2)
 		}
-		u.SetContact(true)
-		contacts.Data2.Users = append(contacts.Data2.Users, u.To_User())
-	}
-	// reply := mtproto.MakeContacts_Contacts(contacts)
 
-	glog.Infof("ContactsGetContacts - reply: %s\n", logger.JsonDebugData(contacts))
-	return contacts.To_Contacts_Contacts(), nil
+		users := user.GetUsersBySelfAndIDList(md.UserId, idList)
+		contacts = &mtproto.Contacts_Contacts{
+			Constructor: mtproto.TLConstructor_CRC32_contacts_contacts,
+			Data2: &mtproto.Contacts_Contacts_Data{
+				Contacts:   cList,
+				SavedCount: int32(len(cList)),
+				Users:      users,
+			},
+		}
+	} else {
+		contacts = mtproto.NewTLContactsContacts().To_Contacts_Contacts()
+	}
+
+	glog.Infof("contacts.getContacts#c023849f - reply: %s\n", logger.JsonDebugData(contacts))
+	return contacts, nil
 }

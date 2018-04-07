@@ -63,7 +63,7 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 	// affected
 	account.ChangeUserNameByUserId(md.UserId, request.Username)
 
-	user := user2.GetUserById(true, md.UserId)
+	user := user2.GetUserById(md.UserId, md.UserId)
 	// 要考虑到数据库主从同步问题
 	user.SetUsername(request.Username)
 

@@ -30,106 +30,6 @@ import (
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
-/*
- request:
-	body: { contacts_importContacts
-	  contacts: [ vector<0x0>
-		{ inputPhoneContact
-		  client_id: 4368649977211762445 [LONG],
-		  phone: "+86 158 3819 6209" [STRING],
-		  first_name: "X" [STRING],
-		  last_name: "Ray" [STRING],
-		},
-	  ],
-	},
-
- result:
-	body: { rpc_result
-	  req_msg_id: 6537537306041558152 [LONG],
-	  result: { contacts_importedContacts
-		imported: [ vector<0x0>
-		  { importedContact
-			user_id: 456246609 [INT],
-			client_id: 4368649977211762445 [LONG],
-		  },
-		],
-		popular_invites: [ vector<0x0> ],
-		retry_contacts: [ vector<0x22076cba> ],
-		users: [ vector<0x0>
-		  { user
-			flags: 2135 [INT],
-			self: [ SKIPPED BY BIT 10 IN FIELD flags ],
-			contact: YES [ BY BIT 11 IN FIELD flags ],
-			mutual_contact: [ SKIPPED BY BIT 12 IN FIELD flags ],
-			deleted: [ SKIPPED BY BIT 13 IN FIELD flags ],
-			bot: [ SKIPPED BY BIT 14 IN FIELD flags ],
-			bot_chat_history: [ SKIPPED BY BIT 15 IN FIELD flags ],
-			bot_nochats: [ SKIPPED BY BIT 16 IN FIELD flags ],
-			verified: [ SKIPPED BY BIT 17 IN FIELD flags ],
-			restricted: [ SKIPPED BY BIT 18 IN FIELD flags ],
-			min: [ SKIPPED BY BIT 20 IN FIELD flags ],
-			bot_inline_geo: [ SKIPPED BY BIT 21 IN FIELD flags ],
-			id: 456246609 [INT],
-			access_hash: 9056436018490939711 [LONG],
-			first_name: "X" [STRING],
-			last_name: "Ray" [STRING],
-			username: [ SKIPPED BY BIT 3 IN FIELD flags ],
-			phone: "8615838196209" [STRING],
-			photo: [ SKIPPED BY BIT 5 IN FIELD flags ],
-			status: { userStatusRecently },
-			bot_info_version: [ SKIPPED BY BIT 14 IN FIELD flags ],
-			restriction_reason: [ SKIPPED BY BIT 18 IN FIELD flags ],
-			bot_inline_placeholder: [ SKIPPED BY BIT 19 IN FIELD flags ],
-			lang_code: [ SKIPPED BY BIT 22 IN FIELD flags ],
-		  },
-		],
-	  },
-	},
-
- updates:
-	body: { updates
-	  updates: [ vector<0x0>
-		{ updateContactLink
-		  user_id: 456246609 [INT],
-		  my_link: { contactLinkContact },
-		  foreign_link: { contactLinkUnknown },
-		},
-	  ],
-	  users: [ vector<0x0>
-		{ user
-		  flags: 2135 [INT],
-		  self: [ SKIPPED BY BIT 10 IN FIELD flags ],
-		  contact: YES [ BY BIT 11 IN FIELD flags ],
-		  mutual_contact: [ SKIPPED BY BIT 12 IN FIELD flags ],
-		  deleted: [ SKIPPED BY BIT 13 IN FIELD flags ],
-		  bot: [ SKIPPED BY BIT 14 IN FIELD flags ],
-		  bot_chat_history: [ SKIPPED BY BIT 15 IN FIELD flags ],
-		  bot_nochats: [ SKIPPED BY BIT 16 IN FIELD flags ],
-		  verified: [ SKIPPED BY BIT 17 IN FIELD flags ],
-		  restricted: [ SKIPPED BY BIT 18 IN FIELD flags ],
-		  min: [ SKIPPED BY BIT 20 IN FIELD flags ],
-		  bot_inline_geo: [ SKIPPED BY BIT 21 IN FIELD flags ],
-		  id: 456246609 [INT],
-		  access_hash: 9056436018490939711 [LONG],
-		  first_name: "X" [STRING],
-		  last_name: "Ray" [STRING],
-		  username: [ SKIPPED BY BIT 3 IN FIELD flags ],
-		  phone: "8615838196209" [STRING],
-		  photo: [ SKIPPED BY BIT 5 IN FIELD flags ],
-		  status: { userStatusRecently },
-		  bot_info_version: [ SKIPPED BY BIT 14 IN FIELD flags ],
-		  restriction_reason: [ SKIPPED BY BIT 18 IN FIELD flags ],
-		  bot_inline_placeholder: [ SKIPPED BY BIT 19 IN FIELD flags ],
-		  lang_code: [ SKIPPED BY BIT 22 IN FIELD flags ],
-		},
-	  ],
-	  chats: [ vector<0x0> ],
-	  date: 1522139017 [INT],
-	  seq: 3631 [INT],
-	},
-  },
- */
-
 // contacts.importContacts#2c800be5 contacts:Vector<InputContact> = contacts.ImportedContacts;
 func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, request *mtproto.TLContactsImportContacts) (*mtproto.Contacts_ImportedContacts, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
@@ -162,29 +62,46 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		return nil, err
 	}
 
-	contactUser := user.GetUserByPhoneNumber(false, phone)
+	contactUser := user.GetUserByPhoneNumber(md.UserId, phone)
 	if contactUser == nil {
 		// 这里该手机号未注册，我们认为手机号出错
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_CODE_INVALID)
 		glog.Error(err, ": phone code invalid - ", inputContact.GetPhone())
 		return nil, err
 	}
-	contactUser.SetContact(true)
+	// contactUser.SetContact(true)
 	// contactUser.SetMutualContact(true)
-	contactLogic := contact2.NewContactLogic(md.UserId)
+	contactLogic := contact2.MakeContactLogic(md.UserId)
 	needUpdate := contactLogic.ImportContact(contactUser.GetId(), phone, inputContact.GetFirstName(), inputContact.GetLastName())
-	_ = needUpdate
+	// _ = needUpdate
 
-	updates := updates2.NewUpdatesLogic(md.UserId)
+	selfUpdates := updates2.NewUpdatesLogic(md.UserId)
 	contactLink := &mtproto.TLUpdateContactLink{Data2: &mtproto.Update_Data{
-		UserId:      md.UserId,
+		UserId:      contactUser.GetId(),
 		MyLink:      mtproto.NewTLContactLinkContact().To_ContactLink(),
 		ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
 	}}
-	updates.AddUpdate(contactLink.To_Update())
-	updates.AddUser(contactUser.To_User())
-	// TODO(@benqi): sync update
-	sync_client.GetSyncClient().PushToUserUpdatesData(md.UserId, updates.ToUpdates())
+	selfUpdates.AddUpdate(contactLink.To_Update())
+	selfUpdates.AddUser(contactUser.To_User())
+	// TODO(@benqi): handle seq
+	sync_client.GetSyncClient().PushToUserUpdatesData(md.UserId, selfUpdates.ToUpdates())
+
+	// TODO(@benqi): 推给联系人逻辑需要再考虑考虑
+	if needUpdate {
+		// TODO(@benqi): push to contact user update contact link
+		contactUpdates := updates2.NewUpdatesLogic(contactUser.GetId())
+		contactLink2 := &mtproto.TLUpdateContactLink{Data2: &mtproto.Update_Data{
+			UserId:      md.UserId,
+			MyLink:      mtproto.NewTLContactLinkContact().To_ContactLink(),
+			ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
+		}}
+		contactUpdates.AddUpdate(contactLink2.To_Update())
+
+		selfUser := user.GetUserById(md.UserId, md.UserId)
+		contactUpdates.AddUser(selfUser.To_User())
+		// TODO(@benqi): handle seq
+		sync_client.GetSyncClient().PushToUserUpdatesData(contactUser.GetId(), contactUpdates.ToUpdates())
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	imported := &mtproto.TLImportedContact{Data2: &mtproto.ImportedContact_Data{

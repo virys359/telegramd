@@ -35,7 +35,7 @@
             FROM
                 user_contacts
             WHERE
-                owner_user_id=:owner_user_id AND is_deleted = 0
+                owner_user_id=:owner_user_id AND is_deleted = 0 ORDER BY contact_user_id
         </sql>
     </operation>
     <operation name="SelectBlockedList" result_set="list">
@@ -48,7 +48,7 @@
             FROM
                 user_contacts
             WHERE
-                owner_user_id=:owner_user_id AND date2>:date2 ORDER BY date2 LIMIT :limit
+                owner_user_id=:owner_user_id AND is_blocked = 1 AND is_deleted = 0 ORDER BY id LIMIT :limit
         </sql>
     </operation>
     <operation name="UpdateContactNameById">
@@ -106,7 +106,7 @@
             UPDATE
                 user_contacts
             SET
-                is_deleted = 1
+                is_deleted = 1, mutual = 0
             WHERE
                 contact_user_id <> 0 AND (owner_user_id = :owner_user_id AND contact_user_id in (:id_list))
             ]]>

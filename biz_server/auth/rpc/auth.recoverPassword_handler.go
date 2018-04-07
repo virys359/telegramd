@@ -48,7 +48,7 @@ func (s *AuthServiceImpl) AuthRecoverPassword(ctx context.Context, request *mtpr
 		}
 	}
 
-	user := user2.GetUserById(true, md.UserId)
+	user := user2.GetUserById(md.UserId, md.UserId)
 	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
 		User: user.To_User(),
 	}}

@@ -86,7 +86,7 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 	}
 
 	// do signIn...
-	user := user2.GetUserByPhoneNumber(true, phoneNumber)
+	user := user2.GetMyUserByPhoneNumber(phoneNumber)
 	// Bind authKeyId and userId
 	auth.BindAuthKeyAndUser(md.AuthId, user.GetId())
 	// TODO(@benqi): check and set authKeyId state

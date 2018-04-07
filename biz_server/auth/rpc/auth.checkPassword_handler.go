@@ -74,7 +74,7 @@ func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtprot
 		return nil, err
 	}
 
-	user := user2.GetUserById(true, md.UserId)
+	user := user2.GetUserById(md.UserId, md.UserId)
 	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
 		User: user.To_User(),
 	}}

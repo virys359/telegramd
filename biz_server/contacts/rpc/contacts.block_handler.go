@@ -23,27 +23,47 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/contact"
 )
 
 // contacts.block#332b49fc id:InputUser = Bool;
 func (s *ContactsServiceImpl) ContactsBlock(ctx context.Context, request *mtproto.TLContactsBlock) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsBlock - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.block#332b49fc - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	switch request.GetId().GetConstructor() {
-	case mtproto.TLConstructor_CRC32_inputUserEmpty:
+	var (
+		blockId int32
+		id = request.Id
+	)
+
+	switch id.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputUserSelf:
-		dao.GetUserContactsDAO(dao.DB_MASTER).UpdateBlock(1, md.UserId, md.UserId)
+		blockId = md.UserId
 	case mtproto.TLConstructor_CRC32_inputUser:
-		// TODO(@benqi): Check InputUser's userId and access_hash
-		dao.GetUserContactsDAO(dao.DB_MASTER).UpdateBlock(1, md.UserId, request.GetId().GetData2().GetUserId())
+		// Check access hash
+		if ok := user2.CheckAccessHashByUserId(id.GetData2().GetUserId(), id.GetData2().GetAccessHash()); !ok {
+			// TODO(@benqi): Add ACCESS_HASH_INVALID codes
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+			glog.Error(err, ": is access_hash error")
+			return nil, err
+		}
+
+		blockId = id.GetData2().GetUserId()
+		// TODO(@benqi): contact exist
+	default:
+		// mtproto.TLConstructor_CRC32_inputUserEmpty:
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err, ": is inputUserEmpty")
+		return nil, err
 	}
 
-	// TODO(@benqi): sync updateUserBlocked
-	// updates ==> (updates[updateUserBlocked], users[blocked])
+	contactLogic :=contact.MakeContactLogic(md.UserId)
+	blocked := contactLogic.BlockUser(blockId)
+
+	// TODO(@benqi): sync blocked
 
 	// Blocked会影响收件箱
-	glog.Infof("ContactsBlock - reply: {true}")
-	return mtproto.ToBool(true), nil
+	glog.Infof("contacts.block#332b49fc - reply: {%v}", blocked)
+	return mtproto.ToBool(blocked), nil
 }

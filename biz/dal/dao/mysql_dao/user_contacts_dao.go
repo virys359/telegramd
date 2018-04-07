@@ -113,10 +113,10 @@ func (dao *UserContactsDAO) SelectAllUserContacts(owner_user_id int32) []dataobj
 	return values
 }
 
-// select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = :owner_user_id and is_deleted = 0
+// select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = :owner_user_id and is_deleted = 0 order by contact_user_id asc
 // TODO(@benqi): sqlmap
 func (dao *UserContactsDAO) SelectUserContacts(owner_user_id int32) []dataobject.UserContactsDO {
-	var query = "select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = ? and is_deleted = 0"
+	var query = "select id, owner_user_id, contact_user_id, contact_phone, contact_first_name, contact_last_name, mutual, is_deleted from user_contacts where owner_user_id = ? and is_deleted = 0 order by contact_user_id asc"
 	rows, err := dao.db.Queryx(query, owner_user_id)
 
 	if err != nil {
@@ -144,11 +144,11 @@ func (dao *UserContactsDAO) SelectUserContacts(owner_user_id int32) []dataobject
 	return values
 }
 
-// select contact_user_id from user_contacts where owner_user_id = :owner_user_id and date2 > :date2 order by date2 asc limit :limit
+// select contact_user_id from user_contacts where owner_user_id = :owner_user_id and is_blocked = 1 and is_deleted = 0 order by id asc limit :limit
 // TODO(@benqi): sqlmap
-func (dao *UserContactsDAO) SelectBlockedList(owner_user_id int32, date2 int32, limit int32) []dataobject.UserContactsDO {
-	var query = "select contact_user_id from user_contacts where owner_user_id = ? and date2 > ? order by date2 asc limit ?"
-	rows, err := dao.db.Queryx(query, owner_user_id, date2, limit)
+func (dao *UserContactsDAO) SelectBlockedList(owner_user_id int32, limit int32) []dataobject.UserContactsDO {
+	var query = "select contact_user_id from user_contacts where owner_user_id = ? and is_blocked = 1 and is_deleted = 0 order by id asc limit ?"
+	rows, err := dao.db.Queryx(query, owner_user_id, limit)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Queryx in SelectBlockedList(_), error: %v", err)
@@ -263,10 +263,10 @@ func (dao *UserContactsDAO) UpdateBlock(is_blocked int8, owner_user_id int32, co
 	return rows
 }
 
-// update user_contacts set is_deleted = 1 where contact_user_id != 0 and (owner_user_id = :owner_user_id and contact_user_id in (:id_list))
+// update user_contacts set is_deleted = 1, mutual = 0 where contact_user_id != 0 and (owner_user_id = :owner_user_id and contact_user_id in (:id_list))
 // TODO(@benqi): sqlmap
 func (dao *UserContactsDAO) DeleteContacts(owner_user_id int32, id_list []int32) int64 {
-	var q = "update user_contacts set is_deleted = 1 where contact_user_id != 0 and (owner_user_id = ? and contact_user_id in (?))"
+	var q = "update user_contacts set is_deleted = 1, mutual = 0 where contact_user_id != 0 and (owner_user_id = ? and contact_user_id in (?))"
 	query, a, err := sqlx.In(q, owner_user_id, id_list)
 	r, err := dao.db.Exec(query, a...)
 

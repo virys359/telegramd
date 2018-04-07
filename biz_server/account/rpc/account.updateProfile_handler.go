@@ -44,7 +44,7 @@ func (s *AccountServiceImpl) AccountUpdateProfile(ctx context.Context, request *
 		return nil, err
 	}
 
-	user := user2.GetUserById(true, md.UserId)
+	user := user2.GetUserById(md.UserId, md.UserId)
 
 	if len(request.FirstName) > 0 {
 		account.UpdateFirstAndLastName(md.UserId, request.FirstName, request.LastName)

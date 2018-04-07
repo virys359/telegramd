@@ -23,36 +23,38 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/contact"
 )
 
+// contacts.blocked#1c138d15 blocked:Vector<ContactBlocked> users:Vector<User> = contacts.Blocked;
+// contacts.blockedSlice#900802a1 count:int blocked:Vector<ContactBlocked> users:Vector<User> = contacts.Blocked;
+//
 // contacts.getBlocked#f57c350f offset:int limit:int = contacts.Blocked;
 func (s *ContactsServiceImpl) ContactsGetBlocked(ctx context.Context, request *mtproto.TLContactsGetBlocked) (*mtproto.Contacts_Blocked, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsGetBlocked - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.getBlocked#f57c350f - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	blockedList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectBlockedList(md.UserId, request.Offset, request.Limit)
+	contactLogic := contact.MakeContactLogic(md.UserId)
+	blockedList := contactLogic.GetBlockedList(request.Offset, request.Limit)
 
-	blocks := mtproto.NewTLContactsBlocked()
-	// &mtproto.TLContactsBlocked{}
+	// TODO(@benqi): impl blockedSlice
 
+	contactsBlocked := &mtproto.TLContactsBlocked{Data2: &mtproto.Contacts_Blocked_Data{
+		Blocked: blockedList,
+	}}
+	// .NewTLContactsBlocked()
 	if len(blockedList) > 0 {
 		blockedIdList := make([]int32, 0, len(blockedList))
+		userIdList := make([]int32, 0, len(blockedList))
 		for _, c := range blockedList {
-			blocked := mtproto.NewTLContactBlocked()
-			blocked.SetUserId(c.ContactUserId)
-			blocked.SetDate(c.Date2)
-			blocks.Data2.Blocked = append(blocks.Data2.Blocked, blocked.To_ContactBlocked())
-			blockedIdList = append(blockedIdList, c.ContactUserId)
+			userIdList = append(userIdList, c.GetData2().GetUserId())
 		}
 
-		users := user.GetUserList(blockedIdList)
-		for _, u := range users {
-			blocks.Data2.Users = append(blocks.Data2.Users, u.To_User())
-		}
+		users := user.GetUsersBySelfAndIDList(md.UserId, blockedIdList)
+		contactsBlocked.SetUsers(users)
 	}
 
-	glog.Infof("ContactsSearch - reply: %s\n", logger.JsonDebugData(blocks))
-	return blocks.To_Contacts_Blocked(), nil
+	glog.Infof("contacts.getBlocked#f57c350f - reply: %s\n", logger.JsonDebugData(contactsBlocked))
+	return contactsBlocked.To_Contacts_Blocked(), nil
 }

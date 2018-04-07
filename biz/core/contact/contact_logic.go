@@ -21,6 +21,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"time"
+	"github.com/nebulaim/telegramd/mtproto"
 )
 
 //type contactUser struct {
@@ -35,7 +36,7 @@ import (
 type contactData *dataobject.UserContactsDO
 type contactLogic int32
 
-func NewContactLogic(userId int32) contactLogic {
+func MakeContactLogic(userId int32) contactLogic {
 	return contactLogic(userId)
 }
 
@@ -70,6 +71,8 @@ func (c contactLogic) GetContactList() []contactData {
 
 func (c contactLogic) ImportContact(userId int32, phone, firstName, lastName string) bool {
 	var needUpdate bool = false
+
+	// TODO(@benqi): phone is me???
 
 	// 我->input
 	byMy := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContact(int32(c), userId)
@@ -123,6 +126,22 @@ func (c contactLogic) ImportContact(userId int32, phone, firstName, lastName str
 	return needUpdate
 }
 
+func (c contactLogic) DeleteContact(deleteId int32, mutual bool) bool {
+	// A 删除 B
+	// 如果AB is mutual，则BA设置为非mutual
+
+	var needUpdate = false
+
+	dao.GetUserContactsDAO(dao.DB_MASTER).DeleteContacts(int32(c), []int32{deleteId})
+
+	if deleteId != int32(c) && mutual {
+		dao.GetUserContactsDAO(dao.DB_MASTER).UpdateMutual(0, deleteId, int32(c))
+		needUpdate = true
+	}
+
+	return needUpdate
+}
+
 //// imported int64, 低32位为InputContact的index， 高32位为userId
 //func (c contactLogic) AddContactList(contactList []*mtproto.InputContact) (importedList []int64, retryList []int64) {
 //	contacts := c.GetAllContactList()
@@ -168,3 +187,40 @@ func (c contactLogic) ImportContact(userId int32, phone, firstName, lastName str
 //
 //	return
 //}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+func (c contactLogic) BlockUser(blockId int32) bool {
+	dao.GetUserContactsDAO(dao.DB_MASTER).UpdateBlock(1, int32(c), blockId)
+	return true
+}
+
+func (c contactLogic) UnBlockUser(blockedId int32) bool {
+	dao.GetUserContactsDAO(dao.DB_MASTER).UpdateBlock(0, int32(c), blockedId)
+	return true
+}
+
+func (c contactLogic) GetBlockedList(offset, limit int32) []*mtproto.ContactBlocked {
+	// TODO(@benqi): enable offset
+	doList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectBlockedList(int32(c), limit)
+	bockedList := make([]*mtproto.ContactBlocked, 0, len(doList))
+	for _, do := range doList {
+		blocked := &mtproto.ContactBlocked{
+			Constructor: mtproto.TLConstructor_CRC32_contactBlocked,
+			Data2: &mtproto.ContactBlocked_Data{
+				UserId: do.ContactUserId,
+				Date:   do.Date2,
+			},
+		}
+		bockedList = append(bockedList, blocked)
+	}
+	return bockedList
+}
+
+func CheckContactAndMutualByUserId(selfId, contactId int32) (bool, bool) {
+	do := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContact(selfId, contactId)
+	if do == nil {
+		return false, false
+	} else {
+		return true, do.Mutual == 1
+	}
+}
