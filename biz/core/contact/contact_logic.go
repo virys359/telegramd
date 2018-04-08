@@ -216,6 +216,27 @@ func (c contactLogic) GetBlockedList(offset, limit int32) []*mtproto.ContactBloc
 	return bockedList
 }
 
+func (c contactLogic) SearchContacts(q string, limit int32) []int32 {
+	contactList := c.GetContactList()
+	idList := make([]int32, 0, len(contactList)+1)
+	// {int32(c)}
+	idList = append(idList, int32(c))
+	for _, c2 := range contactList {
+		idList = append(idList, c2.ContactUserId)
+	}
+
+	// TODO(@benqi): 区分大小写
+
+	// 构造模糊查询字符串
+	q = "%" + q + "%"
+	doList := dao.GetUsersDAO(dao.DB_SLAVE).SearchByQueryNotIdList(q, idList, limit)
+	founds := make([]int32, 0, len(doList))
+	for _, do := range doList {
+		founds = append(founds, do.Id)
+	}
+	return founds
+}
+
 func CheckContactAndMutualByUserId(selfId, contactId int32) (bool, bool) {
 	do := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContact(selfId, contactId)
 	if do == nil {

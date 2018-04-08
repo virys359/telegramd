@@ -23,41 +23,42 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/core/contact"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // contacts.search#11f812d8 q:string limit:int = contacts.Found;
 func (s *ContactsServiceImpl) ContactsSearch(ctx context.Context, request *mtproto.TLContactsSearch) (*mtproto.Contacts_Found, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsSearch - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.search#11f812d8 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi) 使用ES查询
-	usersDOList := dao.GetUsersDAO(dao.DB_SLAVE).SelectByQueryString(request.Q, request.Q, request.Q, request.Q)
-
-	found := &mtproto.TLContactsFound{}
-	// Peer/Chat/User
-	for _, usersDO := range usersDOList {
-		p := mtproto.NewTLPeerUser()
-		p.SetUserId(usersDO.Id)
-		found.Data2.Results = append(found.Data2.Results, p.To_Peer())
-
-		user := mtproto.NewTLUser()
-		user.SetId(usersDO.Id)
-		if md.UserId == usersDO.Id {
-			user.SetSelf(true)
-		} else {
-			user.SetSelf(false)
-		}
-		user.SetContact(true)
-		user.SetAccessHash(usersDO.AccessHash)
-		user.SetFirstName(usersDO.FirstName)
-		user.SetLastName(usersDO.LastName)
-		user.SetUsername(usersDO.Username)
-		user.SetPhone(usersDO.Phone)
-
-		found.Data2.Users = append(found.Data2.Users, user.To_User())
+	// Check query string and limit
+	if len(request.Q) < 5 || request.Limit < 1 {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err, ": query or limit invalid")
+		return nil, err
 	}
 
-	glog.Infof("ContactsSearch - reply: s%s\n", found)
+	contactLogic := contact.MakeContactLogic(md.UserId)
+	idList := contactLogic.SearchContacts(request.Q, request.Limit)
+
+	// results
+	results := make([]*mtproto.Peer, 0, len(idList))
+	for _, id := range idList {
+		peer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
+			UserId: id,
+		}}
+		results = append(results, peer.To_Peer())
+	}
+
+	// users
+	users := user.GetUsersBySelfAndIDList(md.UserId, idList)
+
+	found := &mtproto.TLContactsFound{Data2: &mtproto.Contacts_Found_Data{
+		Results: results,
+		Users:   users,
+	}}
+
+	glog.Infof("contacts.search#11f812d8 - reply: ", logger.JsonDebugData(found))
 	return found.To_Contacts_Found(), nil
 }

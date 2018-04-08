@@ -25,6 +25,8 @@ import (
 	"golang.org/x/net/context"
 	user2 "github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/contact"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 // contacts.block#332b49fc id:InputUser = Bool;
@@ -61,7 +63,20 @@ func (s *ContactsServiceImpl) ContactsBlock(ctx context.Context, request *mtprot
 	contactLogic :=contact.MakeContactLogic(md.UserId)
 	blocked := contactLogic.BlockUser(blockId)
 
-	// TODO(@benqi): sync blocked
+	if blocked {
+		// Sync unblocked: updateUserBlocked
+		updateUserBlocked := &mtproto.TLUpdateUserBlocked{Data2: &mtproto.Update_Data{
+			UserId: blockId,
+			Blocked: mtproto.ToBool(true),
+		}}
+
+		blockedUpdates := updates2.NewUpdatesLogic(md.UserId)
+		blockedUpdates.AddUpdate(updateUserBlocked.To_Update())
+		blockedUpdates.AddUser(user2.GetUserById(md.UserId, blockId).To_User())
+
+		// TODO(@benqi): handle seq
+		sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, blockId, blockedUpdates.ToUpdates())
+	}
 
 	// Blocked会影响收件箱
 	glog.Infof("contacts.block#332b49fc - reply: {%v}", blocked)

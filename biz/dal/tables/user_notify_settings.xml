@@ -3,9 +3,9 @@
     <operation name="Insert">
         <sql>
             INSERT INTO
-                user_notify_settings (user_id, peer_type, peer_id, show_previews, silent, mute_until, sound, created_at)
+                user_notify_settings (user_id, peer_type, peer_id, show_previews, silent, mute_until, sound)
             VALUES
-                (:user_id, :peer_type, :peer_id, :show_previews, :silent, :mute_until, :sound, :created_at)
+                (:user_id, :peer_type, :peer_id, :show_previews, :silent, :mute_until, :sound)
         </sql>
     </operation>
 

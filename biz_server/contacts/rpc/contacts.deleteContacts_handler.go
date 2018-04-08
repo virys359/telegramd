@@ -23,7 +23,10 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	user2 "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/contact"
+	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 // contacts.deleteContacts#59ab389e id:Vector<InputUser> = Bool;
@@ -31,18 +34,73 @@ func (s *ContactsServiceImpl) ContactsDeleteContacts(ctx context.Context, reques
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("contacts.deleteContacts#59ab389e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	idList := make([]int32, 0, len(request.GetId()))
-	for _, inputPeer := range request.GetId() {
-		switch inputPeer.GetConstructor() {
-		case mtproto.TLConstructor_CRC32_inputUserEmpty:
-		case mtproto.TLConstructor_CRC32_inputUserSelf:
-			idList = append(idList, md.UserId)
-		case mtproto.TLConstructor_CRC32_inputUser:
-			// TODO(@benqi): Check InputUser's userId and access_hash
-			idList = append(idList, inputPeer.GetData2().GetUserId())
-		}
+	// 注意: 目前只支持导入1个并且已经注册的联系人!!!!
+	if len(request.Id) == 0 || len(request.Id) > 1 {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err, ": query or limit invalid")
+		return nil, err
 	}
-	dao.GetUserContactsDAO(dao.DB_MASTER).DeleteContacts(md.UserId, idList)
+
+	// TODO(@benqi): Copy from contacts.deleteContact, wrap func!!!
+	var (
+		deleteId int32
+		id = request.Id[0]
+	)
+
+	switch id.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_inputUserSelf:
+		deleteId = md.UserId
+	case mtproto.TLConstructor_CRC32_inputUser:
+		// Check access hash
+		if ok := user2.CheckAccessHashByUserId(id.GetData2().GetUserId(), id.GetData2().GetAccessHash()); !ok {
+			// TODO(@benqi): Add ACCESS_HASH_INVALID codes
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+			glog.Error(err, ": is access_hash error")
+			return nil, err
+		}
+
+		deleteId = id.GetData2().GetUserId()
+		// TODO(@benqi): contact exist
+	default:
+		// mtproto.TLConstructor_CRC32_inputUserEmpty:
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err, ": is inputUserEmpty")
+		return nil, err
+	}
+
+	// selfUser := user2.GetUserById(md.UserId, md.UserId)
+	deleteUser := user2.GetUserById(md.UserId, deleteId)
+
+	contactLogic := contact.MakeContactLogic(md.UserId)
+	needUpdate := contactLogic.DeleteContact(deleteId, deleteUser.GetMutualContact())
+
+	selfUpdates := updates2.NewUpdatesLogic(md.UserId)
+	contactLink := &mtproto.TLUpdateContactLink{Data2: &mtproto.Update_Data{
+		UserId:      deleteId,
+		MyLink:      mtproto.NewTLContactLinkHasPhone().To_ContactLink(),
+		ForeignLink: mtproto.NewTLContactLinkHasPhone().To_ContactLink(),
+	}}
+	selfUpdates.AddUpdate(contactLink.To_Update())
+	selfUpdates.AddUser(deleteUser.To_User())
+	// TODO(@benqi): handle seq
+	sync_client.GetSyncClient().PushToUserUpdatesData(md.UserId, selfUpdates.ToUpdates())
+
+	// TODO(@benqi): 推给联系人逻辑需要再考虑考虑
+	if needUpdate {
+		// TODO(@benqi): push to contact user update contact link
+		contactUpdates := updates2.NewUpdatesLogic(deleteUser.GetId())
+		contactLink2 := &mtproto.TLUpdateContactLink{Data2: &mtproto.Update_Data{
+			UserId:      md.UserId,
+			MyLink:      mtproto.NewTLContactLinkContact().To_ContactLink(),
+			ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
+		}}
+		contactUpdates.AddUpdate(contactLink2.To_Update())
+
+		selfUser := user2.GetUserById(md.UserId, md.UserId)
+		contactUpdates.AddUser(selfUser.To_User())
+		// TODO(@benqi): handle seq
+		sync_client.GetSyncClient().PushToUserUpdatesData(deleteId, contactUpdates.ToUpdates())
+	}
 
 	glog.Infof("contacts.deleteContacts#59ab389e - reply: {true}")
 	return mtproto.ToBool(true), nil

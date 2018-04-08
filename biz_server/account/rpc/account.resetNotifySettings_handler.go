@@ -23,31 +23,31 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
-	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	//"github.com/nebulaim/telegramd/biz/core/account"
+	//"github.com/nebulaim/telegramd/biz/base"
+	//"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 // account.resetNotifySettings#db7e1747 = Bool;
 func (s *AccountServiceImpl) AccountResetNotifySettings(ctx context.Context, request *mtproto.TLAccountResetNotifySettings) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountResetNotifySettings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.resetNotifySettings#db7e1747 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AccountResetNotifySettings logic
-	account.ResetNotifySettings(md.UserId)
-	peer := &base.PeerUtil{}
-	peer.PeerType = base.PEER_ALL
-	update := mtproto.NewTLUpdateNotifySettings()
-	update.SetPeer(peer.ToNotifyPeer())
-	updateSettings := mtproto.NewTLPeerNotifySettings()
-	updateSettings.SetShowPreviews(true)
-	updateSettings.SetSilent(false)
-	updateSettings.SetMuteUntil(0)
-	updateSettings.SetSound("default")
-	update.SetNotifySettings(updateSettings.To_PeerNotifySettings())
+	//// TODO(@benqi): Impl AccountResetNotifySettings logic
+	//account.ResetNotifySettings(md.UserId)
+	//peer := &base.PeerUtil{}
+	//peer.PeerType = base.PEER_ALL
+	//update := mtproto.NewTLUpdateNotifySettings()
+	//update.SetPeer(peer.ToNotifyPeer())
+	//updateSettings := mtproto.NewTLPeerNotifySettings()
+	//updateSettings.SetShowPreviews(true)
+	//updateSettings.SetSilent(false)
+	//updateSettings.SetMuteUntil(0)
+	//updateSettings.SetSound("default")
+	//update.SetNotifySettings(updateSettings.To_PeerNotifySettings())
+	//
+	//sync_client.GetSyncClient().PushToUserMeOneUpdateData(md.AuthId, md.SessionId, md.UserId, update.To_Update())
 
-	sync_client.GetSyncClient().PushToUserMeOneUpdateData(md.AuthId, md.SessionId, md.UserId, update.To_Update())
-
-	glog.Infof("AccountResetNotifySettings - reply: {true}")
+	glog.Infof("account.resetNotifySettings#db7e1747 - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

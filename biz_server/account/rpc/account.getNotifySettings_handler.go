@@ -32,7 +32,13 @@ func (s *AccountServiceImpl) AccountGetNotifySettings(ctx context.Context, reque
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.getNotifySettings#12b3ad31 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AccountGetNotifySettings logic
+	// peer := request.GetPeer()
+	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputNotifyPeer {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err, ": peer only is inputNotifyPeer")
+		return nil, err
+	}
+
 	peer := base.FromInputNotifyPeer(request.GetPeer())
 	reply := account.GetNotifySettings(md.UserId, peer)
 

@@ -42,11 +42,11 @@ func (this *userData) ToUser() *mtproto.User {
 	return this.TLUser.To_User()
 }
 
-func CheckBannedByPhoneNumber(phoneNumber string) bool {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
-	return do != nil && do.Banned != 0
-}
-
+//func CheckBannedByPhoneNumber(phoneNumber string) bool {
+//	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+//	return do != nil && do.Banned != 0
+//}
+//
 func GetUser(userId int32) (user* mtproto.TLUser) {
 	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	userDO := usersDAO.SelectById(userId)
@@ -71,22 +71,24 @@ func GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtp
 	if len(userIdList) == 0 {
 		users = []*mtproto.User{}
 	} else {
-		// usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
+		// TODO(@benqi):  需要优化，makeUserDataByDO需要查询用户状态以及获取Mutual和Contact状态信息而导致多次查询
 		userDOList := dao.GetUsersDAO(dao.DB_SLAVE).SelectUsersByIdList(userIdList)
 		users = make([]*mtproto.User, 0, len(userDOList))
 		for _, userDO := range userDOList {
-			// TODO(@benqi): fill bot, photo, about...
-			user := &mtproto.TLUser{Data2: &mtproto.User_Data{
-				Self:          selfUserId == userDO.Id,
-				Id:            userDO.Id,
-				AccessHash:    userDO.AccessHash,
-				FirstName:     userDO.FirstName,
-				LastName:      userDO.LastName,
-				Username:      userDO.Username,
-				Phone:         userDO.Phone,
-				Contact:       true,
-				MutualContact: true,
-			}}
+			user := makeUserDataByDO(selfUserId, &userDO)
+			//
+			//// TODO(@benqi): fill bot, photo, about...
+			//user := &mtproto.TLUser{Data2: &mtproto.User_Data{
+			//	Self:          selfUserId == userDO.Id,
+			//	Id:            userDO.Id,
+			//	AccessHash:    userDO.AccessHash,
+			//	FirstName:     userDO.FirstName,
+			//	LastName:      userDO.LastName,
+			//	Username:      userDO.Username,
+			//	Phone:         userDO.Phone,
+			//	Contact:       true,
+			//	MutualContact: true,
+			//}}
 			users = append(users, user.To_User())
 		}
 	}

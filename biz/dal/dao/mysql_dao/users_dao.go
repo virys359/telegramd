@@ -174,6 +174,38 @@ func (dao *UsersDAO) SelectByQueryString(username string, first_name string, las
 	return values
 }
 
+// select id from users where username like :q2 and id not in (:id_list) limit :limit
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) SearchByQueryNotIdList(q2 string, id_list []int32, limit int32) []dataobject.UsersDO {
+	var q = "select id from users where username like ? and id not in (?) limit ?"
+	query, a, err := sqlx.In(q, q2, id_list, limit)
+	rows, err := dao.db.Queryx(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SearchByQueryNotIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.UsersDO
+	for rows.Next() {
+		v := dataobject.UsersDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SearchByQueryNotIdList(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
 // update users set banned = :banned, banned_reason = :banned_reason, banned_at = :banned_at where id = :id
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) Banned(banned int64, banned_reason string, banned_at string, id int32) int64 {

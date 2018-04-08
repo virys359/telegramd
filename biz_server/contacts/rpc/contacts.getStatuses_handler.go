@@ -18,20 +18,35 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/contact"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // contacts.getStatuses#c4a353ee = Vector<ContactStatus>;
 func (s *ContactsServiceImpl) ContactsGetStatuses(ctx context.Context, request *mtproto.TLContactsGetStatuses) (*mtproto.Vector_ContactStatus, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsGetStatuses - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.getStatuses#c4a353ee - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ContactsGetStatuses logic
+	contactLogic := contact.MakeContactLogic(md.UserId)
+	cList := contactLogic.GetContactList()
 
-	return nil, fmt.Errorf("Not impl ContactsGetStatuses")
+	statusList := &mtproto.Vector_ContactStatus{
+		Datas: make([]*mtproto.ContactStatus, 0, len(cList)),
+	}
+
+	for _, c := range cList {
+		contactStatus := &mtproto.TLContactStatus{Data2: &mtproto.ContactStatus_Data{
+			UserId: c.ContactUserId,
+			Status: user.GetUserStatus(c.ContactUserId),
+		}}
+		statusList.Datas = append(statusList.Datas, contactStatus.To_ContactStatus())
+	}
+
+	glog.Infof("contacts.getStatuses#c4a353ee - reply: ", logger.JsonDebugData(statusList))
+	return statusList, nil
 }
