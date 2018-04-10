@@ -366,3 +366,54 @@ func (dao *UsersDAO) SelectByUsername(username string) *dataobject.UsersDO {
 
 	return do
 }
+
+// select account_days_ttl from users where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) SelectAccountDaysTTL(id int32) *dataobject.UsersDO {
+	var query = "select account_days_ttl from users where id = ?"
+	rows, err := dao.db.Queryx(query, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectAccountDaysTTL(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.UsersDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectAccountDaysTTL(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
+
+// update users set account_days_ttl = :account_days_ttl where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) UpdateAccountDaysTTL(account_days_ttl int32, id int32) int64 {
+	var query = "update users set account_days_ttl = ? where id = ?"
+	r, err := dao.db.Exec(query, account_days_ttl, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateAccountDaysTTL(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateAccountDaysTTL(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}

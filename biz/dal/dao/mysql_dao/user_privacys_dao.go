@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewUserPrivacysDAO(db *sqlx.DB) *UserPrivacysDAO {
 	return &UserPrivacysDAO{db}
 }
 
-// insert into user_privacys(user_id, password, recovery_mail, status_timestamp, chat_invite, phone_call, ttl, ttl_created_at, created_at) values (:user_id, :password, :recovery_mail, :status_timestamp, :chat_invite, :phone_call, :ttl, :ttl_created_at, :created_at)
+// insert into user_privacys(user_id, key_type, rules) values (:user_id, :key_type, :rules)
 // TODO(@benqi): sqlmap
 func (dao *UserPrivacysDAO) Insert(do *dataobject.UserPrivacysDO) int64 {
-	var query = "insert into user_privacys(user_id, password, recovery_mail, status_timestamp, chat_invite, phone_call, ttl, ttl_created_at, created_at) values (:user_id, :password, :recovery_mail, :status_timestamp, :chat_invite, :phone_call, :ttl, :ttl_created_at, :created_at)"
+	var query = "insert into user_privacys(user_id, key_type, rules) values (:user_id, :key_type, :rules)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,21 +53,21 @@ func (dao *UserPrivacysDAO) Insert(do *dataobject.UserPrivacysDO) int64 {
 	return id
 }
 
-// update user_privacys set ttl = :ttl, ttl_created_at = :ttl_created_at where user_id = :user_id
+// update user_privacys set rules = :rules where user_id = :user_id and :key_type
 // TODO(@benqi): sqlmap
-func (dao *UserPrivacysDAO) UpdateTTL(ttl int32, ttl_created_at int32, user_id int32) int64 {
-	var query = "update user_privacys set ttl = ?, ttl_created_at = ? where user_id = ?"
-	r, err := dao.db.Exec(query, ttl, ttl_created_at, user_id)
+func (dao *UserPrivacysDAO) UpdatePrivacy(rules string, user_id int32, key_type int8) int64 {
+	var query = "update user_privacys set rules = ? where user_id = ? and ?"
+	r, err := dao.db.Exec(query, rules, user_id, key_type)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in UpdateTTL(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdatePrivacy(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in UpdateTTL(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdatePrivacy(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -75,14 +75,14 @@ func (dao *UserPrivacysDAO) UpdateTTL(ttl int32, ttl_created_at int32, user_id i
 	return rows
 }
 
-// select ttl, ttl_created_at from user_privacys where user_id = :user_id
+// select id, user_id, key_type, rules from user_privacys where user_id = :user_id and key_type = :key_type
 // TODO(@benqi): sqlmap
-func (dao *UserPrivacysDAO) SelectTTL(user_id int32) *dataobject.UserPrivacysDO {
-	var query = "select ttl, ttl_created_at from user_privacys where user_id = ?"
-	rows, err := dao.db.Queryx(query, user_id)
+func (dao *UserPrivacysDAO) SelectPrivacy(user_id int32, key_type int8) *dataobject.UserPrivacysDO {
+	var query = "select id, user_id, key_type, rules from user_privacys where user_id = ? and key_type = ?"
+	rows, err := dao.db.Queryx(query, user_id, key_type)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Queryx in SelectTTL(_), error: %v", err)
+		errDesc := fmt.Sprintf("Queryx in SelectPrivacy(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -93,7 +93,7 @@ func (dao *UserPrivacysDAO) SelectTTL(user_id int32) *dataobject.UserPrivacysDO 
 	if rows.Next() {
 		err = rows.StructScan(do)
 		if err != nil {
-			errDesc := fmt.Sprintf("StructScan in SelectTTL(_), error: %v", err)
+			errDesc := fmt.Sprintf("StructScan in SelectPrivacy(_), error: %v", err)
 			glog.Error(errDesc)
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}

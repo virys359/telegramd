@@ -87,4 +87,17 @@
             SELECT id FROM users WHERE username=:username LIMIT 1
         </sql>
     </operation>
+
+    <operation name="SelectAccountDaysTTL">
+        <sql>
+            SELECT account_days_ttl FROM users WHERE id=:id
+        </sql>
+    </operation>
+
+    <operation name="UpdateAccountDaysTTL">
+        <sql>
+            UPDATE users SET account_days_ttl = :account_days_ttl WHERE id=:id
+        </sql>
+    </operation>
+
 </table>

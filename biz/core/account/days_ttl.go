@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
-package dataobject
+package account
 
-type UserPrivacysDO struct {
-	Id        int32  `db:"id"`
-	UserId    int32  `db:"user_id"`
-	KeyType   int8   `db:"key_type"`
-	Rules     string `db:"rules"`
-	CreatedAt string `db:"created_at"`
-	UpdatedAt string `db:"updated_at"`
+import (
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+)
+
+func SetAccountDaysTTL(userId int32, ttl int32) {
+	dao.GetUsersDAO(dao.DB_MASTER).UpdateAccountDaysTTL(ttl, userId)
+}
+
+func GetAccountDaysTTL(userId int32) int32 {
+	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectAccountDaysTTL(userId)
+	return do.AccountDaysTtl
 }

@@ -63,6 +63,7 @@ type MysqlDAOList struct {
 	AuthUpdatesStateDAO		 *mysql_dao.AuthUpdatesStateDAO
 	UserPresencesDAO         *mysql_dao.UserPresencesDAO
 	UserPasswordsDAO		 *mysql_dao.UserPasswordsDAO
+	WallPapersDAO		     *mysql_dao.WallPapersDAO
 }
 
 // TODO(@benqi): 一主多从
@@ -102,13 +103,13 @@ func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
 		daoList.FilePartsDAO = mysql_dao.NewFilePartsDAO(v)
 		daoList.FilesDAO = mysql_dao.NewFilesDAO(v)
 		daoList.PhotoDatasDAO = mysql_dao.NewPhotoDatasDAO(v)
-
 		daoList.UserPtsUpdatesDAO = mysql_dao.NewUserPtsUpdatesDAO(v)
 		daoList.UserQtsUpdatesDAO = mysql_dao.NewUserQtsUpdatesDAO(v)
 		daoList.AuthSeqUpdatesDAO = mysql_dao.NewAuthSeqUpdatesDAO(v)
-
 		daoList.UserPresencesDAO = mysql_dao.NewUserPresencesDAO(v)
 		daoList.UserPasswordsDAO = mysql_dao.NewUserPasswordsDAO(v)
+		daoList.WallPapersDAO = mysql_dao.NewWallPapersDAO(v)
+
 		mysqlDAOManager.daoListMap[k] = daoList
 	}
 }
@@ -355,6 +356,15 @@ func GetUserPasswordsDAO(dbName string) (dao *mysql_dao.UserPasswordsDAO) {
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.UserPasswordsDAO
+	}
+	return
+}
+
+func GetWallPapersDAO(dbName string) (dao *mysql_dao.WallPapersDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.WallPapersDAO
 	}
 	return
 }

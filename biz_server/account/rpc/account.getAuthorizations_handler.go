@@ -18,20 +18,29 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
+
+/*
+	selfUser: hash = 0, flag = 1
+	other:  hash and flag load from db
+ */
 
 // account.getAuthorizations#e320c158 = account.Authorizations;
 func (s *AccountServiceImpl) AccountGetAuthorizations(ctx context.Context, request *mtproto.TLAccountGetAuthorizations) (*mtproto.Account_Authorizations, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountGetAuthorizations - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.getAuthorizations#e320c158 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AccountGetAuthorizations logic
+	sessionList := account.GetAuthorizationList(md.AuthId, md.UserId)
+	authorizations := &mtproto.TLAccountAuthorizations{Data2: &mtproto.Account_Authorizations_Data{
+		Authorizations: sessionList,
+	}}
 
-	return nil, fmt.Errorf("Not impl AccountGetAuthorizations")
+	glog.Infof("account.getAuthorizations#e320c158 - reply: {%s}", logger.JsonDebugData(authorizations))
+	return authorizations.To_Account_Authorizations(), nil
 }

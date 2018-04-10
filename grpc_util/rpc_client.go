@@ -31,6 +31,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/nebulaim/telegramd/grpc_util/service_discovery/etcd3"
 	"github.com/nebulaim/telegramd/grpc_util/load_balancer"
+	"reflect"
 )
 
 const (
@@ -107,7 +108,7 @@ func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (m
 
 	glog.Infof("Invoke - method: {%s}, req: {%v}", t.Method, object)
 	r := t.NewReplyFunc()
-	// glog.Infof("Invoke - NewReplyFunc: {%v}\n", r)
+	glog.Infof("Invoke - NewReplyFunc: {%v}, t: {%v}", r, reflect.TypeOf(r))
 
 	var header, trailer metadata.MD
 
@@ -119,7 +120,7 @@ func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (m
 
 	glog.Infof("header: {%v}, trailer: {%v}", header, trailer)
 
-	// TODO(@benqi): process header from server
+	// TODO(@benqi): process header from serverF
 	// grpc.Header(&header)
 	// glog.Infof("Invoke - error: {%v}", err)
 

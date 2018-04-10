@@ -44,8 +44,8 @@ import (
       users: [ vector<0x0> ],
     },
   },
-
  */
+
 // photos.getUserPhotos#91cd32a8 user_id:InputUser offset:int max_id:long limit:int = photos.Photos;
 func (s *PhotosServiceImpl) PhotosGetUserPhotos(ctx context.Context, request *mtproto.TLPhotosGetUserPhotos) (*mtproto.Photos_Photos, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

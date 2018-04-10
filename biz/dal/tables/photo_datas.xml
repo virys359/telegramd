@@ -19,4 +19,16 @@
                 dc_id = 2 AND volume_id = :volume_id AND local_id = :local_id AND access_hash = :access_hash
         </sql>
     </operation>
+
+    <operation name="SelectListByPhotoId" result_set="list">
+        <sql>
+            SELECT
+                photo_id, photo_type, dc_id, volume_id, local_id, access_hash, width, height, bytes
+            FROM
+                photo_datas
+            WHERE
+                photo_id = :photo_id
+        </sql>
+    </operation>
+
 </table>

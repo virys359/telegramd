@@ -18,12 +18,14 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
+	"github.com/nebulaim/telegramd/biz/base"
+	"time"
 )
 
 /*
@@ -116,12 +118,40 @@ import (
 	},
  */
 
+// photos.uploadProfilePhoto#4f32c098
+// Updates current user profile photo.
+// file: File saved in parts by means of upload.saveFilePart method
+//
 // photos.uploadProfilePhoto#4f32c098 file:InputFile = photos.Photo;
 func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, request *mtproto.TLPhotosUploadProfilePhoto) (*mtproto.Photos_Photo, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("PhotosUploadProfilePhoto - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("photos.uploadProfilePhoto#4f32c098 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl PhotosUploadProfilePhoto logic
+	file := request.GetFile()
+	uuid := base.NextSnowflakeId()
 
-	return nil, fmt.Errorf("Not impl PhotosUploadProfilePhoto")
+	sizes, err := photo2.UploadPhoto(md.UserId, uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
+	if err != nil {
+		glog.Errorf("UploadPhoto error: %v", err)
+		return nil, err
+	}
+
+	// TODO(@benqi): sync update userProfilePhoto
+
+	// fileData := mediaData.GetFile().GetData2()
+	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+		Id:          base.NextSnowflakeId(),
+		HasStickers: false,
+		AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+		Date:        int32(time.Now().Unix()),
+		Sizes:       sizes,
+	}}
+
+	photos := &mtproto.TLPhotosPhoto{Data2: &mtproto.Photos_Photo_Data{
+		Photo: photo.To_Photo(),
+		Users: []*mtproto.User{},
+	}}
+
+	glog.Infof("photos.uploadProfilePhoto#4f32c098 - reply: %s", logger.JsonDebugData(photos))
+	return photos.To_Photos_Photo(), nil
 }

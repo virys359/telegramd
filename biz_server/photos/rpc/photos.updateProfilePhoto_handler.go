@@ -18,20 +18,35 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 )
 
 // photos.updateProfilePhoto#f0bb5152 id:InputPhoto = UserProfilePhoto;
 func (s *PhotosServiceImpl) PhotosUpdateProfilePhoto(ctx context.Context, request *mtproto.TLPhotosUpdateProfilePhoto) (*mtproto.UserProfilePhoto, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("PhotosUpdateProfilePhoto - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("photos.updateProfilePhoto#f0bb5152 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl PhotosUpdateProfilePhoto logic
+	var (
+		photo *mtproto.UserProfilePhoto
+	)
 
-	return nil, fmt.Errorf("Not impl PhotosUpdateProfilePhoto")
+	if request.GetId().GetConstructor() == mtproto.TLConstructor_CRC32_inputPhotoEmpty {
+		photo = mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
+	} else {
+		id := request.GetId().To_InputPhoto()
+		// TODO(@benqi): check inputPhoto.access_hash
+
+		sizes := photo2.GetPhotoSizeList(id.GetId())
+		photo = photo2.MakeUserProfilePhoto(id.GetId(), sizes)
+	}
+
+	// TODO(@benqi): sync update.
+
+	glog.Infof("photos.uploadProfilePhoto#4f32c098 - reply: %s", logger.JsonDebugData(photo))
+	return photo, nil
 }

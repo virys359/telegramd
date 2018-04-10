@@ -23,9 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	//"github.com/nebulaim/telegramd/biz/core/account"
-	//"github.com/nebulaim/telegramd/biz/base"
-	//"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	// "github.com/nebulaim/telegramd/biz_server/sync_client"
+	// peer2 "github.com/nebulaim/telegramd/biz/core/peer"
 )
 
 // account.resetNotifySettings#db7e1747 = Bool;
@@ -33,10 +33,21 @@ func (s *AccountServiceImpl) AccountResetNotifySettings(ctx context.Context, req
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.resetNotifySettings#db7e1747 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	//// TODO(@benqi): Impl AccountResetNotifySettings logic
-	//account.ResetNotifySettings(md.UserId)
-	//peer := &base.PeerUtil{}
-	//peer.PeerType = base.PEER_ALL
+	account.ResetNotifySettings(md.UserId)
+
+	// TODO(@benqi): update notify setting
+	/*
+	 Android client source:
+		} else if (update instanceof TLRPC.TL_updateNotifySettings) {
+			TLRPC.TL_updateNotifySettings updateNotifySettings = (TLRPC.TL_updateNotifySettings) update;
+			if (update.notify_settings instanceof TLRPC.TL_peerNotifySettings && updateNotifySettings.peer instanceof TLRPC.TL_notifyPeer) {
+	           ......
+	        }
+	    }
+	 */
+
+	//peer := &peer2.PeerUtil{}
+	//peer.PeerType = peer2.PEER_ALL
 	//update := mtproto.NewTLUpdateNotifySettings()
 	//update.SetPeer(peer.ToNotifyPeer())
 	//updateSettings := mtproto.NewTLPeerNotifySettings()

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -80,4 +80,35 @@ func (dao *PhotoDatasDAO) SelectByFileLocation(volume_id int64, local_id int32, 
 	}
 
 	return do
+}
+
+// select photo_id, photo_type, dc_id, volume_id, local_id, access_hash, width, height, bytes from photo_datas where photo_id = :photo_id
+// TODO(@benqi): sqlmap
+func (dao *PhotoDatasDAO) SelectListByPhotoId(photo_id int64) []dataobject.PhotoDatasDO {
+	var query = "select photo_id, photo_type, dc_id, volume_id, local_id, access_hash, width, height, bytes from photo_datas where photo_id = ?"
+	rows, err := dao.db.Queryx(query, photo_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectListByPhotoId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.PhotoDatasDO
+	for rows.Next() {
+		v := dataobject.PhotoDatasDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectListByPhotoId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
 }

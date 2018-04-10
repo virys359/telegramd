@@ -17,11 +17,13 @@
 
 package dataobject
 
-type UserPrivacysDO struct {
+type WallPapersDO struct {
 	Id        int32  `db:"id"`
-	UserId    int32  `db:"user_id"`
-	KeyType   int8   `db:"key_type"`
-	Rules     string `db:"rules"`
+	Type      int8   `db:"type"`
+	Title     string `db:"title"`
+	Color     int32  `db:"color"`
+	BgColor   int32  `db:"bg_color"`
+	PhotoId   int64  `db:"photo_id"`
 	CreatedAt string `db:"created_at"`
-	UpdatedAt string `db:"updated_at"`
+	DeletedAt int64  `db:"deleted_at"`
 }

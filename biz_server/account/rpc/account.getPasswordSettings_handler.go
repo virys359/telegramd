@@ -18,20 +18,31 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.getPasswordSettings#bc8d11bb current_password_hash:bytes = account.PasswordSettings;
 func (s *AccountServiceImpl) AccountGetPasswordSettings(ctx context.Context, request *mtproto.TLAccountGetPasswordSettings) (*mtproto.Account_PasswordSettings, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountGetPasswordSettings - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.getPasswordSettings#bc8d11bb - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AccountGetPasswordSettings logic
+	passwordLogic, err := account.MakePasswordData(md.UserId)
+	if err != nil {
+		glog.Error("account.getPassword#548a30f5 - error: ", err)
+		return nil, err
+	}
 
-	return nil, fmt.Errorf("Not impl AccountGetPasswordSettings")
+	settings, err := passwordLogic.GetPasswordSetting(request.GetCurrentPasswordHash())
+	if err != nil {
+		glog.Error("account.getPassword#548a30f5 - error: ", err)
+		return nil, err
+	}
+
+	glog.Infof("account.getPasswordSettings#bc8d11bb - reply: %s", logger.JsonDebugData(settings))
+	return settings, nil
 }

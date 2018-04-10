@@ -45,6 +45,41 @@ const (
 )
 
 /*
+	inputFile#f52ff27f id:long parts:int name:string md5_checksum:string = InputFile;
+	inputFileBig#fa4f0bb5 id:long parts:int name:string = InputFile;
+
+	inputPhotoEmpty#1cd7bf0d = InputPhoto;
+	inputPhoto#fb95c6c4 id:long access_hash:long = InputPhoto;
+
+	photoEmpty#2331b22d id:long = Photo;
+	photo#9288dd29 flags:# has_stickers:flags.0?true id:long access_hash:long date:int sizes:Vector<PhotoSize> = Photo;
+
+	fileLocationUnavailable#7c596b46 volume_id:long local_id:int secret:long = FileLocation;
+	fileLocation#53d69076 dc_id:int volume_id:long local_id:int secret:long = FileLocation;
+
+	photoSizeEmpty#e17e23c type:string = PhotoSize;
+	photoSize#77bfb61b type:string location:FileLocation w:int h:int size:int = PhotoSize;
+	photoCachedSize#e9a734fa type:string location:FileLocation w:int h:int bytes:bytes = PhotoSize;
+
+
+	photos.photos#8dca6aa5 photos:Vector<Photo> users:Vector<User> = photos.Photos;
+	photos.photosSlice#15051f54 count:int photos:Vector<Photo> users:Vector<User> = photos.Photos;
+
+	photos.photo#20212ca8 photo:Photo users:Vector<User> = photos.Photo;
+
+	upload.file#96a18d5 type:storage.FileType mtime:int bytes:bytes = upload.File;
+	upload.fileCdnRedirect#ea52fe5a dc_id:int file_token:bytes encryption_key:bytes encryption_iv:bytes cdn_file_hashes:Vector<CdnFileHash> = upload.File;
+
+	photos.updateProfilePhoto#f0bb5152 id:InputPhoto = UserProfilePhoto;
+	photos.uploadProfilePhoto#4f32c098 file:InputFile = photos.Photo;
+	photos.deletePhotos#87cf7f2f id:Vector<InputPhoto> = Vector<long>;
+	photos.getUserPhotos#91cd32a8 user_id:InputUser offset:int max_id:long limit:int = photos.Photos;
+
+	userProfilePhotoEmpty#4f11bae1 = UserProfilePhoto;
+	userProfilePhoto#d559d8c8 photo_id:long photo_small:FileLocation photo_big:FileLocation = UserProfilePhoto;
+ */
+
+/*
 	storage.fileUnknown#aa963b05 = storage.FileType;
 	storage.filePartial#40bc6f52 = storage.FileType;
 	storage.fileJpeg#7efe0e = storage.FileType;
@@ -91,6 +126,41 @@ func MakeResizeInfo(img image.Image) resizeInfo {
 			size : h,
 		}
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+func GetPhotoSizeList(photoId int64) (sizes []*mtproto.PhotoSize) {
+	doList := dao.GetPhotoDatasDAO(dao.DB_SLAVE).SelectListByPhotoId(photoId)
+	sizes = make([]*mtproto.PhotoSize, 0, len(doList))
+	for _, do := range doList {
+		sizeData := &mtproto.PhotoSize_Data{
+			Type: getSizeType(int(do.LocalId)),
+			W:    do.Width,
+			H:    do.Height,
+			Size: int32(len(do.Bytes)),
+			Location: &mtproto.FileLocation{
+				Constructor: mtproto.TLConstructor_CRC32_fileLocation,
+				Data2: &mtproto.FileLocation_Data{
+					VolumeId: do.VolumeId,
+					LocalId:  int32(do.LocalId),
+					Secret:   do.AccessHash,
+					DcId: 	do.DcId,
+				},
+			},
+		}
+
+		if do.LocalId== 0 {
+			sizes = append(sizes, &mtproto.PhotoSize{
+				Constructor: mtproto.TLConstructor_CRC32_photoCachedSize,
+				Data2:       sizeData,})
+			sizeData.Bytes = do.Bytes
+		} else {
+			sizes = append(sizes, &mtproto.PhotoSize{
+				Constructor: mtproto.TLConstructor_CRC32_photoSize,
+				Data2:       sizeData,})
+		}
+	}
+	return
 }
 
 // TODO(@benqi):
@@ -218,3 +288,19 @@ func GetFileAccessHash(fileId int64, fileParts int32) int64 {
 		return do.AccessHash
 	}
 }
+
+func MakeUserProfilePhoto(photoId int64, sizes []*mtproto.PhotoSize) *mtproto.UserProfilePhoto {
+	if len(sizes) == 0 {
+		return mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
+	}
+
+	// TODO(@benqi): check PhotoSize is photoSizeEmpty
+	photo := &mtproto.TLUserProfilePhoto{Data2: &mtproto.UserProfilePhoto_Data{
+		PhotoId: photoId,
+		PhotoSmall: sizes[0].GetData2().GetLocation(),
+		PhotoBig: sizes[len(sizes)-1].GetData2().GetLocation(),
+	}}
+
+	return photo.To_UserProfilePhoto()
+}
+

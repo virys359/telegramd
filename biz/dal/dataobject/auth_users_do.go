@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,7 @@ type AuthUsersDO struct {
 	Ip            string `db:"ip"`
 	Country       string `db:"country"`
 	Region        string `db:"region"`
+	DeletedAt     int64  `db:"deleted_at"`
 	CreatedAt     string `db:"created_at"`
-	DeletedAt     string `db:"deleted_at"`
+	UpdatedAt     string `db:"updated_at"`
 }

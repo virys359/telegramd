@@ -18,20 +18,51 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/biz/core/photo"
 )
+
+/*
+	wallPaper#ccb03657 id:int title:string sizes:Vector<PhotoSize> color:int = WallPaper;
+	wallPaperSolid#63117f24 id:int title:string bg_color:int color:int = WallPaper;
+ */
 
 // account.getWallPapers#c04cfac2 = Vector<WallPaper>;
 func (s *AccountServiceImpl) AccountGetWallPapers(ctx context.Context, request *mtproto.TLAccountGetWallPapers) (*mtproto.Vector_WallPaper, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountGetWallPapers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.getWallPapers#c04cfac2 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	//
+	wallDataList := account.GetWallPaperList()
 
-	// TODO(@benqi): Impl AccountGetWallPapers logic
+	walls := &mtproto.Vector_WallPaper{
+		Datas: make([]*mtproto.WallPaper, 0, len(wallDataList)),
+	}
 
-	return nil, fmt.Errorf("Not impl AccountGetWallPapers")
+	for _, wallData := range wallDataList {
+		if wallData.Type == 0 {
+			wall := &mtproto.TLWallPaper{Data2: &mtproto.WallPaper_Data{
+				Id:    wallData.Id,
+				Title: wallData.Title,
+				Sizes: photo.GetPhotoSizeList(wallData.PhotoId),
+				Color: wallData.Color,
+			}}
+			walls.Datas = append(walls.Datas, wall.To_WallPaper())
+		} else {
+			wall := &mtproto.TLWallPaperSolid{Data2: &mtproto.WallPaper_Data{
+				Id:      wallData.Id,
+				Title:   wallData.Title,
+				Color:   wallData.Color,
+				BgColor: wallData.BgColor,
+			}}
+			walls.Datas = append(walls.Datas, wall.To_WallPaper())
+		}
+	}
+
+	glog.Infof("account.getWallPapers#c04cfac2 - reply: %s", logger.JsonDebugData(walls))
+	return walls, nil
 }

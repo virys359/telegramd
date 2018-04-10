@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
-package dataobject
+package account
 
-type UserPrivacysDO struct {
-	Id        int32  `db:"id"`
-	UserId    int32  `db:"user_id"`
-	KeyType   int8   `db:"key_type"`
-	Rules     string `db:"rules"`
-	CreatedAt string `db:"created_at"`
-	UpdatedAt string `db:"updated_at"`
+import (
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+)
+
+type wallPaperDataList []dataobject.WallPapersDO
+
+func GetWallPaperList() wallPaperDataList {
+	return dao.GetWallPapersDAO(dao.DB_SLAVE).SelectAll()
 }

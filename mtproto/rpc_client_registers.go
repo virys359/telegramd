@@ -250,7 +250,7 @@ var rpcContextRegisters = map[string]RPCContextTuple{
 	"TLPhoneConfirmCall":                   RPCContextTuple{"/mtproto.RPCPhone/phone_confirmCall", func() interface{} { return new(Phone_PhoneCall) }},
 	"TLLangpackGetLangPack":                RPCContextTuple{"/mtproto.RPCLangpack/langpack_getLangPack", func() interface{} { return new(LangPackDifference) }},
 	"TLLangpackGetDifference":              RPCContextTuple{"/mtproto.RPCLangpack/langpack_getDifference", func() interface{} { return new(LangPackDifference) }},
-	"TLAccountGetWallPapers":               RPCContextTuple{"/mtproto.RPCAccount/account_getWallPapers", func() interface{} { return new(Vector_LangPackLanguage) }},
+	"TLAccountGetWallPapers":               RPCContextTuple{"/mtproto.RPCAccount/account_getWallPapers", func() interface{} { return new(Vector_WallPaper) }},
 	"TLUsersGetUsers":                      RPCContextTuple{"/mtproto.RPCUsers/users_getUsers", func() interface{} { return new(Vector_User) }},
 	"TLContactsGetStatuses":                RPCContextTuple{"/mtproto.RPCContacts/contacts_getStatuses", func() interface{} { return new(Vector_ContactStatus) }},
 	"TLContactsExportCard":                 RPCContextTuple{"/mtproto.RPCContacts/contacts_exportCard", func() interface{} { return new(VectorInt) }},

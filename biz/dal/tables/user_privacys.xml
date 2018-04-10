@@ -3,21 +3,21 @@
     <operation name="Insert">
         <sql>
             INSERT INTO
-                user_privacys (user_id, password, recovery_mail, status_timestamp, chat_invite, phone_call, ttl, ttl_created_at, created_at)
+                user_privacys (user_id, key_type, rules)
             VALUES
-                (:user_id, :password, :recovery_mail, :status_timestamp, :chat_invite, :phone_call, :ttl, :ttl_created_at, :created_at)
+                (:user_id, :key_type, :rules)
         </sql>
     </operation>
 
-    <operation name="UpdateTTL">
+    <operation name="UpdatePrivacy">
         <sql>
-            UPDATE user_privacys SET ttl = :ttl, ttl_created_at = :ttl_created_at WHERE user_id = :user_id
+            UPDATE user_privacys SET rules = :rules WHERE user_id = :user_id AND :key_type
         </sql>
     </operation>
 
-    <operation name="SelectTTL">
+    <operation name="SelectPrivacy">
         <sql>
-            SELECT ttl, ttl_created_at FROM user_privacys WHERE user_id = :user_id
+            SELECT id, user_id, key_type, rules FROM user_privacys WHERE user_id = :user_id AND key_type = :key_type
         </sql>
     </operation>
 </table>

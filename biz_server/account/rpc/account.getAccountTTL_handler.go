@@ -23,23 +23,19 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.getAccountTTL#8fc711d = AccountDaysTTL;
 func (s *AccountServiceImpl) AccountGetAccountTTL(ctx context.Context, request *mtproto.TLAccountGetAccountTTL) (*mtproto.AccountDaysTTL, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountGetAccountTTL - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.getAccountTTL#8fc711d - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): 估计不是这个规则
-	do := dao.GetUserPrivacysDAO(dao.DB_SLAVE).SelectTTL(md.UserId)
-	ttl := mtproto.NewTLAccountDaysTTL()
-	if do == nil {
-		ttl.SetDays(180)
-	} else {
-		ttl.SetDays(do.Ttl)
-	}
+	days := account.GetAccountDaysTTL(md.UserId)
+	ttl := &mtproto.TLAccountDaysTTL{ Data2: &mtproto.AccountDaysTTL_Data{
+		Days: days,
+	}}
 
-	glog.Infof("AccountReportPeer - reply: %s\n", logger.JsonDebugData(ttl))
+	glog.Infof("account.getAccountTTL#8fc711d - reply: %s\n", logger.JsonDebugData(ttl))
 	return ttl.To_AccountDaysTTL(), nil
 }

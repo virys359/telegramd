@@ -23,8 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"time"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.setAccountTTL#2442485e ttl:AccountDaysTTL = Bool;
@@ -32,14 +31,15 @@ func (s *AccountServiceImpl) AccountSetAccountTTL(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AccountSetAccountTTL - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	ttl := request.GetTtl().To_AccountDaysTTL()
-	affected := dao.GetUserPrivacysDAO(dao.DB_MASTER).UpdateTTL(
-		ttl.GetDays(),
-		int32(time.Now().Unix()),
-		md.UserId)
+	// TODO(@benqi): Check ttl
+	ttl := request.GetTtl().GetData2().GetDays()
+	if ttl <= 0 || ttl > 365 {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error("ttl_days error: ", err)
+		return nil, err
+	}
+	account.SetAccountDaysTTL(md.UserId, ttl)
 
-	updatedOk := affected == 1
-
-	glog.Infof("AccountSetAccountTTL - reply: {%v}", updatedOk)
-	return mtproto.ToBool(updatedOk), nil
+	glog.Infof("account.setAccountTTL#2442485e - reply: {true}")
+	return mtproto.ToBool(true), nil
 }

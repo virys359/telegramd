@@ -24,7 +24,6 @@ import (
 	"bytes"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/golang/glog"
 	"image"
 )
 
@@ -50,7 +49,7 @@ func TestResize(t *testing.T) {
 	// bufio.Reader{}
 	img, err := imaging.Decode(bytes.NewReader(fileDatas))
 	if err != nil {
-		glog.Error("Decode error: {%v}", err)
+		fmt.Printf("Decode error: {%v}\n", err)
 		return
 	}
 
@@ -65,7 +64,7 @@ func TestResize(t *testing.T) {
 
 		err := imaging.Save(dst, fmt.Sprintf("/tmp/telegramd/%d.jpg", i))
 		if err != nil {
-			glog.Error("Save error: {%v}", err)
+			fmt.Printf("Save error: {%v}\n", err)
 		}
 	}
 }

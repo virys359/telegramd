@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewAuthUsersDAO(db *sqlx.DB) *AuthUsersDAO {
 	return &AuthUsersDAO{db}
 }
 
-// insert into auth_users(auth_id, user_id) values (:auth_id, :user_id)
+// insert into auth_users(auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region) values (:auth_id, :user_id, :hash, :device_model, :platform, :system_version, :api_id, :app_name, :app_version, :date_created, :date_active, :ip, :country, :region)
 // TODO(@benqi): sqlmap
 func (dao *AuthUsersDAO) Insert(do *dataobject.AuthUsersDO) int64 {
-	var query = "insert into auth_users(auth_id, user_id) values (:auth_id, :user_id)"
+	var query = "insert into auth_users(auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region) values (:auth_id, :user_id, :hash, :device_model, :platform, :system_version, :api_id, :app_name, :app_version, :date_created, :date_active, :ip, :country, :region)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,10 @@ func (dao *AuthUsersDAO) Insert(do *dataobject.AuthUsersDO) int64 {
 	return id
 }
 
-// select id, user_id from auth_users where auth_id = :auth_id
+// select auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region from auth_users where auth_id = :auth_id
 // TODO(@benqi): sqlmap
 func (dao *AuthUsersDAO) SelectByAuthId(auth_id int64) *dataobject.AuthUsersDO {
-	var query = "select id, user_id from auth_users where auth_id = ?"
+	var query = "select auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region from auth_users where auth_id = ?"
 	rows, err := dao.db.Queryx(query, auth_id)
 
 	if err != nil {
@@ -80,4 +80,108 @@ func (dao *AuthUsersDAO) SelectByAuthId(auth_id int64) *dataobject.AuthUsersDO {
 	}
 
 	return do
+}
+
+// select auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region from auth_users where user_id = :user_id and hash = :hash
+// TODO(@benqi): sqlmap
+func (dao *AuthUsersDAO) SelectByHash(user_id int32, hash int64) *dataobject.AuthUsersDO {
+	var query = "select auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region from auth_users where user_id = ? and hash = ?"
+	rows, err := dao.db.Queryx(query, user_id, hash)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByHash(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.AuthUsersDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByHash(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
+
+// select auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region from auth_users where user_id = :user_id order by date_active desc limit 6
+// TODO(@benqi): sqlmap
+func (dao *AuthUsersDAO) SelectListByUserId(user_id int32) []dataobject.AuthUsersDO {
+	var query = "select auth_id, user_id, hash, device_model, platform, system_version, api_id, app_name, app_version, date_created, date_active, ip, country, region from auth_users where user_id = ? order by date_active desc limit 6"
+	rows, err := dao.db.Queryx(query, user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectListByUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.AuthUsersDO
+	for rows.Next() {
+		v := dataobject.AuthUsersDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectListByUserId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
+}
+
+// update auth_users set date_active = :date_active, ip = :ip, country = :country, region = :region where auth_id = :auth_id
+// TODO(@benqi): sqlmap
+func (dao *AuthUsersDAO) Update(date_active int32, ip string, country string, region string, auth_id int64) int64 {
+	var query = "update auth_users set date_active = ?, ip = ?, country = ?, region = ? where auth_id = ?"
+	r, err := dao.db.Exec(query, date_active, ip, country, region, auth_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in Update(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in Update(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update auth_users set deleted_at = :deleted_at where auth_id = :auth_id
+// TODO(@benqi): sqlmap
+func (dao *AuthUsersDAO) Delete(deleted_at int64, auth_id int64) int64 {
+	var query = "update auth_users set deleted_at = ? where auth_id = ?"
+	r, err := dao.db.Exec(query, deleted_at, auth_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in Delete(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in Delete(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
 }
