@@ -38,7 +38,10 @@ func (s *AccountServiceImpl) AccountGetPrivacy(ctx context.Context, request *mtp
 	var rules *mtproto.TLAccountPrivacyRules
 	if rulesData == nil {
 		// TODO(@benqi): return nil or empty
-		rules = mtproto.NewTLAccountPrivacyRules()
+		// rules = mtproto.NewTLAccountPrivacyRules()
+		rules = &mtproto.TLAccountPrivacyRules{ Data2: &mtproto.Account_PrivacyRules_Data{
+			Rules: []*mtproto.PrivacyRule{mtproto.NewTLPrivacyValueAllowAll().To_PrivacyRule()},
+		}}
 	} else {
 		idList := rulesData.PickAllUserIdList()
 		if len(idList) == 0 {

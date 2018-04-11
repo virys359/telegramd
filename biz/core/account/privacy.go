@@ -140,11 +140,11 @@ func MakePrivacyLogic(userId int32) privacyLogic {
 
 func (m privacyLogic) GetPrivacy(key PrivacyKeyType) (rulesData *PrivacyRulesData) {
 	do := dao.GetUserPrivacysDAO(dao.DB_SLAVE).SelectPrivacy(int32(m), int8(key))
-	if do != nil {
+	if do == nil {
 		return
 	}
 	rulesData2 := &PrivacyRulesData{}
-	err := json.Unmarshal([]byte(do.Rules), rulesData)
+	err := json.Unmarshal([]byte(do.Rules), rulesData2)
 	if err != nil {
 		glog.Errorf("getPrivacy - Unmarshal PrivacyRulesData(%d)error: %v", do.Id, err)
 		// return nil, err
@@ -238,7 +238,7 @@ func (m *PrivacyRuleData) ToPrivacyRule() (rule *mtproto.PrivacyRule) {
 		rule = mtproto.NewTLPrivacyValueAllowContacts().To_PrivacyRule()
 	case PrivacyRuleType_ALLOW_USERS:
 		rule = &mtproto.PrivacyRule{
-			Constructor: mtproto.TLConstructor_CRC32_inputPrivacyValueAllowUsers,
+			Constructor: mtproto.TLConstructor_CRC32_privacyValueAllowUsers,
 			Data2: &mtproto.PrivacyRule_Data{
 				Users: m.GetUserIdList(),
 			},
@@ -249,7 +249,7 @@ func (m *PrivacyRuleData) ToPrivacyRule() (rule *mtproto.PrivacyRule) {
 		rule = mtproto.NewTLPrivacyValueDisallowContacts().To_PrivacyRule()
 	case PrivacyRuleType_DISALLOW_USERS:
 		rule = &mtproto.PrivacyRule{
-			Constructor: mtproto.TLConstructor_CRC32_inputPrivacyValueDisallowUsers,
+			Constructor: mtproto.TLConstructor_CRC32_privacyValueAllowUsers,
 			Data2: &mtproto.PrivacyRule_Data{
 				Users: m.GetUserIdList(),
 			},
