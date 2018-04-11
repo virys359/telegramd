@@ -26,6 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/hex"
 	contact2 "github.com/nebulaim/telegramd/biz/core/contact"
+	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 )
 
 func CheckUserAccessHash(id int32, hash int64) bool {
@@ -54,6 +55,7 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 	} else {
 		var (
 			status *mtproto.UserStatus
+			photo *mtproto.UserProfilePhoto
 		)
 
 		if selfId == do.Id {
@@ -62,6 +64,14 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 			status = GetUserStatus(do.Id)
 		}
 
+		photoId := GetDefaultUserPhotoID(do.Id)
+		if photoId == 0 {
+			photo =  mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
+		} else {
+			sizeList := photo2.GetPhotoSizeList(photoId)
+			photo = photo2.MakeUserProfilePhoto(photoId, sizeList)
+		}
+		// GetPhotoSizeList(photoId)
 		contact, mutalContact := contact2.CheckContactAndMutualByUserId(selfId, do.Id)
 		data := &userData{ TLUser: &mtproto.TLUser{ Data2: &mtproto.User_Data{
 			Id:            do.Id,
@@ -74,7 +84,8 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 			Username:      do.Username,
 			Phone:         do.Phone,
 			// TODO(@benqi): Load from db
-			Photo:         mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto(),
+			Photo:         photo,
+			// mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto(),
 			Status:        status,
 		}}}
 		return data

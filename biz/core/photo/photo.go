@@ -37,11 +37,17 @@ const (
 	PHOTO_SIZE_MEDIUMN_TYPE 	= "m"
 	PHOTO_SIZE_XLARGE_TYPE 		= "x"
 	PHOTO_SIZE_YLARGE_TYPE 		= "y"
+	PHOTO_SIZE_A_TYPE	 		= "a"
+	PHOTO_SIZE_B_TYPE 			= "b"
+	PHOTO_SIZE_C_TYPE 			= "c"
 
 	PHOTO_SIZE_SMALL_SIZE	 	= 90
 	PHOTO_SIZE_MEDIUMN_SIZE 	= 320
 	PHOTO_SIZE_XLARGE_SIZE 		= 800
 	PHOTO_SIZE_YLARGE_SIZE 		= 1280
+	PHOTO_SIZE_A_SIZE 			= 160
+	PHOTO_SIZE_B_SIZE 			= 320
+	PHOTO_SIZE_C_SIZE 			= 640
 )
 
 /*
@@ -92,7 +98,16 @@ const (
 	storage.fileWebp#1081464c = storage.FileType;
  */
 
-var sizeList = []int{PHOTO_SIZE_SMALL_SIZE, PHOTO_SIZE_MEDIUMN_SIZE, PHOTO_SIZE_XLARGE_SIZE, PHOTO_SIZE_YLARGE_SIZE}
+var sizeList = []int{
+	PHOTO_SIZE_SMALL_SIZE,
+	PHOTO_SIZE_MEDIUMN_SIZE,
+	PHOTO_SIZE_XLARGE_SIZE,
+	PHOTO_SIZE_YLARGE_SIZE,
+	PHOTO_SIZE_A_SIZE,
+	PHOTO_SIZE_B_SIZE,
+	PHOTO_SIZE_C_SIZE,
+}
+
 func getSizeType(idx int) string {
 	switch idx {
 	case 0:
@@ -101,9 +116,17 @@ func getSizeType(idx int) string {
 		return PHOTO_SIZE_MEDIUMN_TYPE
 	case 2:
 		return PHOTO_SIZE_XLARGE_TYPE
-	default:
+	case 3:
 		return PHOTO_SIZE_YLARGE_TYPE
+	case 4:
+		return PHOTO_SIZE_A_TYPE
+	case 5:
+		return PHOTO_SIZE_B_TYPE
+	case 6:
+		return PHOTO_SIZE_C_TYPE
 	}
+
+	return ""
 }
 
 type resizeInfo struct {

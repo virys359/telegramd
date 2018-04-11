@@ -32,6 +32,7 @@ type UsersDO struct {
 	Banned         int64  `db:"banned"`
 	BannedReason   string `db:"banned_reason"`
 	AccountDaysTtl int32  `db:"account_days_ttl"`
+	Photos         string `db:"photos"`
 	Deleted        int8   `db:"deleted"`
 	DeletedReason  string `db:"deleted_reason"`
 	CreatedAt      string `db:"created_at"`

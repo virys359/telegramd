@@ -53,10 +53,10 @@ func (dao *UsersDAO) Insert(do *dataobject.UsersDO) int64 {
 	return id
 }
 
-// select id, access_hash, first_name, last_name, username, banned from users where phone = :phone limit 1
+// select id, access_hash, first_name, last_name, username, banned, photos from users where phone = :phone limit 1
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) SelectByPhoneNumber(phone string) *dataobject.UsersDO {
-	var query = "select id, access_hash, first_name, last_name, username, banned from users where phone = ? limit 1"
+	var query = "select id, access_hash, first_name, last_name, username, banned, photos from users where phone = ? limit 1"
 	rows, err := dao.db.Queryx(query, phone)
 
 	if err != nil {
@@ -82,10 +82,10 @@ func (dao *UsersDAO) SelectByPhoneNumber(phone string) *dataobject.UsersDO {
 	return do
 }
 
-// select id, access_hash, first_name, last_name, username, phone from users where id = :id limit 1
+// select id, access_hash, first_name, last_name, username, phone, photos from users where id = :id limit 1
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) SelectById(id int32) *dataobject.UsersDO {
-	var query = "select id, access_hash, first_name, last_name, username, phone from users where id = ? limit 1"
+	var query = "select id, access_hash, first_name, last_name, username, phone, photos from users where id = ? limit 1"
 	rows, err := dao.db.Queryx(query, id)
 
 	if err != nil {
@@ -111,10 +111,10 @@ func (dao *UsersDAO) SelectById(id int32) *dataobject.UsersDO {
 	return do
 }
 
-// select id, access_hash, first_name, last_name, username, phone from users where id in (:id_list)
+// select id, access_hash, first_name, last_name, username, phone, photos from users where id in (:id_list)
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) SelectUsersByIdList(id_list []int32) []dataobject.UsersDO {
-	var q = "select id, access_hash, first_name, last_name, username, phone from users where id in (?)"
+	var q = "select id, access_hash, first_name, last_name, username, phone, photos from users where id in (?)"
 	query, a, err := sqlx.In(q, id_list)
 	rows, err := dao.db.Queryx(query, a...)
 
@@ -143,10 +143,10 @@ func (dao *UsersDAO) SelectUsersByIdList(id_list []int32) []dataobject.UsersDO {
 	return values
 }
 
-// select id, access_hash, first_name, last_name, username, phone from users where username = :username or first_name = :first_name or last_name = :last_name or phone = :phone limit 20
+// select id, access_hash, first_name, last_name, username, phone, photos from users where username = :username or first_name = :first_name or last_name = :last_name or phone = :phone limit 20
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) SelectByQueryString(username string, first_name string, last_name string, phone string) []dataobject.UsersDO {
-	var query = "select id, access_hash, first_name, last_name, username, phone from users where username = ? or first_name = ? or last_name = ? or phone = ? limit 20"
+	var query = "select id, access_hash, first_name, last_name, username, phone, photos from users where username = ? or first_name = ? or last_name = ? or phone = ? limit 20"
 	rows, err := dao.db.Queryx(query, username, first_name, last_name, phone)
 
 	if err != nil {
@@ -411,6 +411,57 @@ func (dao *UsersDAO) UpdateAccountDaysTTL(account_days_ttl int32, id int32) int6
 	rows, err := r.RowsAffected()
 	if err != nil {
 		errDesc := fmt.Sprintf("RowsAffected in UpdateAccountDaysTTL(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// select photos from users where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) SelectProfilePhotos(id int32) *dataobject.UsersDO {
+	var query = "select photos from users where id = ?"
+	rows, err := dao.db.Queryx(query, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectProfilePhotos(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.UsersDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectProfilePhotos(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	return do
+}
+
+// update users set photos = :photos where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) UpdateProfilePhotos(photos string, id int32) int64 {
+	var query = "update users set photos = ? where id = ?"
+	r, err := dao.db.Exec(query, photos, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateProfilePhotos(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateProfilePhotos(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

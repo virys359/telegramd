@@ -10,12 +10,12 @@
     </operation>
     <operation name="SelectByPhoneNumber">
         <sql>
-            SELECT id, access_hash, first_name, last_name, username, banned FROM users WHERE phone=:phone limit 1
+            SELECT id, access_hash, first_name, last_name, username, banned, photos FROM users WHERE phone=:phone limit 1
         </sql>
     </operation>
     <operation name="SelectById">
         <sql>
-            SELECT id, access_hash, first_name, last_name, username, phone FROM users WHERE id=:id limit 1
+            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE id=:id limit 1
         </sql>
     </operation>
     <operation name="SelectUsersByIdList" result_set="list">
@@ -23,13 +23,13 @@
             <param name="id_list" type="[]int32" />
         </params>
         <sql>
-            SELECT id, access_hash, first_name, last_name, username, phone FROM users WHERE id in (:id_list)
+            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE id in (:id_list)
         </sql>
     </operation>
 
     <operation name="SelectByQueryString" result_set="list">
         <sql>
-            SELECT id, access_hash, first_name, last_name, username, phone FROM users WHERE username = :username OR first_name = :first_name OR last_name = :last_name OR phone = :phone limit 20
+            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE username = :username OR first_name = :first_name OR last_name = :last_name OR phone = :phone limit 20
         </sql>
     </operation>
 
@@ -97,6 +97,18 @@
     <operation name="UpdateAccountDaysTTL">
         <sql>
             UPDATE users SET account_days_ttl = :account_days_ttl WHERE id=:id
+        </sql>
+    </operation>
+
+    <operation name="SelectProfilePhotos">
+        <sql>
+            SELECT photos FROM users WHERE id=:id
+        </sql>
+    </operation>
+
+    <operation name="UpdateProfilePhotos">
+        <sql>
+            UPDATE users SET photos = :photos WHERE id=:id
         </sql>
     </operation>
 

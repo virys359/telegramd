@@ -26,6 +26,8 @@ import (
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	"github.com/nebulaim/telegramd/biz/base"
 	"time"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 /*
@@ -136,11 +138,13 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 		return nil, err
 	}
 
+	user.SetUserPhotoID(md.UserId, uuid)
+
 	// TODO(@benqi): sync update userProfilePhoto
 
 	// fileData := mediaData.GetFile().GetData2()
 	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
-		Id:          base.NextSnowflakeId(),
+		Id:          uuid,
 		HasStickers: false,
 		AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 		Date:        int32(time.Now().Unix()),
@@ -151,6 +155,14 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 		Photo: photo.To_Photo(),
 		Users: []*mtproto.User{},
 	}}
+
+	updateUserPhoto := &mtproto.TLUpdateUserPhoto{Data2: &mtproto.Update_Data{
+		UserId: md.UserId,
+		Date: int32(time.Now().Unix()),
+		Photo: photo2.MakeUserProfilePhoto(uuid, sizes),
+		Previous: mtproto.ToBool(false),
+	}}
+	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserPhoto.To_Update())
 
 	glog.Infof("photos.uploadProfilePhoto#4f32c098 - reply: %s", logger.JsonDebugData(photos))
 	return photos.To_Photos_Photo(), nil
