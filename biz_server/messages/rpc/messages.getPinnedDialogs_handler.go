@@ -63,17 +63,18 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 		peerDialogs.SetMessages(message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
 	}
 
-	users := user.GetUserList(userIdList)
-	for _, user := range users {
-		if user.GetId() == md.UserId {
-			user.SetSelf(true)
-		} else {
-			user.SetSelf(false)
-		}
-		user.SetContact(true)
-		user.SetMutualContact(true)
-		peerDialogs.Data2.Users = append(peerDialogs.Data2.Users, user.To_User())
-	}
+	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+	peerDialogs.SetUsers(users)
+	//for _, user := range users {
+	//	if user.GetId() == md.UserId {
+	//		user.SetSelf(true)
+	//	} else {
+	//		user.SetSelf(false)
+	//	}
+	//	user.SetContact(true)
+	//	user.SetMutualContact(true)
+	//	peerDialogs.Data2.Users = append(peerDialogs.Data2.Users, user.To_User())
+	//}
 
 	if len(chatIdList) > 0 {
 		peerDialogs.Data2.Chats = chat.GetChatListByIDList(chatIdList)

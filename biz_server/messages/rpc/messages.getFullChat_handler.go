@@ -34,7 +34,8 @@ func (s *MessagesServiceImpl) MessagesGetFullChat(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesGetFullChat - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	messagesChatFull := &mtproto.TLMessagesChatFull{}
+	messagesChatFull := mtproto.NewTLMessagesChatFull()
+	// &mtproto.TLMessagesChatFull{}
 	chatFull := chat2.GetChatFull(request.ChatId)
 	peer := &base.PeerUtil{}
 	peer.PeerType = base.PEER_CHAT
@@ -55,13 +56,15 @@ func (s *MessagesServiceImpl) MessagesGetFullChat(ctx context.Context, request *
 		}
 	}
 	chat.SetParticipantsCount(int32(len(participants)))
-	users := user.GetUserList(chatUserIdList)
-	for _, u := range users {
-		if u.GetId() == md.UserId {
-			u.SetSelf(true)
-		}
-		messagesChatFull.Data2.Users = append(messagesChatFull.Data2.Users, u.To_User())
-	}
+	users := user.GetUsersBySelfAndIDList(md.UserId, chatUserIdList)
+
+	messagesChatFull.SetUsers(users)
+	//for _, u := range users {
+	//	if u.GetId() == md.UserId {
+	//		u.SetSelf(true)
+	//	}
+	//	messagesChatFull.Data2.Users = append(messagesChatFull.Data2.Users, u.To_User())
+	//}
 	messagesChatFull.Data2.Chats = append(messagesChatFull.Data2.Chats, chat.To_Chat())
 	messagesChatFull.SetFullChat(chatFull.To_ChatFull())
 

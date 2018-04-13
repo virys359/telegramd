@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewChatsDAO(db *sqlx.DB) *ChatsDAO {
 	return &ChatsDAO{db}
 }
 
-// insert into chats(creator_user_id, access_hash, participant_count, create_random_id, title, title_changer_user_id, title_change_random_id, title_changed_at, avatar_changer_user_id, avatar_change_random_id, avatar_changed_at, created_at) values (:creator_user_id, :access_hash, :participant_count, :create_random_id, :title, :title_changer_user_id, :title_change_random_id, :title_changed_at, :avatar_changer_user_id, :avatar_change_random_id, :avatar_changed_at, :created_at)
+// insert into chats(creator_user_id, access_hash, random_id, participant_count, title, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :date)
 // TODO(@benqi): sqlmap
 func (dao *ChatsDAO) Insert(do *dataobject.ChatsDO) int64 {
-	var query = "insert into chats(creator_user_id, access_hash, participant_count, create_random_id, title, title_changer_user_id, title_change_random_id, title_changed_at, avatar_changer_user_id, avatar_change_random_id, avatar_changed_at, created_at) values (:creator_user_id, :access_hash, :participant_count, :create_random_id, :title, :title_changer_user_id, :title_change_random_id, :title_changed_at, :avatar_changer_user_id, :avatar_change_random_id, :avatar_changed_at, :created_at)"
+	var query = "insert into chats(creator_user_id, access_hash, random_id, participant_count, title, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :date)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,10 @@ func (dao *ChatsDAO) Insert(do *dataobject.ChatsDO) int64 {
 	return id
 }
 
-// select id, participant_count, title, version from chats where id = :id
+// select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id = :id
 // TODO(@benqi): sqlmap
 func (dao *ChatsDAO) Select(id int32) *dataobject.ChatsDO {
-	var query = "select id, participant_count, title, version from chats where id = ?"
+	var query = "select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id = ?"
 	rows, err := dao.db.Queryx(query, id)
 
 	if err != nil {
@@ -82,11 +82,11 @@ func (dao *ChatsDAO) Select(id int32) *dataobject.ChatsDO {
 	return do
 }
 
-// update chats set title = :title, title_changer_user_id = :title_changer_user_id, title_change_random_id = :title_change_random_id, title_changed_at = :title_changed_at where id = :id
+// update chats set title = :title, `date` = :date, version = version + 1 where id = :id
 // TODO(@benqi): sqlmap
-func (dao *ChatsDAO) UpdateTitle(title string, title_changer_user_id int32, title_change_random_id int64, title_changed_at string, id int32) int64 {
-	var query = "update chats set title = ?, title_changer_user_id = ?, title_change_random_id = ?, title_changed_at = ? where id = ?"
-	r, err := dao.db.Exec(query, title, title_changer_user_id, title_change_random_id, title_changed_at, id)
+func (dao *ChatsDAO) UpdateTitle(title string, date int32, id int32) int64 {
+	var query = "update chats set title = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, title, date, id)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Exec in UpdateTitle(_), error: %v", err)
@@ -104,10 +104,10 @@ func (dao *ChatsDAO) UpdateTitle(title string, title_changer_user_id int32, titl
 	return rows
 }
 
-// select id, participant_count, title, version from chats where id in (:idList)
+// select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id in (:idList)
 // TODO(@benqi): sqlmap
 func (dao *ChatsDAO) SelectByIdList(idList []int32) []dataobject.ChatsDO {
-	var q = "select id, participant_count, title, version from chats where id in (?)"
+	var q = "select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id in (?)"
 	query, a, err := sqlx.In(q, idList)
 	rows, err := dao.db.Queryx(query, a...)
 
@@ -136,11 +136,11 @@ func (dao *ChatsDAO) SelectByIdList(idList []int32) []dataobject.ChatsDO {
 	return values
 }
 
-// update chats set participant_count = :participant_count, version = :version where id = :id
+// update chats set participant_count = :participant_count, `date` = :date, version = version + 1 where id = :id
 // TODO(@benqi): sqlmap
-func (dao *ChatsDAO) UpdateParticipantCount(participant_count int32, version int32, id int32) int64 {
-	var query = "update chats set participant_count = ?, version = ? where id = ?"
-	r, err := dao.db.Exec(query, participant_count, version, id)
+func (dao *ChatsDAO) UpdateParticipantCount(participant_count int32, date int32, id int32) int64 {
+	var query = "update chats set participant_count = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, participant_count, date, id)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Exec in UpdateParticipantCount(_), error: %v", err)
@@ -151,6 +151,28 @@ func (dao *ChatsDAO) UpdateParticipantCount(participant_count int32, version int
 	rows, err := r.RowsAffected()
 	if err != nil {
 		errDesc := fmt.Sprintf("RowsAffected in UpdateParticipantCount(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update chats set photo_id = :photo_id, `date` = :date, version = version + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChatsDAO) UpdatePhotoId(photo_id int64, date int32, id int32) int64 {
+	var query = "update chats set photo_id = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, photo_id, date, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdatePhotoId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdatePhotoId(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

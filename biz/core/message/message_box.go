@@ -29,6 +29,7 @@ import (
 	"fmt"
 	"github.com/gogo/protobuf/proto"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/golang/glog"
 )
 
 //type InboxMessageList struct {
@@ -36,10 +37,10 @@ import (
 //	// Messages []*mtproto.Message
 //}
 
-type MessageBoxObserver interface {
-	OnOutboxCreated(clearDraft bool, outbox *MessageBox)
-	OnInboxCreated(outbox *MessageBox)
-}
+//type MessageBoxObserver interface {
+//	OnOutboxCreated(clearDraft bool, outbox *MessageBox)
+//	OnInboxCreated(outbox *MessageBox)
+//}
 
 type MessageBox struct {
 	UserId             int32
@@ -49,7 +50,21 @@ type MessageBox struct {
 	Message            *mtproto.Message
 }
 
-func InsertMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int64, message2 *mtproto.Message) (box *MessageBox) {
+//type MessageOutBox MessageBox
+//type MessageInBox MessageBox
+//type MessageInBoxList []*MessageInBox
+
+type MessageBoxList []*MessageBox
+
+// var b MessageInBoxList = []*MessageInBox{}
+//var list []*MessageBox = b
+
+// type OnOutboxCreated
+type OnOutboxCreated func(int32)
+type OnInboxSendOK func(int32, int32)
+
+// 新增
+func CreateMessageOutboxByNew(fromId int32, peer *base.PeerUtil, clientRandomId int64, message2 *mtproto.Message, cb OnOutboxCreated) (box *MessageBox) {
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:fromId,
@@ -63,8 +78,6 @@ func InsertMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int
 		Date2: now,
 		Deleted: 0,
 	}
-
-	// var mentioned = false
 
 	switch message2.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_messageEmpty:
@@ -97,21 +110,24 @@ func InsertMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int
 		Message:         message2,
 	}
 
-	// dialog
-	// GetDialogModel().CreateOrUpdateByOutbox(fromId, peer.PeerType, peer.PeerId, messageDO.UserMessageBoxId, mentioned)
-	//boxId = messageDO.UserMessageBoxId
-	//dialogMessageId = messageDO.DialogMessageId
+	if cb != nil {
+		cb(messageDO.UserMessageBoxId)
+	}
 	return
 }
 
-func (this *MessageBox) InsertMessageToInbox(fromId int32, peer *base.PeerUtil) (MessageBoxList, error) {
+func MakeMessageBoxByLoad(userId int32, peer *base.PeerUtil, messageId int32) (box *MessageBox) {
+	return nil
+}
+
+func (this *MessageBox) InsertMessageToInbox(fromId int32, peer *base.PeerUtil, cb OnInboxSendOK) (MessageBoxList, error) {
 	switch peer.PeerType {
 	case base.PEER_USER:
-		return this.insertUserMessageToInbox(fromId, peer)
+		return this.insertUserMessageToInbox(fromId, peer, cb)
 	case base.PEER_CHAT:
-		return this.insertChatMessageToInbox(fromId, peer)
+		return this.insertChatMessageToInbox(fromId, peer, cb)
 	case base.PEER_CHANNEL:
-		return this.insertChannelMessageToInbox(fromId, peer)
+		return this.insertChannelMessageToInbox(fromId, peer, cb)
 	default:
 		//	panic("invalid peer")
 		return nil, fmt.Errorf("invalid peer")
@@ -127,20 +143,19 @@ func getPeerMessageId(userId, messageId, peerId int32) int32 {
 	}
 }
 
-// 发送到收件箱
-func (this *MessageBox) insertUserMessageToInbox(fromId int32, peer *base.PeerUtil) (MessageBoxList, error) {
+func (this *MessageBox) makeInboxMessageDO(fromId int32, peer *base.PeerUtil, inboxUserId int32) *MessageBox {
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
-		UserId:peer.PeerId,
-		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
-		DialogMessageId: this.DialogMessageId,
-		SenderUserId: this.UserId,
-		MessageBoxType: MESSAGE_BOX_TYPE_INCOMING,
-		PeerType: int8(peer.PeerType),
-		PeerId: peer.PeerId,
-		RandomId: this.RandomId,
-		Date2: now,
-		Deleted: 0,
+		UserId:           inboxUserId,
+		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(inboxUserId))),
+		DialogMessageId:  this.DialogMessageId,
+		SenderUserId:     this.UserId,
+		MessageBoxType:   MESSAGE_BOX_TYPE_INCOMING,
+		PeerType:         int8(peer.PeerType),
+		PeerId:           peer.PeerId,
+		RandomId:         this.RandomId,
+		Date2:            now,
+		Deleted:          0,
 	}
 
 	inboxMessage := proto.Clone(this.Message).(*mtproto.Message)
@@ -155,7 +170,7 @@ func (this *MessageBox) insertUserMessageToInbox(fromId int32, peer *base.PeerUt
 		m2 := inboxMessage.To_Message()
 		m2.SetOut(false)
 		if m2.GetReplyToMsgId() != 0 {
-			replyMsgId := getPeerMessageId(fromId, m2.GetReplyToMsgId(), peer.PeerId)
+			replyMsgId := getPeerMessageId(fromId, m2.GetReplyToMsgId(), inboxUserId)
 			m2.SetReplyToMsgId(replyMsgId)
 		}
 		m2.SetId(messageDO.UserMessageBoxId)
@@ -166,8 +181,6 @@ func (this *MessageBox) insertUserMessageToInbox(fromId int32, peer *base.PeerUt
 		m2 := inboxMessage.To_MessageService()
 		m2.SetOut(false)
 		m2.SetId(messageDO.UserMessageBoxId)
-
-		// mentioned = m2.GetMentioned()
 	}
 
 	messageData, _ := json.Marshal(inboxMessage)
@@ -175,25 +188,47 @@ func (this *MessageBox) insertUserMessageToInbox(fromId int32, peer *base.PeerUt
 
 	// TODO(@benqi): rpocess clientRandomId dup
 	dao.GetMessagesDAO(dao.DB_MASTER).Insert(messageDO)
-	// dialog
-	// model.GetDialogModel().CreateOrUpdateByInbox(peer.PeerId, peer.PeerType, fromId, messageDO.UserMessageBoxId, mentioned)
 
-	box := &MessageBox{
-		UserId:          fromId,
+	return &MessageBox{
+		UserId:          inboxUserId,
 		MessageId:       messageDO.UserMessageBoxId,
 		DialogMessageId: messageDO.DialogMessageId,
 		RandomId:        this.RandomId,
 		Message:         inboxMessage,
 	}
-	return []*MessageBox{box}, nil
-	//return &InboxMessages{
-	//	UserIds:  []int32{messageDO.UserId},
-	//	Messages: []*mtproto.Message{inboxMessage},
-	//}, nil
 }
 
 // 发送到收件箱
-func (this *MessageBox) insertChatMessageToInbox(fromId int32, peer *base.PeerUtil) (MessageBoxList, error) {
+func (this *MessageBox) insertUserMessageToInbox(fromId int32, peer *base.PeerUtil, cb OnInboxSendOK) (MessageBoxList, error) {
+	inbox := this.makeInboxMessageDO(fromId, peer, peer.PeerId)
+	if cb != nil {
+		cb(inbox.UserId, inbox.MessageId)
+	}
+	return []*MessageBox{inbox}, nil
+}
+
+// 发送chat message到收件箱
+func (this *MessageBox) insertChatMessageToInbox(fromId int32, peer *base.PeerUtil, cb OnInboxSendOK) (MessageBoxList, error) {
+	doList := dao.GetChatParticipantsDAO(dao.DB_SLAVE).SelectByChatId(peer.PeerId)
+
+	var inoutBoxList MessageBoxList = make([]*MessageBox, 0, len(doList))
+	for _, do := range doList {
+		if do.UserId == this.UserId {
+			continue
+		}
+		inbox := this.makeInboxMessageDO(fromId, peer, do.UserId)
+		glog.Info("insertChatMessageToInbox - ", inbox)
+		if cb != nil {
+			cb(inbox.UserId, inbox.MessageId)
+		}
+		inoutBoxList = append(inoutBoxList, inbox)
+	}
+
+	return inoutBoxList, nil
+}
+
+// 发送channel message到收件箱
+func (this *MessageBox) insertChannelMessageToInbox(fromId int32, peer *base.PeerUtil, cb OnInboxSendOK) (MessageBoxList, error) {
 	switch this.Message.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_message:
 	case mtproto.TLConstructor_CRC32_messageService:
@@ -204,32 +239,11 @@ func (this *MessageBox) insertChatMessageToInbox(fromId int32, peer *base.PeerUt
 	return []*MessageBox{}, nil
 }
 
-// 发送到收件箱
-func (this *MessageBox) insertChannelMessageToInbox(fromId int32, peer *base.PeerUtil) (MessageBoxList, error) {
-	switch this.Message.GetConstructor() {
-	case mtproto.TLConstructor_CRC32_message:
-	case mtproto.TLConstructor_CRC32_messageService:
-	default:
-		panic("invalid messageEmpty type")
-		// return
-	}
-	return []*MessageBox{}, nil
-}
-
-
-type MessageBoxList []*MessageBox
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 func (this *MessageBoxList) ToMessageList() []*mtproto.Message {
 	messageList := make([]*mtproto.Message, 0, len(*this))
 	for _, box := range messageList {
 		messageList = append(messageList, box)
 	}
 	return messageList
-}
-
-type MessageLogic struct {
-	*mtproto.Message
-	// creatorId    int32
-	// Chat         *mtproto.TLChat
-	// Participants []*mtproto.ChatParticipant
 }

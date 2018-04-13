@@ -24,35 +24,35 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/chat"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	// update2 "github.com/nebulaim/telegramd/biz/core/update"
+	// "github.com/nebulaim/telegramd/biz_server/sync_client"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/biz/core/user"
+	// "github.com/nebulaim/telegramd/biz/core/user"
 )
 
-func makeUpdatesByChatMessage(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
-	updates := update2.NewUpdatesLogic(selfUserId)
-	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
-	}}
-	updates.AddUpdate(updateChatParticipants.To_Update())
-	updates.AddUpdateNewMessage(box.Message)
-	updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
-	return updates
-}
-
-func makeUpdatesByChatMessageAndMessageId(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
-	updates := update2.NewUpdatesLogic(selfUserId)
-	updates.AddUpdateMessageId(box.MessageId, box.RandomId)
-	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
-	}}
-	updates.AddUpdate(updateChatParticipants.To_Update())
-	updates.AddUpdateNewMessage(box.Message)
-	updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
-	return updates
-}
+//func makeUpdatesByChatMessage(chatLogic *chat.Logic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
+//	updates := update2.NewUpdatesLogic(selfUserId)
+//	//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+//	//	Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
+//	//}}
+//	//updates.AddUpdate(updateChatParticipants.To_Update())
+//	//updates.AddUpdateNewMessage(box.Message)
+//	//updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
+//	return updates
+//}
+//
+//func makeUpdatesByChatMessageAndMessageId(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
+//	updates := update2.NewUpdatesLogic(selfUserId)
+//	//updates.AddUpdateMessageId(box.MessageId, box.RandomId)
+//	//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+//	//	Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
+//	//}}
+//	//updates.AddUpdate(updateChatParticipants.To_Update())
+//	//updates.AddUpdateNewMessage(box.Message)
+//	//updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
+//	return updates
+//}
 
 // messages.addChatUser#f9a0aa09 chat_id:int user_id:InputUser fwd_limit:int = Updates;
 func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *mtproto.TLMessagesAddChatUser) (*mtproto.Updates, error) {
@@ -75,29 +75,33 @@ func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
-		PeerId: chatLogic.Chat.GetId(),
+		PeerId: chatLogic.GetChatId(),
 	}
 
 	addUserMessage := chatLogic.MakeAddUserMessage(md.UserId, addChatUserId)
 	randomId := base.NextSnowflakeId()
-	outbox := message.InsertMessageToOutbox(md.UserId, peer, randomId, addUserMessage)
+	outbox := message.CreateMessageOutboxByNew(md.UserId, peer, randomId, addUserMessage, func(messageId int32) {
+
+	})
+	_ = outbox
 	// TODO(@benqi): update dialog
 
-	syncUpdates := makeUpdatesByChatMessage(chatLogic, md.UserId, outbox)
-	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
-
-	replyUpdates := makeUpdatesByChatMessageAndMessageId(chatLogic, md.UserId, outbox)
-	// replyUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
-	replyUpdates.SetupState(state)
-	// reply := syncUpdates.ToUpdates()
-
-	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer)
-	for _, inbox := range inboxList {
-		// TODO(@benqi): update dialog
-		pushUpdates := makeUpdatesByChatMessage(chatLogic, inbox.UserId, inbox)
-		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, pushUpdates.ToUpdates())
-	}
-
-	glog.Infof("messages.createChat#9cb126e - reply: {%v}", replyUpdates)
-	return replyUpdates.ToUpdates(), nil
+	//syncUpdates := makeUpdatesByChatMessage(chatLogic, md.UserId, outbox)
+	//state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
+	//
+	//replyUpdates := makeUpdatesByChatMessageAndMessageId(chatLogic, md.UserId, outbox)
+	//// replyUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
+	//replyUpdates.SetupState(state)
+	//// reply := syncUpdates.ToUpdates()
+	//
+	//inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer)
+	//for _, inbox := range inboxList {
+	//	// TODO(@benqi): update dialog
+	//	pushUpdates := makeUpdatesByChatMessage(chatLogic, inbox.UserId, inbox)
+	//	sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, pushUpdates.ToUpdates())
+	//}
+	//
+	//glog.Infof("messages.createChat#9cb126e - reply: {%v}", replyUpdates)
+	//return replyUpdates.ToUpdates(), nil
+	return nil, nil
 }

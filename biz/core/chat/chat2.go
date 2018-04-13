@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"math/rand"
+	// "math/rand"
 )
 
 func AddChatParticipant(chatId, chatUserId, inviterId int32, participantType int8) (participant *mtproto.ChatParticipant) {
@@ -70,54 +70,54 @@ func AddChatParticipant(chatId, chatUserId, inviterId int32, participantType int
 	channel#cb44b1c flags:# creator:flags.0?true left:flags.2?true editor:flags.3?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true restricted:flags.9?true democracy:flags.10?true signatures:flags.11?true min:flags.12?true id:int access_hash:flags.13?long title:string username:flags.6?string photo:ChatPhoto date:int version:int restriction_reason:flags.9?string admin_rights:flags.14?ChannelAdminRights banned_rights:flags.15?ChannelBannedRights = Chat;
 	channelForbidden#289da732 flags:# broadcast:flags.5?true megagroup:flags.8?true id:int access_hash:long title:string until_date:flags.16?int = Chat;
  */
-func CreateChat(userId int32, title string, chatUserIdList []int32, random int64) (*mtproto.TLChat, *mtproto.TLChatParticipants) {
-	chat := mtproto.NewTLChat()
-	// chat.Id = int32(lastInsertId)
-	chat.SetTitle(title)
-	chat.SetPhoto(mtproto.NewTLChatPhotoEmpty().To_ChatPhoto())
-	chat.SetDate(int32(time.Now().Unix()))
-	chat.SetVersion(1)
-	chat.SetParticipantsCount(int32(len(chatUserIdList))+1)
-
-	chatDO := &dataobject.ChatsDO{}
-	chatDO.AccessHash = rand.Int63()
-	chatDO.CreatedAt = base.NowFormatYMDHMS()
-	chatDO.CreatorUserId = userId
-	// TODO(@benqi): 使用客户端message_id
-	chatDO.CreateRandomId = rand.Int63()
-	chatDO.Title = title
-
-	chatDO.TitleChangerUserId = userId
-	chatDO.TitleChangedAt = chatDO.CreatedAt
-	// TODO(@benqi): 使用客户端message_id
-	chatDO.TitleChangeRandomId = chatDO.AccessHash
-
-	chatDO.AvatarChangerUserId = userId
-	chatDO.AvatarChangedAt = chatDO.CreatedAt
-	// TODO(@benqi): 使用客户端message_id
-	chatDO.AvatarChangeRandomId = chatDO.AccessHash
-	// dao.GetChatsDA()
-	chatDO.ParticipantCount = chat.GetParticipantsCount()
-
-	// TODO(@benqi): 事务！
-	chat.SetId(int32(dao.GetChatsDAO(dao.DB_MASTER).Insert(chatDO)))
-
-	// updateChatParticipants := &mtproto.TLUpdateChatParticipants{}
-	participants := mtproto.NewTLChatParticipants()
-	participants.SetChatId(chat.GetId())
-	participants.SetVersion(1)
-
-	participants.Data2.Participants = append(participants.Data2.Participants, AddChatParticipant(chat.GetId(), userId, userId, 2))
-	// chatUserIdList := make([]int32, 0, len(request.GetUsers()))
-	for _, chatUserId := range chatUserIdList {
-		if chatUserId == userId {
-			continue
-		}
-		participants.Data2.Participants = append(participants.Data2.Participants, AddChatParticipant(chat.GetId(), chatUserId, userId, 0))
-	}
-
-	return chat, participants
-}
+//func CreateChat(userId int32, title string, chatUserIdList []int32, random int64) (*mtproto.TLChat, *mtproto.TLChatParticipants) {
+//	chat := mtproto.NewTLChat()
+//	// chat.Id = int32(lastInsertId)
+//	chat.SetTitle(title)
+//	chat.SetPhoto(mtproto.NewTLChatPhotoEmpty().To_ChatPhoto())
+//	chat.SetDate(int32(time.Now().Unix()))
+//	chat.SetVersion(1)
+//	chat.SetParticipantsCount(int32(len(chatUserIdList))+1)
+//
+//	chatDO := &dataobject.ChatsDO{}
+//	chatDO.AccessHash = rand.Int63()
+//	chatDO.CreatedAt = base.NowFormatYMDHMS()
+//	chatDO.CreatorUserId = userId
+//	// TODO(@benqi): 使用客户端message_id
+//	chatDO.CreateRandomId = rand.Int63()
+//	chatDO.Title = title
+//
+//	chatDO.TitleChangerUserId = userId
+//	chatDO.TitleChangedAt = chatDO.CreatedAt
+//	// TODO(@benqi): 使用客户端message_id
+//	chatDO.TitleChangeRandomId = chatDO.AccessHash
+//
+//	chatDO.AvatarChangerUserId = userId
+//	chatDO.AvatarChangedAt = chatDO.CreatedAt
+//	// TODO(@benqi): 使用客户端message_id
+//	chatDO.AvatarChangeRandomId = chatDO.AccessHash
+//	// dao.GetChatsDA()
+//	chatDO.ParticipantCount = chat.GetParticipantsCount()
+//
+//	// TODO(@benqi): 事务！
+//	chat.SetId(int32(dao.GetChatsDAO(dao.DB_MASTER).Insert(chatDO)))
+//
+//	// updateChatParticipants := &mtproto.TLUpdateChatParticipants{}
+//	participants := mtproto.NewTLChatParticipants()
+//	participants.SetChatId(chat.GetId())
+//	participants.SetVersion(1)
+//
+//	participants.Data2.Participants = append(participants.Data2.Participants, AddChatParticipant(chat.GetId(), userId, userId, 2))
+//	// chatUserIdList := make([]int32, 0, len(request.GetUsers()))
+//	for _, chatUserId := range chatUserIdList {
+//		if chatUserId == userId {
+//			continue
+//		}
+//		participants.Data2.Participants = append(participants.Data2.Participants, AddChatParticipant(chat.GetId(), chatUserId, userId, 0))
+//	}
+//
+//	return chat, participants
+//}
 
 func GetChat(chatId int32) (*mtproto.TLChat) {
 	chat := mtproto.NewTLChat()
@@ -199,9 +199,12 @@ func GetChatsByIDList(idList []int32) (chats []*mtproto.TLChat) {
 }
 
 func GetChatListByIDList(idList []int32) (chats []*mtproto.Chat) {
+	if len(idList) == 0 {
+		return []*mtproto.Chat{}
+	}
+
 	// TODO(@benqi): Check messageDAO
 	chatsDOList := dao.GetChatsDAO(dao.DB_SLAVE).SelectByIdList(idList)
-
 	for _, chatDO := range chatsDOList {
 		chat := mtproto.NewTLChat()
 		chat.SetId(chatDO.Id)

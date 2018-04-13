@@ -26,6 +26,7 @@ import (
 	"math"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 // android client request source code
@@ -120,15 +121,16 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
  	dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
 	glog.Infof("dialogs - {%v}", dialogs)
 
-	messageIdList, userIdList, _, _ := message.PickAllIDListByDialogs(dialogs)
+	messageIdList, userIdList, chatIdList, _ := message.PickAllIDListByDialogs(dialogs)
 
 	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
 	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-
+	chats := chat.GetChatListByIDList(chatIdList)
 	messageDialogs := mtproto.TLMessagesDialogs{Data2: &mtproto.Messages_Dialogs_Data{
 		Dialogs:  dialogs,
 		Messages: messages,
 		Users:    users,
+		Chats:    chats,
 	}}
 
 	glog.Infof("MessagesGetDialogs - reply: %s", logger.JsonDebugData(messageDialogs))

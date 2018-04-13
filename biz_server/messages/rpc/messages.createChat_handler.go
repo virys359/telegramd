@@ -94,7 +94,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 	//randomId := md.ClientMsgId
 
 	chatUserIdList := make([]int32, 0, len(request.GetUsers()))
-	chatUserIdList = append(chatUserIdList, md.UserId)
+	// chatUserIdList = append(chatUserIdList, md.UserId)
 	for _, u := range request.GetUsers() {
 		switch u.GetConstructor() {
 		case mtproto.TLConstructor_CRC32_inputUser:
@@ -109,12 +109,14 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
-		PeerId: chat.Chat.GetId(),
+		PeerId: chat.GetChatId(),
 	}
 
 	createChatMessage := chat.MakeCreateChatMessage(md.UserId)
 	randomId := base.NextSnowflakeId()
-	outbox := message.InsertMessageToOutbox(md.UserId, peer, randomId, createChatMessage)
+	outbox := message.CreateMessageOutboxByNew(md.UserId, peer, randomId, createChatMessage, func(messageId int32) {
+		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
+	})
 
 	syncUpdates := update2.NewUpdatesLogic(md.UserId)
 	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
@@ -123,14 +125,16 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 	syncUpdates.AddUpdate(updateChatParticipants.To_Update())
 	syncUpdates.AddUpdateNewMessage(createChatMessage)
 	syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
-	syncUpdates.AddChat(chat.Chat.To_Chat())
+	syncUpdates.AddChat(chat.ToChat(md.UserId))
 
 	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
 	syncUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
 	syncUpdates.SetupState(state)
 	reply := syncUpdates.ToUpdates()
 
-	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer)
+	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
+		user.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHAT, peer.PeerId, messageId, false)
+	})
 	for _, inbox := range inboxList {
 		updates := update2.NewUpdatesLogic(md.UserId)
 		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
@@ -139,7 +143,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 		updates.AddUpdate(updateChatParticipants.To_Update())
 		updates.AddUpdateNewMessage(inbox.Message)
 		updates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
-		updates.AddChat(chat.Chat.To_Chat())
+		updates.AddChat(chat.ToChat(inbox.UserId))
 		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
 	}
 

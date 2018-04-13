@@ -31,6 +31,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	// "github.com/nebulaim/telegramd/biz/core/peer"
 )
 
 const (
@@ -274,7 +275,22 @@ type IDMessage struct {
 // Loadhistory
 func  LoadBackwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
-	doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+
+	var (
+		doList []dataobject.MessagesDO
+	)
+
+	switch peerType {
+	case base.PEER_USER:
+		// doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+	case base.PEER_CHAT:
+		// doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+	case base.PEER_CHANNEL:
+	default:
+	}
+
 	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
 	if len(doList) == 0 {
 		messages = []*mtproto.Message{}
@@ -291,7 +307,21 @@ func  LoadBackwardHistoryMessages(userId int32, peerType , peerId int32, offset 
 
 func LoadForwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
-	doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+
+	var (
+		doList []dataobject.MessagesDO
+	)
+
+	switch peerType {
+	case base.PEER_USER:
+		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+	case base.PEER_CHAT:
+		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+	case base.PEER_CHANNEL:
+	default:
+	}
+
+
 	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
 	if len(doList) == 0 {
 		messages = []*mtproto.Message{}

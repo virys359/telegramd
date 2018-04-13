@@ -26,6 +26,11 @@ func main() {
 	var TLConstructor_CRC32_gzip_packed uint32		= 0x3072cfa1
 	var TLConstructor_CRC32_rpc_result uint32		= 0xf35c6d01
 
+	var t2 = 0xc09be45f
+	fmt.Printf("t2: %d\n", int32(t2))
+
+	var t3 = 0x44f9b43d
+	fmt.Printf("t2: %d\n", int32(t3))
 
 	fmt.Printf("TLConstructor_CRC32_message2: %d\n", int32(TLConstructor_CRC32_message2))
 	fmt.Printf("TLConstructor_CRC32_msg_container: %d\n", int32(TLConstructor_CRC32_msg_container))

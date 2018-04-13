@@ -93,22 +93,47 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 	//	updates.To_Updates().Encode())
 
 	// 2. outbox, 设置read_outbox_max_id
-	outboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
-	dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateReadOutboxMaxIdByPeer(outboxDO.TopMessage, peer.PeerId, int8(peer.PeerType), md.UserId)
-	// pts = int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(peer.PeerId)))
-	// model.GetUpdatesModel().AddPtsToUpdatesQueue(peer.PeerId, pts, base.PEER_USER, md.UserId, model.PTS_READ_HISTORY_OUTBOX, 0, outboxDO.TopMessage)
+	if peer.PeerType == base.PEER_USER {
+		outboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
+		dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateReadOutboxMaxIdByPeer(outboxDO.TopMessage, peer.PeerId, int8(peer.PeerType), md.UserId)
+		// pts = int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(peer.PeerId)))
+		// model.GetUpdatesModel().AddPtsToUpdatesQueue(peer.PeerId, pts, base.PEER_USER, md.UserId, model.PTS_READ_HISTORY_OUTBOX, 0, outboxDO.TopMessage)
 
-	updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
-	// oudboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
-	outboxPeer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
-		UserId: md.UserId,
-	}}
-	updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
-	// updateReadHistoryOutbox.SetPts(pts)
-	// updateReadHistoryOutbox.SetPtsCount(1)
-	updateReadHistoryOutbox.SetMaxId(outboxDO.TopMessage)
+		updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
+		// oudboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
+		outboxPeer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
+			UserId: md.UserId,
+		}}
+		updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
+		// updateReadHistoryOutbox.SetPts(pts)
+		// updateReadHistoryOutbox.SetPtsCount(1)
+		updateReadHistoryOutbox.SetMaxId(outboxDO.TopMessage)
 
-	sync_client.GetSyncClient().PushToUserOneUpdateData(peer.PeerId, updateReadHistoryOutbox.To_Update())
+		sync_client.GetSyncClient().PushToUserOneUpdateData(peer.PeerId, updateReadHistoryOutbox.To_Update())
+	} else {
+		doList := dao.GetChatParticipantsDAO(dao.DB_SLAVE).SelectByChatId(peer.PeerId)
+		for _, do := range doList {
+			if do.UserId == md.UserId {
+				continue
+			}
+			outboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(do.UserId, int8(peer.PeerType), peer.PeerId)
+			dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateReadOutboxMaxIdByPeer(outboxDO.TopMessage, do.UserId, int8(peer.PeerType), peer.PeerId)
+			// pts = int32(model.GetSequenceModel().NextPtsId(base2.Int32ToString(peer.PeerId)))
+			// model.GetUpdatesModel().AddPtsToUpdatesQueue(peer.PeerId, pts, base.PEER_USER, md.UserId, model.PTS_READ_HISTORY_OUTBOX, 0, outboxDO.TopMessage)
+
+			updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
+			// oudboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
+			outboxPeer := &mtproto.TLPeerChat{Data2: &mtproto.Peer_Data{
+				ChatId: peer.PeerId,
+			}}
+			updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
+			// updateReadHistoryOutbox.SetPts(pts)
+			// updateReadHistoryOutbox.SetPtsCount(1)
+			updateReadHistoryOutbox.SetMaxId(outboxDO.TopMessage)
+
+			sync_client.GetSyncClient().PushToUserOneUpdateData(do.UserId, updateReadHistoryOutbox.To_Update())
+		}
+	}
 
 	//updates = mtproto.NewTLUpdates()
 	//updates.SetSeq(0)
