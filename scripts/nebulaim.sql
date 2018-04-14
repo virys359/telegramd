@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-04-04 16:19:45
+-- Generation Time: 2018-04-14 01:30:17
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -238,8 +238,9 @@ CREATE TABLE `auth_users` (
   `ip` varchar(64) NOT NULL DEFAULT '',
   `country` varchar(64) NOT NULL DEFAULT '',
   `region` varchar(64) NOT NULL DEFAULT '',
+  `deleted_at` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -292,21 +293,15 @@ CREATE TABLE `channel_users` (
 CREATE TABLE `chats` (
   `id` int(11) NOT NULL,
   `creator_user_id` int(11) NOT NULL,
-  `create_random_id` bigint(20) NOT NULL,
   `access_hash` bigint(20) NOT NULL,
+  `random_id` bigint(20) NOT NULL,
   `participant_count` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `title_changer_user_id` int(11) NOT NULL,
-  `title_changed_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `title_change_random_id` bigint(20) NOT NULL,
-  `avatar_changer_user_id` int(11) NOT NULL,
-  `avatar_changed_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `avatar_change_random_id` bigint(20) NOT NULL,
-  `is_public` tinyint(1) NOT NULL DEFAULT '0',
-  `about` text NOT NULL,
-  `topic` varchar(255) DEFAULT '',
-  `is_hidden` tinyint(1) DEFAULT '0',
+  `photo_id` bigint(20) NOT NULL DEFAULT '0',
+  `admins_enabled` tinyint(4) NOT NULL DEFAULT '0',
+  `deactivated` tinyint(4) NOT NULL DEFAULT '0',
   `version` int(11) NOT NULL DEFAULT '1',
+  `date` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -426,6 +421,21 @@ CREATE TABLE `orgs` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `photos`
+--
+
+CREATE TABLE `photos` (
+  `id` int(11) NOT NULL,
+  `photo_id` int(11) NOT NULL,
+  `has_stickers` int(11) NOT NULL DEFAULT '0',
+  `access_hash` int(11) NOT NULL,
+  `date` int(11) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `photo_datas`
 --
 
@@ -468,12 +478,11 @@ CREATE TABLE `push_credentials` (
 --
 
 CREATE TABLE `reports` (
-  `id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
   `peer_type` int(11) NOT NULL,
   `peer_id` int(11) NOT NULL,
-  `reason` tinyint(4) NOT NULL,
+  `reason` tinyint(4) NOT NULL DEFAULT '0',
   `content` varchar(10000) NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -573,6 +582,8 @@ CREATE TABLE `users` (
   `is_bot` tinyint(1) NOT NULL DEFAULT '0',
   `banned` bigint(20) NOT NULL,
   `banned_reason` varchar(128) NOT NULL,
+  `account_days_ttl` int(11) NOT NULL DEFAULT '180',
+  `photos` varchar(1024) NOT NULL DEFAULT '',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `deleted_reason` varchar(500) NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -717,15 +728,23 @@ CREATE TABLE `user_presences` (
 CREATE TABLE `user_privacys` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `password` varchar(64) NOT NULL DEFAULT '',
-  `recovery_mail` varchar(64) NOT NULL DEFAULT '',
-  `status_timestamp` tinyint(4) NOT NULL DEFAULT '0',
-  `chat_invite` tinyint(4) NOT NULL DEFAULT '0',
-  `phone_call` tinyint(4) NOT NULL DEFAULT '0',
-  `ttl` int(11) NOT NULL DEFAULT '0',
-  `ttl_created_at` int(11) NOT NULL DEFAULT '0',
+  `key_type` tinyint(4) NOT NULL DEFAULT '0',
+  `rules` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `user_profile_photos`
+--
+
+CREATE TABLE `user_profile_photos` (
+  `id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `photo_id` bigint(20) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -759,6 +778,23 @@ CREATE TABLE `user_qts_updates` (
   `update_data` blob NOT NULL,
   `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `wall_papers`
+--
+
+CREATE TABLE `wall_papers` (
+  `id` int(11) NOT NULL,
+  `type` tinyint(4) NOT NULL DEFAULT '0',
+  `title` varchar(128) NOT NULL DEFAULT '',
+  `color` int(11) NOT NULL DEFAULT '0',
+  `bg_color` int(11) NOT NULL DEFAULT '0',
+  `photo_id` bigint(20) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` bigint(20) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -868,9 +904,7 @@ ALTER TABLE `channel_users`
 -- Indexes for table `chats`
 --
 ALTER TABLE `chats`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `title_changer_user_id` (`title_changer_user_id`,`title_change_random_id`),
-  ADD UNIQUE KEY `avatar_changer_user_id` (`avatar_changer_user_id`,`avatar_change_random_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `chat_participants`
@@ -912,6 +946,12 @@ ALTER TABLE `messages`
 ALTER TABLE `orgs`
   ADD PRIMARY KEY (`org_id`),
   ADD UNIQUE KEY `account_name` (`account_name`);
+
+--
+-- Indexes for table `photos`
+--
+ALTER TABLE `photos`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `photo_datas`
@@ -1013,7 +1053,13 @@ ALTER TABLE `user_presences`
 --
 ALTER TABLE `user_privacys`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `user_id` (`user_id`,`key_type`);
+
+--
+-- Indexes for table `user_profile_photos`
+--
+ALTER TABLE `user_profile_photos`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `user_pts_updates`
@@ -1025,6 +1071,12 @@ ALTER TABLE `user_pts_updates`
 -- Indexes for table `user_qts_updates`
 --
 ALTER TABLE `user_qts_updates`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `wall_papers`
+--
+ALTER TABLE `wall_papers`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1059,7 +1111,7 @@ ALTER TABLE `auths`
 -- 使用表AUTO_INCREMENT `auth_keys`
 --
 ALTER TABLE `auth_keys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=249;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=253;
 
 --
 -- 使用表AUTO_INCREMENT `auth_op_logs`
@@ -1071,7 +1123,7 @@ ALTER TABLE `auth_op_logs`
 -- 使用表AUTO_INCREMENT `auth_phone_transactions`
 --
 ALTER TABLE `auth_phone_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- 使用表AUTO_INCREMENT `auth_salts`
@@ -1095,7 +1147,7 @@ ALTER TABLE `auth_updates_state`
 -- 使用表AUTO_INCREMENT `auth_users`
 --
 ALTER TABLE `auth_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- 使用表AUTO_INCREMENT `banned`
@@ -1119,37 +1171,37 @@ ALTER TABLE `channel_users`
 -- 使用表AUTO_INCREMENT `chats`
 --
 ALTER TABLE `chats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- 使用表AUTO_INCREMENT `chat_participants`
 --
 ALTER TABLE `chat_participants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- 使用表AUTO_INCREMENT `devices`
 --
 ALTER TABLE `devices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=135;
 
 --
 -- 使用表AUTO_INCREMENT `file_parts`
 --
 ALTER TABLE `file_parts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=354;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=455;
 
 --
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=307;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1158,10 +1210,16 @@ ALTER TABLE `orgs`
   MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- 使用表AUTO_INCREMENT `photos`
+--
+ALTER TABLE `photos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- 使用表AUTO_INCREMENT `photo_datas`
 --
 ALTER TABLE `photo_datas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=517;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=602;
 
 --
 -- 使用表AUTO_INCREMENT `push_credentials`
@@ -1173,7 +1231,7 @@ ALTER TABLE `push_credentials`
 -- 使用表AUTO_INCREMENT `reports`
 --
 ALTER TABLE `reports`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `secret_messages`
@@ -1191,19 +1249,19 @@ ALTER TABLE `tmp_passwords`
 -- 使用表AUTO_INCREMENT `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用表AUTO_INCREMENT `user_contacts`
 --
 ALTER TABLE `user_contacts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- 使用表AUTO_INCREMENT `user_dialogs`
 --
 ALTER TABLE `user_dialogs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- 使用表AUTO_INCREMENT `user_import_contacts`
@@ -1215,37 +1273,49 @@ ALTER TABLE `user_import_contacts`
 -- 使用表AUTO_INCREMENT `user_notify_settings`
 --
 ALTER TABLE `user_notify_settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用表AUTO_INCREMENT `user_passwords`
 --
 ALTER TABLE `user_passwords`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- 使用表AUTO_INCREMENT `user_presences`
 --
 ALTER TABLE `user_presences`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用表AUTO_INCREMENT `user_privacys`
 --
 ALTER TABLE `user_privacys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- 使用表AUTO_INCREMENT `user_profile_photos`
+--
+ALTER TABLE `user_profile_photos`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `user_pts_updates`
 --
 ALTER TABLE `user_pts_updates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=502;
 
 --
 -- 使用表AUTO_INCREMENT `user_qts_updates`
 --
 ALTER TABLE `user_qts_updates`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `wall_papers`
+--
+ALTER TABLE `wall_papers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1000001;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
