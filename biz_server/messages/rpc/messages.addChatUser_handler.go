@@ -24,11 +24,13 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/chat"
-	// update2 "github.com/nebulaim/telegramd/biz/core/update"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	// "github.com/nebulaim/telegramd/biz_server/sync_client"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	// "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 //func makeUpdatesByChatMessage(chatLogic *chat.Logic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
@@ -57,15 +59,23 @@ import (
 // messages.addChatUser#f9a0aa09 chat_id:int user_id:InputUser fwd_limit:int = Updates;
 func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *mtproto.TLMessagesAddChatUser) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesAddChatUser - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.addChatUser#f9a0aa09 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var (
+		err error
 		addChatUserId int32
 	)
+
+	if request.GetUserId().GetConstructor() == mtproto.TLConstructor_CRC32_inputUserEmpty {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error("messages.sendMessage#fa88427a - invalid peer", err)
+		return nil, err
+	}
 
 	switch request.GetUserId().GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputUserEmpty:
 	case mtproto.TLConstructor_CRC32_inputUserSelf:
+		addChatUserId = md.UserId
 	case mtproto.TLConstructor_CRC32_inputUser:
 		addChatUserId = request.GetUserId().GetData2().GetUserId()
 	}
@@ -81,27 +91,44 @@ func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *
 	addUserMessage := chatLogic.MakeAddUserMessage(md.UserId, addChatUserId)
 	randomId := base.NextSnowflakeId()
 	outbox := message.CreateMessageOutboxByNew(md.UserId, peer, randomId, addUserMessage, func(messageId int32) {
-
+		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})
 	_ = outbox
-	// TODO(@benqi): update dialog
 
-	//syncUpdates := makeUpdatesByChatMessage(chatLogic, md.UserId, outbox)
-	//state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
-	//
-	//replyUpdates := makeUpdatesByChatMessageAndMessageId(chatLogic, md.UserId, outbox)
-	//// replyUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
-	//replyUpdates.SetupState(state)
-	//// reply := syncUpdates.ToUpdates()
-	//
-	//inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer)
-	//for _, inbox := range inboxList {
-	//	// TODO(@benqi): update dialog
-	//	pushUpdates := makeUpdatesByChatMessage(chatLogic, inbox.UserId, inbox)
-	//	sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, pushUpdates.ToUpdates())
-	//}
-	//
-	//glog.Infof("messages.createChat#9cb126e - reply: {%v}", replyUpdates)
-	//return replyUpdates.ToUpdates(), nil
-	return nil, nil
+	syncUpdates := update2.NewUpdatesLogic(md.UserId)
+	updateChatParticipantAdd := &mtproto.TLUpdateChatParticipantAdd{Data2: &mtproto.Update_Data{
+		ChatId:    chatLogic.GetChatId(),
+		UserId:    addChatUserId,
+		InviterId: md.UserId,
+		Version:   chatLogic.GetVersion(),
+	}}
+	syncUpdates.AddUpdate(updateChatParticipantAdd.To_Update())
+	syncUpdates.AddUpdateNewMessage(addUserMessage)
+	syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chatLogic.GetChatParticipantIdList()))
+	syncUpdates.AddChat(chatLogic.ToChat(md.UserId))
+
+	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
+	syncUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
+	syncUpdates.SetupState(state)
+	replyUpdates := syncUpdates.ToUpdates()
+
+	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
+		user.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHAT, peer.PeerId, messageId, false)
+	})
+	for _, inbox := range inboxList {
+		updates := update2.NewUpdatesLogic(md.UserId)
+		//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+		//	Participants: chat.GetChatParticipants().To_ChatParticipants(),
+		//}}
+		updates.AddUpdate(updateChatParticipantAdd.To_Update())
+		updates.AddUpdateNewMessage(inbox.Message)
+		updates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chatLogic.GetChatParticipantIdList()))
+		updates.AddChat(chatLogic.ToChat(inbox.UserId))
+		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
+	}
+
+	// TODO(@benqi): Add后需要将聊天历史消息导入
+
+	glog.Infof("messages.addChatUser#f9a0aa09 - reply: {%v}", replyUpdates)
+	return replyUpdates, nil
 }

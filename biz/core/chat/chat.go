@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"math/rand"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"fmt"
 )
 
 const (
@@ -169,6 +170,10 @@ func (this *chatLogicData) GetChatId() int32 {
 	return this.chat.Id
 }
 
+func (this *chatLogicData) GetVersion() int32 {
+	return this.chat.Version
+}
+
 func (this *chatLogicData) MakeCreateChatMessage(creatorId int32) *mtproto.Message {
 	idList := this.GetChatParticipantIdList()
 	action := &mtproto.TLMessageActionChatCreate{Data2: &mtproto.MessageAction_Data{
@@ -269,7 +274,7 @@ func (this *chatLogicData) GetChatParticipants() *mtproto.TLChatParticipants {
 	}}
 }
 
-func (this *chatLogicData) AddChatUser(inviterId, userId int32) {
+func (this *chatLogicData) AddChatUser(inviterId, userId int32) error {
 	this.checkOrLoadChatParticipantList()
 
 	// TODO(@benqi): check userId exisits
@@ -279,9 +284,33 @@ func (this *chatLogicData) AddChatUser(inviterId, userId int32) {
 	//	InviterId: inviterId,
 	//	Date:      int32(time.Now().Unix()),
 	//}}
-	//participantDO := chatParticipantToDO(this.Chat, participant.To_ChatParticipant())
-	//this.Participants = append(this.Participants, participant.To_ChatParticipant())
-	//dao.GetChatParticipantsDAO(dao.DB_MASTER).Insert(participantDO)
+
+	for i := 0; i < len(this.participants); i++ {
+		if userId == this.participants[i].UserId {
+			return fmt.Errorf("userId exisits")
+		}
+	}
+
+	var now = int32(time.Now().Unix())
+
+	chatParticipant := &dataobject.ChatParticipantsDO{
+		ChatId:          this.chat.Id,
+		UserId:          userId,
+		ParticipantType: kChatParticipant,
+		InviterUserId:   inviterId,
+		InvitedAt:       now,
+		JoinedAt:        now,
+	}
+	chatParticipant.Id = int32(dao.GetChatParticipantsDAO(dao.DB_MASTER).Insert(chatParticipant))
+	this.participants = append(this.participants, *chatParticipant)
+
+	// update chat
+	this.chat.ParticipantCount += 1
+	this.chat.Version += 1
+	this.chat.Date = now
+	dao.GetChatsDAO(dao.DB_MASTER).UpdateParticipantCount(this.chat.ParticipantCount, now, this.chat.Id)
+
+	return nil
 }
 
 func (this *chatLogicData) findChatParticipant(selfUserId int32) *dataobject.ChatParticipantsDO {

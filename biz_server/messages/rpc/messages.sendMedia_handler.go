@@ -146,19 +146,25 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 		err error
 	)
 
-	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
-		peer = &base.PeerUtil{PeerType: base.PEER_USER, PeerId: md.UserId}
-	} else {
-		peer = base.FromInputPeer(request.GetPeer())
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputUserEmpty {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error("messages.sendMedia#c8f16791 - invalid peer", err)
+		return nil, err
 	}
+	// TODO(@benqi): check user or channels's access_hash
+
+	peer = base.FromInputPeer2(md.UserId, request.GetPeer())
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 发件箱
 	// sendMessageToOutbox
-	outbox := makeOutboxMessageBySendMedia(md.UserId, peer, request)
-	messageId, dialogMessageId := message2.SendMessageToOutbox(md.UserId, peer, request.GetRandomId(), outbox.To_Message())
+	outboxMessage := makeOutboxMessageBySendMedia(md.UserId, peer, request)
+	messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
+		// 更新会话信息
+		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
+	})
 
-	syncUpdates := makeUpdateNewMessageUpdates(md.UserId, outbox.To_Message())
+	syncUpdates := makeUpdateNewMessageUpdates(md.UserId, messageOutbox.Message)
 	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
 	if err != nil {
 		return nil, err
@@ -166,23 +172,29 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 
 	reply := SetupUpdatesState(state, syncUpdates)
 	updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
-		Id_4:     messageId,
+		Id_4:     messageOutbox.MessageId,
 		RandomId: request.GetRandomId(),
 	}}
 	updateList := []*mtproto.Update{updateMessageID.To_Update()}
 	updateList = append(updateList, reply.GetUpdates()...)
 	reply.SetUpdates(updateList)
 
-	// 更新会话
-	user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, request.GetClearDraft())
-
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 收件箱
-	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
-		inBoxes, _ := message2.SendMessageToInbox(md.UserId, peer, request.GetRandomId(), dialogMessageId, outbox.To_Message())
-		for i := 0; i < len(inBoxes.UserIds); i++ {
-			syncUpdates = makeUpdateNewMessageUpdates(inBoxes.UserIds[i], inBoxes.Messages[i])
-			sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes.UserIds[i], syncUpdates.To_Updates())
+	if peer.PeerType !=  base.PEER_SELF {
+		inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
+			// 更新会话信息
+			switch peer.PeerType {
+			case base.PEER_USER:
+				user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
+			case base.PEER_CHAT, base.PEER_CHANNEL:
+				user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
+			}
+		})
+
+		for i := 0; i < len(inBoxes); i++ {
+			syncUpdates = makeUpdateNewMessageUpdates(inBoxes[i].UserId, inBoxes[i].Message)
+			sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes[i].UserId, syncUpdates.To_Updates())
 		}
 	}
 
