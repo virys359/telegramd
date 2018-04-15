@@ -114,18 +114,14 @@ func makeChatParticipantByDO(do *dataobject.ChatParticipantsDO) (participant *mt
 	return
 }
 
-//func makeChatByDO(do *dataobject.ChatsDO) *mtproto.Chat {
-//
-//}
-
-func NewChatLogicById(chatId int32) (chatData *chatLogicData) {
+func NewChatLogicById(chatId int32) (chatData *chatLogicData, err error) {
 	chatDO := dao.GetChatsDAO(dao.DB_SLAVE).Select(chatId)
 	if chatDO == nil {
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid"))
-	}
-
-	chatData = &chatLogicData{
-		chat: chatDO,
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_ID_INVALID)
+	} else {
+		chatData = &chatLogicData{
+			chat: chatDO,
+		}
 	}
 	return
 }
@@ -237,6 +233,26 @@ func (this *chatLogicData) MakeDeleteUserMessage(operatorId, chatUserId int32) *
 	return message.To_Message()
 }
 
+func (this *chatLogicData) MakeChatEditTitleMessage(operatorId int32, title string) *mtproto.Message {
+	// idList := this.GetChatParticipantIdList()
+	action := &mtproto.TLMessageActionChatEditTitle{Data2: &mtproto.MessageAction_Data{
+		Title:  title,
+	}}
+
+	peer := &base.PeerUtil{
+		PeerType: base.PEER_CHAT,
+		PeerId:   this.chat.Id,
+	}
+
+	message := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
+		Date: this.chat.Date,
+		FromId: operatorId,
+		ToId: peer.ToPeer(),
+		Action: action.To_MessageAction(),
+	}}
+	return message.To_Message()
+}
+
 func (this *chatLogicData) checkOrLoadChatParticipantList() {
 	if len(this.participants) == 0 {
 		this.participants = dao.GetChatParticipantsDAO(dao.DB_SLAVE).SelectByChatId(this.chat.Id)
@@ -320,13 +336,13 @@ func (this *chatLogicData) AddChatUser(inviterId, userId int32) error {
 	return nil
 }
 
-func (this *chatLogicData) findChatParticipant(selfUserId int32) *dataobject.ChatParticipantsDO {
+func (this *chatLogicData) findChatParticipant(selfUserId int32) (int, *dataobject.ChatParticipantsDO) {
 	for i := 0; i < len(this.participants); i++ {
 		if this.participants[i].UserId == selfUserId {
-			return &this.participants[i]
+			return i, &this.participants[i]
 		}
 	}
-	return nil
+	return -1, nil
 }
 
 func (this *chatLogicData) ToChat(selfUserId int32) *mtproto.Chat {
@@ -390,39 +406,73 @@ func (this *chatLogicData) DeleteChatUser(userId int32) error {
 	return nil
 }
 
-func (this *chatLogicData) EditChatTitle(userId int32) {
+func (this *chatLogicData) EditChatTitle(editUserId int32, title string) error {
+	this.checkOrLoadChatParticipantList()
 
-	//var found = -1
-	//for i := 0; i < len(this.participants); i++ {
-	//	if userId == this.participants[i].UserId {
-	//		if this.participants[i].State == 0 {
-	//			found = i
-	//		}
-	//		break
-	//	}
-	//}
+	_, participant := this.findChatParticipant(editUserId)
+
+	if participant == nil {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
+	}
+
+	// check editUserId is creator or admin
+	if participant.ParticipantType == kChatParticipant {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
+	}
+
+	if this.chat.Title == title {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_NOT_MODIFIED)
+	}
+
+	this.chat.Title = title
+	this.chat.Date = int32(time.Now().Unix())
+	this.chat.Version += 1
+
+	dao.GetChatsDAO(dao.DB_MASTER).UpdateTitle(title, this.chat.Date, this.chat.Id)
+	return nil
 }
 
-func (this *chatLogicData) EditChatPhoto(userId int32) {
-	//var found = -1
-	//for i := 0; i < len(this.participants); i++ {
-	//	if userId == this.participants[i].UserId {
-	//		if this.participants[i].State == 0 {
-	//			found = i
-	//		}
-	//		break
-	//	}
-	//}
+func (this *chatLogicData) EditChatPhoto(editUserId int32, photoId int64) error {
+	this.checkOrLoadChatParticipantList()
+
+	_, participant := this.findChatParticipant(editUserId)
+
+	if participant == nil {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
+	}
+
+	// check editUserId is creator or admin
+	if participant.ParticipantType == kChatParticipant {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
+	}
+
+	if this.chat.PhotoId == photoId {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_NOT_MODIFIED)
+	}
+
+	this.chat.PhotoId = photoId
+	this.chat.Date = int32(time.Now().Unix())
+	this.chat.Version += 1
+
+	dao.GetChatsDAO(dao.DB_MASTER).UpdatePhotoId(photoId, this.chat.Date, this.chat.Id)
+	return nil
 }
 
-func (this *chatLogicData) EditChatAdmin(userId int32) {
-	//var found = -1
-	//for i := 0; i < len(this.participants); i++ {
-	//	if userId == this.participants[i].UserId {
-	//		if this.participants[i].State == 0 {
-	//			found = i
-	//		}
-	//		break
-	//	}
-	//}
+func (this *chatLogicData) EditChatAdmin(editUserId int32) error {
+	this.checkOrLoadChatParticipantList()
+
+	_, participant := this.findChatParticipant(editUserId)
+
+	if participant == nil {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
+	}
+
+	// check editUserId is creator or admin
+	if participant.ParticipantType == kChatParticipant {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
+	}
+
+	// ...
+
+	return nil
 }

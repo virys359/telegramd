@@ -57,7 +57,7 @@ func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *
 		addChatUserId = request.GetUserId().GetData2().GetUserId()
 	}
 
-	chatLogic := chat.NewChatLogicById(request.GetChatId())
+	chatLogic, _ := chat.NewChatLogicById(request.GetChatId())
 	chatLogic.AddChatUser(md.UserId, addChatUserId)
 
 	peer := &base.PeerUtil{

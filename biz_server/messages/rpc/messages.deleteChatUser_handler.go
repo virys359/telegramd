@@ -57,7 +57,7 @@ func (s *MessagesServiceImpl) MessagesDeleteChatUser(ctx context.Context, reques
 		deleteChatUserId = request.GetUserId().GetData2().GetUserId()
 	}
 
-	chatLogic := chat.NewChatLogicById(request.GetChatId())
+	chatLogic, _ := chat.NewChatLogicById(request.GetChatId())
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
