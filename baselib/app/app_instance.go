@@ -41,7 +41,7 @@ type AppInstance interface {
 
 var ch = make(chan os.Signal, 1)
 
-func DoMainAppInsance(insance AppInstance) {
+func DoMainAppInstance(insance AppInstance) {
 	if insance == nil {
 		// panic("instance is nil!!!!")
 		glog.Errorf("instance is nil, will exit.")

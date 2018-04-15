@@ -32,5 +32,5 @@ func main() {
 	flag.Parse()
 
 	instance := server.NewSessionServer("./session.toml")
-	app.DoMainAppInsance(instance)
+	app.DoMainAppInstance(instance)
 }

@@ -32,5 +32,5 @@ func main() {
 	flag.Parse()
 
 	instance := server.NewFrontendServer("./frontend.toml")
-	app.DoMainAppInsance(instance)
+	app.DoMainAppInstance(instance)
 }

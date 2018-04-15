@@ -34,5 +34,5 @@ func main() {
 	flag.Parse()
 
 	instance := server.NewSyncServer("./sync.toml")
-	app.DoMainAppInsance(instance)
+	app.DoMainAppInstance(instance)
 }
