@@ -18,16 +18,6 @@
                 id=:id
         </sql>
     </operation>
-    <operation name="UpdateParticipantCount">
-        <sql>
-            UPDATE
-                chats
-            SET
-                participant_count=:participant_count, date=:date, version=version+1
-            WHERE
-                id=:id
-        </sql>
-    </operation>
     <operation name="UpdateTitle">
         <sql>
             UPDATE

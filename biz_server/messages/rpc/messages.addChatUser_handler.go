@@ -33,29 +33,6 @@ import (
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
-//func makeUpdatesByChatMessage(chatLogic *chat.Logic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
-//	updates := update2.NewUpdatesLogic(selfUserId)
-//	//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-//	//	Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
-//	//}}
-//	//updates.AddUpdate(updateChatParticipants.To_Update())
-//	//updates.AddUpdateNewMessage(box.Message)
-//	//updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
-//	return updates
-//}
-//
-//func makeUpdatesByChatMessageAndMessageId(chatLogic *chat.ChatLogic, selfUserId int32, box *message.MessageBox) *update2.UpdatesLogic {
-//	updates := update2.NewUpdatesLogic(selfUserId)
-//	//updates.AddUpdateMessageId(box.MessageId, box.RandomId)
-//	//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-//	//	Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
-//	//}}
-//	//updates.AddUpdate(updateChatParticipants.To_Update())
-//	//updates.AddUpdateNewMessage(box.Message)
-//	//updates.AddUsers(user.GetUsersBySelfAndIDList(selfUserId, chatLogic.GetChatParticipantIdList()))
-//	return updates
-//}
-
 // messages.addChatUser#f9a0aa09 chat_id:int user_id:InputUser fwd_limit:int = Updates;
 func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *mtproto.TLMessagesAddChatUser) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
@@ -96,13 +73,10 @@ func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *
 	_ = outbox
 
 	syncUpdates := update2.NewUpdatesLogic(md.UserId)
-	updateChatParticipantAdd := &mtproto.TLUpdateChatParticipantAdd{Data2: &mtproto.Update_Data{
-		ChatId:    chatLogic.GetChatId(),
-		UserId:    addChatUserId,
-		InviterId: md.UserId,
-		Version:   chatLogic.GetVersion(),
+	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
 	}}
-	syncUpdates.AddUpdate(updateChatParticipantAdd.To_Update())
+	syncUpdates.AddUpdate(updateChatParticipants.To_Update())
 	syncUpdates.AddUpdateNewMessage(addUserMessage)
 	syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chatLogic.GetChatParticipantIdList()))
 	syncUpdates.AddChat(chatLogic.ToChat(md.UserId))
@@ -115,12 +89,10 @@ func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *
 	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
 		user.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHAT, peer.PeerId, messageId, false)
 	})
+
 	for _, inbox := range inboxList {
 		updates := update2.NewUpdatesLogic(md.UserId)
-		//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-		//	Participants: chat.GetChatParticipants().To_ChatParticipants(),
-		//}}
-		updates.AddUpdate(updateChatParticipantAdd.To_Update())
+		updates.AddUpdate(updateChatParticipants.To_Update())
 		updates.AddUpdateNewMessage(inbox.Message)
 		updates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chatLogic.GetChatParticipantIdList()))
 		updates.AddChat(chatLogic.ToChat(inbox.UserId))

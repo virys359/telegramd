@@ -159,6 +159,10 @@ func GetChatParticipants(chatId int32) (*mtproto.TLChatParticipants) {
 	participants.SetChatId(chatId)
 	participants.SetVersion(1)
 	for _, chatUsersDO := range chatUsersDOList {
+		if chatUsersDO.State == 1 {
+			continue
+		}
+
 		// uId := u.GetInputUser().GetUserId()
 		if chatUsersDO.ParticipantType == 2 {
 			// chatUserDO.IsAdmin = 1
