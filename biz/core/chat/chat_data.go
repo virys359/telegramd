@@ -114,18 +114,14 @@ func makeChatParticipantByDO(do *dataobject.ChatParticipantsDO) (participant *mt
 	return
 }
 
-//func makeChatByDO(do *dataobject.ChatsDO) *mtproto.Chat {
-//
-//}
-
-func NewChatLogicById(chatId int32) (chatData *chatLogicData) {
+func NewChatLogicById(chatId int32) (chatData *chatLogicData, err error) {
 	chatDO := dao.GetChatsDAO(dao.DB_SLAVE).Select(chatId)
 	if chatDO == nil {
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid"))
-	}
-
-	chatData = &chatLogicData{
-		chat: chatDO,
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_ID_INVALID)
+	} else {
+		chatData = &chatLogicData{
+			chat: chatDO,
+		}
 	}
 	return
 }
@@ -237,6 +233,26 @@ func (this *chatLogicData) MakeDeleteUserMessage(operatorId, chatUserId int32) *
 	return message.To_Message()
 }
 
+func (this *chatLogicData) MakeChatEditTitleMessage(operatorId int32, title string) *mtproto.Message {
+	// idList := this.GetChatParticipantIdList()
+	action := &mtproto.TLMessageActionChatEditTitle{Data2: &mtproto.MessageAction_Data{
+		Title:  title,
+	}}
+
+	peer := &base.PeerUtil{
+		PeerType: base.PEER_CHAT,
+		PeerId:   this.chat.Id,
+	}
+
+	message := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
+		Date: this.chat.Date,
+		FromId: operatorId,
+		ToId: peer.ToPeer(),
+		Action: action.To_MessageAction(),
+	}}
+	return message.To_Message()
+}
+
 func (this *chatLogicData) checkOrLoadChatParticipantList() {
 	if len(this.participants) == 0 {
 		this.participants = dao.GetChatParticipantsDAO(dao.DB_SLAVE).SelectByChatId(this.chat.Id)
@@ -246,9 +262,11 @@ func (this *chatLogicData) checkOrLoadChatParticipantList() {
 func (this *chatLogicData) GetChatParticipantList() []*mtproto.ChatParticipant {
 	this.checkOrLoadChatParticipantList()
 
-	participantList := make([]*mtproto.ChatParticipant, len(this.participants))
+	participantList := make([]*mtproto.ChatParticipant, 0, len(this.participants))
 	for i := 0; i < len(this.participants); i++ {
-		participantList[i] = makeChatParticipantByDO(&this.participants[i])
+		if this.participants[i].State == 0 {
+			participantList = append(participantList, makeChatParticipantByDO(&this.participants[i]))
+		}
 	}
 	return participantList
 }
@@ -257,9 +275,11 @@ func (this *chatLogicData) GetChatParticipantList() []*mtproto.ChatParticipant {
 func (this *chatLogicData) GetChatParticipantIdList() []int32 {
 	this.checkOrLoadChatParticipantList()
 
-	idList := make([]int32, len(this.participants))
+	idList := make([]int32, 0, len(this.participants))
 	for i := 0; i < len(this.participants); i++  {
-		idList[i] = this.participants[i].UserId
+		if this.participants[i].State == 0 {
+			idList = append(idList, this.participants[i].UserId)
+		}
 	}
 	return idList
 }
@@ -278,31 +298,34 @@ func (this *chatLogicData) AddChatUser(inviterId, userId int32) error {
 	this.checkOrLoadChatParticipantList()
 
 	// TODO(@benqi): check userId exisits
-
-	//participant := &mtproto.TLChatParticipant{Data2: &mtproto.ChatParticipant_Data{
-	//	UserId:    userId,
-	//	InviterId: inviterId,
-	//	Date:      int32(time.Now().Unix()),
-	//}}
-
+	var founded = -1
 	for i := 0; i < len(this.participants); i++ {
 		if userId == this.participants[i].UserId {
-			return fmt.Errorf("userId exisits")
+			if this.participants[i].State == 1 {
+				founded = i
+			} else {
+				return fmt.Errorf("userId exisits")
+			}
 		}
 	}
 
 	var now = int32(time.Now().Unix())
 
-	chatParticipant := &dataobject.ChatParticipantsDO{
-		ChatId:          this.chat.Id,
-		UserId:          userId,
-		ParticipantType: kChatParticipant,
-		InviterUserId:   inviterId,
-		InvitedAt:       now,
-		JoinedAt:        now,
+	if founded != -1 {
+		this.participants[founded].State = 0
+		dao.GetChatParticipantsDAO(dao.DB_MASTER).Update(inviterId, now, now, this.participants[founded].Id)
+	} else {
+		chatParticipant := &dataobject.ChatParticipantsDO{
+			ChatId:          this.chat.Id,
+			UserId:          userId,
+			ParticipantType: kChatParticipant,
+			InviterUserId:   inviterId,
+			InvitedAt:       now,
+			JoinedAt:        now,
+		}
+		chatParticipant.Id = int32(dao.GetChatParticipantsDAO(dao.DB_MASTER).Insert(chatParticipant))
+		this.participants = append(this.participants, *chatParticipant)
 	}
-	chatParticipant.Id = int32(dao.GetChatParticipantsDAO(dao.DB_MASTER).Insert(chatParticipant))
-	this.participants = append(this.participants, *chatParticipant)
 
 	// update chat
 	this.chat.ParticipantCount += 1
@@ -313,45 +336,143 @@ func (this *chatLogicData) AddChatUser(inviterId, userId int32) error {
 	return nil
 }
 
-func (this *chatLogicData) findChatParticipant(selfUserId int32) *dataobject.ChatParticipantsDO {
+func (this *chatLogicData) findChatParticipant(selfUserId int32) (int, *dataobject.ChatParticipantsDO) {
 	for i := 0; i < len(this.participants); i++ {
 		if this.participants[i].UserId == selfUserId {
-			return &this.participants[i]
+			return i, &this.participants[i]
 		}
 	}
-	return nil
+	return -1, nil
 }
 
 func (this *chatLogicData) ToChat(selfUserId int32) *mtproto.Chat {
 	// TODO(@benqi): kicked:flags.1?true left:flags.2?true admins_enabled:flags.3?true admin:flags.4?true deactivated:flags.5?true
-	// selfParticipant := this.findChatParticipant(selfUserId)
-	chat := &mtproto.TLChat{Data2: &mtproto.Chat_Data{
-		Creator:           this.chat.CreatorUserId == selfUserId,
-		Id:                this.chat.Id,
-		Title:             this.chat.Title,
-		Photo:             mtproto.NewTLChatPhotoEmpty().To_ChatPhoto(),
-		ParticipantsCount: this.chat.ParticipantCount,
-		Date:              this.chat.Date,
-		Version:           this.chat.Version,
-	}}
-	return chat.To_Chat()
+
+	var forbidden = false
+	for i := 0; i < len(this.participants); i++ {
+		if this.participants[i].UserId == selfUserId && this.participants[i].State == 1 {
+			forbidden = true
+			break
+		}
+	}
+
+	if forbidden {
+		chat := &mtproto.TLChatForbidden{Data2: &mtproto.Chat_Data{
+			Id:    this.chat.Id,
+			Title: this.chat.Title,
+		}}
+		return chat.To_Chat()
+	} else {
+		chat := &mtproto.TLChat{Data2: &mtproto.Chat_Data{
+			Creator:           this.chat.CreatorUserId == selfUserId,
+			Id:                this.chat.Id,
+			Title:             this.chat.Title,
+			Photo:             mtproto.NewTLChatPhotoEmpty().To_ChatPhoto(),
+			ParticipantsCount: this.chat.ParticipantCount,
+			Date:              this.chat.Date,
+			Version:           this.chat.Version,
+		}}
+		return chat.To_Chat()
+	}
 }
 
-func (this *chatLogicData) DeleteChatUser(userId int32) {
+func (this *chatLogicData) DeleteChatUser(userId int32) error {
 	this.checkOrLoadChatParticipantList()
 
-	// messageActionChatDeleteUser
-	// dao.GetChatUsersDAO(dao.DB_MASTER).DeleteChatUser(chat.Id, deleteChatUserId)
+	var found = -1
+	for i := 0; i < len(this.participants); i++ {
+		if userId == this.participants[i].UserId {
+			if this.participants[i].State == 0 {
+				found = i
+			}
+			break
+		}
+	}
+
+	if found == -1 {
+		return fmt.Errorf("not found delete chat user")
+	}
+
+	this.participants[found].State = 1
+	this.participants = append(this.participants[:found], this.participants[found+1:]...)
+	dao.GetChatParticipantsDAO(dao.DB_MASTER).DeleteChatUser(this.participants[found].Id)
+
+	var now = int32(time.Now().Unix())
+	this.chat.ParticipantCount -= 1
+	this.chat.Version += 1
+	this.chat.Date = now
+	dao.GetChatsDAO(dao.DB_MASTER).UpdateParticipantCount(this.chat.ParticipantCount, now, this.chat.Id)
+
+	return nil
 }
 
-func (this *chatLogicData) EditChatUser(userId int32) {
+func (this *chatLogicData) EditChatTitle(editUserId int32, title string) error {
+	this.checkOrLoadChatParticipantList()
+
+	_, participant := this.findChatParticipant(editUserId)
+
+	if participant == nil {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
+	}
+
+	// check editUserId is creator or admin
+	if participant.ParticipantType == kChatParticipant {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
+	}
+
+	if this.chat.Title == title {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_NOT_MODIFIED)
+	}
+
+	this.chat.Title = title
+	this.chat.Date = int32(time.Now().Unix())
+	this.chat.Version += 1
+
+	dao.GetChatsDAO(dao.DB_MASTER).UpdateTitle(title, this.chat.Date, this.chat.Id)
+	return nil
 }
 
-func (this *chatLogicData) EditChatTitle(userId int32) {
+func (this *chatLogicData) EditChatPhoto(editUserId int32, photoId int64) error {
+	this.checkOrLoadChatParticipantList()
+
+	_, participant := this.findChatParticipant(editUserId)
+
+	if participant == nil {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
+	}
+
+	// check editUserId is creator or admin
+	if participant.ParticipantType == kChatParticipant {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
+	}
+
+	if this.chat.PhotoId == photoId {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_NOT_MODIFIED)
+	}
+
+	this.chat.PhotoId = photoId
+	this.chat.Date = int32(time.Now().Unix())
+	this.chat.Version += 1
+
+	dao.GetChatsDAO(dao.DB_MASTER).UpdatePhotoId(photoId, this.chat.Date, this.chat.Id)
+	return nil
 }
 
-func (this *chatLogicData) EditChatPhoto(userId int32) {
-}
+func (this *chatLogicData) EditChatAdmin(editUserId int32) error {
+	this.checkOrLoadChatParticipantList()
 
-func (this *chatLogicData) EditChatAdmin(userId int32) {
+	_, participant := this.findChatParticipant(editUserId)
+
+	if participant == nil {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
+	}
+
+	// check editUserId is creator or admin
+	if participant.ParticipantType == kChatParticipant {
+		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
+	}
+
+	// ...
+
+	return nil
 }

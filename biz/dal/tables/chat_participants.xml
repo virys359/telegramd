@@ -3,9 +3,9 @@
     <operation name="Insert">
         <sql>
             INSERT INTO chat_participants
-                (chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state, created_at)
+                (chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state)
             VALUES
-                (:chat_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state, :created_at)
+                (:chat_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state)
         </sql>
     </operation>
 
@@ -22,10 +22,25 @@
 
     <operation name="DeleteChatUser">
         <sql>
-            DELETE FROM
+            UPDATE
                 chat_participants
+            SET
+                state = 1
             WHERE
-                chat_id = :chat_id AND user_id = :user_id
+                id=:id
         </sql>
     </operation>
+
+
+    <operation name="Update">
+        <sql>
+            UPDATE
+                chat_participants
+            SET
+                inviter_user_id=:inviter_user_id, invited_at=:invited_at, joined_at=:joined_at, state=0
+            WHERE
+                id=:id
+        </sql>
+    </operation>
+
 </table>

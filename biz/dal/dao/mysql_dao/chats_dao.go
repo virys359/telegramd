@@ -82,28 +82,6 @@ func (dao *ChatsDAO) Select(id int32) *dataobject.ChatsDO {
 	return do
 }
 
-// update chats set participant_count = :participant_count, `date` = :date, version = version + 1 where id = :id
-// TODO(@benqi): sqlmap
-func (dao *ChatsDAO) UpdateParticipantCount(participant_count int32, date int32, id int32) int64 {
-	var query = "update chats set participant_count = ?, `date` = ?, version = version + 1 where id = ?"
-	r, err := dao.db.Exec(query, participant_count, date, id)
-
-	if err != nil {
-		errDesc := fmt.Sprintf("Exec in UpdateParticipantCount(_), error: %v", err)
-		glog.Error(errDesc)
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
-	}
-
-	rows, err := r.RowsAffected()
-	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in UpdateParticipantCount(_), error: %v", err)
-		glog.Error(errDesc)
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
-	}
-
-	return rows
-}
-
 // update chats set title = :title, `date` = :date, version = version + 1 where id = :id
 // TODO(@benqi): sqlmap
 func (dao *ChatsDAO) UpdateTitle(title string, date int32, id int32) int64 {
