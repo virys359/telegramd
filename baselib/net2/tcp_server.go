@@ -25,7 +25,10 @@ import (
 	"time"
 	"io"
 	"fmt"
+	"sync"
 )
+
+const MAX_CONN = 100000
 
 type TcpConnectionCallback interface {
 	OnNewConnection(conn *TcpConnection)
@@ -43,6 +46,8 @@ type TcpServer struct {
 	sendChanSize      int
 	callback          TcpConnectionCallback
 	running           bool
+	sem 			  chan struct{}
+	releaseOnce 	  sync.Once
 }
 
 func NewTcpServer(listener net.Listener, serverName, protoName string, sendChanSize int, cb TcpConnectionCallback) *TcpServer {
@@ -54,6 +59,7 @@ func NewTcpServer(listener net.Listener, serverName, protoName string, sendChanS
 		sendChanSize:      sendChanSize,
 		callback:          cb,
 		running:           false,
+		sem:			   make(chan struct{}, MAX_CONN),
 	}
 }
 
@@ -64,13 +70,13 @@ func (s *TcpServer) Serve() {
 	s.running = true
 
 	for {
+		s.acquire()
 		conn, err := Accept(s.listener)
 		if err != nil {
 			glog.Error(err)
 			return
 		}
 
-		// TODO(@benqi): limit maxConn
 		codec, err := NewCodecByName(s.protoName, conn)
 		if err != nil {
 			glog.Error(err)
@@ -115,6 +121,7 @@ func (s *TcpServer) Stop() {
 	if s.running {
 		s.listener.Close()
 		s.connectionManager.Dispose()
+		s.releaseOnce.Do(s.release)
 	}
 }
 
@@ -193,3 +200,6 @@ func (s *TcpServer) GetConnection(connID uint64) *TcpConnection {
 	}
 	return nil
 }
+
+func (s *TcpServer) acquire() { s.sem <- struct{}{} }
+func (s *TcpServer) release() { <-s.sem }
