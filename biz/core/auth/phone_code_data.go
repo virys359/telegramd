@@ -280,6 +280,7 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 		State: 			  kCodeStateSent,
 		ApiId:            apiId,
 		ApiHash:          apiHash,
+		CreatedTime:      time.Now().Unix(),
 	}
 	code.tableId = dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).Insert(do)
 	//// TODO(@benqi):
