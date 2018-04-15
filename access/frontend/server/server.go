@@ -41,7 +41,13 @@ func newTcpServer(config *ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tc
 		// glog.Errorf("listen error: %v", err)
 		return nil, err
 	}
-	server := net2.NewTcpServer(lsn, config.Name, config.ProtoName, 1024, cb)
+	server := net2.NewTcpServer(net2.TcpServerArgs{
+		Listener:           lsn,
+		ServerName:         config.Name,
+		ProtoName:          config.ProtoName,
+		SendChanSize:       1024,
+		ConnectionCallback: cb,
+	}) // todo(omid): set max connection
 	return server, nil
 }
 
@@ -84,9 +90,9 @@ func isHandshake(state int) bool {
 }
 
 type handshakeState struct {
-	state     int		// 状态
-	resState  int		// 后端握手返回的结果
-	ctx		  []byte	// 握手上下文数据，透传给后端
+	state    int    // 状态
+	resState int    // 后端握手返回的结果
+	ctx      []byte // 握手上下文数据，透传给后端
 }
 
 type connContext struct {
@@ -134,9 +140,9 @@ type FrontendServer struct {
 	config     *FrontendConfig
 
 	// TODO(@benqi): manager server80 and server443
-	server80   *net2.TcpServer
-	server443  *net2.TcpServer
-	client     *net2.TcpClientGroupManager
+	server80  *net2.TcpServer
+	server443 *net2.TcpServer
+	client    *net2.TcpClientGroupManager
 }
 
 func NewFrontendServer(configPath string) *FrontendServer {
@@ -176,7 +182,7 @@ func (s *FrontendServer) Initialize() error {
 	}
 
 	clients := map[string][]string{
-		"session":[]string{"127.0.0.1:10000"},
+		"session": []string{"127.0.0.1:10000"},
 	}
 	s.client = net2.NewTcpClientGroupManager("zproto", clients, s)
 	return nil
@@ -199,11 +205,11 @@ func (s *FrontendServer) Destroy() {
 
 func (s *FrontendServer) newMetadata(conn *net2.TcpConnection) *mtproto.ZProtoMetadata {
 	md := &mtproto.ZProtoMetadata{
-		ServerId: int(s.config.ServerId),
+		ServerId:     int(s.config.ServerId),
 		ClientConnId: conn.GetConnID(),
-		ClientAddr: conn.RemoteAddr().String(),
-		From: "frontend",
-		ReceiveTime: time.Now().Unix(),
+		ClientAddr:   conn.RemoteAddr().String(),
+		From:         "frontend",
+		ReceiveTime:  time.Now().Unix(),
 	}
 	md.SpanId, _ = id.NextId()
 	md.TraceId, _ = id.NextId()
@@ -215,10 +221,10 @@ func (s *FrontendServer) OnNewConnection(conn *net2.TcpConnection) {
 	conn.Context = &connContext{
 		state: mtproto.STATE_CONNECTED2,
 		md: &mtproto.ZProtoMetadata{
-			ServerId: int(s.config.ServerId),
+			ServerId:     int(s.config.ServerId),
 			ClientConnId: conn.GetConnID(),
-			ClientAddr: conn.RemoteAddr().String(),
-			From: "frontend",
+			ClientAddr:   conn.RemoteAddr().String(),
+			From:         "frontend",
 		},
 		handshakeState: &mtproto.HandshakeState{
 			State:    mtproto.STATE_CONNECTED2,
@@ -288,7 +294,7 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 	switch msgType {
 	case mtproto.SESSION_HANDSHAKE:
 		hmsg := &mtproto.ZProtoHandshakeMessage{
-			State: &mtproto.HandshakeState{},
+			State:      &mtproto.HandshakeState{},
 			MTPMessage: &mtproto.MTPRawMessage{},
 		}
 		hmsg.Decode(payload.Payload[4:])
@@ -324,7 +330,6 @@ func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {
 	glog.Infof("OnTimer")
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
 	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data", conn)
@@ -339,14 +344,14 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 
 	// sentToClient
 	hmsg := &mtproto.ZProtoHandshakeMessage{
-		State: ctx.handshakeState,
+		State:      ctx.handshakeState,
 		MTPMessage: mmsg,
 	}
 	zmsg := &mtproto.ZProtoMessage{
 		SessionId: conn.GetConnID(),
-		SeqNum: 1,	// TODO(@benqi): gen seqNum
-		Metadata: s.newMetadata(conn),
-		Message:&mtproto.ZProtoRawPayload{
+		SeqNum:    1, // TODO(@benqi): gen seqNum
+		Metadata:  s.newMetadata(conn),
+		Message: &mtproto.ZProtoRawPayload{
 			Payload: hmsg.Encode(),
 		},
 	}
@@ -362,11 +367,11 @@ func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpC
 	}
 	zmsg := &mtproto.ZProtoMessage{
 		SessionId: conn.GetConnID(),
-		SeqNum: 1,	// TODO(@benqi): gen seqNum
-		Metadata: s.newMetadata(conn),
-		Message:&mtproto.ZProtoRawPayload{
+		SeqNum:    1, // TODO(@benqi): gen seqNum
+		Metadata:  s.newMetadata(conn),
+		Message: &mtproto.ZProtoRawPayload{
 			Payload: hmsg.Encode(),
 		},
 	}
-	return  s.client.SendData("session", zmsg)
+	return s.client.SendData("session", zmsg)
 }

@@ -44,7 +44,13 @@ func newTcpServer(config ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tcp
 		// glog.Errorf("listen error: %v", err)
 		return nil, err
 	}
-	server := net2.NewTcpServer(lsn, config.Name, config.ProtoName, 1024, cb)
+	server := net2.NewTcpServer(net2.TcpServerArgs{
+		Listener:           lsn,
+		ServerName:         config.Name,
+		ProtoName:          config.ProtoName,
+		SendChanSize:       1024,
+		ConnectionCallback: cb,
+	}) // todo (omid): set max connection
 	return server, nil
 }
 
