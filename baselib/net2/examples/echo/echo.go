@@ -40,7 +40,7 @@ func NewEchoServer(listener net.Listener, protoName string) *EchoServer {
 	//	// return
 	//}
 	s := &EchoServer{}
-	s.server = net2.NewTcpServer(listener, "echo", protoName, 1, s)
+	s.server = net2.NewTcpServer(net2.TcpServerArgs{Listener: listener, ServerName: "echo", ProtoName: protoName, SendChanSize: 1, ConnectionCallback: s, MaxConcurrentConnection: 2})
 	return s
 }
 
@@ -82,17 +82,17 @@ func (c* EchoClient) Serve() {
 }
 
 func (c* EchoClient) OnNewClient(client *net2.TcpClient) {
-	glog.Infof("OnNewConnection")
+	glog.Infof("OnNewConnection" + client.GetRemoteName())
 	client.Send("ping\n")
 }
 
 func (c* EchoClient) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
-	glog.Infof("OnDataArrived - recv data: %v", msg)
+	glog.Infof("OnDataArrived - recv data: %v client: %s", msg, client.GetRemoteName())
 	return client.Send("ping\n")
 }
 
 func (c* EchoClient) OnClientClosed(client *net2.TcpClient) {
-	glog.Infof("OnConnectionClosed")
+	glog.Infof("OnConnectionClosed" + client.GetRemoteName())
 }
 
 func (c* EchoClient) OnClientTimer(client *net2.TcpClient) {
@@ -114,7 +114,9 @@ func (this *EchoInsance) Initialize() error {
 	this.server = NewEchoServer(listener, "echo")
 
 	clients := map[string][]string{
-		"echo":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
+		"echo1":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
+		"echo2":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
+		"echo3":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
 	}
 	this.client = NewEchoClient("echo", clients)
 	return nil

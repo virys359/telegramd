@@ -28,7 +28,7 @@ import (
 	"sync"
 )
 
-const MAX_CONN = 100000
+const maxConcurrentConnection = 100000
 
 type TcpConnectionCallback interface {
 	OnNewConnection(conn *TcpConnection)
@@ -50,16 +50,29 @@ type TcpServer struct {
 	releaseOnce 	  sync.Once
 }
 
-func NewTcpServer(listener net.Listener, serverName, protoName string, sendChanSize int, cb TcpConnectionCallback) *TcpServer {
+type TcpServerArgs struct {
+	Listener net.Listener
+	ServerName string
+	ProtoName string
+	SendChanSize int
+	ConnectionCallback TcpConnectionCallback
+	MaxConcurrentConnection int
+}
+
+
+func NewTcpServer(args TcpServerArgs) *TcpServer {
+	if args.MaxConcurrentConnection < 1{
+		args.MaxConcurrentConnection = maxConcurrentConnection
+	}
 	return &TcpServer{
 		connectionManager: NewConnectionManager(),
-		listener:          listener,
-		serverName:        serverName,
-		protoName:         protoName,
-		sendChanSize:      sendChanSize,
-		callback:          cb,
+		listener:          args.Listener,
+		serverName:        args.ServerName,
+		protoName:         args.ProtoName,
+		sendChanSize:      args.SendChanSize,
+		callback:          args.ConnectionCallback,
 		running:           false,
-		sem:			   make(chan struct{}, MAX_CONN),
+		sem:			   make(chan struct{}, args.MaxConcurrentConnection),
 	}
 }
 
