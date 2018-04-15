@@ -81,5 +81,3 @@ func QuitAppInstance() {
 	notifier := make(chan os.Signal, 1)
 	signal.Stop(notifier)
 }
-
-// syscall.SIGTERM

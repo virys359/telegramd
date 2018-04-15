@@ -34,3 +34,4 @@ func main() {
 	instance := server.NewFrontendServer("./frontend.toml")
 	app.DoMainAppInstance(instance)
 }
+

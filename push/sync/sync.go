@@ -36,3 +36,4 @@ func main() {
 	instance := server.NewSyncServer("./sync.toml")
 	app.DoMainAppInstance(instance)
 }
+

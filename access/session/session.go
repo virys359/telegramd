@@ -34,3 +34,4 @@ func main() {
 	instance := server.NewSessionServer("./session.toml")
 	app.DoMainAppInstance(instance)
 }
+
