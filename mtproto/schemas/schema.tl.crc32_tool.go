@@ -18,10 +18,10 @@
 package main
 
 import (
-	"flag"
 	"github.com/nebulaim/telegramd/mtproto"
 	"fmt"
 	"strconv"
+	"os"
 )
 
 // import "fmt"
@@ -55,30 +55,21 @@ import (
 //fmt.Printf("c: %x\n", uint32(TLConstructor_CRC32_rpc_result))
 
 func main() {
-	dec := flag.Int("dec", 0, "Decimal digit")
-	hex := flag.String("hex","","Hex digit")
+	if len(os.Args) == 1 {
+		fmt.Println(" ./chema.tl.crc32_tool xxx [...]")
+		os.Exit(0)
+	}
 
-	flag.Parse()
-
-	if *dec != 0 {
-		if crc32, ok := mtproto.TLConstructor_name[int32(*dec)]; !ok {
-			fmt.Println(*dec, " ==> ", "CRC32_UNKNOWN")
-		} else {
-			fmt.Println(*dec, " ==> ", crc32)
-		}
-	} else if *hex != "" {
-		n, err := strconv.ParseInt(*hex, 10, 64)
+	for i := 1; i < len(os.Args); i++ {
+		n, err := strconv.ParseInt(os.Args[i], 0, 64)
 		if err != nil {
-			fmt.Println(hex, " ==> ", "CRC32_UNKNOWN")
+			fmt.Println(os.Args[i], " conv error: ", err)
 		} else {
 			if crc32, ok := mtproto.TLConstructor_name[int32(n)]; !ok {
-				fmt.Println(*hex, " ==> ", "CRC32_UNKNOWN")
+				fmt.Println(os.Args[i], " ==> ", "CRC32_UNKNOWN")
 			} else {
-				fmt.Println(*hex, " ==> ", crc32)
+				fmt.Println(os.Args[i], " ==> ", crc32)
 			}
 		}
-	} else {
-		fmt.Println(" ./chema.tl.crc32_tool -dec=xxx\n ./chema.tl.crc32_tool -hex=xxx")
 	}
 }
-
