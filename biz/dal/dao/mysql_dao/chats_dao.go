@@ -53,10 +53,10 @@ func (dao *ChatsDAO) Insert(do *dataobject.ChatsDO) int64 {
 	return id
 }
 
-// select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id = :id
+// select id, creator_user_id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id = :id
 // TODO(@benqi): sqlmap
 func (dao *ChatsDAO) Select(id int32) *dataobject.ChatsDO {
-	var query = "select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id = ?"
+	var query = "select id, creator_user_id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from chats where id = ?"
 	rows, err := dao.db.Queryx(query, id)
 
 	if err != nil {
@@ -173,6 +173,50 @@ func (dao *ChatsDAO) UpdatePhotoId(photo_id int64, date int32, id int32) int64 {
 	rows, err := r.RowsAffected()
 	if err != nil {
 		errDesc := fmt.Sprintf("RowsAffected in UpdatePhotoId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update chats set admins_enabled = :admins_enabled, `date` = :date, version = version + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChatsDAO) UpdateAdminsEnabled(admins_enabled int8, date int32, id int32) int64 {
+	var query = "update chats set admins_enabled = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, admins_enabled, date, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateAdminsEnabled(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateAdminsEnabled(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update chats set `date` = :date, version = version + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChatsDAO) UpdateVersion(date int32, id int32) int64 {
+	var query = "update chats set `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, date, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateVersion(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateVersion(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

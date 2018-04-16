@@ -11,7 +11,7 @@
     <operation name="Select">
         <sql>
             SELECT
-                id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, date
+                id, creator_user_id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, date
             FROM
                 chats
             WHERE
@@ -57,6 +57,27 @@
                 chats
             SET
                 photo_id=:photo_id, date=:date, version=version+1
+            WHERE
+                id=:id
+        </sql>
+    </operation>
+    <operation name="UpdateAdminsEnabled">
+        <sql>
+            UPDATE
+                chats
+            SET
+                admins_enabled=:admins_enabled, date=:date, version=version+1
+            WHERE
+                id=:id
+        </sql>
+    </operation>
+
+    <operation name="UpdateVersion">
+        <sql>
+            UPDATE
+                chats
+            SET
+                date=:date, version=version+1
             WHERE
                 id=:id
         </sql>

@@ -125,7 +125,7 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 
 	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
 	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-	chats := chat.GetChatListByIDList(chatIdList)
+	chats := chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	messageDialogs := mtproto.TLMessagesDialogs{Data2: &mtproto.Messages_Dialogs_Data{
 		Dialogs:  dialogs,
 		Messages: messages,

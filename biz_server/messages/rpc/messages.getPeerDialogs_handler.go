@@ -78,7 +78,7 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 	//}
 
 	if len(chatIdList) > 0 {
-		peerDialogs.Data2.Chats = chat.GetChatListByIDList(chatIdList)
+		peerDialogs.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
 	state := update2.GetUpdatesState(md.AuthId, md.UserId)

@@ -77,7 +77,7 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 	//}
 
 	if len(chatIdList) > 0 {
-		peerDialogs.Data2.Chats = chat.GetChatListByIDList(chatIdList)
+		peerDialogs.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
 	state := update2.GetUpdatesState(md.AuthId, md.UserId)

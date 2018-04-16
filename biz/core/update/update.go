@@ -20,6 +20,7 @@ package updates
 import (
 	"github.com/nebulaim/telegramd/mtproto"
 	// "github.com/nebulaim/telegramd/biz_model/logic/message"
+	"time"
 )
 
 type UpdatesLogic struct {
@@ -35,6 +36,7 @@ type UpdatesLogic struct {
 func NewUpdatesLogic(userId int32) *UpdatesLogic {
 	return &UpdatesLogic{
 		ownerUserId: userId,
+		date:        int32(time.Now().Unix()),
 	}
 }
 

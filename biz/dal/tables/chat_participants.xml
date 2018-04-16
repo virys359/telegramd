@@ -12,7 +12,7 @@
     <operation name="SelectByChatId" result_set="list">
         <sql>
             SELECT
-                id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at
+                id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state
             FROM
                 chat_participants
             WHERE
@@ -31,13 +31,23 @@
         </sql>
     </operation>
 
-
     <operation name="Update">
         <sql>
             UPDATE
                 chat_participants
             SET
                 inviter_user_id=:inviter_user_id, invited_at=:invited_at, joined_at=:joined_at, state=0
+            WHERE
+                id=:id
+        </sql>
+    </operation>
+
+    <operation name="UpdateParticipantType">
+        <sql>
+            UPDATE
+                chat_participants
+            SET
+                participant_type=:participant_type
             WHERE
                 id=:id
         </sql>

@@ -36,7 +36,7 @@ func (s *MessagesServiceImpl) MessagesGetMessages(ctx context.Context, request *
 	messages :=message.GetMessagesByPeerAndMessageIdList2(md.UserId, request.Id)
 	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
 	userList := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-	chatList := chat.GetChatListByIDList(chatIdList)
+	chatList := chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 
 	messagesMessages := &mtproto.TLMessagesMessages{Data2: &mtproto.Messages_Messages_Data{
 		Messages: messages,
