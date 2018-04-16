@@ -26,3 +26,4 @@ access/session/session
 access/frontend/frontend
 biz_server/biz_server
 push/sync/sync
+mtproto/schemas/schema.tl.crc32_tool
