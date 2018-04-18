@@ -24,10 +24,10 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
-	"github.com/nebulaim/telegramd/biz/base"
 	"time"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 /*
@@ -130,25 +130,25 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 	glog.Infof("photos.uploadProfilePhoto#4f32c098 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	file := request.GetFile()
-	uuid := base.NextSnowflakeId()
+	// uuid := base.NextSnowflakeId()
 
-	sizes, err := photo2.UploadPhoto(md.UserId, uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
+	result, err := nbfs_client.UploadPhotoFile(md.AuthId, file) // uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 	if err != nil {
 		glog.Errorf("UploadPhoto error: %v", err)
 		return nil, err
 	}
 
-	user.SetUserPhotoID(md.UserId, uuid)
+	user.SetUserPhotoID(md.UserId, result.PhotoId)
 
 	// TODO(@benqi): sync update userProfilePhoto
 
 	// fileData := mediaData.GetFile().GetData2()
 	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
-		Id:          uuid,
+		Id:          result.PhotoId,
 		HasStickers: false,
 		AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 		Date:        int32(time.Now().Unix()),
-		Sizes:       sizes,
+		Sizes:       result.SizeList,
 	}}
 
 	photos := &mtproto.TLPhotosPhoto{Data2: &mtproto.Photos_Photo_Data{
@@ -159,7 +159,7 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 	updateUserPhoto := &mtproto.TLUpdateUserPhoto{Data2: &mtproto.Update_Data{
 		UserId: md.UserId,
 		Date: int32(time.Now().Unix()),
-		Photo: photo2.MakeUserProfilePhoto(uuid, sizes),
+		Photo: photo2.MakeUserProfilePhoto(result.PhotoId, result.SizeList),
 		Previous: mtproto.ToBool(false),
 	}}
 	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserPhoto.To_Update())

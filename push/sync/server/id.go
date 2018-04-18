@@ -17,7 +17,10 @@
 
 package server
 
-import "github.com/nebulaim/telegramd/baselib/snowflake"
+import (
+	"github.com/nebulaim/telegramd/baselib/snowflake"
+	"flag"
+)
 
 var id *snowflake.IdWorker
 
@@ -33,6 +36,7 @@ const (
 )
 
 func init()  {
+	flag.Parse()
 	id, _ = snowflake.NewIdWorker(workerId, dataCenterId, twepoch)
 }
 

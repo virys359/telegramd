@@ -32,6 +32,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 
@@ -78,12 +79,13 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 		// chatLogic.MakeMessageService(md.UserId, action.To_MessageAction())
 	case mtproto.TLConstructor_CRC32_inputChatUploadedPhoto:
 		file := chatPhoto.GetData2().GetFile()
-		photoId = base.NextSnowflakeId()
-		sizes, err := photo2.UploadPhoto(md.UserId, photoId, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
+		// photoId = base.NextSnowflakeId()
+		result, err := nbfs_client.UploadPhotoFile(md.AuthId, file) // photoId, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 		if err != nil {
 			glog.Errorf("UploadPhoto error: %v", err)
 			return nil, err
 		}
+		photoId = result.PhotoId
 		// user.SetUserPhotoID(md.UserId, uuid)
 		// fileData := mediaData.GetFile().GetData2()
 		photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
@@ -91,7 +93,7 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 			HasStickers: false,
 			AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 			Date:        int32(time.Now().Unix()),
-			Sizes:       sizes,
+			Sizes:       result.SizeList,
 		}}
 		action2 := &mtproto.TLMessageActionChatEditPhoto{Data2: &mtproto.MessageAction_Data{
 			Photo: photo.To_Photo(),

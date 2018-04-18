@@ -155,3 +155,17 @@ func checkWithoutLogin(tl mtproto.TLObject) bool {
 	// glog.Warning("")
 	return false
 }
+
+func checkNbfsRpcRequest(tl mtproto.TLObject) bool {
+	switch tl.(type) {
+	case *mtproto.TLUploadSaveFilePart,
+		*mtproto.TLUploadGetFile,
+		*mtproto.TLUploadSaveBigFilePart,
+		*mtproto.TLUploadGetWebFile,
+		*mtproto.TLUploadGetCdnFile,
+		*mtproto.TLUploadReuploadCdnFile,
+		*mtproto.TLUploadGetCdnFileHashes:
+		return true
+	}
+	return false
+}

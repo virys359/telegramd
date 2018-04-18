@@ -55,11 +55,12 @@ func newTcpServer(config ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tcp
 }
 
 type SessionConfig struct {
-	ServerId     int32 // 服务器ID
-	Mysql        []mysql_client.MySQLConfig
-	Redis        []redis_client.RedisConfig
-	BizRpcClient service_discovery.ServiceDiscoveryClientConfig
-	Server       ServerConfig
+	ServerId      int32 // 服务器ID
+	Mysql         []mysql_client.MySQLConfig
+	Redis         []redis_client.RedisConfig
+	BizRpcClient  service_discovery.ServiceDiscoveryClientConfig
+	NbfsRpcClient service_discovery.ServiceDiscoveryClientConfig
+	Server        ServerConfig
 }
 
 type SessionServer struct {
@@ -67,7 +68,8 @@ type SessionServer struct {
 	config         *SessionConfig
 	server         *net2.TcpServer
 	client         *net2.TcpClientGroupManager
-	rpcClient      *grpc_util.RPCClient
+	bizRpcClient   *grpc_util.RPCClient
+	nbfsRpcClient  *grpc_util.RPCClient
 	handshake      *handshake
 	sessionManager *sessionManager
 	syncHandler    *syncHandler
@@ -116,7 +118,8 @@ func (s *SessionServer) Initialize() error {
 
 func (s *SessionServer) RunLoop() {
 	// TODO(@benqi): check error
-	s.rpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
+	s.bizRpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
+	s.nbfsRpcClient, _ = grpc_util.NewRPCClient(&s.config.NbfsRpcClient)
 	s.server.Serve()
 	// go s.client.Serve()
 }

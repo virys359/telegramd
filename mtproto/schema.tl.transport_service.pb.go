@@ -21,7 +21,7 @@ type TLRpcDropAnswer struct {
 func (m *TLRpcDropAnswer) Reset()                    { *m = TLRpcDropAnswer{} }
 func (m *TLRpcDropAnswer) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcDropAnswer) ProtoMessage()               {}
-func (*TLRpcDropAnswer) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{0} }
+func (*TLRpcDropAnswer) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{0} }
 
 func (m *TLRpcDropAnswer) GetReqMsgId() int64 {
 	if m != nil {
@@ -39,7 +39,7 @@ type TLGetFutureSalts struct {
 func (m *TLGetFutureSalts) Reset()                    { *m = TLGetFutureSalts{} }
 func (m *TLGetFutureSalts) String() string            { return proto.CompactTextString(m) }
 func (*TLGetFutureSalts) ProtoMessage()               {}
-func (*TLGetFutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{1} }
+func (*TLGetFutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{1} }
 
 func (m *TLGetFutureSalts) GetNum() int32 {
 	if m != nil {
@@ -57,7 +57,7 @@ type TLPing struct {
 func (m *TLPing) Reset()                    { *m = TLPing{} }
 func (m *TLPing) String() string            { return proto.CompactTextString(m) }
 func (*TLPing) ProtoMessage()               {}
-func (*TLPing) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{2} }
+func (*TLPing) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{2} }
 
 func (m *TLPing) GetPingId() int64 {
 	if m != nil {
@@ -76,7 +76,7 @@ type TLPingDelayDisconnect struct {
 func (m *TLPingDelayDisconnect) Reset()                    { *m = TLPingDelayDisconnect{} }
 func (m *TLPingDelayDisconnect) String() string            { return proto.CompactTextString(m) }
 func (*TLPingDelayDisconnect) ProtoMessage()               {}
-func (*TLPingDelayDisconnect) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{3} }
+func (*TLPingDelayDisconnect) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{3} }
 
 func (m *TLPingDelayDisconnect) GetPingId() int64 {
 	if m != nil {
@@ -101,7 +101,7 @@ type TLDestroySession struct {
 func (m *TLDestroySession) Reset()                    { *m = TLDestroySession{} }
 func (m *TLDestroySession) String() string            { return proto.CompactTextString(m) }
 func (*TLDestroySession) ProtoMessage()               {}
-func (*TLDestroySession) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{4} }
+func (*TLDestroySession) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{4} }
 
 func (m *TLDestroySession) GetSessionId() int64 {
 	if m != nil {
@@ -123,7 +123,7 @@ type TLContestSaveDeveloperInfo struct {
 func (m *TLContestSaveDeveloperInfo) Reset()                    { *m = TLContestSaveDeveloperInfo{} }
 func (m *TLContestSaveDeveloperInfo) String() string            { return proto.CompactTextString(m) }
 func (*TLContestSaveDeveloperInfo) ProtoMessage()               {}
-func (*TLContestSaveDeveloperInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{5} }
+func (*TLContestSaveDeveloperInfo) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{5} }
 
 func (m *TLContestSaveDeveloperInfo) GetVkId() int32 {
 	if m != nil {
@@ -169,9 +169,9 @@ func init() {
 	proto.RegisterType((*TLContestSaveDeveloperInfo)(nil), "mtproto.TL_contest_saveDeveloperInfo")
 }
 
-func init() { proto.RegisterFile("schema.tl.transport_service.proto", fileDescriptor8) }
+func init() { proto.RegisterFile("schema.tl.transport_service.proto", fileDescriptor9) }
 
-var fileDescriptor8 = []byte{
+var fileDescriptor9 = []byte{
 	// 358 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x91, 0xc1, 0x6e, 0xd4, 0x30,
 	0x10, 0x86, 0xb5, 0xdd, 0x4d, 0x43, 0x07, 0x24, 0x2a, 0xf7, 0x40, 0x24, 0x8a, 0x44, 0x73, 0xa1,

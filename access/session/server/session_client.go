@@ -31,6 +31,7 @@ type sessionClient struct {
 	sessionType     int
 	clientSession   *clientSession
 	bizRPCClient    *grpc_util.RPCClient
+	nbfsRPCClient   *grpc_util.RPCClient
 	sessionId       int64
 	nextSeqNo       uint32
 	state           int
@@ -345,7 +346,18 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 	rpcMetadata.SpanId = NextId()
 	rpcMetadata.ReceiveTime = time.Now().Unix()
 
-	rpcResult, err := c.bizRPCClient.Invoke(rpcMetadata, request)
+	// TODO(@benqi): rpc proxy
+
+	var (
+		err error
+		rpcResult mtproto.TLObject
+	)
+
+	if checkNbfsRpcRequest(request) {
+		rpcResult, err = c.nbfsRPCClient.Invoke(rpcMetadata, request)
+	} else {
+		rpcResult, err = c.bizRPCClient.Invoke(rpcMetadata, request)
+	}
 	reply := &mtproto.TLRpcResult{
 		ReqMsgId: msgId,
 		// Result: rpcResult,

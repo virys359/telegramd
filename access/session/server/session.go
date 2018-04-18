@@ -207,15 +207,17 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 	sess, ok := s.sessions[message.SessionId]
 	if !ok {
 		bizRPCClient, _ := getBizRPCClient()
+		nbfsRPCClient, _ := getNbfsRPCClient()
 		sess = &sessionClient{
 			authKeyId:   s.authKeyId,
 			sessionType: UNKNOWN,
 			// clientSessionId:      true,
-			sessionId:    message.SessionId,
-			state:        kSessionStateCreated,
-			authUserId:   s.authUserId,
-			callback:     s,
-			bizRPCClient: bizRPCClient,
+			sessionId:     message.SessionId,
+			state:         kSessionStateCreated,
+			authUserId:    s.authUserId,
+			callback:      s,
+			bizRPCClient:  bizRPCClient,
+			nbfsRPCClient: nbfsRPCClient,
 		}
 		s.sessions[message.SessionId] = sess
 		sess.onSessionClientConnected(conn, sessionID)

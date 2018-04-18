@@ -26,7 +26,7 @@ type TLReqPq struct {
 func (m *TLReqPq) Reset()                    { *m = TLReqPq{} }
 func (m *TLReqPq) String() string            { return proto.CompactTextString(m) }
 func (*TLReqPq) ProtoMessage()               {}
-func (*TLReqPq) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{0} }
+func (*TLReqPq) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{0} }
 
 func (m *TLReqPq) GetNonce() []byte {
 	if m != nil {
@@ -49,7 +49,7 @@ type TLReq_DHParams struct {
 func (m *TLReq_DHParams) Reset()                    { *m = TLReq_DHParams{} }
 func (m *TLReq_DHParams) String() string            { return proto.CompactTextString(m) }
 func (*TLReq_DHParams) ProtoMessage()               {}
-func (*TLReq_DHParams) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{1} }
+func (*TLReq_DHParams) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{1} }
 
 func (m *TLReq_DHParams) GetNonce() []byte {
 	if m != nil {
@@ -104,7 +104,7 @@ type TLSetClient_DHParams struct {
 func (m *TLSetClient_DHParams) Reset()                    { *m = TLSetClient_DHParams{} }
 func (m *TLSetClient_DHParams) String() string            { return proto.CompactTextString(m) }
 func (*TLSetClient_DHParams) ProtoMessage()               {}
-func (*TLSetClient_DHParams) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{2} }
+func (*TLSetClient_DHParams) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{2} }
 
 func (m *TLSetClient_DHParams) GetNonce() []byte {
 	if m != nil {
@@ -135,7 +135,7 @@ type TLDestroyAuthKey struct {
 func (m *TLDestroyAuthKey) Reset()                    { *m = TLDestroyAuthKey{} }
 func (m *TLDestroyAuthKey) String() string            { return proto.CompactTextString(m) }
 func (*TLDestroyAuthKey) ProtoMessage()               {}
-func (*TLDestroyAuthKey) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{3} }
+func (*TLDestroyAuthKey) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{3} }
 
 func init() {
 	proto.RegisterType((*TLReqPq)(nil), "mtproto.TL_req_pq")
@@ -323,9 +323,9 @@ var _RPCAuthKey_serviceDesc = grpc.ServiceDesc{
 	Metadata: "schema.tl.handshake_service.proto",
 }
 
-func init() { proto.RegisterFile("schema.tl.handshake_service.proto", fileDescriptor4) }
+func init() { proto.RegisterFile("schema.tl.handshake_service.proto", fileDescriptor5) }
 
-var fileDescriptor4 = []byte{
+var fileDescriptor5 = []byte{
 	// 407 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x91, 0xd1, 0x6e, 0xd3, 0x30,
 	0x14, 0x86, 0x9b, 0x96, 0x75, 0xda, 0xa1, 0x9b, 0x26, 0x53, 0x20, 0x0b, 0x5c, 0xb4, 0x11, 0x48,

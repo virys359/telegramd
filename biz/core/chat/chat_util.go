@@ -20,10 +20,11 @@ package chat
 import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/golang/glog"
-	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
+	// photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	"time"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 //func CheckChatAccessHash(id int32, hash int64) bool {
@@ -71,7 +72,7 @@ func GetChatBySelfID(selfUserId, chatId int32) (chat *mtproto.Chat) {
 }
 
 func GetChatFullBySelfId(selfUserId int32, chatData *chatLogicData) (*mtproto.TLChatFull) {
-	sizes := photo2.GetPhotoSizeList(chatData.chat.PhotoId)
+	sizes, _ := nbfs_client.GetPhotoSizeList(chatData.chat.PhotoId)
 	// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
 	var photo *mtproto.Photo
 

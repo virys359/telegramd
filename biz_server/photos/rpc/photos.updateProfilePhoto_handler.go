@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 // photos.updateProfilePhoto#f0bb5152 id:InputPhoto = UserProfilePhoto;
@@ -41,7 +42,7 @@ func (s *PhotosServiceImpl) PhotosUpdateProfilePhoto(ctx context.Context, reques
 		id := request.GetId().To_InputPhoto()
 		// TODO(@benqi): check inputPhoto.access_hash
 
-		sizes := photo2.GetPhotoSizeList(id.GetId())
+		sizes, _ := nbfs_client.GetPhotoSizeList(id.GetId())
 		photo = photo2.MakeUserProfilePhoto(id.GetId(), sizes)
 	}
 

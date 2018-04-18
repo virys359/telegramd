@@ -43,7 +43,7 @@ var SyncType_value = map[string]int32{
 func (x SyncType) String() string {
 	return proto.EnumName(SyncType_name, int32(x))
 }
-func (SyncType) EnumDescriptor() ([]byte, []int) { return fileDescriptor10, []int{0} }
+func (SyncType) EnumDescriptor() ([]byte, []int) { return fileDescriptor11, []int{0} }
 
 type VoidRsp struct {
 }
@@ -51,7 +51,7 @@ type VoidRsp struct {
 func (m *VoidRsp) Reset()                    { *m = VoidRsp{} }
 func (m *VoidRsp) String() string            { return proto.CompactTextString(m) }
 func (*VoidRsp) ProtoMessage()               {}
-func (*VoidRsp) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{0} }
+func (*VoidRsp) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{0} }
 
 // PushMessage state
 type ClientUpdatesState struct {
@@ -67,7 +67,7 @@ type ClientUpdatesState struct {
 func (m *ClientUpdatesState) Reset()                    { *m = ClientUpdatesState{} }
 func (m *ClientUpdatesState) String() string            { return proto.CompactTextString(m) }
 func (*ClientUpdatesState) ProtoMessage()               {}
-func (*ClientUpdatesState) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{1} }
+func (*ClientUpdatesState) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{1} }
 
 func (m *ClientUpdatesState) GetPts() int32 {
 	if m != nil {
@@ -126,7 +126,7 @@ type ConnectToSessionServerReq struct {
 func (m *ConnectToSessionServerReq) Reset()                    { *m = ConnectToSessionServerReq{} }
 func (m *ConnectToSessionServerReq) String() string            { return proto.CompactTextString(m) }
 func (*ConnectToSessionServerReq) ProtoMessage()               {}
-func (*ConnectToSessionServerReq) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{2} }
+func (*ConnectToSessionServerReq) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{2} }
 
 type SessionServerConnectedRsp struct {
 	ServerId   int32  `protobuf:"varint,1,opt,name=server_id,json=serverId" json:"server_id,omitempty"`
@@ -136,7 +136,7 @@ type SessionServerConnectedRsp struct {
 func (m *SessionServerConnectedRsp) Reset()                    { *m = SessionServerConnectedRsp{} }
 func (m *SessionServerConnectedRsp) String() string            { return proto.CompactTextString(m) }
 func (*SessionServerConnectedRsp) ProtoMessage()               {}
-func (*SessionServerConnectedRsp) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{3} }
+func (*SessionServerConnectedRsp) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{3} }
 
 func (m *SessionServerConnectedRsp) GetServerId() int32 {
 	if m != nil {
@@ -163,7 +163,7 @@ type PushUpdatesData struct {
 func (m *PushUpdatesData) Reset()                    { *m = PushUpdatesData{} }
 func (m *PushUpdatesData) String() string            { return proto.CompactTextString(m) }
 func (*PushUpdatesData) ProtoMessage()               {}
-func (*PushUpdatesData) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{4} }
+func (*PushUpdatesData) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{4} }
 
 func (m *PushUpdatesData) GetAuthKeyId() int64 {
 	if m != nil {
@@ -206,7 +206,7 @@ type UpdatesRequest struct {
 func (m *UpdatesRequest) Reset()                    { *m = UpdatesRequest{} }
 func (m *UpdatesRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdatesRequest) ProtoMessage()               {}
-func (*UpdatesRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{5} }
+func (*UpdatesRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{5} }
 
 func (m *UpdatesRequest) GetPushType() SyncType {
 	if m != nil {
@@ -358,9 +358,9 @@ var _RPCSync_serviceDesc = grpc.ServiceDesc{
 	Metadata: "zproto_sync.proto",
 }
 
-func init() { proto.RegisterFile("zproto_sync.proto", fileDescriptor10) }
+func init() { proto.RegisterFile("zproto_sync.proto", fileDescriptor11) }
 
-var fileDescriptor10 = []byte{
+var fileDescriptor11 = []byte{
 	// 549 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x53, 0xdb, 0x6e, 0xd3, 0x40,
 	0x10, 0xc5, 0x49, 0xd3, 0x24, 0x93, 0x28, 0x75, 0x96, 0x22, 0xdc, 0x46, 0x40, 0xb1, 0x84, 0x84,

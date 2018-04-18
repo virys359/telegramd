@@ -27,6 +27,7 @@ import (
 	"fmt"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 const (
@@ -299,7 +300,7 @@ func (this *chatLogicData) ToChat(selfUserId int32) *mtproto.Chat {
 		if this.chat.PhotoId == 0 {
 			chat.SetPhoto(mtproto.NewTLChatPhotoEmpty().To_ChatPhoto())
 		} else {
-			sizeList := photo2.GetPhotoSizeList(this.chat.PhotoId)
+			sizeList, _ := nbfs_client.GetPhotoSizeList(this.chat.PhotoId)
 			chat.SetPhoto(photo2.MakeChatPhoto(sizeList))
 		}
 		return chat.To_Chat()
