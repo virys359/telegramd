@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-04-14 01:30:17
+-- Generation Time: 2018-04-18 16:17:41
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -350,12 +350,18 @@ CREATE TABLE `devices` (
 
 CREATE TABLE `files` (
   `id` bigint(20) NOT NULL,
-  `creator_user_id` int(11) NOT NULL,
   `file_id` bigint(20) NOT NULL,
   `access_hash` bigint(20) NOT NULL,
+  `creator_id` bigint(20) NOT NULL,
+  `creator_user_id` int(11) NOT NULL,
+  `file_part_id` bigint(20) NOT NULL,
   `file_parts` int(11) NOT NULL,
   `file_size` bigint(20) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `ext` varchar(32) NOT NULL DEFAULT '',
+  `is_big_file` tinyint(4) NOT NULL DEFAULT '0',
   `md5_checksum` char(33) NOT NULL,
+  `upload_name` varchar(255) NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -367,13 +373,18 @@ CREATE TABLE `files` (
 
 CREATE TABLE `file_parts` (
   `id` bigint(20) NOT NULL,
+  `creator_id` bigint(20) NOT NULL,
   `creator_user_id` int(11) NOT NULL,
   `file_id` bigint(20) NOT NULL,
-  `file_part` int(11) NOT NULL,
-  `is_big_file` tinyint(4) NOT NULL,
-  `file_total_parts` int(11) NOT NULL,
+  `file_part_id` bigint(20) NOT NULL,
+  `file_part` int(11) NOT NULL DEFAULT '0',
+  `is_big_file` tinyint(4) NOT NULL DEFAULT '0',
+  `file_total_parts` int(11) NOT NULL DEFAULT '0',
+  `file_path` varchar(255) NOT NULL,
+  `file_size` bigint(20) NOT NULL DEFAULT '0',
   `bytes` blob NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -449,7 +460,9 @@ CREATE TABLE `photo_datas` (
   `access_hash` bigint(20) NOT NULL,
   `width` int(11) NOT NULL,
   `height` int(11) NOT NULL,
-  `file_size` int(11) NOT NULL,
+  `file_size` int(11) NOT NULL DEFAULT '0',
+  `file_path` varchar(255) NOT NULL,
+  `ext` varchar(32) NOT NULL DEFAULT '',
   `bytes` mediumblob NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -924,15 +937,13 @@ ALTER TABLE `devices`
 -- Indexes for table `files`
 --
 ALTER TABLE `files`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `creator_user_id` (`creator_user_id`,`file_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `file_parts`
 --
 ALTER TABLE `file_parts`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `file_id_2` (`file_id`,`file_part`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `messages`
@@ -1171,13 +1182,13 @@ ALTER TABLE `channel_users`
 -- 使用表AUTO_INCREMENT `chats`
 --
 ALTER TABLE `chats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- 使用表AUTO_INCREMENT `chat_participants`
 --
 ALTER TABLE `chat_participants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- 使用表AUTO_INCREMENT `devices`
@@ -1189,19 +1200,19 @@ ALTER TABLE `devices`
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=135;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=145;
 
 --
 -- 使用表AUTO_INCREMENT `file_parts`
 --
 ALTER TABLE `file_parts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=455;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=494;
 
 --
 -- 使用表AUTO_INCREMENT `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=307;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=490;
 
 --
 -- 使用表AUTO_INCREMENT `orgs`
@@ -1219,7 +1230,7 @@ ALTER TABLE `photos`
 -- 使用表AUTO_INCREMENT `photo_datas`
 --
 ALTER TABLE `photo_datas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=602;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=696;
 
 --
 -- 使用表AUTO_INCREMENT `push_credentials`
@@ -1261,7 +1272,7 @@ ALTER TABLE `user_contacts`
 -- 使用表AUTO_INCREMENT `user_dialogs`
 --
 ALTER TABLE `user_dialogs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- 使用表AUTO_INCREMENT `user_import_contacts`
@@ -1303,7 +1314,7 @@ ALTER TABLE `user_profile_photos`
 -- 使用表AUTO_INCREMENT `user_pts_updates`
 --
 ALTER TABLE `user_pts_updates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=502;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=813;
 
 --
 -- 使用表AUTO_INCREMENT `user_qts_updates`
