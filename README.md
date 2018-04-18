@@ -6,7 +6,6 @@
 Go语言开源mtproto服务器，兼容telegram客户端
 
 ### 编译
-首先，我们假设您已经有基本的golang基础，至少知道GOROOT，GOPATH这些概念。
 
 #### 下载代码
 
@@ -27,10 +26,16 @@ Go语言开源mtproto服务器，兼容telegram客户端
     cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
     go get
     go build
-
+    
 编译sync
 
     cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
+    go get
+    go build
+
+编译nbfs
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
     go get
     go build
 
@@ -46,14 +51,25 @@ Go语言开源mtproto服务器，兼容telegram客户端
     cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
     ./frontend
 
-    cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
-    ./session
-
     cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
     ./sync
     
+    cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
+    mkdir /opt/nbfs/0
+    mkdir /opt/nbfs/s
+    mkdir /opt/nbfs/m
+    mkdir /opt/nbfs/x
+    mkdir /opt/nbfs/y
+    mkdir /opt/nbfs/a
+    mkdir /opt/nbfs/b
+    mkdir /opt/nbfs/c
+    ./nbfs
+
     cd $GOPATH/src/github.com/nebulaim/telegramd/biz_server
     ./biz_server
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
+    ./session
 
 ## English
 
