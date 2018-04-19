@@ -65,7 +65,11 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 			TtlSeconds: uploadedPhoto.GetTtlSeconds(),
 		}}
 		return messageMedia.To_MessageMedia()
-	case mtproto.TLConstructor_CRC32_inputMediaDocument:
+	case mtproto.TLConstructor_CRC32_inputMediaUploadedDocument:
+		// inputMediaUploadedDocument#e39621fd flags:# file:InputFile thumb:flags.2?InputFile mime_type:string attributes:Vector<DocumentAttribute> caption:string stickers:flags.0?Vector<InputDocument> ttl_seconds:flags.1?int = InputMedia;
+		uploadedDocument := media.To_InputMediaUploadedDocument()
+		messageMedia, _ := nbfs_client.UploadedDocumentMedia(authKeyId, uploadedDocument)
+		return messageMedia.To_MessageMedia()
 		// id:InputDocument caption:string ttl_seconds:flags.0?int
 	}
 
@@ -133,11 +137,6 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.sendMedia#c8f16791 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): check request data invalid
-	if request.GetPeer().GetConstructor() ==  mtproto.TLConstructor_CRC32_inputPeerEmpty {
-		// retuurn
-	}
-
 	// TODO(@benqi): ???
 	// request.NoWebpage
 	// request.Background
@@ -148,14 +147,22 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 		err error
 	)
 
-	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputUserEmpty {
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerEmpty {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 		glog.Error("messages.sendMedia#c8f16791 - invalid peer", err)
 		return nil, err
 	}
 	// TODO(@benqi): check user or channels's access_hash
 
-	peer = base.FromInputPeer2(md.UserId, request.GetPeer())
+	// peer = base.FromInputPeer2(md.UserId, request.GetPeer())
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
+		peer = &base.PeerUtil{
+			PeerType: base.PEER_USER,
+			PeerId:   md.UserId,
+		}
+	} else {
+		peer = base.FromInputPeer(request.GetPeer())
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 发件箱
@@ -183,7 +190,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 收件箱
-	if peer.PeerType !=  base.PEER_SELF {
+	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
 		inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
 			// 更新会话信息
 			switch peer.PeerType {
