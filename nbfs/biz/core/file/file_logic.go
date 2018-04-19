@@ -25,7 +25,7 @@ import (
 	"github.com/nebulaim/telegramd/nbfs/biz/dal/dao"
 	"path"
 	"os"
-	"github.com/nebulaim/telegramd/nbfs/biz"
+	"github.com/nebulaim/telegramd/nbfs/biz/core"
 	"strings"
 )
 

@@ -3,15 +3,15 @@
     <operation name="Insert">
         <sql>
             INSERT INTO file_parts
-                (creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path)
+                (creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size)
             VALUES
-                (:creator_id, :file_part_id, :file_part, :is_big_file, :file_total_parts, :file_path)
+                (:creator_id, :file_part_id, :file_part, :is_big_file, :file_total_parts, :file_path, :file_size)
         </sql>
     </operation>
     <operation name="SelectFileParts">
         <sql>
             SELECT
-                id, creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path
+                id, creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size
             FROM
                 file_parts
             WHERE

@@ -27,7 +27,7 @@ import (
 	"math/rand"
 	base2 "github.com/nebulaim/telegramd/biz/base"
 	// "os"
-	"github.com/nebulaim/telegramd/nbfs/biz"
+	"github.com/nebulaim/telegramd/nbfs/biz/core"
 	"github.com/nebulaim/telegramd/nbfs/biz/dal/dao"
 	"os"
 	"io/ioutil"
@@ -88,35 +88,6 @@ func getSizeType(idx int) string {
 	}
 
 	return ""
-}
-
-func makeStorageFileType(extName string) *mtproto.Storage_FileType {
-	fileType := &mtproto.Storage_FileType{Data2: &mtproto.Storage_FileType_Data{}}
-
-	switch extName {
-	case ".partial":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_filePartial
-	case ".jpeg", ".jpg":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_fileJpeg
-	case ".gif":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_fileGif
-	case ".png":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_filePng
-	case ".pdf":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_filePdf
-	case ".mp3":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_fileMp3
-	case ".mov":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_fileMov
-	case ".mp4":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_fileMp4
-	case ".webp":
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_fileWebp
-	default:
-		fileType.Constructor = mtproto.TLConstructor_CRC32_storage_fileUnknown
-	}
-
-	return fileType
 }
 
 //storage.fileUnknown#aa963b05 = storage.FileType;
@@ -359,7 +330,7 @@ func GetPhotoFileData(volumeId int64, localId int32, secret int64, offset int32,
 	}
 
 	uploadFile := &mtproto.TLUploadFile{Data2: &mtproto.Upload_File_Data{
-		Type: makeStorageFileType(do.Ext),
+		Type: core.MakeStorageFileType(do.Ext),
 		Mtime: int32(time.Now().Unix()),
 		Bytes: bytes,
 	}}

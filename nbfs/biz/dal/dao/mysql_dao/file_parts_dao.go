@@ -33,10 +33,10 @@ func NewFilePartsDAO(db *sqlx.DB) *FilePartsDAO {
 	return &FilePartsDAO{db}
 }
 
-// insert into file_parts(creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path) values (:creator_id, :file_part_id, :file_part, :is_big_file, :file_total_parts, :file_path)
+// insert into file_parts(creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size) values (:creator_id, :file_part_id, :file_part, :is_big_file, :file_total_parts, :file_path, :file_size)
 // TODO(@benqi): sqlmap
 func (dao *FilePartsDAO) Insert(do *dataobject.FilePartsDO) int64 {
-	var query = "insert into file_parts(creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path) values (:creator_id, :file_part_id, :file_part, :is_big_file, :file_total_parts, :file_path)"
+	var query = "insert into file_parts(creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size) values (:creator_id, :file_part_id, :file_part, :is_big_file, :file_total_parts, :file_path, :file_size)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,10 @@ func (dao *FilePartsDAO) Insert(do *dataobject.FilePartsDO) int64 {
 	return id
 }
 
-// select id, creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path from file_parts where creator_id = :creator_id and file_part_id = :file_part_id
+// select id, creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size from file_parts where creator_id = :creator_id and file_part_id = :file_part_id
 // TODO(@benqi): sqlmap
 func (dao *FilePartsDAO) SelectFileParts(creator_id int64, file_part_id int64) *dataobject.FilePartsDO {
-	var query = "select id, creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path from file_parts where creator_id = ? and file_part_id = ?"
+	var query = "select id, creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size from file_parts where creator_id = ? and file_part_id = ?"
 	rows, err := dao.db.Queryx(query, creator_id, file_part_id)
 
 	if err != nil {

@@ -25,7 +25,7 @@ import (
 	"math/rand"
 	"fmt"
 	"time"
-	"github.com/nebulaim/telegramd/nbfs/biz"
+	"github.com/nebulaim/telegramd/nbfs/biz/core"
 )
 
 func init()  {
@@ -69,11 +69,11 @@ func TestSaveFilePart(t *testing.T) {
 		filePart, err = MakeFilePartData(creatorId, filePartId, isNew, false)
 		if i == sz {
 			blockSize = len(buf) % kMaxFilePartSize
-			uploadFileName = filePart.data.FilePath
+			uploadFileName = filePart.FilePath
 		}
 
 		filePart.SaveFilePart(int32(i), buf[i*kMaxFilePartSize:i*kMaxFilePartSize+blockSize])
-		fmt.Println(*filePart.data, ", file_part: ", i, ", block_size: ", blockSize)
+		fmt.Println(*filePart.FilePartsDO, ", file_part: ", i, ", block_size: ", blockSize)
 	}
 
 	md5, _ := core.CalcMd5File(uploadName)

@@ -37,10 +37,25 @@ message GetPhotoFileDataRequest {
 
 message PhotoDataRsp {
     int64 photo_id = 1;
-    repeated PhotoSize size_list = 2;
+    // int64 access_hash = 2;
+    // int32 date = 3
+    repeated PhotoSize size_list =2;
+}
+
+message NbfsUploadedPhotoMedia {
+    int64 ownerId = 1;
+    TL_inputMediaUploadedPhoto media = 2;
+}
+
+
+message NbfsUploadedDocumentMedia {
+    int64 ownerId = 1;
+    TL_inputMediaUploadedDocument media = 2;
 }
 
 service RPCNbfs {
     rpc nbfs_uploadPhotoFile(UploadPhotoFileRequest) returns (PhotoDataRsp);
     rpc nbfs_getPhotoFileData(GetPhotoFileDataRequest) returns (PhotoDataRsp);
+    rpc nbfs_uploadedPhotoMedia(NbfsUploadedPhotoMedia) returns (TL_messageMediaPhoto);
+    rpc nbfs_uploadedDocumentMedia(NbfsUploadedDocumentMedia) returns (TL_messageMediaDocument);
 }

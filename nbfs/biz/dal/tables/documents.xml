@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table sqlname="documents">
+    <operation name="Insert">
+        <sql>
+            INSERT INTO documents
+                (document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id)
+            VALUES
+                (:document_id, :access_hash, :dc_id, :file_path, :file_size, :uploaded_file_name, :ext, :mime_type, :thumb_id)
+        </sql>
+    </operation>
+
+    <operation name="SelectByFileLocation">
+        <sql>
+            SELECT
+                id, document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, version
+            FROM
+                documents
+            WHERE
+                dc_id = 2 AND document_id = :document_id AND access_hash = :access_hash AND version = :version
+        </sql>
+    </operation>
+</table>

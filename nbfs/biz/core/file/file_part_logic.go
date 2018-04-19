@@ -26,7 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/nbfs/biz/base"
 	// "math/rand"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/nbfs/biz"
+	"github.com/nebulaim/telegramd/nbfs/biz/core"
 )
 
 const (

@@ -70,3 +70,33 @@ func GetPhotoSizeList(photoId int64) ([]*mtproto.PhotoSize, error) {
 	}
 	return reply.SizeList, nil
 }
+
+func UploadedPhotoMedia(ownerId int64, media *mtproto.TLInputMediaUploadedPhoto) (*mtproto.TLMessageMediaPhoto, error) {
+	// TODO(@benqi): Check nbfsInstance.client inited
+
+	request := &mtproto.NbfsUploadedPhotoMedia{
+		OwnerId: ownerId,
+		Media:   media,
+	}
+
+	reply, err := nbfsInstance.client.NbfsUploadedPhotoMedia(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func UploadedDocumentMedia(ownerId int64, media *mtproto.TLInputMediaUploadedDocument) (*mtproto.TLMessageMediaDocument, error) {
+	// TODO(@benqi): Check nbfsInstance.client inited
+
+	request := &mtproto.NbfsUploadedDocumentMedia{
+		OwnerId: ownerId,
+		Media:   media,
+	}
+
+	reply, err := nbfsInstance.client.NbfsUploadedDocumentMedia(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

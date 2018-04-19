@@ -25,6 +25,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	photo2 "github.com/nebulaim/telegramd/nbfs/biz/core/photo"
+	"github.com/nebulaim/telegramd/nbfs/biz/core/document"
 )
 
 // upload.getFile#e3a6cfb5 location:InputFileLocation offset:int limit:int = upload.File;
@@ -37,16 +38,27 @@ func (s *UploadServiceImpl) UploadGetFile(ctx context.Context, request *mtproto.
 	)
 	switch request.GetLocation().GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputFileLocation:
-		inputFileLocation := request.GetLocation().To_InputFileLocation()
-		uploadFile, err = photo2.GetPhotoFileData(inputFileLocation.GetVolumeId(),
-			inputFileLocation.GetLocalId(),
-			inputFileLocation.GetSecret(),
+		fileLocation := request.GetLocation().To_InputFileLocation()
+		uploadFile, err = photo2.GetPhotoFileData(fileLocation.GetVolumeId(),
+			fileLocation.GetLocalId(),
+			fileLocation.GetSecret(),
 			request.GetOffset(),
 			request.GetLimit())
 	case mtproto.TLConstructor_CRC32_inputEncryptedFileLocation:
 	case mtproto.TLConstructor_CRC32_inputDocumentFileLocation:
+		fileLocation := request.GetLocation().To_InputDocumentFileLocation()
+		uploadFile, err = document.GetDocumentFileData(fileLocation.GetId(),
+			fileLocation.GetAccessHash(),
+			fileLocation.GetVersion(),
+			request.GetOffset(),
+			request.GetLimit())
 	default:
 		err = fmt.Errorf("invalid InputFileLocation type: %d", request.GetLocation().GetConstructor())
+	}
+
+	if err != nil {
+		glog.Error(err)
+		return nil, err
 	}
 
 	glog.Infof("upload.getFile#e3a6cfb5 - reply: %s", logger.JsonDebugData(uploadFile))
