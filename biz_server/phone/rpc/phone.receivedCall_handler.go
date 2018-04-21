@@ -25,8 +25,10 @@ import (
 	"golang.org/x/net/context"
 	"time"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/phone_call"
+	"fmt"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
 /*
@@ -42,68 +44,47 @@ func (s *PhoneServiceImpl) PhoneReceivedCall(ctx context.Context, request *mtpro
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("PhoneReceivedCall - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): check peer
+	//// TODO(@benqi): check peer
 	peer := request.GetPeer().To_InputPhoneCall()
-	callSession, ok := phoneCallSessionManager[peer.GetId()]
-	if !ok {
-		glog.Infof("PhoneReceivedCall - invalid peer: {%v}", peer)
-		return mtproto.ToBool(false), nil
+
+	callSession, err := phone_call.MakePhoneCallLogcByLoad(peer.GetId())
+	if err != nil {
+		glog.Errorf("invalid peer: {%v}, err: %v", peer, err)
+		return nil, err
 	}
-	if peer.GetAccessHash() != callSession.participantAccessHash {
-		glog.Infof("PhoneReceivedCall - invalid peer: {%v}", peer)
-		return mtproto.ToBool(false), nil
-	}
-
-	// Delivery to adminId
-	updates := mtproto.NewTLUpdates()
-
-	phoneCall := mtproto.NewTLPhonePhoneCall()
-	phoneCallWaiting := mtproto.NewTLPhoneCallWaiting()
-	phoneCallWaiting.SetDate(callSession.date)
-	phoneCallWaiting.SetId(callSession.id)
-	phoneCallWaiting.SetAccessHash(callSession.adminAccessHash)
-	phoneCallWaiting.SetAdminId(callSession.adminId)
-	phoneCallWaiting.SetParticipantId(callSession.participantId)
-	phoneCallWaiting.SetProtocol(callSession.protocol.To_PhoneCallProtocol())
-	phoneCallWaiting.SetReceiveDate(int32(time.Now().Unix()))
-	// SetPhoneCall
-	phoneCall.SetPhoneCall(phoneCallWaiting.To_PhoneCall())
-
-	participantIds := []int32{callSession.adminId, callSession.participantId}
-	users := user.GetUserList(participantIds)
-	for _, u := range users {
-		if u.GetId() != md.UserId {
-			u.SetSelf(true)
-		} else {
-			u.SetSelf(false)
-		}
-		// Add users
-		updates.Data2.Users = append(updates.Data2.Users, u.To_User())
+	if peer.GetAccessHash() != callSession.ParticipantAccessHash {
+		err = fmt.Errorf("invalid peer: {%v}", peer)
+		glog.Errorf("invalid peer: {%v}", peer)
+		return nil, err
 	}
 
-	for _, u := range users {
-		if u.GetId() == md.UserId {
-			u.SetSelf(true)
-		} else {
-			u.SetSelf(false)
-		}
-		// Add users
-		phoneCall.Data2.Users = append(phoneCall.Data2.Users, u.To_User())
-	}
+	/////////////////////////////////////////////////////////////////////////////////
+	updatesData := update2.NewUpdatesLogic(md.UserId)
 
-	// TODO(@benqi): seq
-	seq := int32(update2.NextSeqId(base.Int32ToString(callSession.adminId)))
-	updates.SetSeq(seq)
-	updates.SetDate(callSession.date)
+	// 1. add updateUserStatus
+	//var status *mtproto.UserStatus
+	statusOnline := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
+		Expires: int32(time.Now().Unix() + 5*30),
+	}}
+	// status = statusOnline.To_UserStatus()
+	updateUserStatus := &mtproto.TLUpdateUserStatus{Data2: &mtproto.Update_Data{
+		UserId: md.UserId,
+		Status: statusOnline.To_UserStatus(),
+	}}
+	updatesData.AddUpdate(updateUserStatus.To_Update())
 
-	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-	//	md.AuthId,
-	//	md.SessionId,
-	//	md.NetlibSessionId,
-	//	[]int32{callSession.adminId},
-	//	updates.To_Updates().Encode())
-	// 返回给客户端
+	// 2. add phoneCallRequested
+	updatePhoneCall := &mtproto.TLUpdatePhoneCall{Data2: &mtproto.Update_Data{
+		PhoneCall: callSession.ToPhoneCallWaiting(callSession.AdminId, int32(time.Now().Unix())).To_PhoneCall(),
+	}}
+	updatesData.AddUpdate(updatePhoneCall.To_Update())
 
+	// 3. add users
+	updatesData.AddUsers(user.GetUsersBySelfAndIDList(callSession.AdminId, []int32{md.UserId, callSession.AdminId}))
+
+	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, updatesData.ToUpdates())
+
+	/////////////////////////////////////////////////////////////////////////////////
 	glog.Infof("PhoneReceivedCall - reply {true}")
 	return mtproto.ToBool(true), nil
 }
