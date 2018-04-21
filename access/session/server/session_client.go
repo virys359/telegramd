@@ -27,6 +27,7 @@ import (
 )
 
 type sessionClient struct {
+	Layer           int32
 	authKeyId       int64
 	sessionType     int
 	clientSession   *clientSession
@@ -135,6 +136,10 @@ func (c *sessionClient) sendDataListToClient(md *mtproto.ZProtoMetadata, message
 	// invokeWithoutUpdates#bf9459b7 {X:Type} query:!X = X;
  */
 func (c *sessionClient) onSessionClientData(sessDataList *sessionDataList) {
+	if sessDataList.Layer != 0 {
+		c.Layer = sessDataList.Layer
+	}
+
 	for _, message := range sessDataList.messages {
 
 		// TODO(@benqi): 暂时这么用
@@ -338,13 +343,17 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 	rpcMetadata := &grpc_util.RpcMetadata{}
 	rpcMetadata.ServerId = 1
 	rpcMetadata.NetlibSessionId = int64(c.clientSession.clientSessionId)
-	rpcMetadata.UserId = c.authUserId
 	rpcMetadata.AuthId = c.authKeyId
 	rpcMetadata.SessionId = c.sessionId
 	rpcMetadata.ClientAddr = md.ClientAddr
 	rpcMetadata.TraceId = md.TraceId
 	rpcMetadata.SpanId = NextId()
 	rpcMetadata.ReceiveTime = time.Now().Unix()
+
+	rpcMetadata.UserId = c.authUserId
+	rpcMetadata.ClientMsgId = msgId
+
+	rpcMetadata.Layer = c.Layer
 
 	// TODO(@benqi): rpc proxy
 
@@ -365,7 +374,13 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 
 	if err != nil {
 		glog.Error(err)
-		reply.Result = err.(*mtproto.TLRpcError)
+		rpcErr, _ := err.(*mtproto.TLRpcError)
+		if rpcErr.GetErrorCode() == int32(mtproto.TLRpcErrorCodes_NOTRETURN_CLIENT) {
+			return
+		}
+		reply.Result = rpcErr
+		// err.(*mtproto.TLRpcError)
+
 	} else {
 		glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
 		reply.Result = rpcResult

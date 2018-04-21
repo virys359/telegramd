@@ -322,4 +322,7 @@ enum TLRpcErrorCodes {
     DBERR_SQL = 600000;
     DBERR_CONN = 600001;
     // ...
+
+    // db error
+    NOTRETURN_CLIENT   = 700;
 }

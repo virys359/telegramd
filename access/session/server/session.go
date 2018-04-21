@@ -65,6 +65,7 @@ type sessionDataList struct {
 	metadata    *mtproto.ZProtoMetadata
 	salt		int64
 	sessionId   int64
+	Layer       int32
 	messages    []*mtproto.TLMessage2
 }
 
@@ -133,6 +134,8 @@ func (this *sessionDataList) onMessage(msgId int64, seqNo int32, object mtproto.
 
 	case *mtproto.TLInvokeWithLayer:
 		invokeWithLayer, _ := object.(*mtproto.TLInvokeWithLayer)
+		this.Layer = invokeWithLayer.Layer
+
 		glog.Info("processInvokeWithLayer - request data: ", object)
 
 		// TODO(@benqi): Check api layer

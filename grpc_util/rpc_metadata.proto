@@ -52,6 +52,10 @@ message RpcMetadata {
     int32 user_id = 11;
     int64 client_msg_id = 12;
 
+    // mtproto
+    int32 layer = 13;
+
+    // extend
     google.protobuf.Any extend = 15;
 }
 
