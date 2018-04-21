@@ -1357,6 +1357,7 @@ It has these top-level messages:
 	ConnectToSessionServerReq
 	SessionServerConnectedRsp
 	PushUpdatesData
+	RpcResultData
 	UpdatesRequest
 */
 package mtproto
