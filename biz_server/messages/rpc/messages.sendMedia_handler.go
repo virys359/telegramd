@@ -29,13 +29,14 @@ import (
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
-func makeMediaByInputMedia(selfUserId int32, media *mtproto.InputMedia) *mtproto.MessageMedia {
+func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.MessageMedia {
 	var (
 		now = int32(time.Now().Unix())
 		// photoModel = model.GetPhotoModel()
-		uuid = base.NextSnowflakeId()
+		// uuid = base.NextSnowflakeId()
 	)
 
 	switch media.GetConstructor() {
@@ -43,7 +44,8 @@ func makeMediaByInputMedia(selfUserId int32, media *mtproto.InputMedia) *mtproto
 		uploadedPhoto := media.To_InputMediaUploadedPhoto()
 		file := uploadedPhoto.GetFile()
 
-		sizes, err := photo2.UploadPhoto(selfUserId, uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
+		result, err := nbfs_client.UploadPhotoFile(authKeyId, file)
+		// , file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 		if err != nil {
 			glog.Errorf("UploadPhoto error: %v, by %s", err, logger.JsonDebugData(media))
 		}
@@ -54,7 +56,7 @@ func makeMediaByInputMedia(selfUserId int32, media *mtproto.InputMedia) *mtproto
 			HasStickers: len(uploadedPhoto.GetStickers()) > 0,
 			AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 			Date:        now,
-			Sizes:       sizes,
+			Sizes:       result.SizeList,
 		}}
 
 		messageMedia := &mtproto.TLMessageMediaPhoto{Data2: &mtproto.MessageMedia_Data{
@@ -63,21 +65,25 @@ func makeMediaByInputMedia(selfUserId int32, media *mtproto.InputMedia) *mtproto
 			TtlSeconds: uploadedPhoto.GetTtlSeconds(),
 		}}
 		return messageMedia.To_MessageMedia()
-	case mtproto.TLConstructor_CRC32_inputMediaDocument:
+	case mtproto.TLConstructor_CRC32_inputMediaUploadedDocument:
+		// inputMediaUploadedDocument#e39621fd flags:# file:InputFile thumb:flags.2?InputFile mime_type:string attributes:Vector<DocumentAttribute> caption:string stickers:flags.0?Vector<InputDocument> ttl_seconds:flags.1?int = InputMedia;
+		uploadedDocument := media.To_InputMediaUploadedDocument()
+		messageMedia, _ := nbfs_client.UploadedDocumentMedia(authKeyId, uploadedDocument)
+		return messageMedia.To_MessageMedia()
 		// id:InputDocument caption:string ttl_seconds:flags.0?int
 	}
 
 	return mtproto.NewTLMessageMediaEmpty().To_MessageMedia()
 }
 
-func makeOutboxMessageBySendMedia(fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMedia) *mtproto.TLMessage {
+func makeOutboxMessageBySendMedia(authKeyId int64, fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMedia) *mtproto.TLMessage {
 	return &mtproto.TLMessage{ Data2: &mtproto.Message_Data{
 		Out:          true,
 		Silent:       request.GetSilent(),
 		FromId:       fromId,
 		ToId:         peer.ToPeer(),
 		ReplyToMsgId: request.GetReplyToMsgId(),
-		Media: 		  makeMediaByInputMedia(fromId, request.GetMedia()),
+		Media: 		  makeMediaByInputMedia(authKeyId, request.GetMedia()),
 		ReplyMarkup: request.GetReplyMarkup(),
 		Date:        int32(time.Now().Unix()),
 	}}
@@ -131,11 +137,6 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.sendMedia#c8f16791 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): check request data invalid
-	if request.GetPeer().GetConstructor() ==  mtproto.TLConstructor_CRC32_inputPeerEmpty {
-		// retuurn
-	}
-
 	// TODO(@benqi): ???
 	// request.NoWebpage
 	// request.Background
@@ -146,19 +147,27 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 		err error
 	)
 
-	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputUserEmpty {
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerEmpty {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 		glog.Error("messages.sendMedia#c8f16791 - invalid peer", err)
 		return nil, err
 	}
 	// TODO(@benqi): check user or channels's access_hash
 
-	peer = base.FromInputPeer2(md.UserId, request.GetPeer())
+	// peer = base.FromInputPeer2(md.UserId, request.GetPeer())
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
+		peer = &base.PeerUtil{
+			PeerType: base.PEER_USER,
+			PeerId:   md.UserId,
+		}
+	} else {
+		peer = base.FromInputPeer(request.GetPeer())
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 发件箱
 	// sendMessageToOutbox
-	outboxMessage := makeOutboxMessageBySendMedia(md.UserId, peer, request)
+	outboxMessage := makeOutboxMessageBySendMedia(md.AuthId, md.UserId, peer, request)
 	messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
 		// 更新会话信息
 		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
@@ -181,7 +190,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 收件箱
-	if peer.PeerType !=  base.PEER_SELF {
+	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
 		inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
 			// 更新会话信息
 			switch peer.PeerType {

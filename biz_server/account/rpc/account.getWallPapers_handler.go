@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/account"
-	"github.com/nebulaim/telegramd/biz/core/photo"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 /*
@@ -45,10 +45,11 @@ func (s *AccountServiceImpl) AccountGetWallPapers(ctx context.Context, request *
 
 	for _, wallData := range wallDataList {
 		if wallData.Type == 0 {
+			szList, _ := nbfs_client.GetPhotoSizeList(wallData.PhotoId)
 			wall := &mtproto.TLWallPaper{Data2: &mtproto.WallPaper_Data{
 				Id:    wallData.Id,
 				Title: wallData.Title,
-				Sizes: photo.GetPhotoSizeList(wallData.PhotoId),
+				Sizes: szList,
 				Color: wallData.Color,
 			}}
 			walls.Datas = append(walls.Datas, wall.To_WallPaper())

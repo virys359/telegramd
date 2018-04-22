@@ -28,7 +28,7 @@ type Server_DHInnerData_Data struct {
 func (m *Server_DHInnerData_Data) Reset()                    { *m = Server_DHInnerData_Data{} }
 func (m *Server_DHInnerData_Data) String() string            { return proto.CompactTextString(m) }
 func (*Server_DHInnerData_Data) ProtoMessage()               {}
-func (*Server_DHInnerData_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
+func (*Server_DHInnerData_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{0} }
 
 func (m *Server_DHInnerData_Data) GetNonce() []byte {
 	if m != nil {
@@ -80,7 +80,7 @@ type Server_DHInnerData struct {
 func (m *Server_DHInnerData) Reset()                    { *m = Server_DHInnerData{} }
 func (m *Server_DHInnerData) String() string            { return proto.CompactTextString(m) }
 func (*Server_DHInnerData) ProtoMessage()               {}
-func (*Server_DHInnerData) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{1} }
+func (*Server_DHInnerData) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{1} }
 
 func (m *Server_DHInnerData) GetConstructor() TLConstructor {
 	if m != nil {
@@ -104,7 +104,7 @@ type TLServer_DHInnerData struct {
 func (m *TLServer_DHInnerData) Reset()                    { *m = TLServer_DHInnerData{} }
 func (m *TLServer_DHInnerData) String() string            { return proto.CompactTextString(m) }
 func (*TLServer_DHInnerData) ProtoMessage()               {}
-func (*TLServer_DHInnerData) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{2} }
+func (*TLServer_DHInnerData) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{2} }
 
 func (m *TLServer_DHInnerData) GetData2() *Server_DHInnerData_Data {
 	if m != nil {
@@ -127,7 +127,7 @@ type Client_DH_Inner_Data_Data struct {
 func (m *Client_DH_Inner_Data_Data) Reset()                    { *m = Client_DH_Inner_Data_Data{} }
 func (m *Client_DH_Inner_Data_Data) String() string            { return proto.CompactTextString(m) }
 func (*Client_DH_Inner_Data_Data) ProtoMessage()               {}
-func (*Client_DH_Inner_Data_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{3} }
+func (*Client_DH_Inner_Data_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{3} }
 
 func (m *Client_DH_Inner_Data_Data) GetNonce() []byte {
 	if m != nil {
@@ -165,7 +165,7 @@ type Client_DH_Inner_Data struct {
 func (m *Client_DH_Inner_Data) Reset()                    { *m = Client_DH_Inner_Data{} }
 func (m *Client_DH_Inner_Data) String() string            { return proto.CompactTextString(m) }
 func (*Client_DH_Inner_Data) ProtoMessage()               {}
-func (*Client_DH_Inner_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{4} }
+func (*Client_DH_Inner_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{4} }
 
 func (m *Client_DH_Inner_Data) GetConstructor() TLConstructor {
 	if m != nil {
@@ -189,7 +189,7 @@ type TLClient_DHInnerData struct {
 func (m *TLClient_DHInnerData) Reset()                    { *m = TLClient_DHInnerData{} }
 func (m *TLClient_DHInnerData) String() string            { return proto.CompactTextString(m) }
 func (*TLClient_DHInnerData) ProtoMessage()               {}
-func (*TLClient_DHInnerData) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{5} }
+func (*TLClient_DHInnerData) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{5} }
 
 func (m *TLClient_DHInnerData) GetData2() *Client_DH_Inner_Data_Data {
 	if m != nil {
@@ -215,7 +215,7 @@ type SetClient_DHParamsAnswer_Data struct {
 func (m *SetClient_DHParamsAnswer_Data) Reset()                    { *m = SetClient_DHParamsAnswer_Data{} }
 func (m *SetClient_DHParamsAnswer_Data) String() string            { return proto.CompactTextString(m) }
 func (*SetClient_DHParamsAnswer_Data) ProtoMessage()               {}
-func (*SetClient_DHParamsAnswer_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{6} }
+func (*SetClient_DHParamsAnswer_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{6} }
 
 func (m *SetClient_DHParamsAnswer_Data) GetNonce() []byte {
 	if m != nil {
@@ -260,7 +260,7 @@ type SetClient_DHParamsAnswer struct {
 func (m *SetClient_DHParamsAnswer) Reset()                    { *m = SetClient_DHParamsAnswer{} }
 func (m *SetClient_DHParamsAnswer) String() string            { return proto.CompactTextString(m) }
 func (*SetClient_DHParamsAnswer) ProtoMessage()               {}
-func (*SetClient_DHParamsAnswer) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{7} }
+func (*SetClient_DHParamsAnswer) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{7} }
 
 func (m *SetClient_DHParamsAnswer) GetConstructor() TLConstructor {
 	if m != nil {
@@ -284,7 +284,7 @@ type TLDhGenOk struct {
 func (m *TLDhGenOk) Reset()                    { *m = TLDhGenOk{} }
 func (m *TLDhGenOk) String() string            { return proto.CompactTextString(m) }
 func (*TLDhGenOk) ProtoMessage()               {}
-func (*TLDhGenOk) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{8} }
+func (*TLDhGenOk) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{8} }
 
 func (m *TLDhGenOk) GetData2() *SetClient_DHParamsAnswer_Data {
 	if m != nil {
@@ -301,7 +301,7 @@ type TLDhGenRetry struct {
 func (m *TLDhGenRetry) Reset()                    { *m = TLDhGenRetry{} }
 func (m *TLDhGenRetry) String() string            { return proto.CompactTextString(m) }
 func (*TLDhGenRetry) ProtoMessage()               {}
-func (*TLDhGenRetry) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{9} }
+func (*TLDhGenRetry) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{9} }
 
 func (m *TLDhGenRetry) GetData2() *SetClient_DHParamsAnswer_Data {
 	if m != nil {
@@ -318,7 +318,7 @@ type TLDhGenFail struct {
 func (m *TLDhGenFail) Reset()                    { *m = TLDhGenFail{} }
 func (m *TLDhGenFail) String() string            { return proto.CompactTextString(m) }
 func (*TLDhGenFail) ProtoMessage()               {}
-func (*TLDhGenFail) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{10} }
+func (*TLDhGenFail) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{10} }
 
 func (m *TLDhGenFail) GetData2() *SetClient_DHParamsAnswer_Data {
 	if m != nil {
@@ -339,7 +339,7 @@ type DestroyAuthKeyRes_Data struct {
 func (m *DestroyAuthKeyRes_Data) Reset()                    { *m = DestroyAuthKeyRes_Data{} }
 func (m *DestroyAuthKeyRes_Data) String() string            { return proto.CompactTextString(m) }
 func (*DestroyAuthKeyRes_Data) ProtoMessage()               {}
-func (*DestroyAuthKeyRes_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{11} }
+func (*DestroyAuthKeyRes_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{11} }
 
 type DestroyAuthKeyRes struct {
 	Constructor TLConstructor           `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
@@ -349,7 +349,7 @@ type DestroyAuthKeyRes struct {
 func (m *DestroyAuthKeyRes) Reset()                    { *m = DestroyAuthKeyRes{} }
 func (m *DestroyAuthKeyRes) String() string            { return proto.CompactTextString(m) }
 func (*DestroyAuthKeyRes) ProtoMessage()               {}
-func (*DestroyAuthKeyRes) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{12} }
+func (*DestroyAuthKeyRes) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{12} }
 
 func (m *DestroyAuthKeyRes) GetConstructor() TLConstructor {
 	if m != nil {
@@ -373,7 +373,7 @@ type TLDestroyAuthKeyOk struct {
 func (m *TLDestroyAuthKeyOk) Reset()                    { *m = TLDestroyAuthKeyOk{} }
 func (m *TLDestroyAuthKeyOk) String() string            { return proto.CompactTextString(m) }
 func (*TLDestroyAuthKeyOk) ProtoMessage()               {}
-func (*TLDestroyAuthKeyOk) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{13} }
+func (*TLDestroyAuthKeyOk) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{13} }
 
 func (m *TLDestroyAuthKeyOk) GetData2() *DestroyAuthKeyRes_Data {
 	if m != nil {
@@ -390,7 +390,7 @@ type TLDestroyAuthKeyNone struct {
 func (m *TLDestroyAuthKeyNone) Reset()                    { *m = TLDestroyAuthKeyNone{} }
 func (m *TLDestroyAuthKeyNone) String() string            { return proto.CompactTextString(m) }
 func (*TLDestroyAuthKeyNone) ProtoMessage()               {}
-func (*TLDestroyAuthKeyNone) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{14} }
+func (*TLDestroyAuthKeyNone) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{14} }
 
 func (m *TLDestroyAuthKeyNone) GetData2() *DestroyAuthKeyRes_Data {
 	if m != nil {
@@ -407,7 +407,7 @@ type TLDestroyAuthKeyFail struct {
 func (m *TLDestroyAuthKeyFail) Reset()                    { *m = TLDestroyAuthKeyFail{} }
 func (m *TLDestroyAuthKeyFail) String() string            { return proto.CompactTextString(m) }
 func (*TLDestroyAuthKeyFail) ProtoMessage()               {}
-func (*TLDestroyAuthKeyFail) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{15} }
+func (*TLDestroyAuthKeyFail) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{15} }
 
 func (m *TLDestroyAuthKeyFail) GetData2() *DestroyAuthKeyRes_Data {
 	if m != nil {
@@ -430,7 +430,7 @@ type ResPQ_Data struct {
 func (m *ResPQ_Data) Reset()                    { *m = ResPQ_Data{} }
 func (m *ResPQ_Data) String() string            { return proto.CompactTextString(m) }
 func (*ResPQ_Data) ProtoMessage()               {}
-func (*ResPQ_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{16} }
+func (*ResPQ_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{16} }
 
 func (m *ResPQ_Data) GetNonce() []byte {
 	if m != nil {
@@ -468,7 +468,7 @@ type ResPQ struct {
 func (m *ResPQ) Reset()                    { *m = ResPQ{} }
 func (m *ResPQ) String() string            { return proto.CompactTextString(m) }
 func (*ResPQ) ProtoMessage()               {}
-func (*ResPQ) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{17} }
+func (*ResPQ) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{17} }
 
 func (m *ResPQ) GetConstructor() TLConstructor {
 	if m != nil {
@@ -492,7 +492,7 @@ type TLResPQ struct {
 func (m *TLResPQ) Reset()                    { *m = TLResPQ{} }
 func (m *TLResPQ) String() string            { return proto.CompactTextString(m) }
 func (*TLResPQ) ProtoMessage()               {}
-func (*TLResPQ) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{18} }
+func (*TLResPQ) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{18} }
 
 func (m *TLResPQ) GetData2() *ResPQ_Data {
 	if m != nil {
@@ -517,7 +517,7 @@ type P_QInnerData_Data struct {
 func (m *P_QInnerData_Data) Reset()                    { *m = P_QInnerData_Data{} }
 func (m *P_QInnerData_Data) String() string            { return proto.CompactTextString(m) }
 func (*P_QInnerData_Data) ProtoMessage()               {}
-func (*P_QInnerData_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{19} }
+func (*P_QInnerData_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{19} }
 
 func (m *P_QInnerData_Data) GetPq() string {
 	if m != nil {
@@ -569,7 +569,7 @@ type P_QInnerData struct {
 func (m *P_QInnerData) Reset()                    { *m = P_QInnerData{} }
 func (m *P_QInnerData) String() string            { return proto.CompactTextString(m) }
 func (*P_QInnerData) ProtoMessage()               {}
-func (*P_QInnerData) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{20} }
+func (*P_QInnerData) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{20} }
 
 func (m *P_QInnerData) GetConstructor() TLConstructor {
 	if m != nil {
@@ -593,7 +593,7 @@ type TLPQInnerData struct {
 func (m *TLPQInnerData) Reset()                    { *m = TLPQInnerData{} }
 func (m *TLPQInnerData) String() string            { return proto.CompactTextString(m) }
 func (*TLPQInnerData) ProtoMessage()               {}
-func (*TLPQInnerData) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{21} }
+func (*TLPQInnerData) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{21} }
 
 func (m *TLPQInnerData) GetData2() *P_QInnerData_Data {
 	if m != nil {
@@ -617,7 +617,7 @@ type Server_DH_Params_Data struct {
 func (m *Server_DH_Params_Data) Reset()                    { *m = Server_DH_Params_Data{} }
 func (m *Server_DH_Params_Data) String() string            { return proto.CompactTextString(m) }
 func (*Server_DH_Params_Data) ProtoMessage()               {}
-func (*Server_DH_Params_Data) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{22} }
+func (*Server_DH_Params_Data) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{22} }
 
 func (m *Server_DH_Params_Data) GetNonce() []byte {
 	if m != nil {
@@ -655,7 +655,7 @@ type Server_DH_Params struct {
 func (m *Server_DH_Params) Reset()                    { *m = Server_DH_Params{} }
 func (m *Server_DH_Params) String() string            { return proto.CompactTextString(m) }
 func (*Server_DH_Params) ProtoMessage()               {}
-func (*Server_DH_Params) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{23} }
+func (*Server_DH_Params) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{23} }
 
 func (m *Server_DH_Params) GetConstructor() TLConstructor {
 	if m != nil {
@@ -679,7 +679,7 @@ type TLServer_DHParamsFail struct {
 func (m *TLServer_DHParamsFail) Reset()                    { *m = TLServer_DHParamsFail{} }
 func (m *TLServer_DHParamsFail) String() string            { return proto.CompactTextString(m) }
 func (*TLServer_DHParamsFail) ProtoMessage()               {}
-func (*TLServer_DHParamsFail) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{24} }
+func (*TLServer_DHParamsFail) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{24} }
 
 func (m *TLServer_DHParamsFail) GetData2() *Server_DH_Params_Data {
 	if m != nil {
@@ -696,7 +696,7 @@ type TLServer_DHParamsOk struct {
 func (m *TLServer_DHParamsOk) Reset()                    { *m = TLServer_DHParamsOk{} }
 func (m *TLServer_DHParamsOk) String() string            { return proto.CompactTextString(m) }
 func (*TLServer_DHParamsOk) ProtoMessage()               {}
-func (*TLServer_DHParamsOk) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{25} }
+func (*TLServer_DHParamsOk) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{25} }
 
 func (m *TLServer_DHParamsOk) GetData2() *Server_DH_Params_Data {
 	if m != nil {
@@ -734,9 +734,9 @@ func init() {
 	proto.RegisterType((*TLServer_DHParamsOk)(nil), "mtproto.TL_server_DH_params_ok")
 }
 
-func init() { proto.RegisterFile("schema.tl.handshake.proto", fileDescriptor3) }
+func init() { proto.RegisterFile("schema.tl.handshake.proto", fileDescriptor4) }
 
-var fileDescriptor3 = []byte{
+var fileDescriptor4 = []byte{
 	// 815 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x96, 0xcd, 0x6e, 0xea, 0x46,
 	0x14, 0xc7, 0x35, 0x10, 0x02, 0x9c, 0xb8, 0x90, 0x38, 0x1f, 0x85, 0x52, 0x25, 0xd4, 0xaa, 0x2a,

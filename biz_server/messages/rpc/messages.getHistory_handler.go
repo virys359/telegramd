@@ -225,7 +225,7 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	}
 
 	if len(chatIdList) > 0 {
-		messagesMessages.Data2.Chats = chat.GetChatListByIDList(chatIdList)
+		messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 	glog.Infof("messages.getHistory#afa92846 - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages, nil

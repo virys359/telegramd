@@ -49,7 +49,9 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 			chatUserIdList = append(chatUserIdList, u.GetData2().GetUserId())
 		default:
 			// TODO(@benqi): chatUser不能是inputUser和inputUserSelf
-			return nil, mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid")
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+			glog.Error("messages.createChat#9cb126e - error: ", err, "; InputPeer invalid")
+			return nil, err
 		}
 	}
 

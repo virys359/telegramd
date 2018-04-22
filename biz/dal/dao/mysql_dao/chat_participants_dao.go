@@ -53,10 +53,10 @@ func (dao *ChatParticipantsDAO) Insert(do *dataobject.ChatParticipantsDO) int64 
 	return id
 }
 
-// select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at from chat_participants where chat_id = :chat_id
+// select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from chat_participants where chat_id = :chat_id
 // TODO(@benqi): sqlmap
 func (dao *ChatParticipantsDAO) SelectByChatId(chat_id int32) []dataobject.ChatParticipantsDO {
-	var query = "select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at from chat_participants where chat_id = ?"
+	var query = "select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from chat_participants where chat_id = ?"
 	rows, err := dao.db.Queryx(query, chat_id)
 
 	if err != nil {
@@ -121,6 +121,28 @@ func (dao *ChatParticipantsDAO) Update(inviter_user_id int32, invited_at int32, 
 	rows, err := r.RowsAffected()
 	if err != nil {
 		errDesc := fmt.Sprintf("RowsAffected in Update(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update chat_participants set participant_type = :participant_type where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChatParticipantsDAO) UpdateParticipantType(participant_type int8, id int32) int64 {
+	var query = "update chat_participants set participant_type = ? where id = ?"
+	r, err := dao.db.Exec(query, participant_type, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateParticipantType(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateParticipantType(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

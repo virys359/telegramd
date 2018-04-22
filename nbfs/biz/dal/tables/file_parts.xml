@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table sqlname="file_parts">
+    <operation name="Insert">
+        <sql>
+            INSERT INTO file_parts
+                (creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size)
+            VALUES
+                (:creator_id, :file_part_id, :file_part, :is_big_file, :file_total_parts, :file_path, :file_size)
+        </sql>
+    </operation>
+    <operation name="SelectFileParts">
+        <sql>
+            SELECT
+                id, creator_id, file_part_id, file_part, is_big_file, file_total_parts, file_path, file_size
+            FROM
+                file_parts
+            WHERE
+                creator_id = :creator_id AND file_part_id = :file_part_id
+        </sql>
+    </operation>
+    <operation name="UpdateFilePart">
+        <sql>
+            UPDATE file_parts SET file_part = :file_part WHERE id = :id
+        </sql>
+    </operation>
+    <operation name="UpdateFilePartAndTotal">
+        <sql>
+            UPDATE file_parts SET file_part = :file_part, file_total_parts = :file_total_parts, file_size = :file_size WHERE id = :id
+        </sql>
+    </operation>
+</table>

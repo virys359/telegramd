@@ -135,5 +135,6 @@ func (this *EchoInsance) Destroy() {
 func main() {
 	instance := &EchoInsance{}
 	// app.AppInstance(instance)
-	app.DoMainAppInsance(instance)
+	app.DoMainAppInstance(instance)
 }
+

@@ -60,7 +60,7 @@ func makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *
 //  1. 入库: 1）存消息数据，2）分别存到发件箱和收件箱里
 //  2. 离线推送
 //  3. 在线推送
-// messages.sendMessage#fa88427a flags:# no_webpage:flags.1?true silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> = Updates;
+// messages.sendMessage#fa88																																																						427a flags:# no_webpage:flags.1?true silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> = Updates;
 func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *mtproto.TLMessagesSendMessage) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.sendMessage#fa88427a - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
@@ -82,15 +82,21 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 		err error
 	)
 
-	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputUserEmpty {
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerEmpty {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 		glog.Error("messages.sendMessage#fa88427a - invalid peer", err)
 		return nil, err
 	}
 
 	// TODO(@benqi): check user or channels's access_hash
-
-	peer = base.FromInputPeer2(md.UserId, request.GetPeer())
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
+		peer = &base.PeerUtil{
+			PeerType: base.PEER_USER,
+			PeerId:   md.UserId,
+		}
+	} else {
+		peer = base.FromInputPeer(request.GetPeer())
+	}
 
 	outboxMessage := makeOutboxMessageBySendMessage(md.UserId, peer, request)
 	messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
@@ -111,7 +117,7 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	sentMessage.SetPtsCount(state.PtsCount)
 
 	// 收件箱
-	if peer.PeerType !=  base.PEER_SELF {
+	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
 		inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
 			switch peer.PeerType {
 			case base.PEER_USER:
