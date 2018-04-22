@@ -34,17 +34,17 @@ func  InstallMysqlClientManager(configs []MySQLConfig) {
 	for _, config := range configs {
 		client := NewSqlxDB(&config)
 		if client == nil {
-			err := fmt.Errorf("InstallModelManager - NewSqlxDB {%v} error!", config)
+			err := fmt.Errorf("InstallMysqlClientManager - NewSqlxDB {%v} error!", config)
 			panic(err)
 			// continue
 		}
 
 		if config.Name != "" {
-			err := fmt.Errorf("InstallModelManager - config error: config.Name is empty")
+			err := fmt.Errorf("InstallMysqlClientManager - config error: config.Name is empty")
 			panic(err)
 		}
 		if val, ok := mysqlClients.mysqlClients[config.Name]; ok {
-			err := fmt.Errorf("InstallModelManager - config error: dublicated config.Name {%v}", val)
+			err := fmt.Errorf("InstallMysqlClientManager - config error: dublicated config.Name {%v}", val)
 			panic(err)
 		}
 		mysqlClients.mysqlClients[config.Name] = client
