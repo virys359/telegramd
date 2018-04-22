@@ -92,6 +92,19 @@ func MakePhoneCallLogcByLoad(id int64) (*phoneCallLogic, error) {
 	return session, nil
 }
 
+func (p *phoneCallLogic) SetGB(gb []byte) {
+	p.GB = gb
+	dao.GetPhoneCallSessionsDAO(dao.DB_MASTER).UpdateGB(hex.EncodeToString(gb), p.Id)
+}
+
+func (p *phoneCallLogic) SetAdminDebugData(dataJson string) {
+	dao.GetPhoneCallSessionsDAO(dao.DB_MASTER).UpdateAdminDebugData(dataJson, p.Id)
+}
+
+func (p *phoneCallLogic) SetParticipantDebugData(dataJson string) {
+	dao.GetPhoneCallSessionsDAO(dao.DB_MASTER).UpdateParticipantDebugData(dataJson, p.Id)
+}
+
 func (p *phoneCallLogic) toPhoneCallProtocol() *mtproto.PhoneCallProtocol {
 	return &mtproto.PhoneCallProtocol{
 		Constructor: mtproto.TLConstructor_CRC32_phoneCallProtocol,
@@ -105,20 +118,10 @@ func (p *phoneCallLogic) toPhoneCallProtocol() *mtproto.PhoneCallProtocol {
 }
 
 // phoneCallRequested#83761ce4 id:long access_hash:long date:int admin_id:int participant_id:int g_a_hash:bytes protocol:PhoneCallProtocol = PhoneCall;
-func (p *phoneCallLogic) ToPhoneCallRequested(selfId int32) *mtproto.TLPhoneCallRequested {
-	var (
-		accessHash int64
-	)
-
-	if selfId == p.AdminId {
-		accessHash = p.AdminAccessHash
-	} else {
-		accessHash = p.ParticipantAccessHash
-	}
-
+func (p *phoneCallLogic) ToPhoneCallRequested() *mtproto.TLPhoneCallRequested {
 	return &mtproto.TLPhoneCallRequested{Data2: &mtproto.PhoneCall_Data{
 		Id:            p.Id,
-		AccessHash:    accessHash,
+		AccessHash:    p.ParticipantAccessHash,
 		Date:          int32(p.Date),
 		AdminId:       p.AdminId,
 		ParticipantId: p.ParticipantId,
@@ -148,5 +151,63 @@ func (p *phoneCallLogic) ToPhoneCallWaiting(selfId int32, receiveDate int32) *mt
 		GAHash:        p.GA,
 		Protocol:      p.toPhoneCallProtocol(),
 		ReceiveDate:   receiveDate,
+	}}
+}
+
+// phoneCallAccepted#6d003d3f id:long access_hash:long date:int admin_id:int participant_id:int g_b:bytes protocol:PhoneCallProtocol = PhoneCall;
+func (p *phoneCallLogic) ToPhoneCallAccepted() *mtproto.TLPhoneCallAccepted {
+	return &mtproto.TLPhoneCallAccepted{Data2: &mtproto.PhoneCall_Data{
+		Id:            p.Id,
+		AccessHash:    p.AdminAccessHash,
+		Date:          int32(p.Date),
+		AdminId:       p.AdminId,
+		ParticipantId: p.ParticipantId,
+		GB: 		   p.GB,
+		Protocol:      p.toPhoneCallProtocol(),
+	}}
+}
+
+// phoneConnection#9d4c17c0 id:long ip:string ipv6:string port:int peer_tag:bytes = PhoneConnection;
+func makeConnection() *mtproto.PhoneConnection {
+	return &mtproto.PhoneConnection{
+		Constructor: mtproto.TLConstructor_CRC32_phoneConnection,
+		Data2: 		 &mtproto.PhoneConnection_Data{
+			Id:      50003,
+			Ip:      "127.0.0.1",
+			Ipv6:    "",
+			Port:    532,
+			PeerTag: []byte("24ffcbeb7980d28b"),
+		},
+
+	}
+}
+
+// phoneCall#ffe6ab67 id:long access_hash:long date:int admin_id:int participant_id:int g_a_or_b:bytes key_fingerprint:long protocol:PhoneCallProtocol connection:PhoneConnection alternative_connections:Vector<PhoneConnection> start_date:int = PhoneCall;
+func (p *phoneCallLogic) ToPhoneCall(selfId int32, keyFingerprint int64) *mtproto.TLPhoneCall {
+	var (
+		accessHash int64
+		gaOrGb []byte
+	)
+
+	if selfId == p.AdminId {
+		accessHash = p.AdminAccessHash
+		gaOrGb = p.GB
+	} else {
+		accessHash = p.ParticipantAccessHash
+		gaOrGb = p.GA
+	}
+
+	return &mtproto.TLPhoneCall{Data2: &mtproto.PhoneCall_Data{
+		Id:                     p.Id,
+		AccessHash:             accessHash,
+		Date:                   int32(p.Date),
+		AdminId:                p.AdminId,
+		ParticipantId:          p.ParticipantId,
+		GAOrB:                  gaOrGb,
+		KeyFingerprint:         keyFingerprint,
+		Protocol:               p.toPhoneCallProtocol(),
+		Connection:             makeConnection(),
+		AlternativeConnections: []*mtproto.PhoneConnection{}, // TODO(@benqi):
+		StartDate:              0,
 	}}
 }

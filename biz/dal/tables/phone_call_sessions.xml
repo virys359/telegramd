@@ -19,4 +19,23 @@
                 call_session_id = :call_session_id
         </sql>
     </operation>
+
+    <operation name="UpdateGB">
+        <sql>
+            UPDATE phone_call_sessions SET g_b = :g_b WHERE call_session_id = :call_session_id
+        </sql>
+    </operation>
+
+    <operation name="UpdateAdminDebugData">
+        <sql>
+            UPDATE phone_call_sessions SET admin_debug_data = :admin_debug_data WHERE call_session_id = :call_session_id
+        </sql>
+    </operation>
+
+    <operation name="UpdateParticipantDebugData">
+        <sql>
+            UPDATE phone_call_sessions SET participant_debug_data = :participant_debug_data WHERE call_session_id = :call_session_id
+        </sql>
+    </operation>
+
 </table>

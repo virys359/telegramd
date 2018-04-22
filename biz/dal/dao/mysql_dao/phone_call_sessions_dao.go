@@ -81,3 +81,69 @@ func (dao *PhoneCallSessionsDAO) Select(call_session_id int64) *dataobject.Phone
 
 	return do
 }
+
+// update phone_call_sessions set g_b = :g_b where call_session_id = :call_session_id
+// TODO(@benqi): sqlmap
+func (dao *PhoneCallSessionsDAO) UpdateGB(g_b string, call_session_id int64) int64 {
+	var query = "update phone_call_sessions set g_b = ? where call_session_id = ?"
+	r, err := dao.db.Exec(query, g_b, call_session_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateGB(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateGB(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update phone_call_sessions set admin_debug_data = :admin_debug_data where call_session_id = :call_session_id
+// TODO(@benqi): sqlmap
+func (dao *PhoneCallSessionsDAO) UpdateAdminDebugData(admin_debug_data string, call_session_id int64) int64 {
+	var query = "update phone_call_sessions set admin_debug_data = ? where call_session_id = ?"
+	r, err := dao.db.Exec(query, admin_debug_data, call_session_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateAdminDebugData(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateAdminDebugData(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update phone_call_sessions set participant_debug_data = :participant_debug_data where call_session_id = :call_session_id
+// TODO(@benqi): sqlmap
+func (dao *PhoneCallSessionsDAO) UpdateParticipantDebugData(participant_debug_data string, call_session_id int64) int64 {
+	var query = "update phone_call_sessions set participant_debug_data = ? where call_session_id = ?"
+	r, err := dao.db.Exec(query, participant_debug_data, call_session_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateParticipantDebugData(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateParticipantDebugData(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}

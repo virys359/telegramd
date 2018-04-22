@@ -23,83 +23,102 @@ import (
 	"github.com/nebulaim/telegramd/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/biz/core/phone_call"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
+	"github.com/nebulaim/telegramd/biz/base"
+	"time"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
 )
-
-/*
- phone_call: { phoneCallDiscarded
-  flags: 11 [INT],
-  need_rating: [ SKIPPED BY BIT 2 IN FIELD flags ],
-  need_debug: YES [ BY BIT 3 IN FIELD flags ],
-  id: 1926738269646495698 [LONG],
-  reason: { phoneCallDiscardReasonDisconnect },
-  duration: 3 [INT],
-},
- */
 
 // phone.discardCall#78d413a6 peer:InputPhoneCall duration:int reason:PhoneCallDiscardReason connection_id:long = Updates;
 func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtproto.TLPhoneDiscardCall) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("PhoneDiscardCall - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("phone.discardCall#78d413a6 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl PhoneDiscardCall logic
+	//// TODO(@benqi): check peer
 	peer := request.GetPeer().To_InputPhoneCall()
-	callSession, _ := phoneCallSessionManager[peer.GetId()]
 
-	phoneCallDiscarded := mtproto.NewTLPhoneCallDiscarded()
-	phoneCallDiscarded.SetId(callSession.id)
-	phoneCallDiscarded.SetNeedDebug(true)
-	phoneCallDiscarded.SetReason(request.GetReason())
-	phoneCallDiscarded.SetDuration(request.GetDuration())
-
-	// TODO(@benqi): notify relay_server's connection_id
-
-	participantIds := []int32{callSession.adminId, callSession.participantId}
-	users := user.GetUserList(participantIds)
-
-	// delivey
-	updates := mtproto.NewTLUpdates()
-
-	updatePhoneCall := mtproto.NewTLUpdatePhoneCall()
-	updatePhoneCall.SetPhoneCall(phoneCallDiscarded.To_PhoneCall())
-	updates.Data2.Updates = append(updates.Data2.Updates, updatePhoneCall.To_Update())
-
-	for _, u := range users {
-		if u.GetId() == md.UserId {
-			u.SetSelf(false)
-		} else {
-			u.SetSelf(true)
-		}
-		updates.Data2.Users = append(updates.Data2.Users, u.To_User())
+	callSession, err := phone_call.MakePhoneCallLogcByLoad(peer.GetId())
+	if err != nil {
+		glog.Errorf("invalid peer: {%v}, err: %v", peer, err)
+		return nil, err
 	}
 
-	// TODO(@benqi): seq
-	seq := int32(update2.NextSeqId(base.Int32ToString(callSession.adminId)))
-	updates.SetSeq(seq)
-	updates.SetDate(callSession.date)
+	phoneCallDiscarded := &mtproto.TLPhoneCallDiscarded{Data2: &mtproto.PhoneCall_Data{
+		Id: callSession.Id,
+		NeedDebug: true,
+		Reason: request.GetReason(),
+		Duration: request.GetDuration(),
+	}}
 
-	//var toId int32 = md.UserId
-	//if md.UserId == callSession.adminId {
-	//	toId = callSession.participantId
-	//}
-
-	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-	//	md.AuthId,
-	//	md.SessionId,
-	//	md.NetlibSessionId,
-	//	[]int32{toId},
-	//	updates.To_Updates().Encode())
-
-	for _, u := range users {
-		if u.GetId() == md.UserId {
-			u.SetSelf(true)
-		} else {
-			u.SetSelf(false)
-		}
+	var toId int32
+	// = md.UserId
+	if md.UserId == callSession.AdminId {
+		toId = callSession.ParticipantId
+	} else {
+		toId = callSession.AdminId
 	}
 
-	glog.Infof("PhoneDiscardCall - reply {%v}", updates)
-	return updates.To_Updates(), nil
+	// glog.Info("toId: ", toId)
+
+	/////////////////////////////////////////////////////////////////////////////////
+	updatesData := update2.NewUpdatesLogic(md.UserId)
+	// 1. add phoneCallRequested
+	updatePhoneCall := &mtproto.TLUpdatePhoneCall{Data2: &mtproto.Update_Data{
+		PhoneCall: phoneCallDiscarded.To_PhoneCall(),
+	}}
+	updatesData.AddUpdate(updatePhoneCall.To_Update())
+
+	// add message service
+	action := &mtproto.TLMessageActionPhoneCall{Data2: &mtproto.MessageAction_Data{
+		CallId:   callSession.Id,
+		Reason:   request.GetReason(),
+		Duration: request.GetDuration(),
+	}}
+	peer2 := &base.PeerUtil{
+		PeerType: base.PEER_USER,
+		PeerId:   callSession.ParticipantId,
+	}
+	message := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
+		Out:    true,
+		Date:   int32(time.Now().Unix()),
+		FromId: callSession.AdminId,
+		ToId:   peer2.ToPeer(),
+		Action: action.To_MessageAction(),
+	}}
+	randomId := base.NextSnowflakeId()
+	outbox := message2.CreateMessageOutboxByNew(callSession.AdminId, peer2, randomId, message.To_Message(), func(messageId int32) {
+		user.CreateOrUpdateByOutbox(md.UserId, peer2.PeerType, peer2.PeerId, messageId, false, false)
+	})
+	inboxList, _ := outbox.InsertMessageToInbox(callSession.AdminId, peer2, func(inBoxUserId, messageId int32) {
+		user.CreateOrUpdateByInbox(inBoxUserId, base.PEER_USER, peer2.PeerId, messageId, false)
+	})
+
+	if md.UserId == callSession.AdminId {
+		updatesData.AddUpdateNewMessage(inboxList[0].Message)
+	} else {
+		updatesData.AddUpdateNewMessage(outbox.Message)
+	}
+
+	// 2. add users
+	updatesData.AddUsers(user.GetUsersBySelfAndIDList(toId, []int32{callSession.AdminId, callSession.ParticipantId}))
+	// 3. sync
+	sync_client.GetSyncClient().PushToUserUpdatesData(toId, updatesData.ToUpdates())
+
+	/////////////////////////////////////////////////////////////////////////////////
+	replyUpdatesData := update2.NewUpdatesLogic(md.UserId)
+	replyUpdatesData.AddUpdate(updatePhoneCall.To_Update())
+
+	if md.UserId == callSession.AdminId {
+		replyUpdatesData.AddUpdateNewMessage(outbox.Message)
+	} else {
+		replyUpdatesData.AddUpdateNewMessage(inboxList[0].Message)
+	}
+	// 2. add users
+	replyUpdatesData.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, []int32{callSession.AdminId, callSession.ParticipantId}))
+
+	glog.Infof("phone.discardCall#78d413a6 - reply {%s}", logger.JsonDebugData(replyUpdatesData))
+	return replyUpdatesData.ToUpdates(), nil
 }
