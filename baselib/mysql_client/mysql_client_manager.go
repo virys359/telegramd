@@ -39,7 +39,14 @@ func  InstallMysqlClientManager(configs []MySQLConfig) {
 			// continue
 		}
 
-		// TODO(@benqi): 检查config数据合法性
+		if config.Name != "" {
+			err := fmt.Errorf("InstallModelManager - config error: config.Name is empty")
+			panic(err)
+		}
+		if val, ok := mysqlClients.mysqlClients[config.Name]; ok {
+			err := fmt.Errorf("InstallModelManager - config error: dublicated config.Name {%v}", val)
+			panic(err)
+		}
 		mysqlClients.mysqlClients[config.Name] = client
 	}
 }
