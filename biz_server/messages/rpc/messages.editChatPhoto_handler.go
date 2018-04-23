@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/chat"
@@ -79,7 +79,7 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 		// chatLogic.MakeMessageService(md.UserId, action.To_MessageAction())
 	case mtproto.TLConstructor_CRC32_inputChatUploadedPhoto:
 		file := chatPhoto.GetData2().GetFile()
-		// photoId = base.NextSnowflakeId()
+		// photoId = helper.NextSnowflakeId()
 		result, err := nbfs_client.UploadPhotoFile(md.AuthId, file) // photoId, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 		if err != nil {
 			glog.Errorf("UploadPhoto error: %v", err)

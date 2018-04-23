@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
@@ -130,7 +130,7 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 	glog.Infof("photos.uploadProfilePhoto#4f32c098 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	file := request.GetFile()
-	// uuid := base.NextSnowflakeId()
+	// uuid := helper.NextSnowflakeId()
 
 	result, err := nbfs_client.UploadPhotoFile(md.AuthId, file) // uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 	if err != nil {

@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
@@ -181,13 +181,13 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	//	case mtproto.TLConstructor_CRC32_message:
 	//		m := message.To_Message()
 	//		userIdList = append(userIdList, m.GetFromId())
-	//		p := base.FromPeer(m.GetToId())
+	//		p := helper.FromPeer(m.GetToId())
 	//		switch p.PeerType {
-	//		case base.PEER_SELF, base.PEER_USER:
+	//		case helper.PEER_SELF, helper.PEER_USER:
 	//			userIdList = append(userIdList, p.PeerId)
-	//		case base.PEER_CHAT:
+	//		case helper.PEER_CHAT:
 	//			chatIdList = append(chatIdList, p.PeerId)
-	//		case base.PEER_CHANNEL:
+	//		case helper.PEER_CHANNEL:
 	//			// TODO(@benqi): add channel
 	//		}
 	//	case mtproto.TLConstructor_CRC32_messageService:

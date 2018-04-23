@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
@@ -53,7 +53,7 @@ func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, reque
 
 	//// peer
 	var (
-		// fromPeer = base.FromInputPeer2(md.UserId, request.GetFromPeer())
+		// fromPeer = helper.FromInputPeer2(md.UserId, request.GetFromPeer())
 		toPeer = base.FromInputPeer2(md.UserId, request.GetToPeer())
 		// err error
 	)
@@ -82,9 +82,9 @@ func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, reque
 
 	//
 	//if request.GetPeer().GetConstructor() ==  mtproto.TLConstructor_CRC32_inputPeerSelf {
-	//	peer = &base.PeerUtil{PeerType: base.PEER_USER, PeerId: md.UserId}
+	//	peer = &helper.PeerUtil{PeerType: helper.PEER_USER, PeerId: md.UserId}
 	//} else {
-	//	peer = base.FromInputPeer(request.GetPeer())
+	//	peer = helper.FromInputPeer(request.GetPeer())
 	//}
 	//// SelectDialogMessageListByMessageId
 	//forwardMessage := model.GetMessageModel().GetMessageByPeerAndMessageId(md.UserId, request.GetId())

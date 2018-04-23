@@ -28,7 +28,18 @@ type AES256IGECryptor struct {
 }
 
 func NewAES256IGECryptor(aesKey, aesIV []byte) *AES256IGECryptor {
-	// TODO(@benqi): Check aesKey and aesIV valid.
+	// guard conditions
+	if(len(aesIV)) < aes.BlockSize{
+		return nil
+	}
+
+	k := len(aesKey)
+	switch k {
+	default:
+		return nil
+	case 16, 24, 32:
+		break
+	}
 	return &AES256IGECryptor{
 		aesKey: 	aesKey,
 		aesIV:		aesIV,

@@ -136,7 +136,7 @@ func (m *filePartData) SaveFilePart(filePart int32, bytes []byte) error {
 	//if end {
 	//	// 文件上传结束, 计算出文件大小和md5，存盘
 	//	var (
-	//		fileId = base.NextSnowflakeId()
+	//		fileId = helper.NextSnowflakeId()
 	//		accessHash = rand.Int63()
 	//	)
 	//

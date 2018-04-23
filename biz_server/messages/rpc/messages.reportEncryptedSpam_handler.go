@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 )
@@ -30,9 +30,9 @@ func (s *MessagesServiceImpl) MessagesReportEncryptedSpam(ctx context.Context, r
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesReportEncryptedSpam - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// peer := base.FromInputPeer(request.GetPeer())
+	// peer := helper.FromInputPeer(request.GetPeer())
 	//
-	// if peer.PeerType == base.PEER_USER || peer.PeerType == base.PEER_CHAT {
+	// if peer.PeerType == helper.PEER_USER || peer.PeerType == helper.PEER_CHAT {
 	//	// TODO(@benqi): 入库
 	// }
 

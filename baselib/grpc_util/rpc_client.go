@@ -27,10 +27,10 @@ import (
 	"time"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery/etcd3"
-	"github.com/nebulaim/telegramd/grpc_util/load_balancer"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
 	"reflect"
 )
 

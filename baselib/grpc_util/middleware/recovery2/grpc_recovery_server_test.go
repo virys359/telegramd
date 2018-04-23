@@ -21,7 +21,7 @@ import (
 	"testing"
 	"google.golang.org/grpc"
 	"context"
-	"github.com/nebulaim/telegramd/grpc_util/middleware/examples/zproto"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/middleware/examples/zproto"
 	"net"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

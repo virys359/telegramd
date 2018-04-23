@@ -22,7 +22,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"time"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/biz/core/user"
 )
 

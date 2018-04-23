@@ -99,7 +99,7 @@ func main() {
 	srv := &http.Server{Addr: ":8080", Handler: nil}
 
 	ln := &HttpListener{
-		// base:       listener,
+		// helper:       listener,
 		closeChan:  make(chan struct{}),
 		acceptChan: make(chan net.Conn, 1000),
 		// conns:      make(map[uint64]*MTProtoConn),
@@ -201,12 +201,12 @@ func (c *MTProtoConn) Peek(n int) ([]byte, error) {
 
 func (c *MTProtoConn) Read(b []byte) (n int, err error) {
 	n, err = c.r.Read(b)
-	// n, err = c.base.Read(b)
+	// n, err = c.helper.Read(b)
 	if err == nil {
 		return
 	}
 
-	// glog.Warning("MTProtoConn - Will close conn by ", c.base.RemoteAddr(), ", reason: ", err)
+	// glog.Warning("MTProtoConn - Will close conn by ", c.helper.RemoteAddr(), ", reason: ", err)
 	c.base.Close()
 	return
 }

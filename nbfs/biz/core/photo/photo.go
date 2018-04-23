@@ -237,7 +237,7 @@ const (
 //
 //		photoDatasDO.Width = int32(dst.Bounds().Dx())
 //		photoDatasDO.Height = int32(dst.Bounds().Dy())
-//		imgBuf := base.MakeBuffer(0, len(fileDatas))
+//		imgBuf := helper.MakeBuffer(0, len(fileDatas))
 //		err = imaging.Encode(imgBuf, dst, imaging.JPEG)
 //		if err != nil {
 //			glog.Errorf("Encode error: {%v}", err)

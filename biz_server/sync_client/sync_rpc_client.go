@@ -20,8 +20,8 @@ package sync_client
 import (
 	"context"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 )
 

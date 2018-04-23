@@ -95,30 +95,6 @@ func GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtp
 	return
 }
 
-//func GetUserList(userIdList []int32) (users []*mtproto.TLUser) {
-//	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
-//
-//	userDOList := usersDAO.SelectUsersByIdList(userIdList)
-//	users = []*mtproto.TLUser{}
-//	for _, userDO := range userDOList {
-//		// TODO(@benqi): fill bot, photo, about...
-//		user := &mtproto.TLUser{Data2: &mtproto.User_Data{
-//			// user.Self由业务层进行判断
-//			// user.Self = true
-//			Id:         userDO.Id,
-//			AccessHash: userDO.AccessHash,
-//			FirstName:  userDO.FirstName,
-//			LastName:   userDO.LastName,
-//			Username:   userDO.Username,
-//			Phone:      userDO.Phone,
-//		}}
-//
-//		users = append(users, user)
-//	}
-//
-//	// glog.Infof("SelectUsersByIdList(%s) - %s", base.JoinInt32List(userIdList, ","), logger.JsonDebugData(users))
-//	return
-//}
 
 func GetUserFull(selfUserId int32, userId int32) (userFull *mtproto.TLUserFull) {
 	//TODO(@benqi): 等Link和NotifySettings实现后再来完善

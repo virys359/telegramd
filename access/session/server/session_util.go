@@ -24,7 +24,7 @@ import (
 	"github.com/golang/glog"
 	"fmt"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 )
 
 

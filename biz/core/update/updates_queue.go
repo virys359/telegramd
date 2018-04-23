@@ -65,7 +65,7 @@ func GetUpdatesState(authKeyId int64, userId int32) *mtproto.TLUpdatesState {
 		state.SetQts(0)
 	}
 
-	// state.SetSeq(int32(GetSequenceModel().CurrentSeqId(base.Int64ToString(authKeyId))))
+	// state.SetSeq(int32(GetSequenceModel().CurrentSeqId(helper.Int64ToString(authKeyId))))
 	state.SetSeq(int32(CurrentSeqId(base.Int32ToString(userId))))
 	state.SetSeq(0)
 	//

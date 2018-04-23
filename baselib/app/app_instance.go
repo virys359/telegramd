@@ -41,18 +41,18 @@ type AppInstance interface {
 
 var ch = make(chan os.Signal, 1)
 
-func DoMainAppInstance(insance AppInstance) {
-	if insance == nil {
+func DoMainAppInstance(instance AppInstance) {
+	if instance == nil {
 		// panic("instance is nil!!!!")
 		glog.Errorf("instance is nil, will exit.")
 		return
 	}
 
 	// global
-	GAppInstance = insance
+	GAppInstance = instance
 
 	glog.Info("instance initialize...")
-	err := insance.Initialize()
+	err := instance.Initialize()
 	if err != nil {
 		glog.Infof("instance initialize error: {%v}", err)
 		return
@@ -61,7 +61,7 @@ func DoMainAppInstance(insance AppInstance) {
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
 
 	glog.Info("instance run_loop...")
-	go insance.RunLoop()
+	go instance.RunLoop()
 
 	// fmt.Printf("%d", os.Getpid())
 	glog.Info("Wait quit...")
@@ -73,11 +73,12 @@ func DoMainAppInstance(insance AppInstance) {
 		glog.Info("instance exit...", i)
 	}
 
-	insance.Destroy()
+	instance.Destroy()
 	glog.Info("instance quited!")
 }
 
 func QuitAppInstance() {
-	notifier := make(chan os.Signal, 1)
-	signal.Stop(notifier)
+	/*notifier := make(chan os.Signal, 1)
+	signal.Stop(notifier)*/
+	ch <- syscall.SIGQUIT
 }

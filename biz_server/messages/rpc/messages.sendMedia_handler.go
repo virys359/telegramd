@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
@@ -36,7 +36,7 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 	var (
 		now = int32(time.Now().Unix())
 		// photoModel = model.GetPhotoModel()
-		// uuid = base.NextSnowflakeId()
+		// uuid = helper.NextSnowflakeId()
 	)
 
 	switch media.GetConstructor() {
@@ -154,7 +154,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	}
 	// TODO(@benqi): check user or channels's access_hash
 
-	// peer = base.FromInputPeer2(md.UserId, request.GetPeer())
+	// peer = helper.FromInputPeer2(md.UserId, request.GetPeer())
 	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
 		peer = &base.PeerUtil{
 			PeerType: base.PEER_USER,

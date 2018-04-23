@@ -21,37 +21,46 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/golang/glog"
 	"fmt"
+	"sync"
 )
 
-type MysqlClientManager struct{
-	// TODO(@benqi): 使用sync.Map，动态添加和卸载数据库
-	mysqlClients map[string]*sqlx.DB
+type MysqlClientManager struct {
+	mysqlClients sync.Map
 }
 
-var mysqlClients = &MysqlClientManager{make(map[string]*sqlx.DB)}
+var mysqlClients = &MysqlClientManager{}
 
-func  InstallMysqlClientManager(configs []MySQLConfig) {
+func InstallMysqlClientManager(configs []MySQLConfig) {
 	for _, config := range configs {
 		client := NewSqlxDB(&config)
 		if client == nil {
-			err := fmt.Errorf("InstallModelManager - NewSqlxDB {%v} error!", config)
+			err := fmt.Errorf("InstallMysqlClientManager - NewSqlxDB {%v} error!", config)
 			panic(err)
-			// continue
 		}
 
-		// TODO(@benqi): 检查config数据合法性
-		mysqlClients.mysqlClients[config.Name] = client
+		if config.Name == "" {
+			err := fmt.Errorf("InstallMysqlClientManager - config error: config.Name is empty")
+			panic(err)
+		}
+		if val, ok := mysqlClients.mysqlClients.Load(config.Name); ok {
+			err := fmt.Errorf("InstallMysqlClientManager - config error: dublicated config.Name {%v}", val)
+			panic(err)
+		}
+		mysqlClients.mysqlClients.Store(config.Name, client)
 	}
 }
 
 func GetMysqlClient(dbName string) (client *sqlx.DB) {
-	client, ok := mysqlClients.mysqlClients[dbName]
-	if !ok {
-		glog.Errorf("GetMysqlClient - Not found client: %s", dbName)
+	if val, ok := mysqlClients.mysqlClients.Load(dbName); ok {
+		if client, ok = val.(*sqlx.DB); ok {
+			return
+		}
 	}
+
+	glog.Errorf("GetMysqlClient - Not found client: %s", dbName)
 	return
 }
 
-func GetMysqlClientManager() map[string]*sqlx.DB {
+func GetMysqlClientManager() sync.Map {
 	return mysqlClients.mysqlClients
 }

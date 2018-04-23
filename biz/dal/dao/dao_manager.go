@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/nebulaim/telegramd/biz/dal/dao/redis_dao"
+	"sync"
 )
 
 const (
@@ -74,8 +75,11 @@ type MysqlDAOManager struct {
 
 var mysqlDAOManager = &MysqlDAOManager{make(map[string]*MysqlDAOList)}
 
-func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
-	for k, v := range clients {
+func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
+	clients.Range(func(key, value interface{}) bool {
+		k, _ := key.(string)
+		v, _ := value.(*sqlx.DB)
+
 		daoList := &MysqlDAOList{}
 
 		// Common
@@ -113,7 +117,8 @@ func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
 		daoList.PhoneCallSessionsDAO = mysql_dao.NewPhoneCallSessionsDAO(v)
 
 		mysqlDAOManager.daoListMap[k] = daoList
-	}
+		return true
+	})
 }
 
 func  GetMysqlDAOListMap() map[string]*MysqlDAOList {
