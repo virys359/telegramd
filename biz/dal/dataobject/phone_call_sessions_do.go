@@ -32,7 +32,8 @@ type PhoneCallSessionsDO struct {
 	GB                    string `db:"g_b"`
 	State                 int32  `db:"state"`
 	Date                  int32  `db:"date"`
-	DebugData             string `db:"debug_data"`
+	AdminDebugData        string `db:"admin_debug_data"`
+	ParticipantDebugData  string `db:"participant_debug_data"`
 	CreatedAt             string `db:"created_at"`
 	UpdatedAt             string `db:"updated_at"`
 }

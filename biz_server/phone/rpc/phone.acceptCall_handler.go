@@ -24,28 +24,13 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/biz/core/phone_call"
+	"fmt"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
-/*
-body: { phone_acceptCall
-  peer: { inputPhoneCall
-	id: 1926738269689442709 [LONG],
-	access_hash: 7643618436880411068 [LONG],
-  },
-  g_b: 49 7E A2 C4 CE 6C 28 2E 19 13 C9 95 0F 71 34 FA... [256 BYTES],
-  protocol: { phoneCallProtocol
-	flags: 3 [INT],
-	udp_p2p: YES [ BY BIT 0 IN FIELD flags ],
-	udp_reflector: YES [ BY BIT 1 IN FIELD flags ],
-	min_layer: 65 [INT],
-	max_layer: 65 [INT],
-  },
-},
-
- */
 // https://core.telegram.org/api/end-to-end/voice-calls
 //
 // B accepts the call on one of their devices,
@@ -61,100 +46,54 @@ body: { phone_acceptCall
 // phone.acceptCall#3bd2b4a0 peer:InputPhoneCall g_b:bytes protocol:PhoneCallProtocol = phone.PhoneCall;
 func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto.TLPhoneAcceptCall) (*mtproto.Phone_PhoneCall, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("PhoneAcceptCall - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("phone.acceptCall#3bd2b4a0 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+	//// TODO(@benqi): check peer
 	peer := request.GetPeer().To_InputPhoneCall()
-	// TODO(@benqi): check peer
-	callSession, _ := phoneCallSessionManager[peer.GetId()]
-	callSession.g_b = request.GetGB()
 
-	//if !ok {
-	//	glog.Infof("PhoneReceivedCall - invalid peer: {%v}", peer)
-	//	// return mtproto.ToBool(false), nil
-	//}
-	//if peer.GetAccessHash() != callSession.participantAccessHash {
-	//	glog.Infof("PhoneReceivedCall - invalid peer: {%v}", peer)
-	//	// return mtproto.ToBool(false), nil
-	//}
-
-	// now := int32(time.Now().Unix())
-	// participantId := request.GetPeer().GetData2().GetId()
-
-	updates := mtproto.NewTLUpdates()
-
-	updateUserStatus := mtproto.NewTLUpdateUserStatus()
-	updateUserStatus.SetUserId(callSession.participantId)
-	status := mtproto.NewTLUserStatusOnline()
-	status.SetExpires(callSession.date+300)
-	updateUserStatus.SetStatus(status.To_UserStatus())
-	updates.Data2.Updates = append(updates.Data2.Updates, updateUserStatus.To_Update())
-
-	updatePhoneCall := mtproto.NewTLUpdatePhoneCall()
-	// push to participant_id
-	phoneCallAccepted := mtproto.NewTLPhoneCallAccepted()
-	phoneCallAccepted.SetId(callSession.id)
-	phoneCallAccepted.SetAccessHash(callSession.participantAccessHash)
-	phoneCallAccepted.SetDate(callSession.date)
-	phoneCallAccepted.SetAdminId(callSession.adminId)
-	phoneCallAccepted.SetParticipantId(callSession.participantId)
-	phoneCallAccepted.SetGB(request.GetGB())
-	phoneCallAccepted.SetProtocol(callSession.protocol.To_PhoneCallProtocol())
-	updatePhoneCall.SetPhoneCall(phoneCallAccepted.To_PhoneCall())
-
-	updates.Data2.Updates = append(updates.Data2.Updates, updatePhoneCall.To_Update())
-
-	participantIds := []int32{callSession.adminId, callSession.participantId}
-	users := user.GetUserList(participantIds)
-	for _, u := range users {
-		if u.GetId() == md.UserId {
-			u.SetSelf(false)
-		} else {
-			u.SetSelf(true)
-		}
-		// Add users
-		updates.Data2.Users = append(updates.Data2.Users, u.To_User())
+	callSession, err := phone_call.MakePhoneCallLogcByLoad(peer.GetId())
+	if err != nil {
+		glog.Errorf("invalid peer: {%v}, err: %v", peer, err)
+		return nil, err
+	}
+	if peer.GetAccessHash() != callSession.ParticipantAccessHash {
+		err = fmt.Errorf("invalid peer: {%v}", peer)
+		glog.Errorf("invalid peer: {%v}", peer)
+		return nil, err
 	}
 
-	seq := int32(update2.NextSeqId(base.Int32ToString(callSession.adminId)))
-	updates.SetSeq(seq)
-	updates.SetDate(callSession.date)
+	// cache g_b
+	callSession.SetGB(request.GetGB())
 
-	//delivery.GetDeliveryInstance().DeliveryUpdatesNotMe(
-	//	md.AuthId,
-	//	md.SessionId,
-	//	md.NetlibSessionId,
-	//	[]int32{callSession.adminId},
-	//	updates.To_Updates().Encode())
+	/////////////////////////////////////////////////////////////////////////////////
+	updatesData := update2.NewUpdatesLogic(md.UserId)
+	// 1. add updateUserStatus
+	//var status *mtproto.UserStatus
+	statusOnline := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
+		Expires: int32(time.Now().Unix() + 5*30),
+	}}
+	// status = statusOnline.To_UserStatus()
+	updateUserStatus := &mtproto.TLUpdateUserStatus{Data2: &mtproto.Update_Data{
+		UserId: md.UserId,
+		Status: statusOnline.To_UserStatus(),
+	}}
+	updatesData.AddUpdate(updateUserStatus.To_Update())
+	// 2. add phoneCallRequested
+	updatePhoneCall := &mtproto.TLUpdatePhoneCall{Data2: &mtproto.Update_Data{
+		PhoneCall: callSession.ToPhoneCallRequested().To_PhoneCall(),
+	}}
+	updatesData.AddUpdate(updatePhoneCall.To_Update())
+	// 3. add users
+	updatesData.AddUsers(user.GetUsersBySelfAndIDList(callSession.AdminId, []int32{md.UserId, callSession.AdminId}))
+	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, updatesData.ToUpdates())
 
-	// TODO(@benqi): delivery to other phoneCallDiscarded
-	// 返回给客户端
-
+	/////////////////////////////////////////////////////////////////////////////////
 	// 2. reply
-	phoneCall := mtproto.NewTLPhonePhoneCall()
+	phoneCall := &mtproto.TLPhonePhoneCall{Data2: &mtproto.Phone_PhoneCall_Data{
+		PhoneCall: callSession.ToPhoneCallWaiting(md.UserId, 0).To_PhoneCall(),
+		Users:   user.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId, callSession.AdminId}),
+	}}
 
-	phoneCallWaiting := mtproto.NewTLPhoneCallWaiting()
-	phoneCallWaiting.SetDate(callSession.date)
-	phoneCallWaiting.SetId(callSession.id)
-	phoneCallWaiting.SetAccessHash(callSession.participantAccessHash)
-	phoneCallWaiting.SetAdminId(callSession.adminId)
-	phoneCallWaiting.SetParticipantId(callSession.participantId)
-	phoneCallWaiting.SetReceiveDate(int32(time.Now().Unix()))
-	// TODO(@benqi): use request.GetProtocol() or callSession.protocol??
-	// phoneCallWaiting.SetProtocol(callSession.protocol.To_PhoneCallProtocol())
-	phoneCallWaiting.SetProtocol(request.GetProtocol())
-	// SetPhoneCall
-	phoneCall.SetPhoneCall(phoneCallWaiting.To_PhoneCall())
-
-	for _, u := range users {
-		if u.GetId() == md.UserId {
-			u.SetSelf(true)
-		} else {
-			u.SetSelf(false)
-		}
-		// Add users
-		phoneCall.Data2.Users = append(phoneCall.Data2.Users, u.To_User())
-	}
-
-	glog.Infof("PhoneAcceptCall - reply: {%v}", phoneCall)
+	glog.Infof("phone.acceptCall#3bd2b4a0 - reply: {%v}", phoneCall)
 	return phoneCall.To_Phone_PhoneCall(), nil
 }

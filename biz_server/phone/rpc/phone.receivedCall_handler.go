@@ -31,18 +31,10 @@ import (
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
-/*
-	body: { phone_receivedCall
-	  peer: { inputPhoneCall
-		id: 1926738269689442709 [LONG],
-		access_hash: 7643618436880411068 [LONG],
-	  },
-	},
- */
 // phone.receivedCall#17d54f61 peer:InputPhoneCall = Bool;
 func (s *PhoneServiceImpl) PhoneReceivedCall(ctx context.Context, request *mtproto.TLPhoneReceivedCall) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("PhoneReceivedCall - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("phone.receivedCall#17d54f61 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	//// TODO(@benqi): check peer
 	peer := request.GetPeer().To_InputPhoneCall()
@@ -60,31 +52,17 @@ func (s *PhoneServiceImpl) PhoneReceivedCall(ctx context.Context, request *mtpro
 
 	/////////////////////////////////////////////////////////////////////////////////
 	updatesData := update2.NewUpdatesLogic(md.UserId)
-
-	// 1. add updateUserStatus
-	//var status *mtproto.UserStatus
-	statusOnline := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
-		Expires: int32(time.Now().Unix() + 5*30),
-	}}
-	// status = statusOnline.To_UserStatus()
-	updateUserStatus := &mtproto.TLUpdateUserStatus{Data2: &mtproto.Update_Data{
-		UserId: md.UserId,
-		Status: statusOnline.To_UserStatus(),
-	}}
-	updatesData.AddUpdate(updateUserStatus.To_Update())
-
-	// 2. add phoneCallRequested
+	// 1. add phoneCallRequested
 	updatePhoneCall := &mtproto.TLUpdatePhoneCall{Data2: &mtproto.Update_Data{
 		PhoneCall: callSession.ToPhoneCallWaiting(callSession.AdminId, int32(time.Now().Unix())).To_PhoneCall(),
 	}}
 	updatesData.AddUpdate(updatePhoneCall.To_Update())
-
-	// 3. add users
+	// 2. add users
 	updatesData.AddUsers(user.GetUsersBySelfAndIDList(callSession.AdminId, []int32{md.UserId, callSession.AdminId}))
-
+	// 3. sync
 	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, updatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
-	glog.Infof("PhoneReceivedCall - reply {true}")
+	glog.Infof("phone.receivedCall#17d54f61 - reply {true}")
 	return mtproto.ToBool(true), nil
 }

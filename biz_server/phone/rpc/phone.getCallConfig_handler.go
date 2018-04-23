@@ -119,7 +119,7 @@ func NewCallConfigDataJSON() *callConfigDataJSON {
 // phone.getCallConfig#55451fa9 = DataJSON;
 func (s *PhoneServiceImpl) PhoneGetCallConfig(ctx context.Context, request *mtproto.TLPhoneGetCallConfig) (*mtproto.DataJSON, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("PhoneGetCallConfig - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("phone.getCallConfig#55451fa9 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	callConfig := NewCallConfigDataJSON()
 	callConfigData, _ := json.Marshal(callConfig)
@@ -127,6 +127,6 @@ func (s *PhoneServiceImpl) PhoneGetCallConfig(ctx context.Context, request *mtpr
 	j := string(callConfigData)
 	reply.SetData(j)
 
-	glog.Infof("PhoneGetCallConfig - reply %s", logger.JsonDebugData(reply))
+	glog.Infof("phone.getCallConfig#55451fa9 - reply %s", logger.JsonDebugData(reply))
 	return reply.To_DataJSON(), nil
 }

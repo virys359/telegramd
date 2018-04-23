@@ -24,12 +24,14 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	user2 "github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
+	"time"
 )
 
 // users.getFullUser#ca30a5b1 id:InputUser = UserFull;
 func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtproto.TLUsersGetFullUser) (*mtproto.UserFull, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("UsersGetFullUser - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("users.getFullUser#ca30a5b1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	fullUser := mtproto.NewTLUserFull()
 	fullUser.SetPhoneCallsAvailable(true)
@@ -101,6 +103,30 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 
 	fullUser.SetNotifySettings(peerNotifySettings.To_PeerNotifySettings())
 
-	glog.Infof("UsersGetFullUser - reply: %s", logger.JsonDebugData(fullUser))
+
+	photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
+	sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
+	// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
+	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+		Id:          photoId,
+		HasStickers: false,
+		AccessHash:  photoId, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+		Date:        int32(time.Now().Unix()),
+		Sizes:       sizes,
+	}}
+	fullUser.SetProfilePhoto(photo.To_Photo())
+	//time.Now()
+	//
+	//var profilePhoto *mtproto.UserProfilePhoto
+	//photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
+	//if photoId == 0 {
+	//	profilePhoto =  mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
+	//} else {
+	//	sizeList, _ := nbfs_client.GetPhotoSizeList(photoId)
+	//	profilePhoto = photo.MakeUserProfilePhoto(photoId, sizeList)
+	//}
+	//fullUser.SetProfilePhoto()
+
+	glog.Infof("users.getFullUser#ca30a5b1 - reply: %s", logger.JsonDebugData(fullUser))
 	return fullUser.To_UserFull(), nil
 }
