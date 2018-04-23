@@ -117,7 +117,7 @@ func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
 		daoList.PhoneCallSessionsDAO = mysql_dao.NewPhoneCallSessionsDAO(v)
 
 		mysqlDAOManager.daoListMap[k] = daoList
-		return false
+		return true
 	})
 }
 

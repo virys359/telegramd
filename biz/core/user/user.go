@@ -116,7 +116,7 @@ func GetUserList(userIdList []int32) (users []*mtproto.TLUser) {
 		users = append(users, user)
 	}
 
-	// glog.Infof("SelectUsersByIdList(%s) - %s", base.JoinInt32List(userIdList, ","), logger.JsonDebugData(users))
+	// glog.Infof("SelectUsersByIdList(%s) - %s", helper.JoinInt32List(userIdList, ","), logger.JsonDebugData(users))
 	return
 }
 

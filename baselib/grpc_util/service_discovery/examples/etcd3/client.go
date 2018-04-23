@@ -23,9 +23,9 @@ import (
 	"log"
 	"time"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery/examples/proto"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery/etcd3"
-	"github.com/nebulaim/telegramd/grpc_util/load_balancer"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/examples/proto"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
 )
 
 func main() {

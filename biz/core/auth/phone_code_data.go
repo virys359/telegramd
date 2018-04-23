@@ -255,7 +255,7 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 	sentCodeType, nextCodeType := makeCodeType(phoneRegistered, allowFlashCall, currentNumber)
 	// TODO(@benqi): gen rand number
 	code.code = "123456"
-	// code.codeHash = fmt.Sprintf("%20d", base.NextSnowflakeId())
+	// code.codeHash = fmt.Sprintf("%20d", helper.NextSnowflakeId())
 	code.codeHash = crypto.GenerateStringNonce(16)
 	code.codeExpired = int32(time.Now().Unix() + 15*60)
 	code.sentCodeType = sentCodeType

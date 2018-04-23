@@ -21,6 +21,7 @@ import (
 	"github.com/nebulaim/telegramd/nbfs/biz/dal/dao/mysql_dao"
 	"github.com/jmoiron/sqlx"
 	"github.com/golang/glog"
+	"sync"
 )
 
 const (
@@ -42,8 +43,11 @@ type MysqlDAOManager struct {
 
 var mysqlDAOManager = &MysqlDAOManager{make(map[string]*MysqlDAOList)}
 
-func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
-	for k, v := range clients {
+func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
+	clients.Range(func(key, value interface{}) bool {
+		k, _ := key.(string)
+		v, _ := value.(*sqlx.DB)
+
 		daoList := &MysqlDAOList{}
 
 		daoList.FilePartsDAO = mysql_dao.NewFilePartsDAO(v)
@@ -52,7 +56,8 @@ func InstallMysqlDAOManager(clients map[string]*sqlx.DB) {
 		daoList.DocumentsDAO = mysql_dao.NewDocumentsDAO(v)
 
 		mysqlDAOManager.daoListMap[k] = daoList
-	}
+		return true
+	})
 }
 
 func  GetMysqlDAOListMap() map[string]*MysqlDAOList {

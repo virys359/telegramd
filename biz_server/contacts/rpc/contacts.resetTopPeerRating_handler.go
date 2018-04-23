@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 )
@@ -31,7 +31,7 @@ func (s *ContactsServiceImpl) ContactsResetTopPeerRating(ctx context.Context, re
 	glog.Infof("ContactsResetTopPeerRating - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	//// TODO(@benqi): Impl ContactsResetTopPeerRating logic
-	//_ = base.FromInputPeer(request.Peer)
+	//_ = helper.FromInputPeer(request.Peer)
 	//
 	//// TODO(@benqi): 看看客户端代码，什么情况会调用
 	//switch request.GetCategory().GetPayload().(type) {

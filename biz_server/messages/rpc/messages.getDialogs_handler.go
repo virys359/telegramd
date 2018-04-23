@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"math"
@@ -105,8 +105,8 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 	}
 
 	/*
-		peer := base.FromInputPeer(request.OffsetPeer)
-		if peer.PeerType == base.PEER_EMPTY {
+		peer := helper.FromInputPeer(request.OffsetPeer)
+		if peer.PeerType == helper.PEER_EMPTY {
 			// 取出全部
 		} else {
 			// 通过message_boxs表检查offset_peer

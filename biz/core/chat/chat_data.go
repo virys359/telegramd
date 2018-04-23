@@ -81,7 +81,7 @@ func NewChatLogicByCreateChat(creatorId int32, userIds []int32, title string) (c
 			CreatorUserId: creatorId,
 			AccessHash:    rand.Int63(),
 			// TODO(@benqi): use message_id is randomid
-			// RandomId:         base.NextSnowflakeId(),
+			// RandomId:         helper.NextSnowflakeId(),
 			ParticipantCount: int32(1 + len(userIds)),
 			Title:            title,
 			PhotoId:          0,

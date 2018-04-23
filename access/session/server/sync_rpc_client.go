@@ -26,8 +26,8 @@ import (
 	//"github.com/nebulaim/telegramd/mtproto"
 	//net2 "github.com/nebulaim/telegramd/net"
 	//"github.com/nebulaim/telegramd/baselib/logger"
-	//"github.com/nebulaim/telegramd/grpc_util"
-	//"github.com/nebulaim/telegramd/grpc_util/service_discovery"
+	//"github.com/nebulaim/telegramd/baselib/grpc_util"
+	//"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 )
 
 type SyncRPCClient struct {

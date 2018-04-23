@@ -19,7 +19,7 @@ package model
 
 import (
 	// "fmt"
-	// "github.com/nebulaim/telegramd/base/orm"
+	// "github.com/nebulaim/telegramd/helper/orm"
 	// _ "github.com/go-sql-driver/mysql" // import your used driver
 	"fmt"
 	"github.com/BurntSushi/toml"

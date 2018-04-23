@@ -221,7 +221,7 @@ func (m *messageModel) CreateMessageBoxes(userId, fromId int32, peerType int32, 
 }
 
 // CreateHistoryMessage2
-func (m *messageModel) CreateHistoryMessage2(fromId int32, peer *base.PeerUtil, randomId int64, date int32, message *mtproto.Message) (messageId int32) {
+func (m *messageModel) CreateHistoryMessage2(fromId int32, peer *helper.PeerUtil, randomId int64, date int32, message *mtproto.Message) (messageId int32) {
 	// TODO(@benqi): 重复插入出错处理
 	messageDO := &dataobject.MessagesDO{
 		SenderUserId: fromId,
@@ -252,7 +252,7 @@ func (m *messageModel) CreateHistoryMessage2(fromId int32, peer *base.PeerUtil, 
 
 //func (m *messageModel) MakeUpdatesByMessage(randomId int64, message *mtproto.TLMessageService) (updates *mtproto.Updates) {
 //	//// 插入消息
-//	peer := base.FromPeer(message.ToId)
+//	peer := helper.FromPeer(message.ToId)
 //	messageDO := &dataobject.MessagesDO{}
 //
 //	messageDO.UserId = message.FromId
@@ -585,11 +585,11 @@ func SaveMessage(message *mtproto.Message, userId, messageId int32) error {
 // SendMessage
 func (m *messageModel) SendMessage(fromId int32, peerType int32, peerId int32, clientRandomId int64, message *mtproto.Message) (ids []*IDMessage) {
 	switch peerType {
-	case base.PEER_USER:
+	case helper.PEER_USER:
 		ids = m.sendUserMessage(fromId, peerId, clientRandomId, message)
-	case base.PEER_CHAT:
+	case helper.PEER_CHAT:
 		ids = m.sendChatMessage(fromId, peerId, clientRandomId, message)
-	case base.PEER_CHANNEL:
+	case helper.PEER_CHANNEL:
 		ids = m.sendChannelMessage(fromId, peerId, clientRandomId, message)
 	default:
 		glog.Errorf("SendMessage - invalid peerType: %d", peerType)
@@ -619,7 +619,7 @@ func (m *messageModel) insertMessage(fromId, peerType, peerId int32, clientRando
 	messageDO := &dataobject.MessagesDO{
 		// UserId:       userId,
 		SenderUserId: fromId,
-		PeerType:     base.PEER_USER,
+		PeerType:     helper.PEER_USER,
 		PeerId:       peerId,
 		RandomId:     clientRandomId,
 		Date2:        message.GetData2().GetDate(),
@@ -672,34 +672,34 @@ func (m *messageModel) sendUserMessage(fromId, peerId int32, clientRandomId int6
 	var boxId int32
 
 	// 存历史消息
-	messageId := m.insertMessage(fromId, base.PEER_USER, peerId, clientRandomId, message)
+	messageId := m.insertMessage(fromId, helper.PEER_USER, peerId, clientRandomId, message)
 	if fromId == peerId {
 		// PeerSelf
 
 		// 存message_box
-		boxId = m.insertMessageBox(fromId, fromId, base.PEER_USER, peerId, MESSAGE_BOX_TYPE_INCOMING, messageId)
+		boxId = m.insertMessageBox(fromId, fromId, helper.PEER_USER, peerId, MESSAGE_BOX_TYPE_INCOMING, messageId)
 		// dialog
-		_  = GetDialogModel().CreateOrUpdateByLastMessage(fromId, base.PEER_USER, peerId, boxId, message.GetData2().GetMentioned(), true)
+		_  = GetDialogModel().CreateOrUpdateByLastMessage(fromId, helper.PEER_USER, peerId, boxId, message.GetData2().GetMentioned(), true)
 		ids = append(ids, &IDMessage{UserId: fromId, MessageBoxId: boxId})
 	} else {
 		// PeerUser
 
 		// outbox
 		// 存历史消息
-		// messageId = m.insertMessage(fromId, base.PEER_USER, peerId, clientRandomId, message)
+		// messageId = m.insertMessage(fromId, helper.PEER_USER, peerId, clientRandomId, message)
 		// 存message_box
-		boxId = m.insertMessageBox(fromId, fromId, base.PEER_USER, peerId, MESSAGE_BOX_TYPE_OUTGOING, messageId)
+		boxId = m.insertMessageBox(fromId, fromId, helper.PEER_USER, peerId, MESSAGE_BOX_TYPE_OUTGOING, messageId)
 		// dialog
-		_  = GetDialogModel().CreateOrUpdateByLastMessage(fromId, base.PEER_USER, peerId, boxId, message.GetData2().GetMentioned(), false)
+		_  = GetDialogModel().CreateOrUpdateByLastMessage(fromId, helper.PEER_USER, peerId, boxId, message.GetData2().GetMentioned(), false)
 		ids = append(ids, &IDMessage{UserId: fromId, MessageBoxId: boxId})
 
 		// inbox
 		// 存历史消息
-		// messageId = m.insertMessage(peerId, fromId, base.PEER_USER, peerId, clientRandomId, message)
+		// messageId = m.insertMessage(peerId, fromId, helper.PEER_USER, peerId, clientRandomId, message)
 		// 存message_box
-		boxId = m.insertMessageBox(peerId, fromId, base.PEER_USER, peerId, MESSAGE_BOX_TYPE_INCOMING, messageId)
+		boxId = m.insertMessageBox(peerId, fromId, helper.PEER_USER, peerId, MESSAGE_BOX_TYPE_INCOMING, messageId)
 		// dialog
-		_  = GetDialogModel().CreateOrUpdateByLastMessage(peerId, base.PEER_USER, fromId, boxId, message.GetData2().GetMentioned(), true)
+		_  = GetDialogModel().CreateOrUpdateByLastMessage(peerId, helper.PEER_USER, fromId, boxId, message.GetData2().GetMentioned(), true)
 		ids = append(ids, &IDMessage{UserId: peerId, MessageBoxId: boxId})
 	}
 	return

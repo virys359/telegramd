@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-// base recovery, RecoveryHandlerFunc spit UnaryRecoveryHandlerFunc and StreamRecoveryHandlerFunc
+// helper recovery, RecoveryHandlerFunc spit UnaryRecoveryHandlerFunc and StreamRecoveryHandlerFunc
 //
 package grpc_recovery2
 
