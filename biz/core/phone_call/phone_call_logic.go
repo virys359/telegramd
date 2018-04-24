@@ -117,6 +117,10 @@ func (p *phoneCallLogic) toPhoneCallProtocol() *mtproto.PhoneCallProtocol {
 	}
 }
 
+func (p *phoneCallLogic) ToPhoneCallProtocol() *mtproto.PhoneCallProtocol {
+	return p.toPhoneCallProtocol()
+}
+
 // phoneCallRequested#83761ce4 id:long access_hash:long date:int admin_id:int participant_id:int g_a_hash:bytes protocol:PhoneCallProtocol = PhoneCall;
 func (p *phoneCallLogic) ToPhoneCallRequested() *mtproto.TLPhoneCallRequested {
 	return &mtproto.TLPhoneCallRequested{Data2: &mtproto.PhoneCall_Data{
