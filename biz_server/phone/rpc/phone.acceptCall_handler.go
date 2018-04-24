@@ -66,7 +66,7 @@ func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto
 	callSession.SetGB(request.GetGB())
 
 	/////////////////////////////////////////////////////////////////////////////////
-	updatesData := update2.NewUpdatesLogic(md.UserId)
+	updatesData := update2.NewUpdatesLogic(callSession.ParticipantId)
 	// 1. add updateUserStatus
 	//var status *mtproto.UserStatus
 	statusOnline := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
@@ -74,13 +74,22 @@ func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto
 	}}
 	// status = statusOnline.To_UserStatus()
 	updateUserStatus := &mtproto.TLUpdateUserStatus{Data2: &mtproto.Update_Data{
-		UserId: md.UserId,
+		UserId: callSession.ParticipantId,
 		Status: statusOnline.To_UserStatus(),
 	}}
 	updatesData.AddUpdate(updateUserStatus.To_Update())
 	// 2. add phoneCallRequested
+	phoneCallAccepted := mtproto.NewTLPhoneCallAccepted()
+	phoneCallAccepted.SetId(callSession.Id)
+	phoneCallAccepted.SetAccessHash(callSession.ParticipantAccessHash)
+	phoneCallAccepted.SetDate(int32(callSession.Date))
+	phoneCallAccepted.SetAdminId(callSession.AdminId)
+	phoneCallAccepted.SetParticipantId(callSession.ParticipantId)
+	phoneCallAccepted.SetGB(callSession.GB)
+	phoneCallAccepted.SetProtocol(callSession.ToPhoneCallProtocol())
 	updatePhoneCall := &mtproto.TLUpdatePhoneCall{Data2: &mtproto.Update_Data{
-		PhoneCall: callSession.ToPhoneCallRequested().To_PhoneCall(),
+		//PhoneCall: callSession.ToPhoneCallRequested().To_PhoneCall(),
+		PhoneCall: phoneCallAccepted.To_PhoneCall(),
 	}}
 	updatesData.AddUpdate(updatePhoneCall.To_Update())
 	// 3. add users
