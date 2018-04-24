@@ -105,7 +105,9 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	// 2. add users
 	updatesData.AddUsers(user.GetUsersBySelfAndIDList(toId, []int32{callSession.AdminId, callSession.ParticipantId}))
 	// 3. sync
-	sync_client.GetSyncClient().PushToUserUpdatesData(toId, updatesData.ToUpdates())
+	//sync_client.GetSyncClient().PushToUserUpdatesData(toId, updatesData.ToUpdates())
+	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, updatesData.ToUpdates())
+	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.ParticipantId, updatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	replyUpdatesData := update2.NewUpdatesLogic(md.UserId)

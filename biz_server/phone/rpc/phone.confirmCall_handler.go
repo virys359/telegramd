@@ -26,7 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/user"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/biz/core/phone_call"
-	"fmt"
+	//"fmt"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
@@ -43,13 +43,14 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 		glog.Errorf("invalid peer: {%v}, err: %v", peer, err)
 		return nil, err
 	}
-	if peer.GetAccessHash() != callSession.AdminAccessHash {
-		err = fmt.Errorf("invalid peer: {%v}", peer)
-		glog.Errorf("invalid peer: {%v}", peer)
-		return nil, err
-	}
+	// if peer.GetAccessHash() != callSession.AdminAccessHash {
+	// 	err = fmt.Errorf("invalid peer: {%v}", peer)
+	// 	glog.Errorf("invalid peer: {%v}", peer)
+	// 	return nil, err
+	// }
 
 	// TODO(@benqi): callSession.SetGA() ???
+	callSession.GA = request.GetGA()
 
 	/////////////////////////////////////////////////////////////////////////////////
 	updatesData := update2.NewUpdatesLogic(md.UserId)
