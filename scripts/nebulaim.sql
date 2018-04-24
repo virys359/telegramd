@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-04-19 14:12:54
+-- Generation Time: 2018-04-24 07:49:42
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -447,6 +447,33 @@ CREATE TABLE `orgs` (
   `mail` varchar(64) NOT NULL,
   `mobile` varchar(32) NOT NULL,
   `status` tinyint(4) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `phone_call_sessions`
+--
+
+CREATE TABLE `phone_call_sessions` (
+  `id` int(11) NOT NULL,
+  `call_session_id` bigint(20) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `admin_access_hash` bigint(20) NOT NULL,
+  `participant_id` int(11) NOT NULL,
+  `participant_access_hash` bigint(20) NOT NULL,
+  `udp_p2p` tinyint(4) NOT NULL DEFAULT '0',
+  `udp_reflector` tinyint(4) NOT NULL DEFAULT '0',
+  `min_layer` int(11) NOT NULL,
+  `max_layer` int(11) NOT NULL,
+  `g_a` varchar(512) NOT NULL DEFAULT '',
+  `g_b` varchar(512) NOT NULL DEFAULT '',
+  `state` int(11) NOT NULL DEFAULT '0',
+  `date` int(11) NOT NULL,
+  `admin_debug_data` text NOT NULL,
+  `participant_debug_data` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -987,6 +1014,13 @@ ALTER TABLE `orgs`
   ADD UNIQUE KEY `account_name` (`account_name`);
 
 --
+-- Indexes for table `phone_call_sessions`
+--
+ALTER TABLE `phone_call_sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `call_session_id` (`call_session_id`);
+
+--
 -- Indexes for table `photos`
 --
 ALTER TABLE `photos`
@@ -1253,6 +1287,12 @@ ALTER TABLE `messages`
 --
 ALTER TABLE `orgs`
   MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `phone_call_sessions`
+--
+ALTER TABLE `phone_call_sessions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `photos`
