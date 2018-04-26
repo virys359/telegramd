@@ -25,7 +25,7 @@ type AuthKeyMetadata struct {
 func (m *AuthKeyMetadata) Reset()                    { *m = AuthKeyMetadata{} }
 func (m *AuthKeyMetadata) String() string            { return proto.CompactTextString(m) }
 func (*AuthKeyMetadata) ProtoMessage()               {}
-func (*AuthKeyMetadata) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{0} }
+func (*AuthKeyMetadata) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{0} }
 
 func (m *AuthKeyMetadata) GetNonce() []byte {
 	if m != nil {
@@ -80,9 +80,9 @@ func init() {
 	proto.RegisterType((*AuthKeyMetadata)(nil), "mtproto.AuthKeyMetadata")
 }
 
-func init() { proto.RegisterFile("zproto_auth_key.proto", fileDescriptor9) }
+func init() { proto.RegisterFile("zproto_auth_key.proto", fileDescriptor10) }
 
-var fileDescriptor9 = []byte{
+var fileDescriptor10 = []byte{
 	// 221 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xad, 0x2a, 0x28, 0xca,
 	0x2f, 0xc9, 0x8f, 0x4f, 0x2c, 0x2d, 0xc9, 0x88, 0xcf, 0x4e, 0xad, 0xd4, 0x03, 0x73, 0x85, 0xd8,

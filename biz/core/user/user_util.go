@@ -27,6 +27,7 @@ import (
 	"encoding/hex"
 	contact2 "github.com/nebulaim/telegramd/biz/core/contact"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 func CheckUserAccessHash(id int32, hash int64) bool {
@@ -68,7 +69,7 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 		if photoId == 0 {
 			photo =  mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
 		} else {
-			sizeList := photo2.GetPhotoSizeList(photoId)
+			sizeList, _ := nbfs_client.GetPhotoSizeList(photoId)
 			photo = photo2.MakeUserProfilePhoto(photoId, sizeList)
 		}
 		// GetPhotoSizeList(photoId)

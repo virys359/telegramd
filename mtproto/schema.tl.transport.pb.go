@@ -25,7 +25,7 @@ type FutureSalt_Data struct {
 func (m *FutureSalt_Data) Reset()                    { *m = FutureSalt_Data{} }
 func (m *FutureSalt_Data) String() string            { return proto.CompactTextString(m) }
 func (*FutureSalt_Data) ProtoMessage()               {}
-func (*FutureSalt_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{0} }
+func (*FutureSalt_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{0} }
 
 func (m *FutureSalt_Data) GetValidSince() int32 {
 	if m != nil {
@@ -56,7 +56,7 @@ type FutureSalt struct {
 func (m *FutureSalt) Reset()                    { *m = FutureSalt{} }
 func (m *FutureSalt) String() string            { return proto.CompactTextString(m) }
 func (*FutureSalt) ProtoMessage()               {}
-func (*FutureSalt) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{1} }
+func (*FutureSalt) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{1} }
 
 func (m *FutureSalt) GetConstructor() TLConstructor {
 	if m != nil {
@@ -80,7 +80,7 @@ type TLFutureSalt struct {
 func (m *TLFutureSalt) Reset()                    { *m = TLFutureSalt{} }
 func (m *TLFutureSalt) String() string            { return proto.CompactTextString(m) }
 func (*TLFutureSalt) ProtoMessage()               {}
-func (*TLFutureSalt) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{2} }
+func (*TLFutureSalt) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{2} }
 
 func (m *TLFutureSalt) GetData2() *FutureSalt_Data {
 	if m != nil {
@@ -101,7 +101,7 @@ type Pong_Data struct {
 func (m *Pong_Data) Reset()                    { *m = Pong_Data{} }
 func (m *Pong_Data) String() string            { return proto.CompactTextString(m) }
 func (*Pong_Data) ProtoMessage()               {}
-func (*Pong_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{3} }
+func (*Pong_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{3} }
 
 func (m *Pong_Data) GetMsgId() int64 {
 	if m != nil {
@@ -125,7 +125,7 @@ type Pong struct {
 func (m *Pong) Reset()                    { *m = Pong{} }
 func (m *Pong) String() string            { return proto.CompactTextString(m) }
 func (*Pong) ProtoMessage()               {}
-func (*Pong) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{4} }
+func (*Pong) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{4} }
 
 func (m *Pong) GetConstructor() TLConstructor {
 	if m != nil {
@@ -149,7 +149,7 @@ type TLPong struct {
 func (m *TLPong) Reset()                    { *m = TLPong{} }
 func (m *TLPong) String() string            { return proto.CompactTextString(m) }
 func (*TLPong) ProtoMessage()               {}
-func (*TLPong) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{5} }
+func (*TLPong) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{5} }
 
 func (m *TLPong) GetData2() *Pong_Data {
 	if m != nil {
@@ -170,7 +170,7 @@ type DestroySessionRes_Data struct {
 func (m *DestroySessionRes_Data) Reset()                    { *m = DestroySessionRes_Data{} }
 func (m *DestroySessionRes_Data) String() string            { return proto.CompactTextString(m) }
 func (*DestroySessionRes_Data) ProtoMessage()               {}
-func (*DestroySessionRes_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{6} }
+func (*DestroySessionRes_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{6} }
 
 func (m *DestroySessionRes_Data) GetSessionId() int64 {
 	if m != nil {
@@ -187,7 +187,7 @@ type DestroySessionRes struct {
 func (m *DestroySessionRes) Reset()                    { *m = DestroySessionRes{} }
 func (m *DestroySessionRes) String() string            { return proto.CompactTextString(m) }
 func (*DestroySessionRes) ProtoMessage()               {}
-func (*DestroySessionRes) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{7} }
+func (*DestroySessionRes) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{7} }
 
 func (m *DestroySessionRes) GetConstructor() TLConstructor {
 	if m != nil {
@@ -211,7 +211,7 @@ type TLDestroySessionOk struct {
 func (m *TLDestroySessionOk) Reset()                    { *m = TLDestroySessionOk{} }
 func (m *TLDestroySessionOk) String() string            { return proto.CompactTextString(m) }
 func (*TLDestroySessionOk) ProtoMessage()               {}
-func (*TLDestroySessionOk) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{8} }
+func (*TLDestroySessionOk) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{8} }
 
 func (m *TLDestroySessionOk) GetData2() *DestroySessionRes_Data {
 	if m != nil {
@@ -228,7 +228,7 @@ type TLDestroySessionNone struct {
 func (m *TLDestroySessionNone) Reset()                    { *m = TLDestroySessionNone{} }
 func (m *TLDestroySessionNone) String() string            { return proto.CompactTextString(m) }
 func (*TLDestroySessionNone) ProtoMessage()               {}
-func (*TLDestroySessionNone) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{9} }
+func (*TLDestroySessionNone) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{9} }
 
 func (m *TLDestroySessionNone) GetData2() *DestroySessionRes_Data {
 	if m != nil {
@@ -250,7 +250,7 @@ type NewSession_Data struct {
 func (m *NewSession_Data) Reset()                    { *m = NewSession_Data{} }
 func (m *NewSession_Data) String() string            { return proto.CompactTextString(m) }
 func (*NewSession_Data) ProtoMessage()               {}
-func (*NewSession_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{10} }
+func (*NewSession_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{10} }
 
 func (m *NewSession_Data) GetFirstMsgId() int64 {
 	if m != nil {
@@ -281,7 +281,7 @@ type NewSession struct {
 func (m *NewSession) Reset()                    { *m = NewSession{} }
 func (m *NewSession) String() string            { return proto.CompactTextString(m) }
 func (*NewSession) ProtoMessage()               {}
-func (*NewSession) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{11} }
+func (*NewSession) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{11} }
 
 func (m *NewSession) GetConstructor() TLConstructor {
 	if m != nil {
@@ -305,7 +305,7 @@ type TLNewSessionCreated struct {
 func (m *TLNewSessionCreated) Reset()                    { *m = TLNewSessionCreated{} }
 func (m *TLNewSessionCreated) String() string            { return proto.CompactTextString(m) }
 func (*TLNewSessionCreated) ProtoMessage()               {}
-func (*TLNewSessionCreated) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{12} }
+func (*TLNewSessionCreated) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{12} }
 
 func (m *TLNewSessionCreated) GetData2() *NewSession_Data {
 	if m != nil {
@@ -328,7 +328,7 @@ type Help_ConfigSimple_Data struct {
 func (m *Help_ConfigSimple_Data) Reset()                    { *m = Help_ConfigSimple_Data{} }
 func (m *Help_ConfigSimple_Data) String() string            { return proto.CompactTextString(m) }
 func (*Help_ConfigSimple_Data) ProtoMessage()               {}
-func (*Help_ConfigSimple_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{13} }
+func (*Help_ConfigSimple_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{13} }
 
 func (m *Help_ConfigSimple_Data) GetDate() int32 {
 	if m != nil {
@@ -366,7 +366,7 @@ type Help_ConfigSimple struct {
 func (m *Help_ConfigSimple) Reset()                    { *m = Help_ConfigSimple{} }
 func (m *Help_ConfigSimple) String() string            { return proto.CompactTextString(m) }
 func (*Help_ConfigSimple) ProtoMessage()               {}
-func (*Help_ConfigSimple) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{14} }
+func (*Help_ConfigSimple) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{14} }
 
 func (m *Help_ConfigSimple) GetConstructor() TLConstructor {
 	if m != nil {
@@ -390,7 +390,7 @@ type TLHelpConfigSimple struct {
 func (m *TLHelpConfigSimple) Reset()                    { *m = TLHelpConfigSimple{} }
 func (m *TLHelpConfigSimple) String() string            { return proto.CompactTextString(m) }
 func (*TLHelpConfigSimple) ProtoMessage()               {}
-func (*TLHelpConfigSimple) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{15} }
+func (*TLHelpConfigSimple) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{15} }
 
 func (m *TLHelpConfigSimple) GetData2() *Help_ConfigSimple_Data {
 	if m != nil {
@@ -410,7 +410,7 @@ type MsgsStateReq_Data struct {
 func (m *MsgsStateReq_Data) Reset()                    { *m = MsgsStateReq_Data{} }
 func (m *MsgsStateReq_Data) String() string            { return proto.CompactTextString(m) }
 func (*MsgsStateReq_Data) ProtoMessage()               {}
-func (*MsgsStateReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{16} }
+func (*MsgsStateReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{16} }
 
 func (m *MsgsStateReq_Data) GetMsgIds() []int64 {
 	if m != nil {
@@ -427,7 +427,7 @@ type MsgsStateReq struct {
 func (m *MsgsStateReq) Reset()                    { *m = MsgsStateReq{} }
 func (m *MsgsStateReq) String() string            { return proto.CompactTextString(m) }
 func (*MsgsStateReq) ProtoMessage()               {}
-func (*MsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{17} }
+func (*MsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{17} }
 
 func (m *MsgsStateReq) GetConstructor() TLConstructor {
 	if m != nil {
@@ -451,7 +451,7 @@ type TLMsgsStateReq struct {
 func (m *TLMsgsStateReq) Reset()                    { *m = TLMsgsStateReq{} }
 func (m *TLMsgsStateReq) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgsStateReq) ProtoMessage()               {}
-func (*TLMsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{18} }
+func (*TLMsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{18} }
 
 func (m *TLMsgsStateReq) GetData2() *MsgsStateReq_Data {
 	if m != nil {
@@ -472,7 +472,7 @@ type MsgsAllInfo_Data struct {
 func (m *MsgsAllInfo_Data) Reset()                    { *m = MsgsAllInfo_Data{} }
 func (m *MsgsAllInfo_Data) String() string            { return proto.CompactTextString(m) }
 func (*MsgsAllInfo_Data) ProtoMessage()               {}
-func (*MsgsAllInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{19} }
+func (*MsgsAllInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{19} }
 
 func (m *MsgsAllInfo_Data) GetMsgIds() []int64 {
 	if m != nil {
@@ -496,7 +496,7 @@ type MsgsAllInfo struct {
 func (m *MsgsAllInfo) Reset()                    { *m = MsgsAllInfo{} }
 func (m *MsgsAllInfo) String() string            { return proto.CompactTextString(m) }
 func (*MsgsAllInfo) ProtoMessage()               {}
-func (*MsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{20} }
+func (*MsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{20} }
 
 func (m *MsgsAllInfo) GetConstructor() TLConstructor {
 	if m != nil {
@@ -520,7 +520,7 @@ type TLMsgsAllInfo struct {
 func (m *TLMsgsAllInfo) Reset()                    { *m = TLMsgsAllInfo{} }
 func (m *TLMsgsAllInfo) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgsAllInfo) ProtoMessage()               {}
-func (*TLMsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{21} }
+func (*TLMsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{21} }
 
 func (m *TLMsgsAllInfo) GetData2() *MsgsAllInfo_Data {
 	if m != nil {
@@ -540,7 +540,7 @@ type MsgResendReq_Data struct {
 func (m *MsgResendReq_Data) Reset()                    { *m = MsgResendReq_Data{} }
 func (m *MsgResendReq_Data) String() string            { return proto.CompactTextString(m) }
 func (*MsgResendReq_Data) ProtoMessage()               {}
-func (*MsgResendReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{22} }
+func (*MsgResendReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{22} }
 
 func (m *MsgResendReq_Data) GetMsgIds() []int64 {
 	if m != nil {
@@ -557,7 +557,7 @@ type MsgResendReq struct {
 func (m *MsgResendReq) Reset()                    { *m = MsgResendReq{} }
 func (m *MsgResendReq) String() string            { return proto.CompactTextString(m) }
 func (*MsgResendReq) ProtoMessage()               {}
-func (*MsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{23} }
+func (*MsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{23} }
 
 func (m *MsgResendReq) GetConstructor() TLConstructor {
 	if m != nil {
@@ -581,7 +581,7 @@ type TLMsgResendReq struct {
 func (m *TLMsgResendReq) Reset()                    { *m = TLMsgResendReq{} }
 func (m *TLMsgResendReq) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgResendReq) ProtoMessage()               {}
-func (*TLMsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{24} }
+func (*TLMsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{24} }
 
 func (m *TLMsgResendReq) GetData2() *MsgResendReq_Data {
 	if m != nil {
@@ -605,7 +605,7 @@ type RpcDropAnswer_Data struct {
 func (m *RpcDropAnswer_Data) Reset()                    { *m = RpcDropAnswer_Data{} }
 func (m *RpcDropAnswer_Data) String() string            { return proto.CompactTextString(m) }
 func (*RpcDropAnswer_Data) ProtoMessage()               {}
-func (*RpcDropAnswer_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{25} }
+func (*RpcDropAnswer_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{25} }
 
 func (m *RpcDropAnswer_Data) GetMsgId() int64 {
 	if m != nil {
@@ -636,7 +636,7 @@ type RpcDropAnswer struct {
 func (m *RpcDropAnswer) Reset()                    { *m = RpcDropAnswer{} }
 func (m *RpcDropAnswer) String() string            { return proto.CompactTextString(m) }
 func (*RpcDropAnswer) ProtoMessage()               {}
-func (*RpcDropAnswer) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{26} }
+func (*RpcDropAnswer) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{26} }
 
 func (m *RpcDropAnswer) GetConstructor() TLConstructor {
 	if m != nil {
@@ -660,7 +660,7 @@ type TLRpcAnswerUnknown struct {
 func (m *TLRpcAnswerUnknown) Reset()                    { *m = TLRpcAnswerUnknown{} }
 func (m *TLRpcAnswerUnknown) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcAnswerUnknown) ProtoMessage()               {}
-func (*TLRpcAnswerUnknown) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{27} }
+func (*TLRpcAnswerUnknown) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{27} }
 
 func (m *TLRpcAnswerUnknown) GetData2() *RpcDropAnswer_Data {
 	if m != nil {
@@ -677,7 +677,7 @@ type TLRpcAnswerDroppedRunning struct {
 func (m *TLRpcAnswerDroppedRunning) Reset()                    { *m = TLRpcAnswerDroppedRunning{} }
 func (m *TLRpcAnswerDroppedRunning) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcAnswerDroppedRunning) ProtoMessage()               {}
-func (*TLRpcAnswerDroppedRunning) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{28} }
+func (*TLRpcAnswerDroppedRunning) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{28} }
 
 func (m *TLRpcAnswerDroppedRunning) GetData2() *RpcDropAnswer_Data {
 	if m != nil {
@@ -694,7 +694,7 @@ type TLRpcAnswerDropped struct {
 func (m *TLRpcAnswerDropped) Reset()                    { *m = TLRpcAnswerDropped{} }
 func (m *TLRpcAnswerDropped) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcAnswerDropped) ProtoMessage()               {}
-func (*TLRpcAnswerDropped) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{29} }
+func (*TLRpcAnswerDropped) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{29} }
 
 func (m *TLRpcAnswerDropped) GetData2() *RpcDropAnswer_Data {
 	if m != nil {
@@ -718,7 +718,7 @@ type BadMsgNotification_Data struct {
 func (m *BadMsgNotification_Data) Reset()                    { *m = BadMsgNotification_Data{} }
 func (m *BadMsgNotification_Data) String() string            { return proto.CompactTextString(m) }
 func (*BadMsgNotification_Data) ProtoMessage()               {}
-func (*BadMsgNotification_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{30} }
+func (*BadMsgNotification_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{30} }
 
 func (m *BadMsgNotification_Data) GetBadMsgId() int64 {
 	if m != nil {
@@ -756,7 +756,7 @@ type BadMsgNotification struct {
 func (m *BadMsgNotification) Reset()                    { *m = BadMsgNotification{} }
 func (m *BadMsgNotification) String() string            { return proto.CompactTextString(m) }
 func (*BadMsgNotification) ProtoMessage()               {}
-func (*BadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{31} }
+func (*BadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{31} }
 
 func (m *BadMsgNotification) GetConstructor() TLConstructor {
 	if m != nil {
@@ -780,7 +780,7 @@ type TLBadMsgNotification struct {
 func (m *TLBadMsgNotification) Reset()                    { *m = TLBadMsgNotification{} }
 func (m *TLBadMsgNotification) String() string            { return proto.CompactTextString(m) }
 func (*TLBadMsgNotification) ProtoMessage()               {}
-func (*TLBadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{32} }
+func (*TLBadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{32} }
 
 func (m *TLBadMsgNotification) GetData2() *BadMsgNotification_Data {
 	if m != nil {
@@ -797,7 +797,7 @@ type TLBadServerSalt struct {
 func (m *TLBadServerSalt) Reset()                    { *m = TLBadServerSalt{} }
 func (m *TLBadServerSalt) String() string            { return proto.CompactTextString(m) }
 func (*TLBadServerSalt) ProtoMessage()               {}
-func (*TLBadServerSalt) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{33} }
+func (*TLBadServerSalt) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{33} }
 
 func (m *TLBadServerSalt) GetData2() *BadMsgNotification_Data {
 	if m != nil {
@@ -818,7 +818,7 @@ type MsgsStateInfo_Data struct {
 func (m *MsgsStateInfo_Data) Reset()                    { *m = MsgsStateInfo_Data{} }
 func (m *MsgsStateInfo_Data) String() string            { return proto.CompactTextString(m) }
 func (*MsgsStateInfo_Data) ProtoMessage()               {}
-func (*MsgsStateInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{34} }
+func (*MsgsStateInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{34} }
 
 func (m *MsgsStateInfo_Data) GetReqMsgId() int64 {
 	if m != nil {
@@ -842,7 +842,7 @@ type MsgsStateInfo struct {
 func (m *MsgsStateInfo) Reset()                    { *m = MsgsStateInfo{} }
 func (m *MsgsStateInfo) String() string            { return proto.CompactTextString(m) }
 func (*MsgsStateInfo) ProtoMessage()               {}
-func (*MsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{35} }
+func (*MsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{35} }
 
 func (m *MsgsStateInfo) GetConstructor() TLConstructor {
 	if m != nil {
@@ -866,7 +866,7 @@ type TLMsgsStateInfo struct {
 func (m *TLMsgsStateInfo) Reset()                    { *m = TLMsgsStateInfo{} }
 func (m *TLMsgsStateInfo) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgsStateInfo) ProtoMessage()               {}
-func (*TLMsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{36} }
+func (*TLMsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{36} }
 
 func (m *TLMsgsStateInfo) GetData2() *MsgsStateInfo_Data {
 	if m != nil {
@@ -890,7 +890,7 @@ type MsgDetailedInfo_Data struct {
 func (m *MsgDetailedInfo_Data) Reset()                    { *m = MsgDetailedInfo_Data{} }
 func (m *MsgDetailedInfo_Data) String() string            { return proto.CompactTextString(m) }
 func (*MsgDetailedInfo_Data) ProtoMessage()               {}
-func (*MsgDetailedInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{37} }
+func (*MsgDetailedInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{37} }
 
 func (m *MsgDetailedInfo_Data) GetMsgId() int64 {
 	if m != nil {
@@ -928,7 +928,7 @@ type MsgDetailedInfo struct {
 func (m *MsgDetailedInfo) Reset()                    { *m = MsgDetailedInfo{} }
 func (m *MsgDetailedInfo) String() string            { return proto.CompactTextString(m) }
 func (*MsgDetailedInfo) ProtoMessage()               {}
-func (*MsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{38} }
+func (*MsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{38} }
 
 func (m *MsgDetailedInfo) GetConstructor() TLConstructor {
 	if m != nil {
@@ -952,7 +952,7 @@ type TLMsgDetailedInfo struct {
 func (m *TLMsgDetailedInfo) Reset()                    { *m = TLMsgDetailedInfo{} }
 func (m *TLMsgDetailedInfo) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgDetailedInfo) ProtoMessage()               {}
-func (*TLMsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{39} }
+func (*TLMsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{39} }
 
 func (m *TLMsgDetailedInfo) GetData2() *MsgDetailedInfo_Data {
 	if m != nil {
@@ -969,7 +969,7 @@ type TLMsgNewDetailedInfo struct {
 func (m *TLMsgNewDetailedInfo) Reset()                    { *m = TLMsgNewDetailedInfo{} }
 func (m *TLMsgNewDetailedInfo) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgNewDetailedInfo) ProtoMessage()               {}
-func (*TLMsgNewDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{40} }
+func (*TLMsgNewDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{40} }
 
 func (m *TLMsgNewDetailedInfo) GetData2() *MsgDetailedInfo_Data {
 	if m != nil {
@@ -990,7 +990,7 @@ type RpcError_Data struct {
 func (m *RpcError_Data) Reset()                    { *m = RpcError_Data{} }
 func (m *RpcError_Data) String() string            { return proto.CompactTextString(m) }
 func (*RpcError_Data) ProtoMessage()               {}
-func (*RpcError_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{41} }
+func (*RpcError_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{41} }
 
 func (m *RpcError_Data) GetErrorCode() int32 {
 	if m != nil {
@@ -1014,7 +1014,7 @@ type RpcError struct {
 func (m *RpcError) Reset()                    { *m = RpcError{} }
 func (m *RpcError) String() string            { return proto.CompactTextString(m) }
 func (*RpcError) ProtoMessage()               {}
-func (*RpcError) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{42} }
+func (*RpcError) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{42} }
 
 func (m *RpcError) GetConstructor() TLConstructor {
 	if m != nil {
@@ -1038,7 +1038,7 @@ type TLRpcError struct {
 func (m *TLRpcError) Reset()                    { *m = TLRpcError{} }
 func (m *TLRpcError) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcError) ProtoMessage()               {}
-func (*TLRpcError) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{43} }
+func (*TLRpcError) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{43} }
 
 func (m *TLRpcError) GetData2() *RpcError_Data {
 	if m != nil {
@@ -1060,7 +1060,7 @@ type HttpWait_Data struct {
 func (m *HttpWait_Data) Reset()                    { *m = HttpWait_Data{} }
 func (m *HttpWait_Data) String() string            { return proto.CompactTextString(m) }
 func (*HttpWait_Data) ProtoMessage()               {}
-func (*HttpWait_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{44} }
+func (*HttpWait_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{44} }
 
 func (m *HttpWait_Data) GetMaxDelay() int32 {
 	if m != nil {
@@ -1091,7 +1091,7 @@ type HttpWait struct {
 func (m *HttpWait) Reset()                    { *m = HttpWait{} }
 func (m *HttpWait) String() string            { return proto.CompactTextString(m) }
 func (*HttpWait) ProtoMessage()               {}
-func (*HttpWait) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{45} }
+func (*HttpWait) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{45} }
 
 func (m *HttpWait) GetConstructor() TLConstructor {
 	if m != nil {
@@ -1115,7 +1115,7 @@ type TLHttpWait struct {
 func (m *TLHttpWait) Reset()                    { *m = TLHttpWait{} }
 func (m *TLHttpWait) String() string            { return proto.CompactTextString(m) }
 func (*TLHttpWait) ProtoMessage()               {}
-func (*TLHttpWait) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{46} }
+func (*TLHttpWait) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{46} }
 
 func (m *TLHttpWait) GetData2() *HttpWait_Data {
 	if m != nil {
@@ -1136,7 +1136,7 @@ type IpPort_Data struct {
 func (m *IpPort_Data) Reset()                    { *m = IpPort_Data{} }
 func (m *IpPort_Data) String() string            { return proto.CompactTextString(m) }
 func (*IpPort_Data) ProtoMessage()               {}
-func (*IpPort_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{47} }
+func (*IpPort_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{47} }
 
 func (m *IpPort_Data) GetIpv4() int32 {
 	if m != nil {
@@ -1160,7 +1160,7 @@ type IpPort struct {
 func (m *IpPort) Reset()                    { *m = IpPort{} }
 func (m *IpPort) String() string            { return proto.CompactTextString(m) }
 func (*IpPort) ProtoMessage()               {}
-func (*IpPort) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{48} }
+func (*IpPort) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{48} }
 
 func (m *IpPort) GetConstructor() TLConstructor {
 	if m != nil {
@@ -1184,7 +1184,7 @@ type TLIpPort struct {
 func (m *TLIpPort) Reset()                    { *m = TLIpPort{} }
 func (m *TLIpPort) String() string            { return proto.CompactTextString(m) }
 func (*TLIpPort) ProtoMessage()               {}
-func (*TLIpPort) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{49} }
+func (*TLIpPort) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{49} }
 
 func (m *TLIpPort) GetData2() *IpPort_Data {
 	if m != nil {
@@ -1204,7 +1204,7 @@ type MsgsAck_Data struct {
 func (m *MsgsAck_Data) Reset()                    { *m = MsgsAck_Data{} }
 func (m *MsgsAck_Data) String() string            { return proto.CompactTextString(m) }
 func (*MsgsAck_Data) ProtoMessage()               {}
-func (*MsgsAck_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{50} }
+func (*MsgsAck_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{50} }
 
 func (m *MsgsAck_Data) GetMsgIds() []int64 {
 	if m != nil {
@@ -1221,7 +1221,7 @@ type MsgsAck struct {
 func (m *MsgsAck) Reset()                    { *m = MsgsAck{} }
 func (m *MsgsAck) String() string            { return proto.CompactTextString(m) }
 func (*MsgsAck) ProtoMessage()               {}
-func (*MsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{51} }
+func (*MsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{51} }
 
 func (m *MsgsAck) GetConstructor() TLConstructor {
 	if m != nil {
@@ -1245,7 +1245,7 @@ type TLMsgsAck struct {
 func (m *TLMsgsAck) Reset()                    { *m = TLMsgsAck{} }
 func (m *TLMsgsAck) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgsAck) ProtoMessage()               {}
-func (*TLMsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{52} }
+func (*TLMsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{52} }
 
 func (m *TLMsgsAck) GetData2() *MsgsAck_Data {
 	if m != nil {
@@ -1267,7 +1267,7 @@ type FutureSalts_Data struct {
 func (m *FutureSalts_Data) Reset()                    { *m = FutureSalts_Data{} }
 func (m *FutureSalts_Data) String() string            { return proto.CompactTextString(m) }
 func (*FutureSalts_Data) ProtoMessage()               {}
-func (*FutureSalts_Data) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{53} }
+func (*FutureSalts_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{53} }
 
 func (m *FutureSalts_Data) GetReqMsgId() int64 {
 	if m != nil {
@@ -1298,7 +1298,7 @@ type FutureSalts struct {
 func (m *FutureSalts) Reset()                    { *m = FutureSalts{} }
 func (m *FutureSalts) String() string            { return proto.CompactTextString(m) }
 func (*FutureSalts) ProtoMessage()               {}
-func (*FutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{54} }
+func (*FutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{54} }
 
 func (m *FutureSalts) GetConstructor() TLConstructor {
 	if m != nil {
@@ -1322,7 +1322,7 @@ type TLFutureSalts struct {
 func (m *TLFutureSalts) Reset()                    { *m = TLFutureSalts{} }
 func (m *TLFutureSalts) String() string            { return proto.CompactTextString(m) }
 func (*TLFutureSalts) ProtoMessage()               {}
-func (*TLFutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{55} }
+func (*TLFutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{55} }
 
 func (m *TLFutureSalts) GetData2() *FutureSalts_Data {
 	if m != nil {
@@ -1390,9 +1390,9 @@ func init() {
 	proto.RegisterType((*TLFutureSalts)(nil), "mtproto.TL_future_salts")
 }
 
-func init() { proto.RegisterFile("schema.tl.transport.proto", fileDescriptor7) }
+func init() { proto.RegisterFile("schema.tl.transport.proto", fileDescriptor8) }
 
-var fileDescriptor7 = []byte{
+var fileDescriptor8 = []byte{
 	// 1358 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0xdb, 0x73, 0x1b, 0xb5,
 	0x17, 0x1e, 0xd7, 0x71, 0x1c, 0x1f, 0xc7, 0x4d, 0xba, 0xbf, 0x5c, 0xdc, 0xa6, 0x9d, 0x66, 0xf6,

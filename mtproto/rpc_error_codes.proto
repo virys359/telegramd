@@ -143,6 +143,12 @@ enum TLRpcErrorCodes {
     USERNAME_OCCUPIED = 400061;
     USERNAMES_UNAVAILABLE = 400062;
 
+    // chat
+    CHAT_ID_INVALID = 400070;
+    CHAT_NOT_MODIFIED = 400071;
+    PARTICIPANT_NOT_EXISTS = 400072;
+    NO_EDIT_CHAT_PERMISSION = 400073;
+
     //
     BAD_REQUEST = 400;
 
@@ -316,4 +322,7 @@ enum TLRpcErrorCodes {
     DBERR_SQL = 600000;
     DBERR_CONN = 600001;
     // ...
+
+    // db error
+    NOTRETURN_CLIENT   = 700;
 }

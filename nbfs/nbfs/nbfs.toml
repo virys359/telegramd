@@ -1,0 +1,32 @@
+# biz_server.toml
+
+ver = "0.0.1"
+#logPath = "/tmp/biz_server.log"
+
+[nbfs]
+dataPath = "/opt/nbfs"
+
+[server]
+addr = "0.0.0.0:10004"
+
+[discovery]
+serviceName = "nbfs"
+nodeID = "node1"
+rPCAddr = "127.0.0.1:10004"
+etcdAddrs = ["http://127.0.0.1:2379"]
+interval = "2s"
+tTL = "10s"
+
+[[mysql]]
+name = "immaster"
+dsn = "root:@/nebulaim?charset=utf8mb4"
+#root:1@tcp(127.0.0.1:3306)/nebulaim?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
+active = 5
+idle = 2
+
+[[mysql]]
+name = "imslave"
+dsn = "root:@/nebulaim?charset=utf8mb4"
+# root:1@tcp(127.0.0.1:3306)/nebulaim?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
+active = 5
+idle = 2

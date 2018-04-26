@@ -173,6 +173,7 @@ func CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int3
 		affectedRows = master.UpdateTopMessageAndUnread(topMessage, date, userId, int8(peerType), peerId)
 	}
 
+	glog.Info("createOrUpdateByInbox - ", affectedRows)
 	if affectedRows == 0 {
 		// 创建会话
 		dialog := &dataobject.UserDialogsDO{}
@@ -189,6 +190,8 @@ func CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int3
 		dialog.CreatedAt = base2.NowFormatYMDHMS()
 		dialog.Date2 = date
 		master.Insert(dialog)
+	} else {
+
 	}
 	return
 }

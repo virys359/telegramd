@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewChatParticipantsDAO(db *sqlx.DB) *ChatParticipantsDAO {
 	return &ChatParticipantsDAO{db}
 }
 
-// insert into chat_participants(chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state, created_at) values (:chat_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state, :created_at)
+// insert into chat_participants(chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state) values (:chat_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state)
 // TODO(@benqi): sqlmap
 func (dao *ChatParticipantsDAO) Insert(do *dataobject.ChatParticipantsDO) int64 {
-	var query = "insert into chat_participants(chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state, created_at) values (:chat_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state, :created_at)"
+	var query = "insert into chat_participants(chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state) values (:chat_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,10 @@ func (dao *ChatParticipantsDAO) Insert(do *dataobject.ChatParticipantsDO) int64 
 	return id
 }
 
-// select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at from chat_participants where chat_id = :chat_id
+// select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from chat_participants where chat_id = :chat_id
 // TODO(@benqi): sqlmap
 func (dao *ChatParticipantsDAO) SelectByChatId(chat_id int32) []dataobject.ChatParticipantsDO {
-	var query = "select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at from chat_participants where chat_id = ?"
+	var query = "select id, chat_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from chat_participants where chat_id = ?"
 	rows, err := dao.db.Queryx(query, chat_id)
 
 	if err != nil {
@@ -84,11 +84,11 @@ func (dao *ChatParticipantsDAO) SelectByChatId(chat_id int32) []dataobject.ChatP
 	return values
 }
 
-// delete from chat_participants where chat_id = :chat_id and user_id = :user_id
+// update chat_participants set state = 1 where id = :id
 // TODO(@benqi): sqlmap
-func (dao *ChatParticipantsDAO) DeleteChatUser(chat_id int32, user_id int32) int64 {
-	var query = "delete from chat_participants where chat_id = ? and user_id = ?"
-	r, err := dao.db.Exec(query, chat_id, user_id)
+func (dao *ChatParticipantsDAO) DeleteChatUser(id int32) int64 {
+	var query = "update chat_participants set state = 1 where id = ?"
+	r, err := dao.db.Exec(query, id)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Exec in DeleteChatUser(_), error: %v", err)
@@ -102,5 +102,50 @@ func (dao *ChatParticipantsDAO) DeleteChatUser(chat_id int32, user_id int32) int
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
+
+	return rows
+}
+
+// update chat_participants set inviter_user_id = :inviter_user_id, invited_at = :invited_at, joined_at = :joined_at, state = 0 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChatParticipantsDAO) Update(inviter_user_id int32, invited_at int32, joined_at int32, id int32) int64 {
+	var query = "update chat_participants set inviter_user_id = ?, invited_at = ?, joined_at = ?, state = 0 where id = ?"
+	r, err := dao.db.Exec(query, inviter_user_id, invited_at, joined_at, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in Update(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in Update(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update chat_participants set participant_type = :participant_type where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChatParticipantsDAO) UpdateParticipantType(participant_type int8, id int32) int64 {
+	var query = "update chat_participants set participant_type = ? where id = ?"
+	r, err := dao.db.Exec(query, participant_type, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateParticipantType(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateParticipantType(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return rows
 }

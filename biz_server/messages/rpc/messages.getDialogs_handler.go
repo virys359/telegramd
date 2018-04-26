@@ -20,12 +20,13 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"math"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 // android client request source code
@@ -104,8 +105,8 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 	}
 
 	/*
-		peer := base.FromInputPeer(request.OffsetPeer)
-		if peer.PeerType == base.PEER_EMPTY {
+		peer := helper.FromInputPeer(request.OffsetPeer)
+		if peer.PeerType == helper.PEER_EMPTY {
 			// 取出全部
 		} else {
 			// 通过message_boxs表检查offset_peer
@@ -120,15 +121,16 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
  	dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
 	glog.Infof("dialogs - {%v}", dialogs)
 
-	messageIdList, userIdList, _, _ := message.PickAllIDListByDialogs(dialogs)
+	messageIdList, userIdList, chatIdList, _ := message.PickAllIDListByDialogs(dialogs)
 
 	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
 	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-
+	chats := chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	messageDialogs := mtproto.TLMessagesDialogs{Data2: &mtproto.Messages_Dialogs_Data{
 		Dialogs:  dialogs,
 		Messages: messages,
 		Users:    users,
+		Chats:    chats,
 	}}
 
 	glog.Infof("MessagesGetDialogs - reply: %s", logger.JsonDebugData(messageDialogs))

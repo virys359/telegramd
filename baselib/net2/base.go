@@ -20,7 +20,6 @@ package net2
 import (
 	"io"
 	"fmt"
-	"github.com/golang/glog"
 )
 
 type Protocol interface {
@@ -57,7 +56,7 @@ var (
 )
 
 func RegisterProtocol(name string, protocol Protocol) {
-	glog.Info("RegisterProtocol: ", name)
+	// glog.Info("RegisterProtocol: ", name)
 	protocolRegisters[name] = protocol
 }
 

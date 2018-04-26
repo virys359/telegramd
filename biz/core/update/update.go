@@ -20,6 +20,7 @@ package updates
 import (
 	"github.com/nebulaim/telegramd/mtproto"
 	// "github.com/nebulaim/telegramd/biz_model/logic/message"
+	"time"
 )
 
 type UpdatesLogic struct {
@@ -35,6 +36,7 @@ type UpdatesLogic struct {
 func NewUpdatesLogic(userId int32) *UpdatesLogic {
 	return &UpdatesLogic{
 		ownerUserId: userId,
+		date:        int32(time.Now().Unix()),
 	}
 }
 
@@ -220,6 +222,19 @@ func (this *UpdatesLogic) AddUpdateMessageId(messageId int32, randomId int64) {
 		RandomId: randomId,
 	}}
 	this.updates = append(this.updates, updateMessageID.To_Update())
+}
+
+func (this *UpdatesLogic) PushTopUpdateMessageId(messageId int32, randomId int64) {
+	updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
+		Id_4:     messageId,
+		RandomId: randomId,
+	}}
+
+	updates2 := make([]*mtproto.Update, 0, 1 + len(this.updates))
+	updates2 = append(updates2, updateMessageID.To_Update())
+	updates2 = append(updates2, this.updates...)
+	this.updates = updates2
+	// this.updates = append(this.updates, updateMessageID.To_Update())
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

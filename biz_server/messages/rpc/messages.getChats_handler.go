@@ -18,20 +18,24 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 // messages.getChats#3c6aa187 id:Vector<int> = messages.Chats;
 func (s *MessagesServiceImpl) MessagesGetChats(ctx context.Context, request *mtproto.TLMessagesGetChats) (*mtproto.Messages_Chats, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetChats - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getChats#3c6aa187 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetChats logic
+	// TODO(@benqi): messages.chatsSlice
+	chats := &mtproto.TLMessagesChats{Data2: &mtproto.Messages_Chats_Data{
+		Chats: chat.GetChatListBySelfAndIDList(md.UserId, request.GetId()),
+	}}
 
-	return nil, fmt.Errorf("Not impl MessagesGetChats")
+	glog.Infof("messages.getChats#3c6aa187 - reply: %s", chats)
+	return chats.To_Messages_Chats(), nil
 }

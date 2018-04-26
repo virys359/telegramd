@@ -24,7 +24,7 @@ import (
 	"github.com/golang/glog"
 	"fmt"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 )
 
 
@@ -66,7 +66,17 @@ func getBizRPCClient() (*grpc_util.RPCClient, error) {
 		glog.Error(err)
 		return nil, err
 	}
-	return sessionServer.rpcClient, nil
+	return sessionServer.bizRpcClient, nil
+}
+
+func getNbfsRPCClient() (*grpc_util.RPCClient, error) {
+	sessionServer, ok := app.GAppInstance.(*SessionServer)
+	if !ok {
+		err := fmt.Errorf("not use app instance framework!")
+		glog.Error(err)
+		return nil, err
+	}
+	return sessionServer.nbfsRpcClient, nil
 }
 
 func getUserIDByAuthKeyID(authKeyId int64) (useId int32) {

@@ -19,6 +19,11 @@ serviceName = "biz"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
 
+[nbfsRpcClient]
+serviceName = "nbfs"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
 [[mysql]]
 name = "immaster"
 dsn = "root:@/nebulaim?charset=utf8"

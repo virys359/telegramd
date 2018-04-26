@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
@@ -50,7 +50,7 @@ func (s *AccountServiceImpl) AccountReportPeer(ctx context.Context, request *mtp
 		// TODO(@benqi): !currentChat.creator && (!currentChat.megagroup || currentChat.username != null && currentChat.username.length() > 0)
 	}
 
-	// peer := base.FromInputPeer(request.GetPeer())
+	// peer := helper.FromInputPeer(request.GetPeer())
 	reason := base.FromReportReason(request.GetReason())
 
 	text := ""

@@ -30,25 +30,86 @@ import (
 	update3 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
+
+// messages.AffectedHistory
+// messages.AffectedMessages
+
 type SyncServiceImpl struct {
 	// status *model.OnlineStatusModel
 	mu sync.RWMutex
 	s  *syncServer
 	// TODO(@benqi): 多个连接
 	// updates map[int32]chan *zproto.PushUpdatesNotify
+	pushChan chan *mtproto.PushUpdatesData
+	closeChan chan int
 }
 
 func NewSyncService(sync2 *syncServer) *SyncServiceImpl {
-	s := &SyncServiceImpl{s: sync2}
-	// s.status = status
-	// s.updates = make(map[int32]chan *zproto.PushUpdatesNotify)
+	s := &SyncServiceImpl{
+		s:         sync2,
+		closeChan: make(chan int),
+		pushChan:  make(chan *mtproto.PushUpdatesData, 1024),
+	}
+
+	go s.pushUpdatesLoop()
 	return s
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 推送给该用户所有设备
 
+func (s *SyncServiceImpl) pushUpdatesLoop() {
+	defer func() {
+		close(s.pushChan)
+	}()
+
+	for {
+		select {
+		case updatesData, ok := <-s.pushChan:
+			if ok {
+				s.s.sendToSessionServer(1, updatesData)
+			}
+		case <-s.closeChan:
+			return
+		}
+	}
+}
+
+func (s *SyncServiceImpl) Destroy() {
+	s.closeChan <- 1
+}
+
 func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState, updates *mtproto.UpdatesRequest) {
+	if updates.GetPushType() == mtproto.SyncType_SYNC_TYPE_RPC_RESULT {
+		rpcResultData := updates.GetRpcResult()
+		if rpcResultData != nil {
+			var rpcResult = &mtproto.TLRpcResult{
+				ReqMsgId: updates.ClientMsgId,
+			}
+			if rpcResultData.GetAffectedMessages() != nil {
+				rpcResultData.GetAffectedMessages().SetPts(state.Pts)
+				rpcResultData.GetAffectedMessages().SetPtsCount(state.PtsCount)
+				rpcResult.Result = rpcResultData.GetAffectedMessages()
+			} else if rpcResultData.GetAffectedHistory() != nil {
+				rpcResultData.GetAffectedHistory().SetPts(state.Pts)
+				rpcResultData.GetAffectedHistory().SetPtsCount(state.PtsCount)
+				rpcResult.Result = rpcResultData.GetAffectedMessages()
+			} else {
+				rpcResult.Result = rpcResultData.GetUpdates()
+			}
+			// push
+			pushData := &mtproto.PushUpdatesData{
+				AuthKeyId:   updates.AuthKeyId,
+				SessionId:   updates.SessionId,
+				State:       state,
+				UpdatesData: rpcResult.Encode(),
+			}
+
+			s.pushChan <- pushData
+			// s.s.sendToSessionServer(int(updates.ServerId), pushData)
+		}
+	}
+
 	statusList, _ := user.GetOnlineByUserId(updates.GetPushUserId())
 	ss := make(map[int32][]*user.SessionStatus)
 	for _, status := range statusList {
@@ -90,6 +151,12 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 				}
 			case mtproto.SyncType_SYNC_TYPE_USER:
 				encodeUpdateData()
+			case mtproto.SyncType_SYNC_TYPE_RPC_RESULT:
+				if updates.GetSessionId() == ss4.SessionId {
+					continue
+				} else {
+					continue
+				}
 			default:
 				continue
 			}

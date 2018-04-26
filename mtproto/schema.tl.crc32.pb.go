@@ -2635,15 +2635,15 @@ var TLConstructor_value = map[string]int32{
 func (x TLConstructor) String() string {
 	return proto.EnumName(TLConstructor_name, int32(x))
 }
-func (TLConstructor) EnumDescriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
+func (TLConstructor) EnumDescriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
 
 func init() {
 	proto.RegisterEnum("mtproto.TLConstructor", TLConstructor_name, TLConstructor_value)
 }
 
-func init() { proto.RegisterFile("schema.tl.crc32.proto", fileDescriptor2) }
+func init() { proto.RegisterFile("schema.tl.crc32.proto", fileDescriptor3) }
 
-var fileDescriptor2 = []byte{
+var fileDescriptor3 = []byte{
 	// 12207 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0xbd, 0x79, 0x54, 0x14, 0x59,
 	0x9e, 0x2f, 0xfe, 0x93, 0xf5, 0x1c, 0x7e, 0xaf, 0xdf, 0xdc, 0x61, 0xba, 0x67, 0xba, 0xa6, 0xf7,

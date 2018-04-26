@@ -54,6 +54,7 @@ enum SyncType {
     SYNC_TYPE_USER                  = 1;        // 该用户所有设备
     SYNC_TYPE_USER_NOTME            = 2;        // 该用户除了某个设备
     SYNC_TYPE_USER_ME               = 3;        // 该用户指定某个设备
+    SYNC_TYPE_RPC_RESULT            = 4;        // 通过push通道返回rpc
 
     // SYNC_TYPE_AUTH_KEY              = 3;        // 发送给指定设备
     // SYNC_TYPE_AUTH_KEY_USER         = 4;        // 该用户所有设备
@@ -112,14 +113,28 @@ message PushUpdatesData {
     bytes  updates_data = 5;
 }
 
+// Updates
+// messages_affectedHistory
+// messages_affectedMessages
+message RpcResultData {
+    // int32 rpc_result_type = 1;
+    Updates updates = 2;
+    TL_messages_affectedHistory affected_history = 3;
+    TL_messages_affectedMessages affected_messages = 4;
+}
+
 ///////////////////////////////////////////////////////////////////////
 // RPC
 message UpdatesRequest {
     SyncType push_type = 1;
-    int64 auth_key_id = 2;
-    int64 session_id = 3;
-    int32 push_user_id = 4;
-    Updates updates = 5;
+    int32 layer = 2;
+    int32 server_id = 3;
+    int64 auth_key_id = 4;
+    int64 session_id = 5;
+    int32 push_user_id = 6;
+    int64 client_msg_id = 7;
+    Updates updates = 8;
+    RpcResultData rpc_result = 9;
 }
 
 // message

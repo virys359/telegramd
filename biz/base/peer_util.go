@@ -99,6 +99,7 @@ func FromInputPeer2(selfId int32, peer *mtproto.InputPeer) (p *PeerUtil) {
 		p.PeerType = PEER_EMPTY
 	case mtproto.TLConstructor_CRC32_inputPeerSelf:
 		p.PeerType = PEER_SELF
+		p.PeerId = selfId
 	case mtproto.TLConstructor_CRC32_inputPeerUser:
 		p.PeerType = PEER_USER
 		p.PeerId = peer.GetData2().GetUserId()

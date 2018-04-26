@@ -20,8 +20,8 @@ package sync_client
 import (
 	"context"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 )
 
@@ -47,6 +47,28 @@ func InstallSyncClient(discovery *service_discovery.ServiceDiscoveryClientConfig
 
 	syncInstance.client = mtproto.NewRPCSyncClient(conn)
 }
+
+func (c *syncClient) SyncOneUpdateData2(serverId int32, authKeyId, sessionId int64, pushUserId int32, clientMsgId int64, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
+	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{update},
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:    mtproto.SyncType_SYNC_TYPE_RPC_RESULT,
+		ServerId:    serverId,
+		AuthKeyId:   authKeyId,
+		SessionId:   sessionId,
+		PushUserId:  pushUserId,
+		ClientMsgId: clientMsgId,
+		Updates:     updates.To_Updates(),
+		RpcResult:   &mtproto.RpcResultData{
+			AffectedMessages: mtproto.NewTLMessagesAffectedMessages(),
+		},
+	}
+	reply, err = c.client.SyncUpdatesData(context.Background(), m)
+	return
+}
+
 
 func (c *syncClient) SyncOneUpdateData(authKeyId, sessionId int64, pushUserId int32, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
 	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{

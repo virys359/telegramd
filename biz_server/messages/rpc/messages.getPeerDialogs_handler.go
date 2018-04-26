@@ -20,7 +20,7 @@ package rpc
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
@@ -64,20 +64,21 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 		peerDialogs.SetMessages(message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
 	}
 
-	users := user.GetUserList(userIdList)
-	for _, user := range users {
-		if user.GetId() == md.UserId {
-			user.SetSelf(true)
-		} else {
-			user.SetSelf(false)
-		}
-		user.SetContact(true)
-		user.SetMutualContact(true)
-		peerDialogs.Data2.Users = append(peerDialogs.Data2.Users, user.To_User())
-	}
+	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+	peerDialogs.SetUsers(users)
+	//for _, user := range users {
+	//	if user.GetId() == md.UserId {
+	//		user.SetSelf(true)
+	//	} else {
+	//		user.SetSelf(false)
+	//	}
+	//	user.SetContact(true)
+	//	user.SetMutualContact(true)
+	//	peerDialogs.Data2.Users = append(peerDialogs.Data2.Users, user.To_User())
+	//}
 
 	if len(chatIdList) > 0 {
-		peerDialogs.Data2.Chats = chat.GetChatListByIDList(chatIdList)
+		peerDialogs.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
 	state := update2.GetUpdatesState(md.AuthId, md.UserId)

@@ -23,8 +23,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/grpc_util"
-	"github.com/nebulaim/telegramd/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/mtproto"
@@ -57,6 +57,7 @@ type syncServer struct {
 	config     *syncConfig
 	client     *net2.TcpClientGroupManager
 	server     *grpc_util.RPCServer
+	impl       *SyncServiceImpl
 }
 
 func NewSyncServer(configPath string) *syncServer {
@@ -102,12 +103,16 @@ func (s *syncServer) RunLoop() {
 		// cache := cache2.NewAuthKeyCacheManager()
 		// mtproto.RegisterRPCAuthKeyServer(s, rpc.NewAuthKeyService(cache))
 		// mtproto.RegisterRPCSyncServer(s2, NewSyncService(s))
-		mtproto.RegisterRPCSyncServer(s2, NewSyncService(s))
-
+		s.impl = NewSyncService(s)
+		mtproto.RegisterRPCSyncServer(s2, s.impl)
 	})
 }
 
 func (s *syncServer) Destroy() {
+	if s.impl != nil {
+		s.impl.Destroy()
+	}
+
 	s.server.Stop()
 	s.client.Stop()
 }

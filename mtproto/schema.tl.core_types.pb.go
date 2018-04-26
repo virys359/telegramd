@@ -24,7 +24,7 @@ type Error_Data struct {
 func (m *Error_Data) Reset()                    { *m = Error_Data{} }
 func (m *Error_Data) String() string            { return proto.CompactTextString(m) }
 func (*Error_Data) ProtoMessage()               {}
-func (*Error_Data) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+func (*Error_Data) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
 
 func (m *Error_Data) GetCode() int32 {
 	if m != nil {
@@ -48,7 +48,7 @@ type Error struct {
 func (m *Error) Reset()                    { *m = Error{} }
 func (m *Error) String() string            { return proto.CompactTextString(m) }
 func (*Error) ProtoMessage()               {}
-func (*Error) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+func (*Error) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
 
 func (m *Error) GetConstructor() TLConstructor {
 	if m != nil {
@@ -72,7 +72,7 @@ type TLError struct {
 func (m *TLError) Reset()                    { *m = TLError{} }
 func (m *TLError) String() string            { return proto.CompactTextString(m) }
 func (*TLError) ProtoMessage()               {}
-func (*TLError) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
+func (*TLError) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{2} }
 
 func (m *TLError) GetData2() *Error_Data {
 	if m != nil {
@@ -91,7 +91,7 @@ type Null_Data struct {
 func (m *Null_Data) Reset()                    { *m = Null_Data{} }
 func (m *Null_Data) String() string            { return proto.CompactTextString(m) }
 func (*Null_Data) ProtoMessage()               {}
-func (*Null_Data) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
+func (*Null_Data) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{3} }
 
 type Null struct {
 	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
@@ -101,7 +101,7 @@ type Null struct {
 func (m *Null) Reset()                    { *m = Null{} }
 func (m *Null) String() string            { return proto.CompactTextString(m) }
 func (*Null) ProtoMessage()               {}
-func (*Null) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
+func (*Null) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
 
 func (m *Null) GetConstructor() TLConstructor {
 	if m != nil {
@@ -125,7 +125,7 @@ type TLNull struct {
 func (m *TLNull) Reset()                    { *m = TLNull{} }
 func (m *TLNull) String() string            { return proto.CompactTextString(m) }
 func (*TLNull) ProtoMessage()               {}
-func (*TLNull) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
+func (*TLNull) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
 
 func (m *TLNull) GetData2() *Null_Data {
 	if m != nil {
@@ -145,7 +145,7 @@ type Bool_Data struct {
 func (m *Bool_Data) Reset()                    { *m = Bool_Data{} }
 func (m *Bool_Data) String() string            { return proto.CompactTextString(m) }
 func (*Bool_Data) ProtoMessage()               {}
-func (*Bool_Data) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
+func (*Bool_Data) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{6} }
 
 type Bool struct {
 	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
@@ -155,7 +155,7 @@ type Bool struct {
 func (m *Bool) Reset()                    { *m = Bool{} }
 func (m *Bool) String() string            { return proto.CompactTextString(m) }
 func (*Bool) ProtoMessage()               {}
-func (*Bool) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
+func (*Bool) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{7} }
 
 func (m *Bool) GetConstructor() TLConstructor {
 	if m != nil {
@@ -179,7 +179,7 @@ type TLBoolFalse struct {
 func (m *TLBoolFalse) Reset()                    { *m = TLBoolFalse{} }
 func (m *TLBoolFalse) String() string            { return proto.CompactTextString(m) }
 func (*TLBoolFalse) ProtoMessage()               {}
-func (*TLBoolFalse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
+func (*TLBoolFalse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
 
 func (m *TLBoolFalse) GetData2() *Bool_Data {
 	if m != nil {
@@ -196,7 +196,7 @@ type TLBoolTrue struct {
 func (m *TLBoolTrue) Reset()                    { *m = TLBoolTrue{} }
 func (m *TLBoolTrue) String() string            { return proto.CompactTextString(m) }
 func (*TLBoolTrue) ProtoMessage()               {}
-func (*TLBoolTrue) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{9} }
+func (*TLBoolTrue) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{9} }
 
 func (m *TLBoolTrue) GetData2() *Bool_Data {
 	if m != nil {
@@ -215,7 +215,7 @@ type True_Data struct {
 func (m *True_Data) Reset()                    { *m = True_Data{} }
 func (m *True_Data) String() string            { return proto.CompactTextString(m) }
 func (*True_Data) ProtoMessage()               {}
-func (*True_Data) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{10} }
+func (*True_Data) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{10} }
 
 type True struct {
 	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
@@ -225,7 +225,7 @@ type True struct {
 func (m *True) Reset()                    { *m = True{} }
 func (m *True) String() string            { return proto.CompactTextString(m) }
 func (*True) ProtoMessage()               {}
-func (*True) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{11} }
+func (*True) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{11} }
 
 func (m *True) GetConstructor() TLConstructor {
 	if m != nil {
@@ -249,7 +249,7 @@ type TLTrue struct {
 func (m *TLTrue) Reset()                    { *m = TLTrue{} }
 func (m *TLTrue) String() string            { return proto.CompactTextString(m) }
 func (*TLTrue) ProtoMessage()               {}
-func (*TLTrue) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{12} }
+func (*TLTrue) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{12} }
 
 func (m *TLTrue) GetData2() *True_Data {
 	if m != nil {
@@ -274,9 +274,9 @@ func init() {
 	proto.RegisterType((*TLTrue)(nil), "mtproto.TL_true")
 }
 
-func init() { proto.RegisterFile("schema.tl.core_types.proto", fileDescriptor1) }
+func init() { proto.RegisterFile("schema.tl.core_types.proto", fileDescriptor2) }
 
-var fileDescriptor1 = []byte{
+var fileDescriptor2 = []byte{
 	// 313 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x91, 0xcf, 0x4f, 0xc2, 0x30,
 	0x14, 0xc7, 0x03, 0x01, 0x71, 0xaf, 0xc6, 0x43, 0x8d, 0x86, 0xe0, 0x85, 0xec, 0x34, 0x2f, 0x3d,
