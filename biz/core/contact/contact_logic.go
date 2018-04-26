@@ -18,9 +18,10 @@
 package contact
 
 import (
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"time"
+
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/mtproto"
 )
 
@@ -53,8 +54,8 @@ func findContaceByPhone(contacts []contactData, phone string) *dataobject.UserCo
 func (c contactLogic) GetAllContactList() []contactData {
 	doList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectAllUserContacts(int32(c))
 	contactList := make([]contactData, 0, len(doList))
-	for _, do := range doList {
-		contactList = append(contactList, &do)
+	for index, _ := range doList {
+		contactList = append(contactList, &doList[index])
 	}
 	return contactList
 }
@@ -63,8 +64,8 @@ func (c contactLogic) GetAllContactList() []contactData {
 func (c contactLogic) GetContactList() []contactData {
 	doList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(int32(c))
 	contactList := make([]contactData, 0, len(doList))
-	for _, do := range doList {
-		contactList = append(contactList, &do)
+	for index, _ := range doList {
+		contactList = append(contactList, &doList[index])
 	}
 	return contactList
 }
