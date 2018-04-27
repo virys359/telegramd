@@ -29,12 +29,13 @@ import (
 // help.getConfig#c4f9186b = Config;
 func (s *HelpServiceImpl) HelpGetConfig(ctx context.Context, request *mtproto.TLHelpGetConfig) (*mtproto.Config, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("HelpGetConfig - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("help.getConfig#c4f9186b - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): 设置Reply对象累死人了, 得想个办法实现model和mtproto的自动转换
 	helpConfig := mtproto.NewTLConfig()
 	// &mtproto.TLConfig{}
 	helpConfig.SetPhonecallsEnabled(config.PhonecallsEnabled)
+	helpConfig.SetDefaultP2PContacts(config.DefaultP2pContacts)
 	now := int32(time.Now().Unix())
 	helpConfig.SetDate(now)
 	helpConfig.SetExpires(now + EXPIRES_TIMEOUT)
@@ -81,6 +82,7 @@ func (s *HelpServiceImpl) HelpGetConfig(ctx context.Context, request *mtproto.TL
 	helpConfig.SetRatingEDecay(config.RatingEDecay)
 	helpConfig.SetStickersRecentLimit(config.StickersRecentLimit)
 	helpConfig.SetStickersFavedLimit(config.StickersFavedLimit)
+	helpConfig.SetChannelsReadMediaPeriod(config.ChannelsReadMediaPeriod)
 	helpConfig.SetTmpSessions(config.TmpSessions)
 	helpConfig.SetPinnedDialogsCountMax(config.PinnedDialogsCountMax)
 	helpConfig.SetCallReceiveTimeoutMs(config.CallReceiveTimeoutMs)
@@ -102,7 +104,6 @@ func (s *HelpServiceImpl) HelpGetConfig(ctx context.Context, request *mtproto.TL
 	helpConfig.SetDisabledFeatures(disabledFeatures)
 
 	reply := helpConfig.To_Config()
-	// mtproto.MakeConfig(helpConfig)
-	glog.Infof("HelpGetConfig - reply: %s", logger.JsonDebugData(reply))
+	glog.Infof("help.getConfig#c4f9186b - reply: %s", logger.JsonDebugData(reply))
 	return reply, nil
 }

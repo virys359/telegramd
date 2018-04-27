@@ -37,7 +37,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 
 	var (
 		err error
-		// importedContacts *mtproto.TLImportedContact
+		importedContacts *mtproto.TLContactsImportedContacts
 	)
 
 	if len(request.Contacts) == 0 {
@@ -65,9 +65,19 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	contactUser := user.GetUserByPhoneNumber(md.UserId, phone)
 	if contactUser == nil {
 		// 这里该手机号未注册，我们认为手机号出错
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_CODE_INVALID)
-		glog.Error(err, ": phone code invalid - ", inputContact.GetPhone())
-		return nil, err
+		//err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_CODE_INVALID)
+		//glog.Error(err, ": phone code invalid - ", inputContact.GetPhone())
+		//return nil, err
+
+		importedContacts = &mtproto.TLContactsImportedContacts{Data2: &mtproto.Contacts_ImportedContacts_Data{
+			Imported:       []*mtproto.ImportedContact{},
+			PopularInvites: []*mtproto.PopularContact{},
+			RetryContacts:  []int64{},
+			Users:          []*mtproto.User{},
+		}}
+
+		glog.Infof("contacts.importContacts#2c800be5 - reply: %s", logger.JsonDebugData(importedContacts))
+		return importedContacts.To_Contacts_ImportedContacts(), nil
 	}
 	// contactUser.SetContact(true)
 	// contactUser.SetMutualContact(true)
@@ -109,7 +119,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		ClientId: inputContact.GetClientId(),
 	}}
 	// contacts.importedContacts#77d01c3b imported:Vector<ImportedContact> popular_invites:Vector<PopularContact> retry_contacts:Vector<long> users:Vector<User> = contacts.ImportedContacts;
-	importedContacts := &mtproto.TLContactsImportedContacts{Data2: &mtproto.Contacts_ImportedContacts_Data{
+	importedContacts = &mtproto.TLContactsImportedContacts{Data2: &mtproto.Contacts_ImportedContacts_Data{
 		Imported: []*mtproto.ImportedContact{imported.To_ImportedContact()},
 		Users: []*mtproto.User{contactUser.To_User()},
 	}}

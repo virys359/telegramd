@@ -28,11 +28,14 @@ import (
 // messages.getAllStickers#1c9618b1 hash:int = messages.AllStickers;
 func (s *MessagesServiceImpl) MessagesGetAllStickers(ctx context.Context, request *mtproto.TLMessagesGetAllStickers) (*mtproto.Messages_AllStickers, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetAllStickers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getAllStickers#1c9618b1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl MessagesGetAllStickers logic
-	stickers := mtproto.NewTLMessagesAllStickersNotModified()
+	stickers := &mtproto.TLMessagesAllStickers{Data2: &mtproto.Messages_AllStickers_Data{
+		Hash: request.Hash,
+		Sets: []*mtproto.StickerSet{},
+	}}
 
-	glog.Infof("MessagesGetAllStickers - reply: %s", logger.JsonDebugData(stickers))
+	glog.Infof("messages.getAllStickers#1c9618b1 - reply: %s", logger.JsonDebugData(stickers))
 	return stickers.To_Messages_AllStickers(), nil
 }

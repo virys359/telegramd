@@ -35,6 +35,7 @@ import (
 )
 
 const (
+
 	kPhotoSizeOriginalType      = "0"	// client upload original photo
 	kPhotoSizeSmallType	 		= "s"
 	kPhotoSizeMediumType  		= "m"
