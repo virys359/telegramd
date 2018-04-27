@@ -97,7 +97,7 @@ import (
 // messages.getDialogs#191ba9c5 flags:# exclude_pinned:flags.0?true offset_date:int offset_id:int offset_peer:InputPeer limit:int = messages.Dialogs;
 func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *mtproto.TLMessagesGetDialogs) (*mtproto.Messages_Dialogs, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetDialogs - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getDialogs#191ba9c5 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	offsetId := request.GetOffsetId()
 	if offsetId == 0 {
@@ -124,6 +124,8 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 	messageIdList, userIdList, chatIdList, _ := message.PickAllIDListByDialogs(dialogs)
 
 	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
+	glog.Info("messages.getDialogs#191ba9c5 - messages: %s", logger.JsonDebugData(messages))
+
 	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
 	chats := chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	messageDialogs := mtproto.TLMessagesDialogs{Data2: &mtproto.Messages_Dialogs_Data{
@@ -133,6 +135,6 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 		Chats:    chats,
 	}}
 
-	glog.Infof("MessagesGetDialogs - reply: %s", logger.JsonDebugData(messageDialogs))
+	glog.Infof("messages.getDialogs#191ba9c5 - reply: %s", logger.JsonDebugData(messageDialogs))
 	return messageDialogs.To_Messages_Dialogs(), nil
 }

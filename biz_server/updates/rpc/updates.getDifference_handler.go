@@ -47,9 +47,9 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	for _, update := range updateList {
 		switch update.GetConstructor() {
 		case mtproto.TLConstructor_CRC32_updateNewMessage:
-			// newMessage := update.To_UpdateNewMessage()
-			// messages = append(messages, newMessage.GetMessage())
-			otherUpdates = append(otherUpdates, update)
+			newMessage := update.To_UpdateNewMessage()
+			messages = append(messages, newMessage.GetMessage())
+			// otherUpdates = append(otherUpdates, update)
 
 		case mtproto.TLConstructor_CRC32_updateReadHistoryOutbox:
 			readHistoryOutbox := update.To_UpdateReadHistoryOutbox()

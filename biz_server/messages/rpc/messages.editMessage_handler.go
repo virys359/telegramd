@@ -59,10 +59,10 @@ func setEditMessageData(request *mtproto.TLMessagesEditMessage, message *mtproto
 	data2.EditDate = int32(time.Now().Unix())
 }
 
-// messages.editMessage#ce91e4ca flags:# no_webpage:flags.1?true peer:InputPeer id:int message:flags.11?string reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> = Updates;
+// messages.editMessage#5d1b8dd flags:# no_webpage:flags.1?true stop_geo_live:flags.12?true peer:InputPeer id:int message:flags.11?string reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> geo_point:flags.13?InputGeoPoint = Updates;
 func (s *MessagesServiceImpl) MessagesEditMessage(ctx context.Context, request *mtproto.TLMessagesEditMessage) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("messages.editMessage#ce91e4ca - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.editMessage#5d1b8dd - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// SelectDialogMessageListByMessageId
 	editOutbox := message2.GetMessageByPeerAndMessageId(md.UserId, request.GetId())
@@ -90,6 +90,6 @@ func (s *MessagesServiceImpl) MessagesEditMessage(ctx context.Context, request *
 		message2.SaveMessage(editMessage, editUserId, editMessage.GetData2().GetId())
 	}
 
-	glog.Infof("messages.editMessage#ce91e4ca - reply: %s", logger.JsonDebugData(syncUpdates))
+	glog.Infof("messages.editMessage#5d1b8dd - reply: %s", logger.JsonDebugData(syncUpdates))
 	return syncUpdates.To_Updates(), nil
 }

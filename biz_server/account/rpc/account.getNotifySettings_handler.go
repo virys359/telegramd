@@ -32,16 +32,27 @@ func (s *AccountServiceImpl) AccountGetNotifySettings(ctx context.Context, reque
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.getNotifySettings#12b3ad31 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// peer := request.GetPeer()
-	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputNotifyPeer {
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
-		glog.Error(err, ": peer only is inputNotifyPeer")
-		return nil, err
+	var (
+		settings *mtproto.PeerNotifySettings
+	)
+
+	switch request.GetPeer().GetConstructor() {
+	case mtproto.TLConstructor_CRC32_inputNotifyPeer:
+		peer := base.FromInputNotifyPeer(request.GetPeer())
+		settings = account.GetNotifySettings(md.UserId, peer)
+	case mtproto.TLConstructor_CRC32_inputNotifyUsers,
+		mtproto.TLConstructor_CRC32_inputNotifyChats,
+		mtproto.TLConstructor_CRC32_inputNotifyAll:
+
+		peerSettings := &mtproto.TLPeerNotifySettings{Data2: &mtproto.PeerNotifySettings_Data{
+			ShowPreviews: true,
+			Silent:       false,
+			MuteUntil:    0,
+			Sound:        "default",
+		}}
+		settings = peerSettings.To_PeerNotifySettings()
 	}
 
-	peer := base.FromInputNotifyPeer(request.GetPeer())
-	reply := account.GetNotifySettings(md.UserId, peer)
-
-	glog.Infof("account.getNotifySettings#12b3ad31 - reply: %s", logger.JsonDebugData(reply))
-	return reply, nil
+	glog.Infof("account.getNotifySettings#12b3ad31 - reply: %s", logger.JsonDebugData(settings))
+	return settings, nil
 }

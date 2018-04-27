@@ -30,29 +30,6 @@ import "schema.tl.crc32.proto";
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Server_DH_inner_data <--
-//  + TL_server_DH_inner_data
-//
-message Server_DH_inner_data_Data {
-    bytes nonce = 1;
-    bytes server_nonce = 2;
-    int32 g = 3;
-    string dh_prime = 4;
-    string g_a = 5;
-    int32 server_time = 6;
-}
-
-message Server_DH_inner_data {
-    TLConstructor constructor = 1;
-    Server_DH_inner_data_Data data2 = 2;
-}
-
-// server_DH_inner_data#b5890dba nonce:int128 server_nonce:int128 g:int dh_prime:string g_a:string server_time:int = Server_DH_inner_data;
-message TL_server_DH_inner_data {
-    Server_DH_inner_data_Data data2 = 2;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Client_DH_Inner_Data <--
 //  + TL_client_DH_inner_data
 //
@@ -200,5 +177,28 @@ message TL_server_DH_params_fail {
 // server_DH_params_ok#d0e8075c nonce:int128 server_nonce:int128 encrypted_answer:string = Server_DH_Params;
 message TL_server_DH_params_ok {
     Server_DH_Params_Data data2 = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Server_DH_inner_data <--
+//  + TL_server_DH_inner_data
+//
+message Server_DH_inner_data_Data {
+    bytes nonce = 1;
+    bytes server_nonce = 2;
+    int32 g = 3;
+    string dh_prime = 4;
+    string g_a = 5;
+    int32 server_time = 6;
+}
+
+message Server_DH_inner_data {
+    TLConstructor constructor = 1;
+    Server_DH_inner_data_Data data2 = 2;
+}
+
+// server_DH_inner_data#b5890dba nonce:int128 server_nonce:int128 g:int dh_prime:string g_a:string server_time:int = Server_DH_inner_data;
+message TL_server_DH_inner_data {
+    Server_DH_inner_data_Data data2 = 2;
 }
 

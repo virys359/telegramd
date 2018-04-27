@@ -27,7 +27,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
-// TODO(@benqi): 当前测试环境code统一为"123456"
+// TODO(@benqi): 当前测试环境code统一为"12345"
 // TODO(@benqi): 限制同一个authKeyId
 // TODO(@benqi): 使用redis
 
@@ -254,7 +254,7 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 	// 使用最简单的办法，每次新建
 	sentCodeType, nextCodeType := makeCodeType(phoneRegistered, allowFlashCall, currentNumber)
 	// TODO(@benqi): gen rand number
-	code.code = "123456"
+	code.code = "12345"
 	// code.codeHash = fmt.Sprintf("%20d", helper.NextSnowflakeId())
 	code.codeHash = crypto.GenerateStringNonce(16)
 	code.codeExpired = int32(time.Now().Unix() + 15*60)

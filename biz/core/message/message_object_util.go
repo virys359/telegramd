@@ -151,19 +151,21 @@ func messageDOToMessage(do *dataobject.MessagesDO) (*mtproto.Message, error) {
 		message.Constructor = mtproto.TLConstructor_CRC32_messageEmpty
 		// message = message2
 	case MESSAGE_TYPE_MESSAGE:
-		message.Constructor = mtproto.TLConstructor_CRC32_message
 		// err := proto.Unmarshal(messageDO.MessageData, message)
 		err := json.Unmarshal([]byte(do.MessageData), message)
 		if err != nil {
 			glog.Errorf("messageDOToMessage - Unmarshal message(%d)error: %v", do.Id, err)
 			return nil, err
+		} else {
+			message.Constructor = mtproto.TLConstructor_CRC32_message
 		}
 	case MESSAGE_TYPE_MESSAGE_SERVICE:
-		message.Constructor = mtproto.TLConstructor_CRC32_messageService
 		err := json.Unmarshal([]byte(do.MessageData), message)
 		if err != nil {
 			glog.Errorf("messageDOToMessage - Unmarshal message(%d)error: %v", do.Id, err)
 			return nil, err
+		} else {
+			message.Constructor = mtproto.TLConstructor_CRC32_messageService
 		}
 	default:
 		err := fmt.Errorf("messageDOToMessage - Invalid messageType, db's data error, message(%d)", do.Id)

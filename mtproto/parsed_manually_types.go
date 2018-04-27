@@ -203,24 +203,24 @@ func (m *TLRpcResult) Decode(dbuf *DecodeBuf) error {
 
 ///////////////////////////////////////////////////////////////////////////////
 // contacts.getContactsLayer70#22c6aa08 hash:string = contacts.Contacts;
-func NewTLContactsGetContactsLayer70() *TLContactsGetContactsLayer70 {
-	return &TLContactsGetContactsLayer70{}
-}
-
-func (m *TLContactsGetContactsLayer70) Encode() []byte {
-	x := NewEncodeBuf(512)
-	x.Int(int32(TLConstructor_CRC32_contacts_getContactsLayer70))
-
-	x.String(m.Hash)
-
-	return x.buf
-}
-
-func (m *TLContactsGetContactsLayer70) Decode(dbuf *DecodeBuf) error {
-	m.Hash = dbuf.String()
-
-	return dbuf.err
-}
+//func NewTLContactsGetContactsLayer70() *TLContactsGetContactsLayer70 {
+//	return &TLContactsGetContactsLayer70{}
+//}
+//
+//func (m *TLContactsGetContactsLayer70) Encode() []byte {
+//	x := NewEncodeBuf(512)
+//	x.Int(int32(TLConstructor_CRC32_contacts_getContactsLayer70))
+//
+//	x.String(m.Hash)
+//
+//	return x.buf
+//}
+//
+//func (m *TLContactsGetContactsLayer70) Decode(dbuf *DecodeBuf) error {
+//	m.Hash = dbuf.String()
+//
+//	return dbuf.err
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vector
