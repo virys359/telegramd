@@ -18,10 +18,10 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 )
@@ -32,6 +32,22 @@ func (s *UsersServiceImpl) UsersGetUsers(ctx context.Context, request *mtproto.T
 	glog.Infof("UsersGetUsers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl UsersGetUsers logic
+	userList := &mtproto.Vector_User{
+		Datas: make([]*mtproto.User, 0, len(request.Id)),
+	}
 
-	return nil, fmt.Errorf("Not impl UsersGetUsers")
+	for _, inputUser := range request.Id {
+		switch inputUser.GetConstructor() {
+		case mtproto.TLConstructor_CRC32_inputUserSelf:
+			userData := user.GetUserById(md.GetUserId(), md.GetUserId())
+			userList.Datas = append(userList.Datas, userData.To_User())
+		case mtproto.TLConstructor_CRC32_inputUser:
+			userData := user.GetUserById(md.GetUserId(), inputUser.GetData2().GetUserId())
+			userList.Datas = append(userList.Datas, userData.To_User())
+		case mtproto.TLConstructor_CRC32_inputUserEmpty:
+		}
+	}
+
+	glog.Infof("users.getUsers#d91a548 - reply: ", logger.JsonDebugData(userList))
+	return userList, nil
 }
