@@ -50,45 +50,23 @@ message TL_future_salt {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Pong <--
-//  + TL_pong
+// FutureSalts <--
+//  + TL_future_salts
 //
-message Pong_Data {
-    int64 msg_id = 1;
-    int64 ping_id = 2;
+message FutureSalts_Data {
+    int64 req_msg_id = 1;
+    int32 now = 2;
+    repeated TL_future_salt salts = 3;
 }
 
-message Pong {
+message FutureSalts {
     TLConstructor constructor = 1;
-    Pong_Data data2 = 2;
+    FutureSalts_Data data2 = 2;
 }
 
-// pong#347773c5 msg_id:long ping_id:long = Pong;
-message TL_pong {
-    Pong_Data data2 = 2;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// DestroySessionRes <--
-//  + TL_destroy_session_ok
-//  + TL_destroy_session_none
-//
-message DestroySessionRes_Data {
-    int64 session_id = 1;
-}
-
-message DestroySessionRes {
-    TLConstructor constructor = 1;
-    DestroySessionRes_Data data2 = 2;
-}
-
-// destroy_session_ok#e22045fc session_id:long = DestroySessionRes;
-message TL_destroy_session_ok {
-    DestroySessionRes_Data data2 = 2;
-}
-// destroy_session_none#62d350c9 session_id:long = DestroySessionRes;
-message TL_destroy_session_none {
-    DestroySessionRes_Data data2 = 2;
+// future_salts#ae500895 req_msg_id:long now:int salts:vector<future_salt> = FutureSalts;
+message TL_future_salts {
+    FutureSalts_Data data2 = 2;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,24 +90,56 @@ message TL_new_session_created {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// help_ConfigSimple <--
-//  + TL_help_configSimple
+// RpcDropAnswer <--
+//  + TL_rpc_answer_unknown
+//  + TL_rpc_answer_dropped_running
+//  + TL_rpc_answer_dropped
 //
-message help_ConfigSimple_Data {
-    int32 date = 1;
-    int32 expires = 2;
-    int32 dc_id = 3;
-    repeated TL_ipPort ip_port_list = 4;
+message RpcDropAnswer_Data {
+    int64 msg_id = 1;
+    int32 seq_no = 2;
+    int32 bytes = 3;
 }
 
-message help_ConfigSimple {
+message RpcDropAnswer {
     TLConstructor constructor = 1;
-    help_ConfigSimple_Data data2 = 2;
+    RpcDropAnswer_Data data2 = 2;
 }
 
-// help.configSimple#d997c3c5 date:int expires:int dc_id:int ip_port_list:Vector<ipPort> = help.ConfigSimple;
-message TL_help_configSimple {
-    help_ConfigSimple_Data data2 = 2;
+// rpc_answer_unknown#5e2ad36e = RpcDropAnswer;
+message TL_rpc_answer_unknown {
+    RpcDropAnswer_Data data2 = 2;
+}
+// rpc_answer_dropped_running#cd78e586 = RpcDropAnswer;
+message TL_rpc_answer_dropped_running {
+    RpcDropAnswer_Data data2 = 2;
+}
+// rpc_answer_dropped#a43ad8b7 msg_id:long seq_no:int bytes:int = RpcDropAnswer;
+message TL_rpc_answer_dropped {
+    RpcDropAnswer_Data data2 = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DestroySessionRes <--
+//  + TL_destroy_session_ok
+//  + TL_destroy_session_none
+//
+message DestroySessionRes_Data {
+    int64 session_id = 1;
+}
+
+message DestroySessionRes {
+    TLConstructor constructor = 1;
+    DestroySessionRes_Data data2 = 2;
+}
+
+// destroy_session_ok#e22045fc session_id:long = DestroySessionRes;
+message TL_destroy_session_ok {
+    DestroySessionRes_Data data2 = 2;
+}
+// destroy_session_none#62d350c9 session_id:long = DestroySessionRes;
+message TL_destroy_session_none {
+    DestroySessionRes_Data data2 = 2;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,51 +180,105 @@ message TL_msgs_all_info {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// MsgResendReq <--
-//  + TL_msg_resend_req
+// RpcError <--
+//  + TL_rpc_error
 //
-message MsgResendReq_Data {
-    repeated int64 msg_ids = 1;
+message RpcError_Data {
+    int32 error_code = 1;
+    string error_message = 2;
 }
 
-message MsgResendReq {
+message RpcError {
     TLConstructor constructor = 1;
-    MsgResendReq_Data data2 = 2;
+    RpcError_Data data2 = 2;
 }
 
-// msg_resend_req#7d861a08 msg_ids:Vector<long> = MsgResendReq;
-message TL_msg_resend_req {
-    MsgResendReq_Data data2 = 2;
+// rpc_error#2144ca19 error_code:int error_message:string = RpcError;
+message TL_rpc_error {
+    RpcError_Data data2 = 2;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// RpcDropAnswer <--
-//  + TL_rpc_answer_unknown
-//  + TL_rpc_answer_dropped_running
-//  + TL_rpc_answer_dropped
+// MsgsAck <--
+//  + TL_msgs_ack
 //
-message RpcDropAnswer_Data {
-    int64 msg_id = 1;
-    int32 seq_no = 2;
-    int32 bytes = 3;
+message MsgsAck_Data {
+    repeated int64 msg_ids = 1;
 }
 
-message RpcDropAnswer {
+message MsgsAck {
     TLConstructor constructor = 1;
-    RpcDropAnswer_Data data2 = 2;
+    MsgsAck_Data data2 = 2;
 }
 
-// rpc_answer_unknown#5e2ad36e = RpcDropAnswer;
-message TL_rpc_answer_unknown {
-    RpcDropAnswer_Data data2 = 2;
+// msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;
+message TL_msgs_ack {
+    MsgsAck_Data data2 = 2;
 }
-// rpc_answer_dropped_running#cd78e586 = RpcDropAnswer;
-message TL_rpc_answer_dropped_running {
-    RpcDropAnswer_Data data2 = 2;
+
+///////////////////////////////////////////////////////////////////////////////
+// MsgDetailedInfo <--
+//  + TL_msg_detailed_info
+//  + TL_msg_new_detailed_info
+//
+message MsgDetailedInfo_Data {
+    int64 msg_id = 1;
+    int64 answer_msg_id = 2;
+    int32 bytes = 3;
+    int32 status = 4;
 }
-// rpc_answer_dropped#a43ad8b7 msg_id:long seq_no:int bytes:int = RpcDropAnswer;
-message TL_rpc_answer_dropped {
-    RpcDropAnswer_Data data2 = 2;
+
+message MsgDetailedInfo {
+    TLConstructor constructor = 1;
+    MsgDetailedInfo_Data data2 = 2;
+}
+
+// msg_detailed_info#276d3ec6 msg_id:long answer_msg_id:long bytes:int status:int = MsgDetailedInfo;
+message TL_msg_detailed_info {
+    MsgDetailedInfo_Data data2 = 2;
+}
+// msg_new_detailed_info#809db6df answer_msg_id:long bytes:int status:int = MsgDetailedInfo;
+message TL_msg_new_detailed_info {
+    MsgDetailedInfo_Data data2 = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Pong <--
+//  + TL_pong
+//
+message Pong_Data {
+    int64 msg_id = 1;
+    int64 ping_id = 2;
+}
+
+message Pong {
+    TLConstructor constructor = 1;
+    Pong_Data data2 = 2;
+}
+
+// pong#347773c5 msg_id:long ping_id:long = Pong;
+message TL_pong {
+    Pong_Data data2 = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// HttpWait <--
+//  + TL_http_wait
+//
+message HttpWait_Data {
+    int32 max_delay = 1;
+    int32 wait_after = 2;
+    int32 max_wait = 3;
+}
+
+message HttpWait {
+    TLConstructor constructor = 1;
+    HttpWait_Data data2 = 2;
+}
+
+// http_wait#9299359f max_delay:int wait_after:int max_wait:int = HttpWait;
+message TL_http_wait {
+    HttpWait_Data data2 = 2;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -263,124 +327,20 @@ message TL_msgs_state_info {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// MsgDetailedInfo <--
-//  + TL_msg_detailed_info
-//  + TL_msg_new_detailed_info
+// MsgResendReq <--
+//  + TL_msg_resend_req
 //
-message MsgDetailedInfo_Data {
-    int64 msg_id = 1;
-    int64 answer_msg_id = 2;
-    int32 bytes = 3;
-    int32 status = 4;
-}
-
-message MsgDetailedInfo {
-    TLConstructor constructor = 1;
-    MsgDetailedInfo_Data data2 = 2;
-}
-
-// msg_detailed_info#276d3ec6 msg_id:long answer_msg_id:long bytes:int status:int = MsgDetailedInfo;
-message TL_msg_detailed_info {
-    MsgDetailedInfo_Data data2 = 2;
-}
-// msg_new_detailed_info#809db6df answer_msg_id:long bytes:int status:int = MsgDetailedInfo;
-message TL_msg_new_detailed_info {
-    MsgDetailedInfo_Data data2 = 2;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// RpcError <--
-//  + TL_rpc_error
-//
-message RpcError_Data {
-    int32 error_code = 1;
-    string error_message = 2;
-}
-
-message RpcError {
-    TLConstructor constructor = 1;
-    RpcError_Data data2 = 2;
-}
-
-// rpc_error#2144ca19 error_code:int error_message:string = RpcError;
-message TL_rpc_error {
-    RpcError_Data data2 = 2;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// HttpWait <--
-//  + TL_http_wait
-//
-message HttpWait_Data {
-    int32 max_delay = 1;
-    int32 wait_after = 2;
-    int32 max_wait = 3;
-}
-
-message HttpWait {
-    TLConstructor constructor = 1;
-    HttpWait_Data data2 = 2;
-}
-
-// http_wait#9299359f max_delay:int wait_after:int max_wait:int = HttpWait;
-message TL_http_wait {
-    HttpWait_Data data2 = 2;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// IpPort <--
-//  + TL_ipPort
-//
-message IpPort_Data {
-    int32 ipv4 = 1;
-    int32 port = 2;
-}
-
-message IpPort {
-    TLConstructor constructor = 1;
-    IpPort_Data data2 = 2;
-}
-
-// ipPort#d433ad73 ipv4:int port:int = IpPort;
-message TL_ipPort {
-    IpPort_Data data2 = 2;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// MsgsAck <--
-//  + TL_msgs_ack
-//
-message MsgsAck_Data {
+message MsgResendReq_Data {
     repeated int64 msg_ids = 1;
 }
 
-message MsgsAck {
+message MsgResendReq {
     TLConstructor constructor = 1;
-    MsgsAck_Data data2 = 2;
+    MsgResendReq_Data data2 = 2;
 }
 
-// msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;
-message TL_msgs_ack {
-    MsgsAck_Data data2 = 2;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// FutureSalts <--
-//  + TL_future_salts
-//
-message FutureSalts_Data {
-    int64 req_msg_id = 1;
-    int32 now = 2;
-    repeated TL_future_salt salts = 3;
-}
-
-message FutureSalts {
-    TLConstructor constructor = 1;
-    FutureSalts_Data data2 = 2;
-}
-
-// future_salts#ae500895 req_msg_id:long now:int salts:vector<future_salt> = FutureSalts;
-message TL_future_salts {
-    FutureSalts_Data data2 = 2;
+// msg_resend_req#7d861a08 msg_ids:Vector<long> = MsgResendReq;
+message TL_msg_resend_req {
+    MsgResendReq_Data data2 = 2;
 }
 

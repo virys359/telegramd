@@ -31,7 +31,7 @@ import (
 // account.updateStatus#6628562c offline:Bool = Bool;
 func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *mtproto.TLAccountUpdateStatus) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("AccountUpdateStatus - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("account.updateStatus#6628562c - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var status *mtproto.UserStatus
 
@@ -67,6 +67,6 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 		sync_client.GetSyncClient().PushToUserUpdatesData(id, updates.To_Updates())
 	}
 
-	glog.Infof("AccountUpdateStatus - reply: {true}")
+	glog.Infof("account.updateStatus#6628562c - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

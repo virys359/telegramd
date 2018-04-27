@@ -24,6 +24,7 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"math"
 )
 
 type sessionClient struct {
@@ -270,12 +271,20 @@ func (c *sessionClient) onGetFutureSalts(md *mtproto.ZProtoMetadata, msgId int64
 	getFutureSalts, _ := request.(*mtproto.TLGetFutureSalts)
 	glog.Info("onGetFutureSalts - request data: ", getFutureSalts)
 
-	// TODO(@benqi): 实现getFutureSalts处理逻辑
+	// TODO(@benqi): 简单实现
+	salts := make([]*mtproto.TLFutureSalt, getFutureSalts.Num)
+	for i := int32(0); i < getFutureSalts.Num; i++ {
+		salt := mtproto.NewTLFutureSalt()
+		salt.SetSalt(getSalt())
+		salt.SetValidSince(int32(time.Now().Unix()))
+		salt.SetValidUntil(math.MaxInt32)
+		salts[i] = salt
+	}
 
 	futureSalts := &mtproto.TLFutureSalts{ Data2: &mtproto.FutureSalts_Data{
 		ReqMsgId: msgId,
 		Now: int32(time.Now().Unix()),
-		// Salts: []mtproto.
+		Salts: salts,
 	}}
 
 	c.sendMessageList = append(c.sendMessageList, &messageData{true, false, futureSalts})

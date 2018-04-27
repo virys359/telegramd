@@ -26,12 +26,13 @@ import (
 	"golang.org/x/net/context"
 )
 
-// messages.editInlineBotMessage#b0e08243 flags:# no_webpage:flags.1?true stop_geo_live:flags.12?true id:InputBotInlineMessageID message:flags.11?string reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> geo_point:flags.13?InputGeoPoint = Bool;
-func (s *MessagesServiceImpl) MessagesEditInlineBotMessage(ctx context.Context, request *mtproto.TLMessagesEditInlineBotMessage) (*mtproto.Bool, error) {
+// Layer74
+// channels.exportMessageLink#ceb77163 channel:InputChannel id:int grouped:Bool = ExportedMessageLink;
+func (s *ChannelsServiceImpl) ChannelsExportMessageLinkLayer74(ctx context.Context, request *mtproto.TLChannelsExportMessageLinkLayer74) (*mtproto.ExportedMessageLink, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("messages.editInlineBotMessage#b0e08243 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("ChannelsExportMessageLink - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesEditInlineBotMessage logic
+	// TODO(@benqi): Impl ChannelsExportMessageLink logic
 
-	return nil, fmt.Errorf("Not impl MessagesEditInlineBotMessage")
+	return nil, fmt.Errorf("Not impl ChannelsExportMessageLink")
 }

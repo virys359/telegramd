@@ -381,10 +381,12 @@ func GetMessagesByPeerAndMessageIdList2(userId int32, idList []int32) (messages 
 	} else {
 		doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectByMessageIdList(userId, idList)
 		messages = make([]*mtproto.Message, 0, len(doList))
-		for _, do := range doList {
+		for i := 0; i < len(doList); i++ {
 			// TODO(@benqi): check data
-			m, _ := messageDOToMessage(&do)
-			messages = append(messages, m)
+			m, _ := messageDOToMessage(&doList[i])
+			if m != nil {
+				messages = append(messages, m)
+			}
 		}
 	}
 	return

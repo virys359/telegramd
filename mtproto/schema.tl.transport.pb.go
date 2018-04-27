@@ -90,147 +90,76 @@ func (m *TLFutureSalt) GetData2() *FutureSalt_Data {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-// Pong <--
-//  + TL_pong
+// FutureSalts <--
+//  + TL_future_salts
 //
-type Pong_Data struct {
-	MsgId  int64 `protobuf:"varint,1,opt,name=msg_id,json=msgId" json:"msg_id,omitempty"`
-	PingId int64 `protobuf:"varint,2,opt,name=ping_id,json=pingId" json:"ping_id,omitempty"`
+type FutureSalts_Data struct {
+	ReqMsgId int64           `protobuf:"varint,1,opt,name=req_msg_id,json=reqMsgId" json:"req_msg_id,omitempty"`
+	Now      int32           `protobuf:"varint,2,opt,name=now" json:"now,omitempty"`
+	Salts    []*TLFutureSalt `protobuf:"bytes,3,rep,name=salts" json:"salts,omitempty"`
 }
 
-func (m *Pong_Data) Reset()                    { *m = Pong_Data{} }
-func (m *Pong_Data) String() string            { return proto.CompactTextString(m) }
-func (*Pong_Data) ProtoMessage()               {}
-func (*Pong_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{3} }
+func (m *FutureSalts_Data) Reset()                    { *m = FutureSalts_Data{} }
+func (m *FutureSalts_Data) String() string            { return proto.CompactTextString(m) }
+func (*FutureSalts_Data) ProtoMessage()               {}
+func (*FutureSalts_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{3} }
 
-func (m *Pong_Data) GetMsgId() int64 {
+func (m *FutureSalts_Data) GetReqMsgId() int64 {
 	if m != nil {
-		return m.MsgId
+		return m.ReqMsgId
 	}
 	return 0
 }
 
-func (m *Pong_Data) GetPingId() int64 {
+func (m *FutureSalts_Data) GetNow() int32 {
 	if m != nil {
-		return m.PingId
+		return m.Now
 	}
 	return 0
 }
 
-type Pong struct {
-	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *Pong_Data    `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+func (m *FutureSalts_Data) GetSalts() []*TLFutureSalt {
+	if m != nil {
+		return m.Salts
+	}
+	return nil
 }
 
-func (m *Pong) Reset()                    { *m = Pong{} }
-func (m *Pong) String() string            { return proto.CompactTextString(m) }
-func (*Pong) ProtoMessage()               {}
-func (*Pong) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{4} }
+type FutureSalts struct {
+	Constructor TLConstructor     `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *FutureSalts_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
 
-func (m *Pong) GetConstructor() TLConstructor {
+func (m *FutureSalts) Reset()                    { *m = FutureSalts{} }
+func (m *FutureSalts) String() string            { return proto.CompactTextString(m) }
+func (*FutureSalts) ProtoMessage()               {}
+func (*FutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{4} }
+
+func (m *FutureSalts) GetConstructor() TLConstructor {
 	if m != nil {
 		return m.Constructor
 	}
 	return TLConstructor_CRC32_UNKNOWN
 }
 
-func (m *Pong) GetData2() *Pong_Data {
+func (m *FutureSalts) GetData2() *FutureSalts_Data {
 	if m != nil {
 		return m.Data2
 	}
 	return nil
 }
 
-// pong#347773c5 msg_id:long ping_id:long = Pong;
-type TLPong struct {
-	Data2 *Pong_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+// future_salts#ae500895 req_msg_id:long now:int salts:vector<future_salt> = FutureSalts;
+type TLFutureSalts struct {
+	Data2 *FutureSalts_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *TLPong) Reset()                    { *m = TLPong{} }
-func (m *TLPong) String() string            { return proto.CompactTextString(m) }
-func (*TLPong) ProtoMessage()               {}
-func (*TLPong) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{5} }
+func (m *TLFutureSalts) Reset()                    { *m = TLFutureSalts{} }
+func (m *TLFutureSalts) String() string            { return proto.CompactTextString(m) }
+func (*TLFutureSalts) ProtoMessage()               {}
+func (*TLFutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{5} }
 
-func (m *TLPong) GetData2() *Pong_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// DestroySessionRes <--
-//  + TL_destroy_session_ok
-//  + TL_destroy_session_none
-//
-type DestroySessionRes_Data struct {
-	SessionId int64 `protobuf:"varint,1,opt,name=session_id,json=sessionId" json:"session_id,omitempty"`
-}
-
-func (m *DestroySessionRes_Data) Reset()                    { *m = DestroySessionRes_Data{} }
-func (m *DestroySessionRes_Data) String() string            { return proto.CompactTextString(m) }
-func (*DestroySessionRes_Data) ProtoMessage()               {}
-func (*DestroySessionRes_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{6} }
-
-func (m *DestroySessionRes_Data) GetSessionId() int64 {
-	if m != nil {
-		return m.SessionId
-	}
-	return 0
-}
-
-type DestroySessionRes struct {
-	Constructor TLConstructor           `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *DestroySessionRes_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *DestroySessionRes) Reset()                    { *m = DestroySessionRes{} }
-func (m *DestroySessionRes) String() string            { return proto.CompactTextString(m) }
-func (*DestroySessionRes) ProtoMessage()               {}
-func (*DestroySessionRes) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{7} }
-
-func (m *DestroySessionRes) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *DestroySessionRes) GetData2() *DestroySessionRes_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// destroy_session_ok#e22045fc session_id:long = DestroySessionRes;
-type TLDestroySessionOk struct {
-	Data2 *DestroySessionRes_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *TLDestroySessionOk) Reset()                    { *m = TLDestroySessionOk{} }
-func (m *TLDestroySessionOk) String() string            { return proto.CompactTextString(m) }
-func (*TLDestroySessionOk) ProtoMessage()               {}
-func (*TLDestroySessionOk) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{8} }
-
-func (m *TLDestroySessionOk) GetData2() *DestroySessionRes_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// destroy_session_none#62d350c9 session_id:long = DestroySessionRes;
-type TLDestroySessionNone struct {
-	Data2 *DestroySessionRes_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *TLDestroySessionNone) Reset()                    { *m = TLDestroySessionNone{} }
-func (m *TLDestroySessionNone) String() string            { return proto.CompactTextString(m) }
-func (*TLDestroySessionNone) ProtoMessage()               {}
-func (*TLDestroySessionNone) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{9} }
-
-func (m *TLDestroySessionNone) GetData2() *DestroySessionRes_Data {
+func (m *TLFutureSalts) GetData2() *FutureSalts_Data {
 	if m != nil {
 		return m.Data2
 	}
@@ -250,7 +179,7 @@ type NewSession_Data struct {
 func (m *NewSession_Data) Reset()                    { *m = NewSession_Data{} }
 func (m *NewSession_Data) String() string            { return proto.CompactTextString(m) }
 func (*NewSession_Data) ProtoMessage()               {}
-func (*NewSession_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{10} }
+func (*NewSession_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{6} }
 
 func (m *NewSession_Data) GetFirstMsgId() int64 {
 	if m != nil {
@@ -281,7 +210,7 @@ type NewSession struct {
 func (m *NewSession) Reset()                    { *m = NewSession{} }
 func (m *NewSession) String() string            { return proto.CompactTextString(m) }
 func (*NewSession) ProtoMessage()               {}
-func (*NewSession) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{11} }
+func (*NewSession) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{7} }
 
 func (m *NewSession) GetConstructor() TLConstructor {
 	if m != nil {
@@ -305,285 +234,9 @@ type TLNewSessionCreated struct {
 func (m *TLNewSessionCreated) Reset()                    { *m = TLNewSessionCreated{} }
 func (m *TLNewSessionCreated) String() string            { return proto.CompactTextString(m) }
 func (*TLNewSessionCreated) ProtoMessage()               {}
-func (*TLNewSessionCreated) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{12} }
+func (*TLNewSessionCreated) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{8} }
 
 func (m *TLNewSessionCreated) GetData2() *NewSession_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// help_ConfigSimple <--
-//  + TL_help_configSimple
-//
-type Help_ConfigSimple_Data struct {
-	Date       int32       `protobuf:"varint,1,opt,name=date" json:"date,omitempty"`
-	Expires    int32       `protobuf:"varint,2,opt,name=expires" json:"expires,omitempty"`
-	DcId       int32       `protobuf:"varint,3,opt,name=dc_id,json=dcId" json:"dc_id,omitempty"`
-	IpPortList []*TLIpPort `protobuf:"bytes,4,rep,name=ip_port_list,json=ipPortList" json:"ip_port_list,omitempty"`
-}
-
-func (m *Help_ConfigSimple_Data) Reset()                    { *m = Help_ConfigSimple_Data{} }
-func (m *Help_ConfigSimple_Data) String() string            { return proto.CompactTextString(m) }
-func (*Help_ConfigSimple_Data) ProtoMessage()               {}
-func (*Help_ConfigSimple_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{13} }
-
-func (m *Help_ConfigSimple_Data) GetDate() int32 {
-	if m != nil {
-		return m.Date
-	}
-	return 0
-}
-
-func (m *Help_ConfigSimple_Data) GetExpires() int32 {
-	if m != nil {
-		return m.Expires
-	}
-	return 0
-}
-
-func (m *Help_ConfigSimple_Data) GetDcId() int32 {
-	if m != nil {
-		return m.DcId
-	}
-	return 0
-}
-
-func (m *Help_ConfigSimple_Data) GetIpPortList() []*TLIpPort {
-	if m != nil {
-		return m.IpPortList
-	}
-	return nil
-}
-
-type Help_ConfigSimple struct {
-	Constructor TLConstructor           `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *Help_ConfigSimple_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *Help_ConfigSimple) Reset()                    { *m = Help_ConfigSimple{} }
-func (m *Help_ConfigSimple) String() string            { return proto.CompactTextString(m) }
-func (*Help_ConfigSimple) ProtoMessage()               {}
-func (*Help_ConfigSimple) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{14} }
-
-func (m *Help_ConfigSimple) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *Help_ConfigSimple) GetData2() *Help_ConfigSimple_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// help.configSimple#d997c3c5 date:int expires:int dc_id:int ip_port_list:Vector<ipPort> = help.ConfigSimple;
-type TLHelpConfigSimple struct {
-	Data2 *Help_ConfigSimple_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *TLHelpConfigSimple) Reset()                    { *m = TLHelpConfigSimple{} }
-func (m *TLHelpConfigSimple) String() string            { return proto.CompactTextString(m) }
-func (*TLHelpConfigSimple) ProtoMessage()               {}
-func (*TLHelpConfigSimple) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{15} }
-
-func (m *TLHelpConfigSimple) GetData2() *Help_ConfigSimple_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// MsgsStateReq <--
-//  + TL_msgs_state_req
-//
-type MsgsStateReq_Data struct {
-	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
-}
-
-func (m *MsgsStateReq_Data) Reset()                    { *m = MsgsStateReq_Data{} }
-func (m *MsgsStateReq_Data) String() string            { return proto.CompactTextString(m) }
-func (*MsgsStateReq_Data) ProtoMessage()               {}
-func (*MsgsStateReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{16} }
-
-func (m *MsgsStateReq_Data) GetMsgIds() []int64 {
-	if m != nil {
-		return m.MsgIds
-	}
-	return nil
-}
-
-type MsgsStateReq struct {
-	Constructor TLConstructor      `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *MsgsStateReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *MsgsStateReq) Reset()                    { *m = MsgsStateReq{} }
-func (m *MsgsStateReq) String() string            { return proto.CompactTextString(m) }
-func (*MsgsStateReq) ProtoMessage()               {}
-func (*MsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{17} }
-
-func (m *MsgsStateReq) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *MsgsStateReq) GetData2() *MsgsStateReq_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// msgs_state_req#da69fb52 msg_ids:Vector<long> = MsgsStateReq;
-type TLMsgsStateReq struct {
-	Data2 *MsgsStateReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *TLMsgsStateReq) Reset()                    { *m = TLMsgsStateReq{} }
-func (m *TLMsgsStateReq) String() string            { return proto.CompactTextString(m) }
-func (*TLMsgsStateReq) ProtoMessage()               {}
-func (*TLMsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{18} }
-
-func (m *TLMsgsStateReq) GetData2() *MsgsStateReq_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// MsgsAllInfo <--
-//  + TL_msgs_all_info
-//
-type MsgsAllInfo_Data struct {
-	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
-	Info   string  `protobuf:"bytes,2,opt,name=info" json:"info,omitempty"`
-}
-
-func (m *MsgsAllInfo_Data) Reset()                    { *m = MsgsAllInfo_Data{} }
-func (m *MsgsAllInfo_Data) String() string            { return proto.CompactTextString(m) }
-func (*MsgsAllInfo_Data) ProtoMessage()               {}
-func (*MsgsAllInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{19} }
-
-func (m *MsgsAllInfo_Data) GetMsgIds() []int64 {
-	if m != nil {
-		return m.MsgIds
-	}
-	return nil
-}
-
-func (m *MsgsAllInfo_Data) GetInfo() string {
-	if m != nil {
-		return m.Info
-	}
-	return ""
-}
-
-type MsgsAllInfo struct {
-	Constructor TLConstructor     `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *MsgsAllInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *MsgsAllInfo) Reset()                    { *m = MsgsAllInfo{} }
-func (m *MsgsAllInfo) String() string            { return proto.CompactTextString(m) }
-func (*MsgsAllInfo) ProtoMessage()               {}
-func (*MsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{20} }
-
-func (m *MsgsAllInfo) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *MsgsAllInfo) GetData2() *MsgsAllInfo_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// msgs_all_info#8cc0d131 msg_ids:Vector<long> info:string = MsgsAllInfo;
-type TLMsgsAllInfo struct {
-	Data2 *MsgsAllInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *TLMsgsAllInfo) Reset()                    { *m = TLMsgsAllInfo{} }
-func (m *TLMsgsAllInfo) String() string            { return proto.CompactTextString(m) }
-func (*TLMsgsAllInfo) ProtoMessage()               {}
-func (*TLMsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{21} }
-
-func (m *TLMsgsAllInfo) GetData2() *MsgsAllInfo_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// MsgResendReq <--
-//  + TL_msg_resend_req
-//
-type MsgResendReq_Data struct {
-	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
-}
-
-func (m *MsgResendReq_Data) Reset()                    { *m = MsgResendReq_Data{} }
-func (m *MsgResendReq_Data) String() string            { return proto.CompactTextString(m) }
-func (*MsgResendReq_Data) ProtoMessage()               {}
-func (*MsgResendReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{22} }
-
-func (m *MsgResendReq_Data) GetMsgIds() []int64 {
-	if m != nil {
-		return m.MsgIds
-	}
-	return nil
-}
-
-type MsgResendReq struct {
-	Constructor TLConstructor      `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *MsgResendReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *MsgResendReq) Reset()                    { *m = MsgResendReq{} }
-func (m *MsgResendReq) String() string            { return proto.CompactTextString(m) }
-func (*MsgResendReq) ProtoMessage()               {}
-func (*MsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{23} }
-
-func (m *MsgResendReq) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *MsgResendReq) GetData2() *MsgResendReq_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// msg_resend_req#7d861a08 msg_ids:Vector<long> = MsgResendReq;
-type TLMsgResendReq struct {
-	Data2 *MsgResendReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *TLMsgResendReq) Reset()                    { *m = TLMsgResendReq{} }
-func (m *TLMsgResendReq) String() string            { return proto.CompactTextString(m) }
-func (*TLMsgResendReq) ProtoMessage()               {}
-func (*TLMsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{24} }
-
-func (m *TLMsgResendReq) GetData2() *MsgResendReq_Data {
 	if m != nil {
 		return m.Data2
 	}
@@ -605,7 +258,7 @@ type RpcDropAnswer_Data struct {
 func (m *RpcDropAnswer_Data) Reset()                    { *m = RpcDropAnswer_Data{} }
 func (m *RpcDropAnswer_Data) String() string            { return proto.CompactTextString(m) }
 func (*RpcDropAnswer_Data) ProtoMessage()               {}
-func (*RpcDropAnswer_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{25} }
+func (*RpcDropAnswer_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{9} }
 
 func (m *RpcDropAnswer_Data) GetMsgId() int64 {
 	if m != nil {
@@ -636,7 +289,7 @@ type RpcDropAnswer struct {
 func (m *RpcDropAnswer) Reset()                    { *m = RpcDropAnswer{} }
 func (m *RpcDropAnswer) String() string            { return proto.CompactTextString(m) }
 func (*RpcDropAnswer) ProtoMessage()               {}
-func (*RpcDropAnswer) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{26} }
+func (*RpcDropAnswer) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{10} }
 
 func (m *RpcDropAnswer) GetConstructor() TLConstructor {
 	if m != nil {
@@ -660,7 +313,7 @@ type TLRpcAnswerUnknown struct {
 func (m *TLRpcAnswerUnknown) Reset()                    { *m = TLRpcAnswerUnknown{} }
 func (m *TLRpcAnswerUnknown) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcAnswerUnknown) ProtoMessage()               {}
-func (*TLRpcAnswerUnknown) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{27} }
+func (*TLRpcAnswerUnknown) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{11} }
 
 func (m *TLRpcAnswerUnknown) GetData2() *RpcDropAnswer_Data {
 	if m != nil {
@@ -677,7 +330,7 @@ type TLRpcAnswerDroppedRunning struct {
 func (m *TLRpcAnswerDroppedRunning) Reset()                    { *m = TLRpcAnswerDroppedRunning{} }
 func (m *TLRpcAnswerDroppedRunning) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcAnswerDroppedRunning) ProtoMessage()               {}
-func (*TLRpcAnswerDroppedRunning) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{28} }
+func (*TLRpcAnswerDroppedRunning) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{12} }
 
 func (m *TLRpcAnswerDroppedRunning) GetData2() *RpcDropAnswer_Data {
 	if m != nil {
@@ -694,7 +347,7 @@ type TLRpcAnswerDropped struct {
 func (m *TLRpcAnswerDropped) Reset()                    { *m = TLRpcAnswerDropped{} }
 func (m *TLRpcAnswerDropped) String() string            { return proto.CompactTextString(m) }
 func (*TLRpcAnswerDropped) ProtoMessage()               {}
-func (*TLRpcAnswerDropped) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{29} }
+func (*TLRpcAnswerDropped) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{13} }
 
 func (m *TLRpcAnswerDropped) GetData2() *RpcDropAnswer_Data {
 	if m != nil {
@@ -704,102 +357,78 @@ func (m *TLRpcAnswerDropped) GetData2() *RpcDropAnswer_Data {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-// BadMsgNotification <--
-//  + TL_bad_msg_notification
-//  + TL_bad_server_salt
+// DestroySessionRes <--
+//  + TL_destroy_session_ok
+//  + TL_destroy_session_none
 //
-type BadMsgNotification_Data struct {
-	BadMsgId      int64 `protobuf:"varint,1,opt,name=bad_msg_id,json=badMsgId" json:"bad_msg_id,omitempty"`
-	BadMsgSeqno   int32 `protobuf:"varint,2,opt,name=bad_msg_seqno,json=badMsgSeqno" json:"bad_msg_seqno,omitempty"`
-	ErrorCode     int32 `protobuf:"varint,3,opt,name=error_code,json=errorCode" json:"error_code,omitempty"`
-	NewServerSalt int64 `protobuf:"varint,4,opt,name=new_server_salt,json=newServerSalt" json:"new_server_salt,omitempty"`
+type DestroySessionRes_Data struct {
+	SessionId int64 `protobuf:"varint,1,opt,name=session_id,json=sessionId" json:"session_id,omitempty"`
 }
 
-func (m *BadMsgNotification_Data) Reset()                    { *m = BadMsgNotification_Data{} }
-func (m *BadMsgNotification_Data) String() string            { return proto.CompactTextString(m) }
-func (*BadMsgNotification_Data) ProtoMessage()               {}
-func (*BadMsgNotification_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{30} }
+func (m *DestroySessionRes_Data) Reset()                    { *m = DestroySessionRes_Data{} }
+func (m *DestroySessionRes_Data) String() string            { return proto.CompactTextString(m) }
+func (*DestroySessionRes_Data) ProtoMessage()               {}
+func (*DestroySessionRes_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{14} }
 
-func (m *BadMsgNotification_Data) GetBadMsgId() int64 {
+func (m *DestroySessionRes_Data) GetSessionId() int64 {
 	if m != nil {
-		return m.BadMsgId
+		return m.SessionId
 	}
 	return 0
 }
 
-func (m *BadMsgNotification_Data) GetBadMsgSeqno() int32 {
-	if m != nil {
-		return m.BadMsgSeqno
-	}
-	return 0
+type DestroySessionRes struct {
+	Constructor TLConstructor           `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *DestroySessionRes_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *BadMsgNotification_Data) GetErrorCode() int32 {
-	if m != nil {
-		return m.ErrorCode
-	}
-	return 0
-}
+func (m *DestroySessionRes) Reset()                    { *m = DestroySessionRes{} }
+func (m *DestroySessionRes) String() string            { return proto.CompactTextString(m) }
+func (*DestroySessionRes) ProtoMessage()               {}
+func (*DestroySessionRes) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{15} }
 
-func (m *BadMsgNotification_Data) GetNewServerSalt() int64 {
-	if m != nil {
-		return m.NewServerSalt
-	}
-	return 0
-}
-
-type BadMsgNotification struct {
-	Constructor TLConstructor            `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *BadMsgNotification_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *BadMsgNotification) Reset()                    { *m = BadMsgNotification{} }
-func (m *BadMsgNotification) String() string            { return proto.CompactTextString(m) }
-func (*BadMsgNotification) ProtoMessage()               {}
-func (*BadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{31} }
-
-func (m *BadMsgNotification) GetConstructor() TLConstructor {
+func (m *DestroySessionRes) GetConstructor() TLConstructor {
 	if m != nil {
 		return m.Constructor
 	}
 	return TLConstructor_CRC32_UNKNOWN
 }
 
-func (m *BadMsgNotification) GetData2() *BadMsgNotification_Data {
+func (m *DestroySessionRes) GetData2() *DestroySessionRes_Data {
 	if m != nil {
 		return m.Data2
 	}
 	return nil
 }
 
-// bad_msg_notification#a7eff811 bad_msg_id:long bad_msg_seqno:int error_code:int = BadMsgNotification;
-type TLBadMsgNotification struct {
-	Data2 *BadMsgNotification_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+// destroy_session_ok#e22045fc session_id:long = DestroySessionRes;
+type TLDestroySessionOk struct {
+	Data2 *DestroySessionRes_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *TLBadMsgNotification) Reset()                    { *m = TLBadMsgNotification{} }
-func (m *TLBadMsgNotification) String() string            { return proto.CompactTextString(m) }
-func (*TLBadMsgNotification) ProtoMessage()               {}
-func (*TLBadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{32} }
+func (m *TLDestroySessionOk) Reset()                    { *m = TLDestroySessionOk{} }
+func (m *TLDestroySessionOk) String() string            { return proto.CompactTextString(m) }
+func (*TLDestroySessionOk) ProtoMessage()               {}
+func (*TLDestroySessionOk) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{16} }
 
-func (m *TLBadMsgNotification) GetData2() *BadMsgNotification_Data {
+func (m *TLDestroySessionOk) GetData2() *DestroySessionRes_Data {
 	if m != nil {
 		return m.Data2
 	}
 	return nil
 }
 
-// bad_server_salt#edab447b bad_msg_id:long bad_msg_seqno:int error_code:int new_server_salt:long = BadMsgNotification;
-type TLBadServerSalt struct {
-	Data2 *BadMsgNotification_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+// destroy_session_none#62d350c9 session_id:long = DestroySessionRes;
+type TLDestroySessionNone struct {
+	Data2 *DestroySessionRes_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *TLBadServerSalt) Reset()                    { *m = TLBadServerSalt{} }
-func (m *TLBadServerSalt) String() string            { return proto.CompactTextString(m) }
-func (*TLBadServerSalt) ProtoMessage()               {}
-func (*TLBadServerSalt) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{33} }
+func (m *TLDestroySessionNone) Reset()                    { *m = TLDestroySessionNone{} }
+func (m *TLDestroySessionNone) String() string            { return proto.CompactTextString(m) }
+func (*TLDestroySessionNone) ProtoMessage()               {}
+func (*TLDestroySessionNone) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{17} }
 
-func (m *TLBadServerSalt) GetData2() *BadMsgNotification_Data {
+func (m *TLDestroySessionNone) GetData2() *DestroySessionRes_Data {
 	if m != nil {
 		return m.Data2
 	}
@@ -807,68 +436,259 @@ func (m *TLBadServerSalt) GetData2() *BadMsgNotification_Data {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-// MsgsStateInfo <--
-//  + TL_msgs_state_info
+// MsgsStateReq <--
+//  + TL_msgs_state_req
 //
-type MsgsStateInfo_Data struct {
-	ReqMsgId int64  `protobuf:"varint,1,opt,name=req_msg_id,json=reqMsgId" json:"req_msg_id,omitempty"`
-	Info     string `protobuf:"bytes,2,opt,name=info" json:"info,omitempty"`
+type MsgsStateReq_Data struct {
+	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
 }
 
-func (m *MsgsStateInfo_Data) Reset()                    { *m = MsgsStateInfo_Data{} }
-func (m *MsgsStateInfo_Data) String() string            { return proto.CompactTextString(m) }
-func (*MsgsStateInfo_Data) ProtoMessage()               {}
-func (*MsgsStateInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{34} }
+func (m *MsgsStateReq_Data) Reset()                    { *m = MsgsStateReq_Data{} }
+func (m *MsgsStateReq_Data) String() string            { return proto.CompactTextString(m) }
+func (*MsgsStateReq_Data) ProtoMessage()               {}
+func (*MsgsStateReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{18} }
 
-func (m *MsgsStateInfo_Data) GetReqMsgId() int64 {
+func (m *MsgsStateReq_Data) GetMsgIds() []int64 {
 	if m != nil {
-		return m.ReqMsgId
+		return m.MsgIds
 	}
-	return 0
+	return nil
 }
 
-func (m *MsgsStateInfo_Data) GetInfo() string {
-	if m != nil {
-		return m.Info
-	}
-	return ""
+type MsgsStateReq struct {
+	Constructor TLConstructor      `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *MsgsStateReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-type MsgsStateInfo struct {
-	Constructor TLConstructor       `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *MsgsStateInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
+func (m *MsgsStateReq) Reset()                    { *m = MsgsStateReq{} }
+func (m *MsgsStateReq) String() string            { return proto.CompactTextString(m) }
+func (*MsgsStateReq) ProtoMessage()               {}
+func (*MsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{19} }
 
-func (m *MsgsStateInfo) Reset()                    { *m = MsgsStateInfo{} }
-func (m *MsgsStateInfo) String() string            { return proto.CompactTextString(m) }
-func (*MsgsStateInfo) ProtoMessage()               {}
-func (*MsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{35} }
-
-func (m *MsgsStateInfo) GetConstructor() TLConstructor {
+func (m *MsgsStateReq) GetConstructor() TLConstructor {
 	if m != nil {
 		return m.Constructor
 	}
 	return TLConstructor_CRC32_UNKNOWN
 }
 
-func (m *MsgsStateInfo) GetData2() *MsgsStateInfo_Data {
+func (m *MsgsStateReq) GetData2() *MsgsStateReq_Data {
 	if m != nil {
 		return m.Data2
 	}
 	return nil
 }
 
-// msgs_state_info#04deb57d req_msg_id:long info:string = MsgsStateInfo;
-type TLMsgsStateInfo struct {
-	Data2 *MsgsStateInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+// msgs_state_req#da69fb52 msg_ids:Vector<long> = MsgsStateReq;
+type TLMsgsStateReq struct {
+	Data2 *MsgsStateReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *TLMsgsStateInfo) Reset()                    { *m = TLMsgsStateInfo{} }
-func (m *TLMsgsStateInfo) String() string            { return proto.CompactTextString(m) }
-func (*TLMsgsStateInfo) ProtoMessage()               {}
-func (*TLMsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{36} }
+func (m *TLMsgsStateReq) Reset()                    { *m = TLMsgsStateReq{} }
+func (m *TLMsgsStateReq) String() string            { return proto.CompactTextString(m) }
+func (*TLMsgsStateReq) ProtoMessage()               {}
+func (*TLMsgsStateReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{20} }
 
-func (m *TLMsgsStateInfo) GetData2() *MsgsStateInfo_Data {
+func (m *TLMsgsStateReq) GetData2() *MsgsStateReq_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// MsgsAllInfo <--
+//  + TL_msgs_all_info
+//
+type MsgsAllInfo_Data struct {
+	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
+	Info   string  `protobuf:"bytes,2,opt,name=info" json:"info,omitempty"`
+}
+
+func (m *MsgsAllInfo_Data) Reset()                    { *m = MsgsAllInfo_Data{} }
+func (m *MsgsAllInfo_Data) String() string            { return proto.CompactTextString(m) }
+func (*MsgsAllInfo_Data) ProtoMessage()               {}
+func (*MsgsAllInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{21} }
+
+func (m *MsgsAllInfo_Data) GetMsgIds() []int64 {
+	if m != nil {
+		return m.MsgIds
+	}
+	return nil
+}
+
+func (m *MsgsAllInfo_Data) GetInfo() string {
+	if m != nil {
+		return m.Info
+	}
+	return ""
+}
+
+type MsgsAllInfo struct {
+	Constructor TLConstructor     `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *MsgsAllInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *MsgsAllInfo) Reset()                    { *m = MsgsAllInfo{} }
+func (m *MsgsAllInfo) String() string            { return proto.CompactTextString(m) }
+func (*MsgsAllInfo) ProtoMessage()               {}
+func (*MsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{22} }
+
+func (m *MsgsAllInfo) GetConstructor() TLConstructor {
+	if m != nil {
+		return m.Constructor
+	}
+	return TLConstructor_CRC32_UNKNOWN
+}
+
+func (m *MsgsAllInfo) GetData2() *MsgsAllInfo_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// msgs_all_info#8cc0d131 msg_ids:Vector<long> info:string = MsgsAllInfo;
+type TLMsgsAllInfo struct {
+	Data2 *MsgsAllInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *TLMsgsAllInfo) Reset()                    { *m = TLMsgsAllInfo{} }
+func (m *TLMsgsAllInfo) String() string            { return proto.CompactTextString(m) }
+func (*TLMsgsAllInfo) ProtoMessage()               {}
+func (*TLMsgsAllInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{23} }
+
+func (m *TLMsgsAllInfo) GetData2() *MsgsAllInfo_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// RpcError <--
+//  + TL_rpc_error
+//
+type RpcError_Data struct {
+	ErrorCode    int32  `protobuf:"varint,1,opt,name=error_code,json=errorCode" json:"error_code,omitempty"`
+	ErrorMessage string `protobuf:"bytes,2,opt,name=error_message,json=errorMessage" json:"error_message,omitempty"`
+}
+
+func (m *RpcError_Data) Reset()                    { *m = RpcError_Data{} }
+func (m *RpcError_Data) String() string            { return proto.CompactTextString(m) }
+func (*RpcError_Data) ProtoMessage()               {}
+func (*RpcError_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{24} }
+
+func (m *RpcError_Data) GetErrorCode() int32 {
+	if m != nil {
+		return m.ErrorCode
+	}
+	return 0
+}
+
+func (m *RpcError_Data) GetErrorMessage() string {
+	if m != nil {
+		return m.ErrorMessage
+	}
+	return ""
+}
+
+type RpcError struct {
+	Constructor TLConstructor  `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *RpcError_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *RpcError) Reset()                    { *m = RpcError{} }
+func (m *RpcError) String() string            { return proto.CompactTextString(m) }
+func (*RpcError) ProtoMessage()               {}
+func (*RpcError) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{25} }
+
+func (m *RpcError) GetConstructor() TLConstructor {
+	if m != nil {
+		return m.Constructor
+	}
+	return TLConstructor_CRC32_UNKNOWN
+}
+
+func (m *RpcError) GetData2() *RpcError_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// rpc_error#2144ca19 error_code:int error_message:string = RpcError;
+type TLRpcError struct {
+	Data2 *RpcError_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *TLRpcError) Reset()                    { *m = TLRpcError{} }
+func (m *TLRpcError) String() string            { return proto.CompactTextString(m) }
+func (*TLRpcError) ProtoMessage()               {}
+func (*TLRpcError) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{26} }
+
+func (m *TLRpcError) GetData2() *RpcError_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// MsgsAck <--
+//  + TL_msgs_ack
+//
+type MsgsAck_Data struct {
+	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
+}
+
+func (m *MsgsAck_Data) Reset()                    { *m = MsgsAck_Data{} }
+func (m *MsgsAck_Data) String() string            { return proto.CompactTextString(m) }
+func (*MsgsAck_Data) ProtoMessage()               {}
+func (*MsgsAck_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{27} }
+
+func (m *MsgsAck_Data) GetMsgIds() []int64 {
+	if m != nil {
+		return m.MsgIds
+	}
+	return nil
+}
+
+type MsgsAck struct {
+	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *MsgsAck_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *MsgsAck) Reset()                    { *m = MsgsAck{} }
+func (m *MsgsAck) String() string            { return proto.CompactTextString(m) }
+func (*MsgsAck) ProtoMessage()               {}
+func (*MsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{28} }
+
+func (m *MsgsAck) GetConstructor() TLConstructor {
+	if m != nil {
+		return m.Constructor
+	}
+	return TLConstructor_CRC32_UNKNOWN
+}
+
+func (m *MsgsAck) GetData2() *MsgsAck_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;
+type TLMsgsAck struct {
+	Data2 *MsgsAck_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *TLMsgsAck) Reset()                    { *m = TLMsgsAck{} }
+func (m *TLMsgsAck) String() string            { return proto.CompactTextString(m) }
+func (*TLMsgsAck) ProtoMessage()               {}
+func (*TLMsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{29} }
+
+func (m *TLMsgsAck) GetData2() *MsgsAck_Data {
 	if m != nil {
 		return m.Data2
 	}
@@ -890,7 +710,7 @@ type MsgDetailedInfo_Data struct {
 func (m *MsgDetailedInfo_Data) Reset()                    { *m = MsgDetailedInfo_Data{} }
 func (m *MsgDetailedInfo_Data) String() string            { return proto.CompactTextString(m) }
 func (*MsgDetailedInfo_Data) ProtoMessage()               {}
-func (*MsgDetailedInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{37} }
+func (*MsgDetailedInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{30} }
 
 func (m *MsgDetailedInfo_Data) GetMsgId() int64 {
 	if m != nil {
@@ -928,7 +748,7 @@ type MsgDetailedInfo struct {
 func (m *MsgDetailedInfo) Reset()                    { *m = MsgDetailedInfo{} }
 func (m *MsgDetailedInfo) String() string            { return proto.CompactTextString(m) }
 func (*MsgDetailedInfo) ProtoMessage()               {}
-func (*MsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{38} }
+func (*MsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{31} }
 
 func (m *MsgDetailedInfo) GetConstructor() TLConstructor {
 	if m != nil {
@@ -952,7 +772,7 @@ type TLMsgDetailedInfo struct {
 func (m *TLMsgDetailedInfo) Reset()                    { *m = TLMsgDetailedInfo{} }
 func (m *TLMsgDetailedInfo) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgDetailedInfo) ProtoMessage()               {}
-func (*TLMsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{39} }
+func (*TLMsgDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{32} }
 
 func (m *TLMsgDetailedInfo) GetData2() *MsgDetailedInfo_Data {
 	if m != nil {
@@ -969,7 +789,7 @@ type TLMsgNewDetailedInfo struct {
 func (m *TLMsgNewDetailedInfo) Reset()                    { *m = TLMsgNewDetailedInfo{} }
 func (m *TLMsgNewDetailedInfo) String() string            { return proto.CompactTextString(m) }
 func (*TLMsgNewDetailedInfo) ProtoMessage()               {}
-func (*TLMsgNewDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{40} }
+func (*TLMsgNewDetailedInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{33} }
 
 func (m *TLMsgNewDetailedInfo) GetData2() *MsgDetailedInfo_Data {
 	if m != nil {
@@ -979,68 +799,68 @@ func (m *TLMsgNewDetailedInfo) GetData2() *MsgDetailedInfo_Data {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-// RpcError <--
-//  + TL_rpc_error
+// Pong <--
+//  + TL_pong
 //
-type RpcError_Data struct {
-	ErrorCode    int32  `protobuf:"varint,1,opt,name=error_code,json=errorCode" json:"error_code,omitempty"`
-	ErrorMessage string `protobuf:"bytes,2,opt,name=error_message,json=errorMessage" json:"error_message,omitempty"`
+type Pong_Data struct {
+	MsgId  int64 `protobuf:"varint,1,opt,name=msg_id,json=msgId" json:"msg_id,omitempty"`
+	PingId int64 `protobuf:"varint,2,opt,name=ping_id,json=pingId" json:"ping_id,omitempty"`
 }
 
-func (m *RpcError_Data) Reset()                    { *m = RpcError_Data{} }
-func (m *RpcError_Data) String() string            { return proto.CompactTextString(m) }
-func (*RpcError_Data) ProtoMessage()               {}
-func (*RpcError_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{41} }
+func (m *Pong_Data) Reset()                    { *m = Pong_Data{} }
+func (m *Pong_Data) String() string            { return proto.CompactTextString(m) }
+func (*Pong_Data) ProtoMessage()               {}
+func (*Pong_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{34} }
 
-func (m *RpcError_Data) GetErrorCode() int32 {
+func (m *Pong_Data) GetMsgId() int64 {
 	if m != nil {
-		return m.ErrorCode
+		return m.MsgId
 	}
 	return 0
 }
 
-func (m *RpcError_Data) GetErrorMessage() string {
+func (m *Pong_Data) GetPingId() int64 {
 	if m != nil {
-		return m.ErrorMessage
+		return m.PingId
 	}
-	return ""
+	return 0
 }
 
-type RpcError struct {
-	Constructor TLConstructor  `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *RpcError_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+type Pong struct {
+	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *Pong_Data    `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *RpcError) Reset()                    { *m = RpcError{} }
-func (m *RpcError) String() string            { return proto.CompactTextString(m) }
-func (*RpcError) ProtoMessage()               {}
-func (*RpcError) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{42} }
+func (m *Pong) Reset()                    { *m = Pong{} }
+func (m *Pong) String() string            { return proto.CompactTextString(m) }
+func (*Pong) ProtoMessage()               {}
+func (*Pong) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{35} }
 
-func (m *RpcError) GetConstructor() TLConstructor {
+func (m *Pong) GetConstructor() TLConstructor {
 	if m != nil {
 		return m.Constructor
 	}
 	return TLConstructor_CRC32_UNKNOWN
 }
 
-func (m *RpcError) GetData2() *RpcError_Data {
+func (m *Pong) GetData2() *Pong_Data {
 	if m != nil {
 		return m.Data2
 	}
 	return nil
 }
 
-// rpc_error#2144ca19 error_code:int error_message:string = RpcError;
-type TLRpcError struct {
-	Data2 *RpcError_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+// pong#347773c5 msg_id:long ping_id:long = Pong;
+type TLPong struct {
+	Data2 *Pong_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *TLRpcError) Reset()                    { *m = TLRpcError{} }
-func (m *TLRpcError) String() string            { return proto.CompactTextString(m) }
-func (*TLRpcError) ProtoMessage()               {}
-func (*TLRpcError) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{43} }
+func (m *TLPong) Reset()                    { *m = TLPong{} }
+func (m *TLPong) String() string            { return proto.CompactTextString(m) }
+func (*TLPong) ProtoMessage()               {}
+func (*TLPong) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{36} }
 
-func (m *TLRpcError) GetData2() *RpcError_Data {
+func (m *TLPong) GetData2() *Pong_Data {
 	if m != nil {
 		return m.Data2
 	}
@@ -1060,7 +880,7 @@ type HttpWait_Data struct {
 func (m *HttpWait_Data) Reset()                    { *m = HttpWait_Data{} }
 func (m *HttpWait_Data) String() string            { return proto.CompactTextString(m) }
 func (*HttpWait_Data) ProtoMessage()               {}
-func (*HttpWait_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{44} }
+func (*HttpWait_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{37} }
 
 func (m *HttpWait_Data) GetMaxDelay() int32 {
 	if m != nil {
@@ -1091,7 +911,7 @@ type HttpWait struct {
 func (m *HttpWait) Reset()                    { *m = HttpWait{} }
 func (m *HttpWait) String() string            { return proto.CompactTextString(m) }
 func (*HttpWait) ProtoMessage()               {}
-func (*HttpWait) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{45} }
+func (*HttpWait) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{38} }
 
 func (m *HttpWait) GetConstructor() TLConstructor {
 	if m != nil {
@@ -1115,7 +935,7 @@ type TLHttpWait struct {
 func (m *TLHttpWait) Reset()                    { *m = TLHttpWait{} }
 func (m *TLHttpWait) String() string            { return proto.CompactTextString(m) }
 func (*TLHttpWait) ProtoMessage()               {}
-func (*TLHttpWait) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{46} }
+func (*TLHttpWait) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{39} }
 
 func (m *TLHttpWait) GetData2() *HttpWait_Data {
 	if m != nil {
@@ -1125,68 +945,102 @@ func (m *TLHttpWait) GetData2() *HttpWait_Data {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-// IpPort <--
-//  + TL_ipPort
+// BadMsgNotification <--
+//  + TL_bad_msg_notification
+//  + TL_bad_server_salt
 //
-type IpPort_Data struct {
-	Ipv4 int32 `protobuf:"varint,1,opt,name=ipv4" json:"ipv4,omitempty"`
-	Port int32 `protobuf:"varint,2,opt,name=port" json:"port,omitempty"`
+type BadMsgNotification_Data struct {
+	BadMsgId      int64 `protobuf:"varint,1,opt,name=bad_msg_id,json=badMsgId" json:"bad_msg_id,omitempty"`
+	BadMsgSeqno   int32 `protobuf:"varint,2,opt,name=bad_msg_seqno,json=badMsgSeqno" json:"bad_msg_seqno,omitempty"`
+	ErrorCode     int32 `protobuf:"varint,3,opt,name=error_code,json=errorCode" json:"error_code,omitempty"`
+	NewServerSalt int64 `protobuf:"varint,4,opt,name=new_server_salt,json=newServerSalt" json:"new_server_salt,omitempty"`
 }
 
-func (m *IpPort_Data) Reset()                    { *m = IpPort_Data{} }
-func (m *IpPort_Data) String() string            { return proto.CompactTextString(m) }
-func (*IpPort_Data) ProtoMessage()               {}
-func (*IpPort_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{47} }
+func (m *BadMsgNotification_Data) Reset()                    { *m = BadMsgNotification_Data{} }
+func (m *BadMsgNotification_Data) String() string            { return proto.CompactTextString(m) }
+func (*BadMsgNotification_Data) ProtoMessage()               {}
+func (*BadMsgNotification_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{40} }
 
-func (m *IpPort_Data) GetIpv4() int32 {
+func (m *BadMsgNotification_Data) GetBadMsgId() int64 {
 	if m != nil {
-		return m.Ipv4
+		return m.BadMsgId
 	}
 	return 0
 }
 
-func (m *IpPort_Data) GetPort() int32 {
+func (m *BadMsgNotification_Data) GetBadMsgSeqno() int32 {
 	if m != nil {
-		return m.Port
+		return m.BadMsgSeqno
 	}
 	return 0
 }
 
-type IpPort struct {
-	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *IpPort_Data  `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+func (m *BadMsgNotification_Data) GetErrorCode() int32 {
+	if m != nil {
+		return m.ErrorCode
+	}
+	return 0
 }
 
-func (m *IpPort) Reset()                    { *m = IpPort{} }
-func (m *IpPort) String() string            { return proto.CompactTextString(m) }
-func (*IpPort) ProtoMessage()               {}
-func (*IpPort) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{48} }
+func (m *BadMsgNotification_Data) GetNewServerSalt() int64 {
+	if m != nil {
+		return m.NewServerSalt
+	}
+	return 0
+}
 
-func (m *IpPort) GetConstructor() TLConstructor {
+type BadMsgNotification struct {
+	Constructor TLConstructor            `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *BadMsgNotification_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *BadMsgNotification) Reset()                    { *m = BadMsgNotification{} }
+func (m *BadMsgNotification) String() string            { return proto.CompactTextString(m) }
+func (*BadMsgNotification) ProtoMessage()               {}
+func (*BadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{41} }
+
+func (m *BadMsgNotification) GetConstructor() TLConstructor {
 	if m != nil {
 		return m.Constructor
 	}
 	return TLConstructor_CRC32_UNKNOWN
 }
 
-func (m *IpPort) GetData2() *IpPort_Data {
+func (m *BadMsgNotification) GetData2() *BadMsgNotification_Data {
 	if m != nil {
 		return m.Data2
 	}
 	return nil
 }
 
-// ipPort#d433ad73 ipv4:int port:int = IpPort;
-type TLIpPort struct {
-	Data2 *IpPort_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+// bad_msg_notification#a7eff811 bad_msg_id:long bad_msg_seqno:int error_code:int = BadMsgNotification;
+type TLBadMsgNotification struct {
+	Data2 *BadMsgNotification_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *TLIpPort) Reset()                    { *m = TLIpPort{} }
-func (m *TLIpPort) String() string            { return proto.CompactTextString(m) }
-func (*TLIpPort) ProtoMessage()               {}
-func (*TLIpPort) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{49} }
+func (m *TLBadMsgNotification) Reset()                    { *m = TLBadMsgNotification{} }
+func (m *TLBadMsgNotification) String() string            { return proto.CompactTextString(m) }
+func (*TLBadMsgNotification) ProtoMessage()               {}
+func (*TLBadMsgNotification) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{42} }
 
-func (m *TLIpPort) GetData2() *IpPort_Data {
+func (m *TLBadMsgNotification) GetData2() *BadMsgNotification_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// bad_server_salt#edab447b bad_msg_id:long bad_msg_seqno:int error_code:int new_server_salt:long = BadMsgNotification;
+type TLBadServerSalt struct {
+	Data2 *BadMsgNotification_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *TLBadServerSalt) Reset()                    { *m = TLBadServerSalt{} }
+func (m *TLBadServerSalt) String() string            { return proto.CompactTextString(m) }
+func (*TLBadServerSalt) ProtoMessage()               {}
+func (*TLBadServerSalt) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{43} }
+
+func (m *TLBadServerSalt) GetData2() *BadMsgNotification_Data {
 	if m != nil {
 		return m.Data2
 	}
@@ -1194,137 +1048,129 @@ func (m *TLIpPort) GetData2() *IpPort_Data {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-// MsgsAck <--
-//  + TL_msgs_ack
+// MsgsStateInfo <--
+//  + TL_msgs_state_info
 //
-type MsgsAck_Data struct {
-	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
+type MsgsStateInfo_Data struct {
+	ReqMsgId int64  `protobuf:"varint,1,opt,name=req_msg_id,json=reqMsgId" json:"req_msg_id,omitempty"`
+	Info     string `protobuf:"bytes,2,opt,name=info" json:"info,omitempty"`
 }
 
-func (m *MsgsAck_Data) Reset()                    { *m = MsgsAck_Data{} }
-func (m *MsgsAck_Data) String() string            { return proto.CompactTextString(m) }
-func (*MsgsAck_Data) ProtoMessage()               {}
-func (*MsgsAck_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{50} }
+func (m *MsgsStateInfo_Data) Reset()                    { *m = MsgsStateInfo_Data{} }
+func (m *MsgsStateInfo_Data) String() string            { return proto.CompactTextString(m) }
+func (*MsgsStateInfo_Data) ProtoMessage()               {}
+func (*MsgsStateInfo_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{44} }
 
-func (m *MsgsAck_Data) GetMsgIds() []int64 {
-	if m != nil {
-		return m.MsgIds
-	}
-	return nil
-}
-
-type MsgsAck struct {
-	Constructor TLConstructor `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *MsgsAck_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *MsgsAck) Reset()                    { *m = MsgsAck{} }
-func (m *MsgsAck) String() string            { return proto.CompactTextString(m) }
-func (*MsgsAck) ProtoMessage()               {}
-func (*MsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{51} }
-
-func (m *MsgsAck) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *MsgsAck) GetData2() *MsgsAck_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;
-type TLMsgsAck struct {
-	Data2 *MsgsAck_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
-
-func (m *TLMsgsAck) Reset()                    { *m = TLMsgsAck{} }
-func (m *TLMsgsAck) String() string            { return proto.CompactTextString(m) }
-func (*TLMsgsAck) ProtoMessage()               {}
-func (*TLMsgsAck) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{52} }
-
-func (m *TLMsgsAck) GetData2() *MsgsAck_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// FutureSalts <--
-//  + TL_future_salts
-//
-type FutureSalts_Data struct {
-	ReqMsgId int64           `protobuf:"varint,1,opt,name=req_msg_id,json=reqMsgId" json:"req_msg_id,omitempty"`
-	Now      int32           `protobuf:"varint,2,opt,name=now" json:"now,omitempty"`
-	Salts    []*TLFutureSalt `protobuf:"bytes,3,rep,name=salts" json:"salts,omitempty"`
-}
-
-func (m *FutureSalts_Data) Reset()                    { *m = FutureSalts_Data{} }
-func (m *FutureSalts_Data) String() string            { return proto.CompactTextString(m) }
-func (*FutureSalts_Data) ProtoMessage()               {}
-func (*FutureSalts_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{53} }
-
-func (m *FutureSalts_Data) GetReqMsgId() int64 {
+func (m *MsgsStateInfo_Data) GetReqMsgId() int64 {
 	if m != nil {
 		return m.ReqMsgId
 	}
 	return 0
 }
 
-func (m *FutureSalts_Data) GetNow() int32 {
+func (m *MsgsStateInfo_Data) GetInfo() string {
 	if m != nil {
-		return m.Now
+		return m.Info
 	}
-	return 0
+	return ""
 }
 
-func (m *FutureSalts_Data) GetSalts() []*TLFutureSalt {
-	if m != nil {
-		return m.Salts
-	}
-	return nil
+type MsgsStateInfo struct {
+	Constructor TLConstructor       `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *MsgsStateInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-type FutureSalts struct {
-	Constructor TLConstructor     `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2       *FutureSalts_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
-}
+func (m *MsgsStateInfo) Reset()                    { *m = MsgsStateInfo{} }
+func (m *MsgsStateInfo) String() string            { return proto.CompactTextString(m) }
+func (*MsgsStateInfo) ProtoMessage()               {}
+func (*MsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{45} }
 
-func (m *FutureSalts) Reset()                    { *m = FutureSalts{} }
-func (m *FutureSalts) String() string            { return proto.CompactTextString(m) }
-func (*FutureSalts) ProtoMessage()               {}
-func (*FutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{54} }
-
-func (m *FutureSalts) GetConstructor() TLConstructor {
+func (m *MsgsStateInfo) GetConstructor() TLConstructor {
 	if m != nil {
 		return m.Constructor
 	}
 	return TLConstructor_CRC32_UNKNOWN
 }
 
-func (m *FutureSalts) GetData2() *FutureSalts_Data {
+func (m *MsgsStateInfo) GetData2() *MsgsStateInfo_Data {
 	if m != nil {
 		return m.Data2
 	}
 	return nil
 }
 
-// future_salts#ae500895 req_msg_id:long now:int salts:vector<future_salt> = FutureSalts;
-type TLFutureSalts struct {
-	Data2 *FutureSalts_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+// msgs_state_info#04deb57d req_msg_id:long info:string = MsgsStateInfo;
+type TLMsgsStateInfo struct {
+	Data2 *MsgsStateInfo_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
 }
 
-func (m *TLFutureSalts) Reset()                    { *m = TLFutureSalts{} }
-func (m *TLFutureSalts) String() string            { return proto.CompactTextString(m) }
-func (*TLFutureSalts) ProtoMessage()               {}
-func (*TLFutureSalts) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{55} }
+func (m *TLMsgsStateInfo) Reset()                    { *m = TLMsgsStateInfo{} }
+func (m *TLMsgsStateInfo) String() string            { return proto.CompactTextString(m) }
+func (*TLMsgsStateInfo) ProtoMessage()               {}
+func (*TLMsgsStateInfo) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{46} }
 
-func (m *TLFutureSalts) GetData2() *FutureSalts_Data {
+func (m *TLMsgsStateInfo) GetData2() *MsgsStateInfo_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// MsgResendReq <--
+//  + TL_msg_resend_req
+//
+type MsgResendReq_Data struct {
+	MsgIds []int64 `protobuf:"varint,1,rep,packed,name=msg_ids,json=msgIds" json:"msg_ids,omitempty"`
+}
+
+func (m *MsgResendReq_Data) Reset()                    { *m = MsgResendReq_Data{} }
+func (m *MsgResendReq_Data) String() string            { return proto.CompactTextString(m) }
+func (*MsgResendReq_Data) ProtoMessage()               {}
+func (*MsgResendReq_Data) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{47} }
+
+func (m *MsgResendReq_Data) GetMsgIds() []int64 {
+	if m != nil {
+		return m.MsgIds
+	}
+	return nil
+}
+
+type MsgResendReq struct {
+	Constructor TLConstructor      `protobuf:"varint,1,opt,name=constructor,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2       *MsgResendReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *MsgResendReq) Reset()                    { *m = MsgResendReq{} }
+func (m *MsgResendReq) String() string            { return proto.CompactTextString(m) }
+func (*MsgResendReq) ProtoMessage()               {}
+func (*MsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{48} }
+
+func (m *MsgResendReq) GetConstructor() TLConstructor {
+	if m != nil {
+		return m.Constructor
+	}
+	return TLConstructor_CRC32_UNKNOWN
+}
+
+func (m *MsgResendReq) GetData2() *MsgResendReq_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// msg_resend_req#7d861a08 msg_ids:Vector<long> = MsgResendReq;
+type TLMsgResendReq struct {
+	Data2 *MsgResendReq_Data `protobuf:"bytes,2,opt,name=data2" json:"data2,omitempty"`
+}
+
+func (m *TLMsgResendReq) Reset()                    { *m = TLMsgResendReq{} }
+func (m *TLMsgResendReq) String() string            { return proto.CompactTextString(m) }
+func (*TLMsgResendReq) ProtoMessage()               {}
+func (*TLMsgResendReq) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{49} }
+
+func (m *TLMsgResendReq) GetData2() *MsgResendReq_Data {
 	if m != nil {
 		return m.Data2
 	}
@@ -1335,33 +1181,43 @@ func init() {
 	proto.RegisterType((*FutureSalt_Data)(nil), "mtproto.FutureSalt_Data")
 	proto.RegisterType((*FutureSalt)(nil), "mtproto.FutureSalt")
 	proto.RegisterType((*TLFutureSalt)(nil), "mtproto.TL_future_salt")
-	proto.RegisterType((*Pong_Data)(nil), "mtproto.Pong_Data")
-	proto.RegisterType((*Pong)(nil), "mtproto.Pong")
-	proto.RegisterType((*TLPong)(nil), "mtproto.TL_pong")
+	proto.RegisterType((*FutureSalts_Data)(nil), "mtproto.FutureSalts_Data")
+	proto.RegisterType((*FutureSalts)(nil), "mtproto.FutureSalts")
+	proto.RegisterType((*TLFutureSalts)(nil), "mtproto.TL_future_salts")
+	proto.RegisterType((*NewSession_Data)(nil), "mtproto.NewSession_Data")
+	proto.RegisterType((*NewSession)(nil), "mtproto.NewSession")
+	proto.RegisterType((*TLNewSessionCreated)(nil), "mtproto.TL_new_session_created")
+	proto.RegisterType((*RpcDropAnswer_Data)(nil), "mtproto.RpcDropAnswer_Data")
+	proto.RegisterType((*RpcDropAnswer)(nil), "mtproto.RpcDropAnswer")
+	proto.RegisterType((*TLRpcAnswerUnknown)(nil), "mtproto.TL_rpc_answer_unknown")
+	proto.RegisterType((*TLRpcAnswerDroppedRunning)(nil), "mtproto.TL_rpc_answer_dropped_running")
+	proto.RegisterType((*TLRpcAnswerDropped)(nil), "mtproto.TL_rpc_answer_dropped")
 	proto.RegisterType((*DestroySessionRes_Data)(nil), "mtproto.DestroySessionRes_Data")
 	proto.RegisterType((*DestroySessionRes)(nil), "mtproto.DestroySessionRes")
 	proto.RegisterType((*TLDestroySessionOk)(nil), "mtproto.TL_destroy_session_ok")
 	proto.RegisterType((*TLDestroySessionNone)(nil), "mtproto.TL_destroy_session_none")
-	proto.RegisterType((*NewSession_Data)(nil), "mtproto.NewSession_Data")
-	proto.RegisterType((*NewSession)(nil), "mtproto.NewSession")
-	proto.RegisterType((*TLNewSessionCreated)(nil), "mtproto.TL_new_session_created")
-	proto.RegisterType((*Help_ConfigSimple_Data)(nil), "mtproto.help_ConfigSimple_Data")
-	proto.RegisterType((*Help_ConfigSimple)(nil), "mtproto.help_ConfigSimple")
-	proto.RegisterType((*TLHelpConfigSimple)(nil), "mtproto.TL_help_configSimple")
 	proto.RegisterType((*MsgsStateReq_Data)(nil), "mtproto.MsgsStateReq_Data")
 	proto.RegisterType((*MsgsStateReq)(nil), "mtproto.MsgsStateReq")
 	proto.RegisterType((*TLMsgsStateReq)(nil), "mtproto.TL_msgs_state_req")
 	proto.RegisterType((*MsgsAllInfo_Data)(nil), "mtproto.MsgsAllInfo_Data")
 	proto.RegisterType((*MsgsAllInfo)(nil), "mtproto.MsgsAllInfo")
 	proto.RegisterType((*TLMsgsAllInfo)(nil), "mtproto.TL_msgs_all_info")
-	proto.RegisterType((*MsgResendReq_Data)(nil), "mtproto.MsgResendReq_Data")
-	proto.RegisterType((*MsgResendReq)(nil), "mtproto.MsgResendReq")
-	proto.RegisterType((*TLMsgResendReq)(nil), "mtproto.TL_msg_resend_req")
-	proto.RegisterType((*RpcDropAnswer_Data)(nil), "mtproto.RpcDropAnswer_Data")
-	proto.RegisterType((*RpcDropAnswer)(nil), "mtproto.RpcDropAnswer")
-	proto.RegisterType((*TLRpcAnswerUnknown)(nil), "mtproto.TL_rpc_answer_unknown")
-	proto.RegisterType((*TLRpcAnswerDroppedRunning)(nil), "mtproto.TL_rpc_answer_dropped_running")
-	proto.RegisterType((*TLRpcAnswerDropped)(nil), "mtproto.TL_rpc_answer_dropped")
+	proto.RegisterType((*RpcError_Data)(nil), "mtproto.RpcError_Data")
+	proto.RegisterType((*RpcError)(nil), "mtproto.RpcError")
+	proto.RegisterType((*TLRpcError)(nil), "mtproto.TL_rpc_error")
+	proto.RegisterType((*MsgsAck_Data)(nil), "mtproto.MsgsAck_Data")
+	proto.RegisterType((*MsgsAck)(nil), "mtproto.MsgsAck")
+	proto.RegisterType((*TLMsgsAck)(nil), "mtproto.TL_msgs_ack")
+	proto.RegisterType((*MsgDetailedInfo_Data)(nil), "mtproto.MsgDetailedInfo_Data")
+	proto.RegisterType((*MsgDetailedInfo)(nil), "mtproto.MsgDetailedInfo")
+	proto.RegisterType((*TLMsgDetailedInfo)(nil), "mtproto.TL_msg_detailed_info")
+	proto.RegisterType((*TLMsgNewDetailedInfo)(nil), "mtproto.TL_msg_new_detailed_info")
+	proto.RegisterType((*Pong_Data)(nil), "mtproto.Pong_Data")
+	proto.RegisterType((*Pong)(nil), "mtproto.Pong")
+	proto.RegisterType((*TLPong)(nil), "mtproto.TL_pong")
+	proto.RegisterType((*HttpWait_Data)(nil), "mtproto.HttpWait_Data")
+	proto.RegisterType((*HttpWait)(nil), "mtproto.HttpWait")
+	proto.RegisterType((*TLHttpWait)(nil), "mtproto.TL_http_wait")
 	proto.RegisterType((*BadMsgNotification_Data)(nil), "mtproto.BadMsgNotification_Data")
 	proto.RegisterType((*BadMsgNotification)(nil), "mtproto.BadMsgNotification")
 	proto.RegisterType((*TLBadMsgNotification)(nil), "mtproto.TL_bad_msg_notification")
@@ -1369,114 +1225,88 @@ func init() {
 	proto.RegisterType((*MsgsStateInfo_Data)(nil), "mtproto.MsgsStateInfo_Data")
 	proto.RegisterType((*MsgsStateInfo)(nil), "mtproto.MsgsStateInfo")
 	proto.RegisterType((*TLMsgsStateInfo)(nil), "mtproto.TL_msgs_state_info")
-	proto.RegisterType((*MsgDetailedInfo_Data)(nil), "mtproto.MsgDetailedInfo_Data")
-	proto.RegisterType((*MsgDetailedInfo)(nil), "mtproto.MsgDetailedInfo")
-	proto.RegisterType((*TLMsgDetailedInfo)(nil), "mtproto.TL_msg_detailed_info")
-	proto.RegisterType((*TLMsgNewDetailedInfo)(nil), "mtproto.TL_msg_new_detailed_info")
-	proto.RegisterType((*RpcError_Data)(nil), "mtproto.RpcError_Data")
-	proto.RegisterType((*RpcError)(nil), "mtproto.RpcError")
-	proto.RegisterType((*TLRpcError)(nil), "mtproto.TL_rpc_error")
-	proto.RegisterType((*HttpWait_Data)(nil), "mtproto.HttpWait_Data")
-	proto.RegisterType((*HttpWait)(nil), "mtproto.HttpWait")
-	proto.RegisterType((*TLHttpWait)(nil), "mtproto.TL_http_wait")
-	proto.RegisterType((*IpPort_Data)(nil), "mtproto.IpPort_Data")
-	proto.RegisterType((*IpPort)(nil), "mtproto.IpPort")
-	proto.RegisterType((*TLIpPort)(nil), "mtproto.TL_ipPort")
-	proto.RegisterType((*MsgsAck_Data)(nil), "mtproto.MsgsAck_Data")
-	proto.RegisterType((*MsgsAck)(nil), "mtproto.MsgsAck")
-	proto.RegisterType((*TLMsgsAck)(nil), "mtproto.TL_msgs_ack")
-	proto.RegisterType((*FutureSalts_Data)(nil), "mtproto.FutureSalts_Data")
-	proto.RegisterType((*FutureSalts)(nil), "mtproto.FutureSalts")
-	proto.RegisterType((*TLFutureSalts)(nil), "mtproto.TL_future_salts")
+	proto.RegisterType((*MsgResendReq_Data)(nil), "mtproto.MsgResendReq_Data")
+	proto.RegisterType((*MsgResendReq)(nil), "mtproto.MsgResendReq")
+	proto.RegisterType((*TLMsgResendReq)(nil), "mtproto.TL_msg_resend_req")
 }
 
 func init() { proto.RegisterFile("schema.tl.transport.proto", fileDescriptor8) }
 
 var fileDescriptor8 = []byte{
-	// 1358 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0xdb, 0x73, 0x1b, 0xb5,
-	0x17, 0x1e, 0xd7, 0x71, 0x1c, 0x1f, 0xc7, 0x4d, 0xba, 0xbf, 0x5c, 0xdc, 0xa6, 0x9d, 0x66, 0xf6,
-	0x37, 0x03, 0x19, 0x28, 0x06, 0x92, 0x16, 0x18, 0x60, 0x06, 0x72, 0x69, 0xa9, 0xc1, 0x0e, 0x61,
-	0x6d, 0x06, 0xde, 0x34, 0xca, 0xae, 0xec, 0x2e, 0x59, 0x6b, 0xd7, 0x92, 0x9c, 0xa4, 0x4c, 0x67,
-	0xe0, 0x81, 0xe1, 0x9d, 0x7f, 0x81, 0xbf, 0x94, 0xd1, 0x65, 0x6f, 0x71, 0xda, 0xc6, 0x76, 0xfd,
-	0x64, 0xed, 0xd1, 0x39, 0x9f, 0xbe, 0xf3, 0x49, 0x3a, 0x92, 0x0c, 0x77, 0xb9, 0xfb, 0x82, 0x0c,
-	0x70, 0x43, 0x04, 0x0d, 0xc1, 0x30, 0xe5, 0x51, 0xc8, 0x44, 0x23, 0x62, 0xa1, 0x08, 0xad, 0xf2,
-	0x40, 0xa8, 0xc6, 0xbd, 0xf5, 0xd4, 0xc7, 0x65, 0xee, 0xde, 0xae, 0xee, 0xb7, 0xfb, 0xb0, 0xf2,
-	0x6c, 0x24, 0x46, 0x8c, 0x74, 0x70, 0x20, 0xd0, 0x11, 0x16, 0xd8, 0x7a, 0x08, 0xd5, 0x73, 0x1c,
-	0xf8, 0x1e, 0xe2, 0x3e, 0x75, 0x49, 0xbd, 0xb0, 0x5d, 0xd8, 0x29, 0x39, 0xa0, 0x4c, 0x1d, 0x69,
-	0x49, 0x1d, 0x46, 0x54, 0xf8, 0x41, 0xfd, 0x56, 0xc6, 0xe1, 0x67, 0x69, 0xb1, 0x2c, 0x58, 0xe0,
-	0x38, 0x10, 0xf5, 0xe2, 0x76, 0x61, 0xa7, 0xe8, 0xa8, 0xb6, 0x7d, 0x0e, 0x90, 0x0e, 0x64, 0x7d,
-	0x01, 0x55, 0x37, 0xa4, 0x5c, 0xb0, 0x91, 0x2b, 0x42, 0xa6, 0xc6, 0xb8, 0xbd, 0xbb, 0xd1, 0x30,
-	0x64, 0x1b, 0xdd, 0xd6, 0x61, 0xda, 0xeb, 0x64, 0x5d, 0xad, 0x06, 0x94, 0x3c, 0x2c, 0xf0, 0xae,
-	0x1a, 0xb6, 0xba, 0x5b, 0x4f, 0x62, 0xae, 0xa4, 0xe1, 0x68, 0x37, 0xfb, 0x5b, 0xb8, 0xdd, 0x6d,
-	0xa1, 0x9e, 0xea, 0x44, 0x92, 0xc9, 0xc4, 0x08, 0x5f, 0x41, 0xe5, 0x24, 0xa4, 0x7d, 0x2d, 0xce,
-	0x3a, 0x2c, 0x0e, 0x78, 0x1f, 0xf9, 0x9e, 0xe2, 0x5c, 0x74, 0x4a, 0x03, 0xde, 0x6f, 0x7a, 0xd6,
-	0x26, 0x94, 0x23, 0x9f, 0x2a, 0xfb, 0x2d, 0x65, 0x5f, 0x94, 0x9f, 0x4d, 0xcf, 0xfe, 0x0d, 0x16,
-	0x64, 0xf0, 0x0c, 0x09, 0xef, 0xe4, 0xe9, 0x5a, 0x49, 0x4c, 0x42, 0x2a, 0x26, 0xba, 0x07, 0xe5,
-	0x6e, 0x0b, 0x45, 0x72, 0xb8, 0x9b, 0x07, 0x7d, 0x0e, 0x1b, 0x47, 0x84, 0x0b, 0x16, 0xbe, 0xec,
-	0x10, 0xce, 0xfd, 0x90, 0x3a, 0x84, 0xeb, 0x54, 0x1f, 0x00, 0x70, 0x6d, 0x4a, 0xd3, 0xad, 0x18,
-	0x4b, 0xd3, 0xb3, 0xff, 0x2a, 0xc0, 0x9d, 0xb1, 0xc8, 0x19, 0xf2, 0x7c, 0x92, 0xa7, 0xfc, 0x30,
-	0x89, 0xb9, 0x9e, 0x5e, 0xcc, 0xff, 0x18, 0xd6, 0xbb, 0x2d, 0xe4, 0x69, 0x1f, 0x14, 0x13, 0x0e,
-	0xcf, 0xa6, 0xc5, 0x3b, 0x81, 0xcd, 0x6b, 0xf0, 0x68, 0x48, 0xc9, 0xb4, 0x88, 0x43, 0x58, 0x39,
-	0x26, 0x17, 0xa6, 0x53, 0x4b, 0xbb, 0x0d, 0xcb, 0x3d, 0x9f, 0x71, 0x81, 0x72, 0x6b, 0x09, 0x94,
-	0xad, 0xad, 0x16, 0xd4, 0x16, 0x54, 0x46, 0xd4, 0x1f, 0x8e, 0x48, 0xba, 0xa4, 0x96, 0xb4, 0xa1,
-	0xe9, 0xc9, 0x0d, 0xc8, 0x09, 0x3b, 0x27, 0x0c, 0x65, 0xb6, 0x19, 0x68, 0x53, 0xc7, 0x6c, 0xb6,
-	0x74, 0xc8, 0x79, 0x6c, 0xb6, 0x2b, 0x09, 0xc5, 0xa9, 0x3e, 0x87, 0x8d, 0x6e, 0x0b, 0x51, 0x72,
-	0x91, 0x08, 0xe7, 0x32, 0x82, 0x05, 0xf1, 0x26, 0x46, 0xfa, 0xa7, 0x00, 0x1b, 0x2f, 0x48, 0x10,
-	0xa1, 0xc3, 0x90, 0xf6, 0xfc, 0x7e, 0xc7, 0x1f, 0x44, 0x01, 0xd1, 0xe2, 0x59, 0xb0, 0xe0, 0x61,
-	0x11, 0x17, 0x26, 0xd5, 0xb6, 0xea, 0x50, 0x26, 0x97, 0x91, 0xcf, 0x08, 0x37, 0xe5, 0x28, 0xfe,
-	0xb4, 0xfe, 0x07, 0x25, 0xcf, 0x95, 0x22, 0x16, 0x8d, 0xbb, 0xdb, 0xf4, 0xac, 0xc7, 0xb0, 0xec,
-	0x47, 0x48, 0x96, 0x49, 0x14, 0xf8, 0x5c, 0xd4, 0x17, 0xb6, 0x8b, 0xb9, 0x5d, 0xd2, 0x6d, 0x21,
-	0x3f, 0x3a, 0x09, 0x99, 0x70, 0x40, 0xff, 0xb6, 0x7c, 0x2e, 0xd4, 0x8a, 0x1f, 0xe3, 0x34, 0x8f,
-	0x15, 0x7f, 0x7d, 0xe2, 0xb1, 0x34, 0x6d, 0x58, 0xeb, 0xb6, 0x90, 0xf2, 0x71, 0xb3, 0x44, 0xa6,
-	0x84, 0x7b, 0x04, 0x77, 0xda, 0xbc, 0xcf, 0x3b, 0x02, 0x0b, 0xe2, 0x90, 0xa1, 0xd6, 0x78, 0x13,
-	0xca, 0x7a, 0x69, 0xf2, 0x7a, 0x61, 0xbb, 0x28, 0xeb, 0x99, 0xaa, 0x73, 0xdc, 0xfe, 0x1d, 0x96,
-	0xb3, 0xde, 0x33, 0x64, 0xff, 0x49, 0x9e, 0xee, 0xbd, 0x24, 0x66, 0x8c, 0x4d, 0xcc, 0xf4, 0x29,
-	0xdc, 0xe9, 0xb6, 0xe4, 0x96, 0xe1, 0x88, 0xcb, 0x7e, 0xc4, 0xc8, 0x70, 0x0a, 0x98, 0x6f, 0x60,
-	0x55, 0xf6, 0xed, 0x07, 0x41, 0x93, 0xf6, 0xc2, 0x37, 0xe7, 0x2b, 0x17, 0x9b, 0x4f, 0x7b, 0xa1,
-	0x42, 0xaf, 0x38, 0xaa, 0x6d, 0x5f, 0x42, 0x35, 0x03, 0x30, 0x83, 0x04, 0x1f, 0xe7, 0xb9, 0xdf,
-	0xcd, 0x71, 0xcf, 0xf2, 0x8b, 0xa9, 0x1f, 0xc2, 0x6a, 0xac, 0x00, 0x0e, 0x02, 0x24, 0xd9, 0x4c,
-	0x0e, 0xa2, 0x27, 0xdc, 0x21, 0x9c, 0x50, 0xef, 0xa6, 0x13, 0x9e, 0x78, 0xcf, 0x69, 0xc2, 0xf3,
-	0x6c, 0xc6, 0x26, 0x1c, 0x31, 0xd5, 0xff, 0xd6, 0x09, 0xbf, 0x1e, 0xe6, 0x57, 0xb0, 0x9c, 0xc8,
-	0x3d, 0x62, 0x61, 0xb4, 0x4f, 0xf9, 0x05, 0x61, 0x6f, 0x3c, 0xc9, 0xd7, 0x61, 0x91, 0x93, 0x21,
-	0xa2, 0xa1, 0x29, 0x24, 0x25, 0x4e, 0x86, 0xc7, 0xa1, 0xb5, 0x06, 0xa5, 0xd3, 0x97, 0x82, 0x70,
-	0x53, 0x46, 0xf4, 0x87, 0xfd, 0x0a, 0x6a, 0x39, 0xe4, 0x19, 0xd4, 0xf9, 0x34, 0x9f, 0xd6, 0x56,
-	0x12, 0x33, 0x4e, 0x3d, 0xce, 0xeb, 0x7b, 0x75, 0xf4, 0xb1, 0xc8, 0x45, 0x58, 0x77, 0x8e, 0xe8,
-	0x19, 0x0d, 0x2f, 0xe8, 0x34, 0x58, 0x0e, 0x3c, 0xc8, 0x63, 0x79, 0x2c, 0x8c, 0x22, 0xe2, 0x21,
-	0x36, 0xa2, 0xd4, 0xa7, 0xfd, 0x77, 0xc2, 0xcf, 0x60, 0x4e, 0x83, 0xf5, 0x6f, 0x01, 0x36, 0x0f,
-	0xb0, 0xd7, 0xe6, 0xfd, 0xe3, 0x50, 0xf8, 0x3d, 0xdf, 0xc5, 0x22, 0x39, 0x4d, 0xef, 0x03, 0x9c,
-	0x62, 0x2f, 0x7f, 0x96, 0x2e, 0x9d, 0x2a, 0xe7, 0xa6, 0x67, 0xd9, 0x50, 0x8b, 0x7b, 0x39, 0x19,
-	0x26, 0xf3, 0x5a, 0xd5, 0x0e, 0x1d, 0x69, 0x92, 0x57, 0x1d, 0xc2, 0x58, 0xc8, 0x90, 0x1b, 0x7a,
-	0xc4, 0x4c, 0x71, 0x45, 0x59, 0x0e, 0x43, 0x8f, 0x58, 0xef, 0xc1, 0x8a, 0x3e, 0xd3, 0xd2, 0x33,
-	0x77, 0x41, 0x8d, 0x52, 0xa3, 0xf2, 0xf4, 0x4a, 0x8e, 0xdd, 0xbf, 0x0b, 0x60, 0x8d, 0x93, 0x9c,
-	0x61, 0x51, 0x7c, 0x96, 0x17, 0x6a, 0x3b, 0x89, 0x79, 0x8d, 0x14, 0xb1, 0x5a, 0x3f, 0xa9, 0x4b,
-	0x4c, 0x9c, 0x36, 0xcd, 0x92, 0x99, 0x16, 0xb2, 0x05, 0x96, 0x81, 0xcc, 0xc8, 0x30, 0x35, 0xda,
-	0x33, 0xb0, 0x92, 0xfa, 0x9c, 0x56, 0xe1, 0xfb, 0x00, 0x8c, 0x0c, 0xaf, 0x4c, 0x24, 0x23, 0x43,
-	0x3d, 0x91, 0xd7, 0x95, 0xe2, 0x57, 0x50, 0xcb, 0xe1, 0xcc, 0x63, 0x03, 0x8e, 0x13, 0x8d, 0xb3,
-	0xf8, 0x4e, 0x69, 0x92, 0x39, 0x90, 0x54, 0x41, 0x9e, 0x02, 0xe8, 0x0f, 0x58, 0x6b, 0xf3, 0xfe,
-	0x11, 0x11, 0xd8, 0x0f, 0x88, 0x97, 0x0a, 0xf2, 0x9a, 0x1a, 0x65, 0x43, 0xcd, 0xec, 0x28, 0xd3,
-	0xab, 0x2f, 0x88, 0x55, 0x6d, 0xd4, 0x6a, 0x5d, 0x5b, 0xb0, 0xac, 0x0d, 0x58, 0x94, 0x4c, 0x47,
-	0x5c, 0x2d, 0xe0, 0x92, 0x63, 0xbe, 0xec, 0x3f, 0x0b, 0xb0, 0x72, 0x85, 0xc1, 0x0c, 0x52, 0xee,
-	0xe5, 0x15, 0x78, 0x90, 0x55, 0x60, 0x2c, 0xc9, 0x58, 0x83, 0x1f, 0xd4, 0xb5, 0x46, 0x26, 0xe4,
-	0x19, 0x17, 0x2d, 0xe7, 0x54, 0x60, 0x3f, 0x42, 0xdd, 0x80, 0xc9, 0x8d, 0xfb, 0x0e, 0x00, 0x3b,
-	0xaa, 0xd2, 0x3f, 0x55, 0x45, 0x22, 0x7e, 0x1d, 0x65, 0x4a, 0x46, 0xe1, 0x6a, 0xc9, 0xf8, 0x3f,
-	0xd4, 0x74, 0xf7, 0x80, 0x70, 0x8e, 0xfb, 0xc4, 0xac, 0xda, 0x65, 0x65, 0x6c, 0x6b, 0x9b, 0xcd,
-	0x60, 0x29, 0x06, 0x9d, 0x41, 0xed, 0x47, 0xf9, 0x7c, 0x36, 0xb2, 0xd5, 0x34, 0x25, 0x1c, 0x27,
-	0xf2, 0x35, 0x2c, 0x9b, 0xa2, 0xac, 0xa8, 0x4c, 0x18, 0xdd, 0x83, 0xda, 0x73, 0x21, 0xa2, 0x5f,
-	0xb0, 0x6f, 0xfe, 0x2c, 0xd8, 0x82, 0xca, 0x00, 0x5f, 0x22, 0x8f, 0x04, 0xf8, 0xa5, 0x51, 0x61,
-	0x69, 0x80, 0x2f, 0x8f, 0xe4, 0xb7, 0xd4, 0xe8, 0x42, 0x7a, 0xe2, 0x9e, 0x20, 0xcc, 0xd4, 0xdd,
-	0x8a, 0xb4, 0xec, 0x4b, 0x83, 0x75, 0x17, 0xa4, 0x2b, 0x92, 0x06, 0xb3, 0x4a, 0xcb, 0x03, 0x7c,
-	0x29, 0xb1, 0xa5, 0x32, 0xf1, 0x38, 0xf3, 0x50, 0x26, 0x97, 0x43, 0x5e, 0x99, 0x17, 0x42, 0x44,
-	0x8a, 0xd2, 0x84, 0xd1, 0x4f, 0xa0, 0xda, 0x54, 0x4f, 0x85, 0xe4, 0x91, 0xe2, 0x47, 0xe7, 0x8f,
-	0xe3, 0x47, 0x8a, 0x6c, 0x4b, 0x9b, 0x7c, 0x72, 0x18, 0x21, 0x54, 0xdb, 0xa6, 0xb0, 0xa8, 0xc3,
-	0x66, 0x48, 0xf3, 0x83, 0x3c, 0xd1, 0xb5, 0x24, 0x26, 0x43, 0x28, 0x7d, 0xee, 0x57, 0x92, 0xc7,
-	0xcd, 0x44, 0x81, 0xef, 0xeb, 0x8b, 0xff, 0xbe, 0x7b, 0xf6, 0x96, 0x0b, 0x63, 0x04, 0x65, 0xe3,
-	0x38, 0x43, 0x4a, 0x1f, 0xe6, 0x99, 0xad, 0xe7, 0x2f, 0xb5, 0x86, 0x43, 0x4c, 0xed, 0x4b, 0xa8,
-	0x26, 0xb7, 0x62, 0xf7, 0x6c, 0xb2, 0xd8, 0x21, 0xac, 0xa6, 0x7f, 0xfb, 0xf0, 0x9b, 0x1c, 0x43,
-	0xab, 0x50, 0xa4, 0xe1, 0x85, 0x99, 0x44, 0xd9, 0xb4, 0x3e, 0x82, 0x92, 0x3c, 0x0c, 0x65, 0xa9,
-	0x95, 0xcf, 0xc8, 0xcd, 0xec, 0x33, 0x32, 0xf3, 0xc7, 0x93, 0xa3, 0xbd, 0xe4, 0xf3, 0x21, 0x33,
-	0xe4, 0x3c, 0x9e, 0x0f, 0x57, 0x33, 0x8a, 0x93, 0x3d, 0x80, 0x95, 0x3c, 0x25, 0x3e, 0x31, 0xc6,
-	0xc1, 0x0e, 0x6c, 0xb9, 0xe1, 0xa0, 0x41, 0xc9, 0xe9, 0x28, 0xc0, 0xfe, 0xa0, 0x41, 0x68, 0xdf,
-	0xa7, 0x24, 0x0e, 0x3b, 0x28, 0xb7, 0xbb, 0x27, 0xb2, 0xf1, 0xfc, 0xd6, 0xe9, 0xa2, 0xb2, 0xec,
-	0xfd, 0x17, 0x00, 0x00, 0xff, 0xff, 0x7d, 0x85, 0x2d, 0x5f, 0x9e, 0x14, 0x00, 0x00,
+	// 1200 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x57, 0x5b, 0x6f, 0xe3, 0x44,
+	0x14, 0x56, 0x9a, 0x26, 0x69, 0x4e, 0x9a, 0x6d, 0x6b, 0xf5, 0x92, 0x6e, 0xb7, 0xda, 0xc8, 0x48,
+	0x10, 0x89, 0x25, 0x40, 0x2b, 0x2e, 0x02, 0x24, 0xe8, 0x65, 0x97, 0x16, 0x92, 0x52, 0x9c, 0x20,
+	0x78, 0xb3, 0xa6, 0xf6, 0x24, 0x6b, 0xea, 0x8c, 0x9d, 0x99, 0x49, 0xd3, 0xa2, 0x95, 0xe0, 0x01,
+	0xf1, 0x43, 0xf8, 0xa5, 0xab, 0xb9, 0xd8, 0xb1, 0x93, 0x6c, 0x77, 0x93, 0x6c, 0xdf, 0xec, 0x73,
+	0xf9, 0xe6, 0x3b, 0xdf, 0xcc, 0x1c, 0x1f, 0xc3, 0x2e, 0x73, 0x5e, 0xe2, 0x1e, 0xaa, 0x73, 0xbf,
+	0xce, 0x29, 0x22, 0x2c, 0x0c, 0x28, 0xaf, 0x87, 0x34, 0xe0, 0x81, 0x51, 0xe8, 0x71, 0xf9, 0xf0,
+	0x78, 0x6b, 0x14, 0xe3, 0x50, 0xe7, 0xf0, 0x40, 0xf9, 0xcd, 0x2e, 0xac, 0xbd, 0x18, 0xf0, 0x01,
+	0xc5, 0x2d, 0xe4, 0x73, 0xfb, 0x14, 0x71, 0x64, 0x3c, 0x85, 0xd2, 0x0d, 0xf2, 0x3d, 0xd7, 0x66,
+	0x1e, 0x71, 0x70, 0x25, 0x53, 0xcd, 0xd4, 0x72, 0x16, 0x48, 0x53, 0x4b, 0x58, 0x46, 0x01, 0x03,
+	0xc2, 0x3d, 0xbf, 0xb2, 0x94, 0x08, 0xf8, 0x4d, 0x58, 0x0c, 0x03, 0x96, 0x19, 0xf2, 0x79, 0x25,
+	0x5b, 0xcd, 0xd4, 0xb2, 0x96, 0x7c, 0x36, 0x6f, 0x00, 0x46, 0x0b, 0x19, 0x5f, 0x43, 0xc9, 0x09,
+	0x08, 0xe3, 0x74, 0xe0, 0xf0, 0x80, 0xca, 0x35, 0x1e, 0x1d, 0x6c, 0xd7, 0x35, 0xd9, 0x7a, 0xbb,
+	0x71, 0x32, 0xf2, 0x5a, 0xc9, 0x50, 0xa3, 0x0e, 0x39, 0x17, 0x71, 0x74, 0x20, 0x97, 0x2d, 0x1d,
+	0x54, 0xe2, 0x9c, 0xb1, 0x32, 0x2c, 0x15, 0x66, 0xfe, 0x00, 0x8f, 0xda, 0x0d, 0xbb, 0x23, 0x9d,
+	0xb6, 0x60, 0x32, 0x33, 0x42, 0x1f, 0xd6, 0x47, 0x1e, 0xa6, 0x34, 0x7a, 0x02, 0x40, 0x71, 0xdf,
+	0xee, 0xb1, 0xae, 0xed, 0xb9, 0x92, 0x7e, 0xd6, 0x5a, 0xa1, 0xb8, 0xdf, 0x64, 0xdd, 0x73, 0xd7,
+	0x58, 0x87, 0x2c, 0x09, 0x86, 0x5a, 0x18, 0xf1, 0x68, 0x7c, 0x02, 0x39, 0xb1, 0x36, 0xab, 0x64,
+	0xab, 0xd9, 0x5a, 0xe9, 0x60, 0x27, 0x51, 0x69, 0x92, 0x9b, 0xa5, 0xa2, 0xcc, 0x5b, 0x28, 0x25,
+	0x96, 0x5c, 0x40, 0xad, 0x4f, 0xd3, 0xb5, 0xee, 0x4e, 0xa9, 0x95, 0xa5, 0x8a, 0x3d, 0x86, 0xb5,
+	0x34, 0x25, 0x36, 0x3b, 0x46, 0x1f, 0xd6, 0x2e, 0xf0, 0xb0, 0x85, 0x19, 0xf3, 0x02, 0xa2, 0xf4,
+	0xaa, 0xc2, 0x6a, 0xc7, 0xa3, 0x8c, 0xa7, 0x15, 0x03, 0x69, 0x53, 0x9a, 0xed, 0x41, 0x71, 0x40,
+	0xbc, 0xfe, 0x00, 0x0b, 0xf7, 0x92, 0x12, 0x54, 0x19, 0xce, 0x5d, 0x71, 0xe2, 0x18, 0xa6, 0x37,
+	0x98, 0xda, 0x89, 0x73, 0x05, 0xca, 0xd4, 0xd2, 0xa7, 0x6b, 0xb4, 0xe4, 0x43, 0x9c, 0xae, 0xb1,
+	0x82, 0xa2, 0x52, 0xcf, 0x60, 0xbb, 0xdd, 0xb0, 0x09, 0x1e, 0xda, 0x4c, 0x7b, 0x1d, 0x8a, 0x11,
+	0xc7, 0xee, 0xcc, 0x48, 0x7f, 0x80, 0x61, 0x85, 0xce, 0x29, 0x0d, 0xc2, 0x23, 0xc2, 0x86, 0x98,
+	0x2a, 0xdd, 0xb6, 0x20, 0x9f, 0x52, 0x2c, 0xd7, 0x93, 0x62, 0x6d, 0x41, 0x9e, 0xe1, 0xbe, 0x4d,
+	0x02, 0x7d, 0xc6, 0x72, 0x0c, 0xf7, 0x2f, 0x02, 0x63, 0x13, 0x72, 0x57, 0x77, 0x1c, 0x33, 0x29,
+	0x50, 0xce, 0x52, 0x2f, 0xe6, 0x2b, 0x28, 0xa7, 0x90, 0x17, 0x90, 0xe7, 0xf3, 0x74, 0x51, 0x7b,
+	0x71, 0xce, 0x24, 0xf5, 0xa8, 0xae, 0x9f, 0x60, 0xab, 0xdd, 0xb0, 0x69, 0xe8, 0xd8, 0x48, 0x39,
+	0x07, 0xe4, 0x9a, 0x04, 0x43, 0x32, 0x0f, 0x96, 0x05, 0xfb, 0x69, 0x2c, 0x97, 0x06, 0x61, 0x88,
+	0x5d, 0x9b, 0x0e, 0x08, 0xf1, 0x48, 0xf7, 0xbd, 0xf0, 0xd3, 0x98, 0xf3, 0x60, 0x7d, 0x05, 0xdb,
+	0xa7, 0x98, 0x71, 0x1a, 0xdc, 0xe9, 0x1d, 0xb6, 0xb0, 0xee, 0x17, 0xfb, 0x00, 0xd1, 0x01, 0x89,
+	0xf7, 0xb2, 0xa8, 0x2d, 0xe7, 0xae, 0xf9, 0x6f, 0x06, 0x36, 0x26, 0x32, 0x17, 0xd8, 0xa7, 0x2f,
+	0xd2, 0xdc, 0x9f, 0xc6, 0x39, 0xd3, 0xe9, 0x45, 0xfc, 0x2f, 0xa4, 0x16, 0xae, 0x8a, 0x89, 0x4f,
+	0x74, 0x70, 0x3d, 0x2f, 0xde, 0x25, 0xec, 0x4c, 0xc1, 0x23, 0x01, 0xc1, 0xf3, 0x22, 0x3e, 0x83,
+	0x8d, 0x26, 0xeb, 0xb2, 0x16, 0x47, 0x1c, 0x5b, 0xb8, 0xaf, 0xc4, 0xdd, 0x81, 0x82, 0xba, 0x24,
+	0xac, 0x92, 0xa9, 0x66, 0x6b, 0x59, 0x2b, 0x2f, 0x6f, 0x09, 0x33, 0xff, 0x82, 0xd5, 0x64, 0xf4,
+	0x02, 0x82, 0x7e, 0x96, 0xa6, 0xfb, 0x38, 0xce, 0x99, 0x60, 0x13, 0x31, 0x7d, 0x0e, 0x1b, 0xed,
+	0x86, 0x68, 0x77, 0xcc, 0x66, 0xc2, 0x6f, 0x53, 0xdc, 0x9f, 0x03, 0xe6, 0x7b, 0x58, 0x17, 0xbe,
+	0x23, 0xdf, 0x3f, 0x27, 0x9d, 0xe0, 0xfe, 0x7a, 0xc5, 0x77, 0xd7, 0x23, 0x1d, 0xd5, 0x14, 0x8a,
+	0x96, 0x7c, 0x16, 0x9f, 0x92, 0x04, 0xc0, 0x43, 0x7c, 0x4a, 0xc6, 0xf9, 0x45, 0xd4, 0x4f, 0x60,
+	0x3d, 0x52, 0x00, 0xf9, 0xbe, 0x2d, 0xd8, 0xcc, 0x0e, 0xd2, 0x92, 0xcd, 0xeb, 0x39, 0xa5, 0x01,
+	0x8d, 0x6f, 0x12, 0x96, 0x6f, 0x4e, 0xe0, 0x46, 0xc3, 0x49, 0x51, 0x5a, 0x4e, 0x02, 0x17, 0x1b,
+	0x1f, 0x40, 0x59, 0xb9, 0x7b, 0x98, 0x31, 0xd4, 0xc5, 0x5a, 0x8b, 0x55, 0x69, 0x6c, 0x2a, 0x9b,
+	0x49, 0x61, 0x25, 0x02, 0x5d, 0x40, 0x90, 0x67, 0xe9, 0x5a, 0xb6, 0x93, 0x0d, 0x62, 0x44, 0x38,
+	0x2a, 0xe4, 0x3b, 0x58, 0xd5, 0x7d, 0x46, 0x52, 0x99, 0x31, 0xfb, 0x23, 0x75, 0x92, 0x8f, 0x9c,
+	0xeb, 0xb7, 0x1c, 0xf9, 0x10, 0x0a, 0x3a, 0x70, 0x81, 0xca, 0x3e, 0x4e, 0x73, 0xdb, 0x4a, 0xef,
+	0x92, 0xe6, 0x10, 0x51, 0xfb, 0x06, 0x4a, 0xf1, 0x36, 0x3b, 0xd7, 0xb3, 0xe5, 0xfe, 0x0d, 0x9b,
+	0x4d, 0xd6, 0x3d, 0xc5, 0x1c, 0x79, 0x3e, 0x76, 0x47, 0x27, 0xfc, 0x0d, 0x9f, 0x3d, 0x13, 0xca,
+	0xba, 0x49, 0x6b, 0xaf, 0x9a, 0x13, 0x4a, 0xca, 0xa8, 0xe6, 0x88, 0xa9, 0xdf, 0x40, 0x63, 0x1b,
+	0xf2, 0xe2, 0x16, 0x0e, 0x58, 0x65, 0x59, 0x9a, 0xf5, 0x9b, 0xf9, 0x4f, 0x06, 0xd6, 0xc6, 0x18,
+	0x2c, 0xa0, 0xdb, 0x61, 0xba, 0xf6, 0xfd, 0x64, 0xed, 0x13, 0x45, 0x46, 0x1a, 0xfc, 0x0c, 0x9b,
+	0x4a, 0x3f, 0xdb, 0xd5, 0x21, 0xea, 0xaa, 0xcc, 0x05, 0xf6, 0x0b, 0x54, 0x34, 0x98, 0x98, 0x49,
+	0xde, 0x03, 0xe0, 0xb7, 0x50, 0xbc, 0x0c, 0x48, 0xf7, 0xde, 0x6d, 0xd9, 0x81, 0x42, 0xe8, 0x91,
+	0xc4, 0x86, 0xe4, 0xc5, 0xeb, 0xb9, 0x6b, 0xfe, 0x09, 0xcb, 0x22, 0x79, 0x01, 0x45, 0x6b, 0x69,
+	0xce, 0x46, 0x9c, 0x13, 0x93, 0x8a, 0x88, 0x1e, 0x42, 0xa1, 0xdd, 0xb0, 0x43, 0xb1, 0xdc, 0xbb,
+	0x27, 0x75, 0xa0, 0x7c, 0xc6, 0x79, 0xf8, 0x3b, 0xf2, 0xf4, 0xbf, 0xcf, 0x1e, 0x14, 0x7b, 0xe8,
+	0xd6, 0x76, 0xb1, 0x8f, 0xee, 0x74, 0x73, 0x59, 0xe9, 0xa1, 0xdb, 0x53, 0xf1, 0x2e, 0x5a, 0xcf,
+	0x50, 0x44, 0xa2, 0x0e, 0xc7, 0x54, 0x4f, 0x5e, 0x45, 0x61, 0x39, 0x12, 0x06, 0x63, 0x17, 0x44,
+	0xa8, 0x2d, 0x0c, 0xfa, 0xf0, 0x15, 0x7a, 0xe8, 0x56, 0x60, 0x8b, 0x86, 0x13, 0xad, 0xf3, 0x10,
+	0x0d, 0x27, 0x55, 0x43, 0xba, 0xe1, 0xbc, 0xe4, 0x3c, 0x94, 0x94, 0x66, 0xcc, 0xfe, 0x3f, 0x03,
+	0x3b, 0xc7, 0xc8, 0x6d, 0xb2, 0xee, 0x45, 0xc0, 0xbd, 0x8e, 0xe7, 0x20, 0x1e, 0x0f, 0xf3, 0x4f,
+	0x00, 0xae, 0x90, 0x3b, 0xf6, 0xf3, 0x73, 0x25, 0x83, 0xd5, 0x25, 0x8d, 0xbc, 0x0c, 0xf7, 0xe3,
+	0x11, 0xb5, 0xa4, 0x02, 0x5a, 0xc2, 0x34, 0xd6, 0xc4, 0xb3, 0xe3, 0x4d, 0xfc, 0x43, 0x58, 0x53,
+	0x23, 0xf5, 0x68, 0xe4, 0x5f, 0x96, 0xab, 0x94, 0x89, 0x18, 0x9e, 0xe3, 0xa9, 0xff, 0xbf, 0x0c,
+	0x18, 0x93, 0x24, 0x17, 0x50, 0xf8, 0xcb, 0xb4, 0x46, 0xd5, 0x38, 0xe7, 0x0d, 0x52, 0x44, 0x6a,
+	0xfd, 0x2a, 0x07, 0x9d, 0xa8, 0x6c, 0x92, 0x24, 0x33, 0x2f, 0x64, 0x03, 0x0c, 0x0d, 0x99, 0x90,
+	0x61, 0x6e, 0xb4, 0x17, 0x60, 0xc4, 0x23, 0xc6, 0xa8, 0xcd, 0xde, 0xff, 0x17, 0x3b, 0x6d, 0x9a,
+	0x78, 0x05, 0xe5, 0x14, 0xce, 0x43, 0xfc, 0x4b, 0x4c, 0x12, 0x8d, 0xaa, 0xf8, 0x51, 0x6a, 0x92,
+	0x98, 0xa9, 0x64, 0x5f, 0x9b, 0x03, 0x48, 0x8d, 0x91, 0x16, 0x66, 0x98, 0xb8, 0xef, 0x3a, 0x46,
+	0xc6, 0xd1, 0x0f, 0x34, 0x46, 0xa6, 0xd9, 0x4c, 0x8c, 0x91, 0x36, 0x95, 0xfe, 0xb7, 0x8e, 0x91,
+	0x53, 0x61, 0x8e, 0x6b, 0xb0, 0xe7, 0x04, 0xbd, 0x3a, 0xc1, 0x57, 0x03, 0x1f, 0x79, 0xbd, 0x3a,
+	0x26, 0x5d, 0x8f, 0xe0, 0x28, 0xef, 0xb8, 0xd0, 0x6c, 0x5f, 0x8a, 0x87, 0xb3, 0xa5, 0xab, 0xbc,
+	0xb4, 0x1c, 0xbe, 0x0e, 0x00, 0x00, 0xff, 0xff, 0xdd, 0x84, 0xcf, 0x10, 0x54, 0x12, 0x00, 0x00,
 }

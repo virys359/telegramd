@@ -36,9 +36,9 @@ func main() {
 			fmt.Println(os.Args[i], " conv error: ", err)
 		} else {
 			if crc32, ok := mtproto.TLConstructor_name[int32(n)]; !ok {
-				fmt.Println(os.Args[i], " ==> ", "CRC32_UNKNOWN")
+				fmt.Printf("[%d, 0x%x] ==> %s\n", int32(n), uint32(n), "CRC32_UNKNOWN")
 			} else {
-				fmt.Println(os.Args[i], " ==> ", crc32)
+				fmt.Printf("[%d, 0x%x] ==> %s\n", int32(n), uint32(n), crc32)
 			}
 		}
 	}

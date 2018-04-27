@@ -46,7 +46,7 @@ func makeForwardMessagesData(selfId int32, idList []int32, ridList []int64) ([]*
 	return boxList, randomIdList
 }
 
-// messages.forwardMessages#708e0195 flags:# silent:flags.5?true background:flags.6?true with_my_score:flags.8?true from_peer:InputPeer id:Vector<int> random_id:Vector<long> to_peer:InputPeer = Updates;
+// messages.forwardMessages#708e0195 flags:# silent:flags.5?true background:flags.6?true with_my_score:flags.8?true grouped:flags.9?true from_peer:InputPeer id:Vector<int> random_id:Vector<long> to_peer:InputPeer = Updates;
 func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, request *mtproto.TLMessagesForwardMessages) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesForwardMessages - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))

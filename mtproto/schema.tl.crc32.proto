@@ -70,8 +70,6 @@ enum TLConstructor {
     CRC32_destroy_session_none = 1658015945;
     CRC32_new_session_created = -1631450872;
     CRC32_http_wait = -1835453025;
-    CRC32_ipPort = -734810765;
-    CRC32_help_configSimple = -644365371;
     CRC32_rpc_drop_answer = 1491380032;
     CRC32_get_future_salts = -1188971260;
     CRC32_ping = 2059302892;
@@ -101,12 +99,13 @@ enum TLConstructor {
     CRC32_inputMediaContact = -1494984313;
     CRC32_inputMediaUploadedDocument = -476700163;
     CRC32_inputMediaDocument = 1523279502;
-    CRC32_inputMediaVenue = 673687578;
+    CRC32_inputMediaVenue = -1052959727;
     CRC32_inputMediaGifExternal = 1212395773;
     CRC32_inputMediaPhotoExternal = 153267905;
     CRC32_inputMediaDocumentExternal = -1225309387;
     CRC32_inputMediaGame = -750828557;
-    CRC32_inputMediaInvoice = -1844103547;
+    CRC32_inputMediaInvoice = -186607933;
+    CRC32_inputMediaGeoLive = 2065305999;
     CRC32_inputChatPhotoEmpty = 480546647;
     CRC32_inputChatUploadedPhoto = -1837345356;
     CRC32_inputChatPhoto = -1991004873;
@@ -146,10 +145,10 @@ enum TLConstructor {
     CRC32_chatEmpty = -1683826688;
     CRC32_chat = -652419756;
     CRC32_chatForbidden = 120753115;
-    CRC32_channel = 213142300;
+    CRC32_channel = 1158377749;
     CRC32_channelForbidden = 681420594;
     CRC32_chatFull = 771925524;
-    CRC32_channelFull = 401891279;
+    CRC32_channelFull = 1991201921;
     CRC32_chatParticipant = -925415106;
     CRC32_chatParticipantCreator = -636267638;
     CRC32_chatParticipantAdmin = -489233354;
@@ -158,7 +157,7 @@ enum TLConstructor {
     CRC32_chatPhotoEmpty = 935395612;
     CRC32_chatPhoto = 1632839530;
     CRC32_messageEmpty = -2082087340;
-    CRC32_message = -1864508399;
+    CRC32_message = 1157215293;
     CRC32_messageService = -1642487306;
     CRC32_messageMediaEmpty = 1038967584;
     CRC32_messageMediaPhoto = -1256047857;
@@ -167,9 +166,10 @@ enum TLConstructor {
     CRC32_messageMediaUnsupported = -1618676578;
     CRC32_messageMediaDocument = 2084836563;
     CRC32_messageMediaWebPage = -1557277184;
-    CRC32_messageMediaVenue = 2031269663;
+    CRC32_messageMediaVenue = 784356159;
     CRC32_messageMediaGame = -38694904;
     CRC32_messageMediaInvoice = -2074799289;
+    CRC32_messageMediaGeoLive = 2084316681;
     CRC32_messageActionEmpty = -1230047312;
     CRC32_messageActionChatCreate = -1503425638;
     CRC32_messageActionChatEditTitle = -1247687078;
@@ -188,6 +188,7 @@ enum TLConstructor {
     CRC32_messageActionPaymentSent = 1080663248;
     CRC32_messageActionPhoneCall = -2132731265;
     CRC32_messageActionScreenshotTaken = 1200788123;
+    CRC32_messageActionCustomAction = -85549226;
     CRC32_dialog = -455150117;
     CRC32_photoEmpty = 590459437;
     CRC32_photo = -1836524247;
@@ -234,6 +235,7 @@ enum TLConstructor {
     CRC32_messages_messages = -1938715001;
     CRC32_messages_messagesSlice = 189033187;
     CRC32_messages_channelMessages = -1725551049;
+    CRC32_messages_messagesNotModified = 1951620897;
     CRC32_messages_chats = 1694474197;
     CRC32_messages_chatsSlice = -1663561404;
     CRC32_messages_chatFull = -438840932;
@@ -242,7 +244,6 @@ enum TLConstructor {
     CRC32_inputMessagesFilterPhotos = -1777752804;
     CRC32_inputMessagesFilterVideo = -1614803355;
     CRC32_inputMessagesFilterPhotoVideo = 1458172132;
-    CRC32_inputMessagesFilterPhotoVideoDocuments = -648121413;
     CRC32_inputMessagesFilterDocument = -1629621880;
     CRC32_inputMessagesFilterUrl = 2129714567;
     CRC32_inputMessagesFilterGif = -3644025;
@@ -253,6 +254,8 @@ enum TLConstructor {
     CRC32_inputMessagesFilterRoundVoice = 2054952868;
     CRC32_inputMessagesFilterRoundVideo = -1253451181;
     CRC32_inputMessagesFilterMyMentions = -1040652646;
+    CRC32_inputMessagesFilterGeo = -419271411;
+    CRC32_inputMessagesFilterContacts = -530392189;
     CRC32_updateNewMessage = 522914557;
     CRC32_updateMessageID = 1318109142;
     CRC32_updateDeleteMessages = -1576161051;
@@ -318,6 +321,7 @@ enum TLConstructor {
     CRC32_updateFavedStickers = -451831443;
     CRC32_updateChannelReadMessagesContents = -1987495099;
     CRC32_updateContactsReset = 1887741886;
+    CRC32_updateChannelAvailableMessages = 1893427255;
     CRC32_updates_state = -1519637954;
     CRC32_updates_differenceEmpty = 1567990072;
     CRC32_updates_difference = 16030880;
@@ -336,7 +340,7 @@ enum TLConstructor {
     CRC32_upload_file = 157948117;
     CRC32_upload_fileCdnRedirect = -363659686;
     CRC32_dcOption = 98092748;
-    CRC32_config = -1913424220;
+    CRC32_config = -1669068444;
     CRC32_nearestDc = -1910892683;
     CRC32_help_appUpdate = -1987579119;
     CRC32_help_noAppUpdate = -1000708810;
@@ -382,6 +386,7 @@ enum TLConstructor {
     CRC32_sendMessageRecordRoundAction = -1997373508;
     CRC32_sendMessageUploadRoundAction = 608050278;
     CRC32_contacts_found = 446822276;
+    CRC32_contacts_foundLayer74 = -1290580579;
     CRC32_inputPrivacyKeyStatusTimestamp = 1335282456;
     CRC32_inputPrivacyKeyChatInvite = -1107622874;
     CRC32_inputPrivacyKeyPhoneCall = -88417185;
@@ -490,6 +495,7 @@ enum TLConstructor {
     CRC32_channelParticipantsBanned = 338142689;
     CRC32_channelParticipantsSearch = 106343499;
     CRC32_channels_channelParticipants = -177282392;
+    CRC32_channels_channelParticipantsNotModified = -266911767;
     CRC32_channels_channelParticipant = -791039645;
     CRC32_help_termsOfService = -236044656;
     CRC32_foundGif = 372165663;
@@ -499,7 +505,7 @@ enum TLConstructor {
     CRC32_messages_savedGifs = 772213157;
     CRC32_inputBotInlineMessageMediaAuto = 691006739;
     CRC32_inputBotInlineMessageText = 1036876423;
-    CRC32_inputBotInlineMessageMediaGeo = -190472735;
+    CRC32_inputBotInlineMessageMediaGeo = -1045340827;
     CRC32_inputBotInlineMessageMediaVenue = -1431327288;
     CRC32_inputBotInlineMessageMediaContact = 766443943;
     CRC32_inputBotInlineMessageGame = 1262639204;
@@ -509,14 +515,15 @@ enum TLConstructor {
     CRC32_inputBotInlineResultGame = 1336154098;
     CRC32_botInlineMessageMediaAuto = 175419739;
     CRC32_botInlineMessageText = -1937807902;
-    CRC32_botInlineMessageMediaGeo = 982505656;
+    CRC32_botInlineMessageMediaGeo = -1222451611;
     CRC32_botInlineMessageMediaVenue = 1130767150;
     CRC32_botInlineMessageMediaContact = 904770772;
     CRC32_botInlineResult = -1679053127;
     CRC32_botInlineMediaResult = 400266251;
-    CRC32_messages_botResults = -858565059;
+    CRC32_messages_botResults = -1803769784;
     CRC32_exportedMessageLink = 524838915;
-    CRC32_messageFwdHeader = -85986132;
+    CRC32_exportedMessageLinkLayer74 = 1571494644;
+    CRC32_messageFwdHeader = 1436466797;
     CRC32_auth_codeTypeSms = 1923290508;
     CRC32_auth_codeTypeCall = 1948046307;
     CRC32_auth_codeTypeFlashCall = 577556219;
@@ -616,6 +623,9 @@ enum TLConstructor {
     CRC32_payments_savedInfo = -74456004;
     CRC32_inputPaymentCredentialsSaved = -1056001329;
     CRC32_inputPaymentCredentials = 873977640;
+    CRC32_inputPaymentCredentialsApplePay = 178373535;
+    CRC32_inputPaymentCredentialsAndroidPay = 2035705766;
+    CRC32_inputPaymentCredentialsAndroidPayLayer74 = -905587442;
     CRC32_account_tmpPassword = -614138572;
     CRC32_shippingOption = -1239335713;
     CRC32_inputStickerSetItem = -6249322;
@@ -639,6 +649,7 @@ enum TLConstructor {
     CRC32_langPackDifference = -209337866;
     CRC32_langPackLanguage = 292985073;
     CRC32_channelAdminRights = 1568467877;
+    // CRC32_channelAdminRightsLayer74 = 1568467877;
     CRC32_channelBannedRights = 1489977929;
     CRC32_channelAdminLogEventActionChangeTitle = -421545947;
     CRC32_channelAdminLogEventActionChangeAbout = 1427671598;
@@ -655,6 +666,7 @@ enum TLConstructor {
     CRC32_channelAdminLogEventActionParticipantToggleBan = -422036098;
     CRC32_channelAdminLogEventActionParticipantToggleAdmin = -714643696;
     CRC32_channelAdminLogEventActionChangeStickerSet = -1312568665;
+    CRC32_channelAdminLogEventActionTogglePreHistoryHidden = 1599903217;
     CRC32_channelAdminLogEvent = 995769920;
     CRC32_channels_adminLogResults = -309659827;
     CRC32_channelAdminLogEventsFilter = -368018716;
@@ -662,6 +674,13 @@ enum TLConstructor {
     CRC32_cdnFileHash = 2012136335;
     CRC32_messages_favedStickersNotModified = -1634752813;
     CRC32_messages_favedStickers = -209768682;
+    CRC32_recentMeUrlUnknown = 1189204285;
+    CRC32_recentMeUrlUser = -1917045962;
+    CRC32_recentMeUrlChat = -1608834311;
+    CRC32_recentMeUrlChatInvite = -347535331;
+    CRC32_recentMeUrlStickerSet = -1140172836;
+    CRC32_help_recentMeUrls = 235081943;
+    CRC32_inputSingleMedia = 1588230153;
     CRC32_invokeAfterMsg = -878758099;
     CRC32_invokeAfterMsgs = 1036301552;
     CRC32_initConnection = -951575130;
@@ -685,7 +704,9 @@ enum TLConstructor {
     CRC32_auth_cancelCode = 520357240;
     CRC32_auth_dropTempAuthKeys = -1907842680;
     CRC32_account_registerDevice = 1669245048;
+    CRC32_account_registerDeviceLayer74 = 1280460;
     CRC32_account_unregisterDevice = 1707432768;
+    CRC32_account_unregisterDeviceLayer74 = 813089983;
     CRC32_account_updateNotifySettings = -2067899501;
     CRC32_account_getNotifySettings = 313765169;
     CRC32_account_resetNotifySettings = -612493497;
@@ -715,7 +736,6 @@ enum TLConstructor {
     CRC32_users_getFullUser = -902781519;
     CRC32_contacts_getStatuses = -995929106;
     CRC32_contacts_getContacts = -1071414113;
-    CRC32_contacts_getContactsLayer70 = 583445000;
     CRC32_contacts_importContacts = 746589157;
     CRC32_contacts_deleteContact = -1902823612;
     CRC32_contacts_deleteContacts = 1504393374;
@@ -731,7 +751,7 @@ enum TLConstructor {
     CRC32_contacts_resetSaved = -2020263951;
     CRC32_messages_getMessages = 1109588596;
     CRC32_messages_getDialogs = 421243333;
-    CRC32_messages_getHistory = -1347868602;
+    CRC32_messages_getHistory = -591691168;
     CRC32_messages_search = 60726944;
     CRC32_messages_readHistory = 238054714;
     CRC32_messages_deleteHistory = 469850889;
@@ -787,8 +807,8 @@ enum TLConstructor {
     CRC32_messages_setInlineBotResults = -346119674;
     CRC32_messages_sendInlineBotResult = -1318189314;
     CRC32_messages_getMessageEditData = -39416522;
-    CRC32_messages_editMessage = -829299510;
-    CRC32_messages_editInlineBotMessage = 319564933;
+    CRC32_messages_editMessage = 97630429;
+    CRC32_messages_editInlineBotMessage = -1327463869;
     CRC32_messages_getBotCallbackAnswer = -2130010132;
     CRC32_messages_setBotCallbackAnswer = -712043766;
     CRC32_messages_getPeerDialogs = 764901049;
@@ -819,6 +839,10 @@ enum TLConstructor {
     CRC32_messages_getFavedStickers = 567151374;
     CRC32_messages_faveSticker = -1174420133;
     CRC32_messages_getUnreadMentions = 1180140658;
+    CRC32_messages_readMentions = 251759059;
+    CRC32_messages_getRecentLocations = 613691874;
+    CRC32_messages_sendMultiMedia = 546656559;
+    CRC32_messages_uploadEncryptedFile = 1347929239;
     CRC32_updates_getState = -304838614;
     CRC32_updates_getDifference = 630429265;
     CRC32_updates_getChannelDifference = 51854712;
@@ -843,12 +867,13 @@ enum TLConstructor {
     CRC32_help_getTermsOfService = 889286899;
     CRC32_help_setBotUpdatesStatus = -333262899;
     CRC32_help_getCdnConfig = 1375900482;
+    CRC32_help_getRecentMeUrls = 1036054804;
     CRC32_channels_readHistory = -871347913;
     CRC32_channels_deleteMessages = -2067661490;
     CRC32_channels_deleteUserHistory = -787622117;
     CRC32_channels_reportSpam = -32999408;
     CRC32_channels_getMessages = -1814580409;
-    CRC32_channels_getParticipants = 618237842;
+    CRC32_channels_getParticipants = 306054633;
     CRC32_channels_getParticipant = 1416484774;
     CRC32_channels_getChannels = 176122811;
     CRC32_channels_getFullChannel = 141781513;
@@ -866,6 +891,7 @@ enum TLConstructor {
     CRC32_channels_deleteChannel = -1072619549;
     CRC32_channels_toggleInvites = 1231065863;
     CRC32_channels_exportMessageLink = -934882771;
+    CRC32_channels_exportMessageLinkLayer74 = -826838685;
     CRC32_channels_toggleSignatures = 527021574;
     CRC32_channels_updatePinnedMessage = -1490162350;
     CRC32_channels_getAdminedPublicChannels = -1920105769;
@@ -873,6 +899,8 @@ enum TLConstructor {
     CRC32_channels_getAdminLog = 870184064;
     CRC32_channels_setStickers = -359881479;
     CRC32_channels_readMessageContents = -357180360;
+    CRC32_channels_deleteHistory = -1355375294;
+    CRC32_channels_togglePreHistoryHidden = -356796084;
     CRC32_bots_sendCustomRequest = -1440257555;
     CRC32_bots_answerWebhookJSONQuery = -434028723;
     CRC32_payments_getPaymentForm = -1712285883;
