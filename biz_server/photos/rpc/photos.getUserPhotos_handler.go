@@ -81,6 +81,6 @@ func (s *PhotosServiceImpl) PhotosGetUserPhotos(ctx context.Context, request *mt
 	}
 	// if idList
 
-	glog.Infof("photos.uploadProfilePhoto#4f32c098 - reply: %s", logger.JsonDebugData(photos))
+	glog.Infof("photos.getUserPhotos#91cd32a8 - reply: %s", logger.JsonDebugData(photos))
 	return photos.To_Photos_Photos(), nil
 }
