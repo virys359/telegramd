@@ -64,7 +64,6 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 	// 3. sync
 	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.ParticipantId, updatesData.ToUpdates())
 
-
 	/////////////////////////////////////////////////////////////////////////////////
 	// 2. reply
 	phoneCall := &mtproto.TLPhonePhoneCall{Data2: &mtproto.Phone_PhoneCall_Data{

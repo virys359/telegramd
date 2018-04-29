@@ -53,23 +53,27 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 		Duration: request.GetDuration(),
 	}}
 
-	var toId int32
+	// var toId int32
 	// = md.UserId
-	if md.UserId == callSession.AdminId {
-		toId = callSession.ParticipantId
-	} else {
-		toId = callSession.AdminId
-	}
+	// if md.UserId == callSession.AdminId {
+	//	toId = callSession.ParticipantId
+	// } else {
+	//	toId = callSession.AdminId
+	// }
 
 	// glog.Info("toId: ", toId)
 
 	/////////////////////////////////////////////////////////////////////////////////
-	updatesData := update2.NewUpdatesLogic(md.UserId)
+	// updatesData := update2.NewUpdatesLogic(md.UserId)
+	adminUpdatesData := update2.NewUpdatesLogic(callSession.AdminId)
+	participantUpdatesData := update2.NewUpdatesLogic(callSession.ParticipantId)
+
 	// 1. add phoneCallRequested
 	updatePhoneCall := &mtproto.TLUpdatePhoneCall{Data2: &mtproto.Update_Data{
 		PhoneCall: phoneCallDiscarded.To_PhoneCall(),
 	}}
-	updatesData.AddUpdate(updatePhoneCall.To_Update())
+	adminUpdatesData.AddUpdate(updatePhoneCall.To_Update())
+	participantUpdatesData.AddUpdate(updatePhoneCall.To_Update())
 
 	// add message service
 	action := &mtproto.TLMessageActionPhoneCall{Data2: &mtproto.MessageAction_Data{
@@ -90,34 +94,34 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	}}
 	randomId := base.NextSnowflakeId()
 	outbox := message2.CreateMessageOutboxByNew(callSession.AdminId, peer2, randomId, message.To_Message(), func(messageId int32) {
-		user.CreateOrUpdateByOutbox(md.UserId, peer2.PeerType, peer2.PeerId, messageId, false, false)
+		user.CreateOrUpdateByOutbox(callSession.AdminId, peer2.PeerType, peer2.PeerId, messageId, false, false)
 	})
 	inboxList, _ := outbox.InsertMessageToInbox(callSession.AdminId, peer2, func(inBoxUserId, messageId int32) {
 		user.CreateOrUpdateByInbox(inBoxUserId, base.PEER_USER, peer2.PeerId, messageId, false)
 	})
 
-	if md.UserId == callSession.AdminId {
-		updatesData.AddUpdateNewMessage(inboxList[0].Message)
-	} else {
-		updatesData.AddUpdateNewMessage(outbox.Message)
-	}
+	adminUpdatesData.AddUpdateNewMessage(outbox.Message)
+	participantUpdatesData.AddUpdateNewMessage(inboxList[0].Message)
 
 	// 2. add users
-	updatesData.AddUsers(user.GetUsersBySelfAndIDList(toId, []int32{callSession.AdminId, callSession.ParticipantId}))
+	adminUpdatesData.AddUsers(user.GetUsersBySelfAndIDList(callSession.AdminId, []int32{callSession.AdminId, callSession.ParticipantId}))
+	participantUpdatesData.AddUsers(user.GetUsersBySelfAndIDList(callSession.ParticipantId, []int32{callSession.AdminId, callSession.ParticipantId}))
+
+	// TODO(@benqi): Add updateReadHistoryInbox
 	// 3. sync
 	//sync_client.GetSyncClient().PushToUserUpdatesData(toId, updatesData.ToUpdates())
-	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, updatesData.ToUpdates())
-	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.ParticipantId, updatesData.ToUpdates())
+	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, adminUpdatesData.ToUpdates())
+	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.ParticipantId, participantUpdatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	replyUpdatesData := update2.NewUpdatesLogic(md.UserId)
 	replyUpdatesData.AddUpdate(updatePhoneCall.To_Update())
-
-	if md.UserId == callSession.AdminId {
-		replyUpdatesData.AddUpdateNewMessage(outbox.Message)
-	} else {
-		replyUpdatesData.AddUpdateNewMessage(inboxList[0].Message)
-	}
+	//
+	//if md.UserId == callSession.AdminId {
+	//	replyUpdatesData.AddUpdateNewMessage(outbox.Message)
+	//} else {
+	//	replyUpdatesData.AddUpdateNewMessage(inboxList[0].Message)
+	//}
 	// 2. add users
 	replyUpdatesData.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, []int32{callSession.AdminId, callSession.ParticipantId}))
 
