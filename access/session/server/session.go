@@ -203,7 +203,10 @@ func (s *sessionClientList) onNewClient(sessionID int64) {
 }
 
 func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
-	message := &mtproto.EncryptedMessage2{}
+	message := mtproto.NewEncryptedMessage2(s.authKeyId)
+	// &mtproto.EncryptedMessage2{
+	// 	// authKeyId:
+	// }
 	err := message.Decode(s.authKeyId, s.authKey, buf[8:])
 	_ = err
 

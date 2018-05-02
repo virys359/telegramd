@@ -136,12 +136,12 @@ func (s *SessionServer) OnNewConnection(conn *net2.TcpConnection) {
 }
 
 func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg interface{}) error {
-	glog.Infof("recv peer(%v) data: {%v}", conn.RemoteAddr(), msg)
 	// var err error
 	zmsg, ok := msg.(*mtproto.ZProtoMessage)
 	if !ok {
 		return fmt.Errorf("invalid ZProtoMessage type: %v", msg)
 	}
+	glog.Infof("recv peer(%v) data: {%v}", conn.RemoteAddr(), zmsg)
 
 	// var err error
 	// res *mtproto.ZProtoRawPayload
@@ -159,9 +159,9 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 			if hrsp != nil {
 				res := &mtproto.ZProtoMessage{
 					SessionId: zmsg.SessionId,
-					SeqNum: 1,
-					Metadata: zmsg.Metadata,
-					Message:  hrsp,
+					SeqNum:    1,
+					Metadata:  zmsg.Metadata,
+					Message:   hrsp,
 				}
 				return conn.Send(res)
 			} else {
@@ -177,9 +177,9 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 			}
 			res := &mtproto.ZProtoMessage{
 				SessionId: zmsg.SessionId,
-				SeqNum: 1,
-				Metadata: zmsg.Metadata,
-				Message:  sres,
+				SeqNum:    1,
+				Metadata:  zmsg.Metadata,
+				Message:   sres,
 			}
 			return conn.Send(res)
 		default:

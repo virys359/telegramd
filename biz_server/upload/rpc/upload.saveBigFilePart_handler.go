@@ -30,7 +30,7 @@ import (
 // upload.saveBigFilePart#de7b673d file_id:long file_part:int file_total_parts:int bytes:bytes = Bool;
 func (s *UploadServiceImpl) UploadSaveBigFilePart(ctx context.Context, request *mtproto.TLUploadSaveBigFilePart) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("UploadSaveBigFilePart - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("upload.saveBigFilePart#de7b673d - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	filePartsDO := &dataobject.FilePartsDO{
 	    CreatorUserId: md.UserId,
@@ -42,6 +42,6 @@ func (s *UploadServiceImpl) UploadSaveBigFilePart(ctx context.Context, request *
 	}
 	dao.GetFilePartsDAO(dao.DB_MASTER).Insert(filePartsDO)
 
-	glog.Infof("UploadSaveBigFilePart - reply: {true}")
+	glog.Infof("upload.saveBigFilePart#de7b673d - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

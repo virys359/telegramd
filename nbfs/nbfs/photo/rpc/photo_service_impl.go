@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"github.com/nebulaim/telegramd/nbfs/biz/core/photo"
 	"github.com/nebulaim/telegramd/nbfs/biz/core/file"
-	"github.com/nebulaim/telegramd/nbfs/biz/core"
+	// "github.com/nebulaim/telegramd/nbfs/biz/core"
 	"github.com/nebulaim/telegramd/nbfs/biz/base"
 	"time"
 	document2 "github.com/nebulaim/telegramd/nbfs/biz/core/document"
@@ -46,27 +46,32 @@ func (s *PhotoServiceImpl) NbfsUploadPhotoFile(ctx context.Context, request *mtp
 
 	var (
 		reply *mtproto.PhotoDataRsp
-		isBigFile = request.GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
+		// isBigFile = request.GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
 	)
 
-	// TODO(@benqi): 出错以后，回滚数据库操作
-	filePart, err := file.MakeFilePartData(request.OwnerId, inputFile.Id, false, isBigFile)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	}
+	//// TODO(@benqi): 出错以后，回滚数据库操作
+	//filePart, err := file.MakeFilePartData(request.OwnerId, inputFile.Id, false, isBigFile)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//}
+	//
+	//var filename = core.NBFS_DATA_PATH + filePart.FilePath
+	//md5Checksum, _ := core.CalcMd5File(filename)
+	//if md5Checksum != inputFile.Md5Checksum {
+	//	return nil, fmt.Errorf("check md5 error")
+	//}
 
-	var filename = core.NBFS_DATA_PATH + filePart.FilePath
-	md5Checksum, _ := core.CalcMd5File(filename)
-	if md5Checksum != inputFile.Md5Checksum {
-		return nil, fmt.Errorf("check md5 error")
+	filePart, err := file.DoSavedFilePart(request.OwnerId, inputFile.Id)
+	if filePart.SavedMd5Hash != inputFile.Md5Checksum {
+		return nil, fmt.Errorf("check md5 error: %s, %s", filePart.SavedMd5Hash, inputFile.Md5Checksum)
 	}
 
 	fileData, err := file.NewFileData(filePart.FilePartId,
-		filePart.FilePath,
+		filePart.SavedFilePath,
 		inputFile.Name,
 		filePart.FileSize,
-		md5Checksum)
+		filePart.SavedMd5Hash)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -111,27 +116,32 @@ func (s *PhotoServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *
 
 	var (
 		// reply *mtproto.PhotoDataRsp
-		isBigFile = request.GetMedia().GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
+		// isBigFile = request.GetMedia().GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
 	)
 
 	// TODO(@benqi): 出错以后，回滚数据库操作
-	filePart, err := file.MakeFilePartData(request.OwnerId, inputFile.Id, false, isBigFile)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	}
+	//filePart, err := file.MakeFilePartData(request.OwnerId, inputFile.Id, false, isBigFile)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//}
+	//
+	//var filename = core.NBFS_DATA_PATH + filePart.FilePath
+	//md5Checksum, _ := core.CalcMd5File(filename)
+	//if md5Checksum != inputFile.Md5Checksum {
+	//	return nil, fmt.Errorf("check md5 error")
+	//}
 
-	var filename = core.NBFS_DATA_PATH + filePart.FilePath
-	md5Checksum, _ := core.CalcMd5File(filename)
-	if md5Checksum != inputFile.Md5Checksum {
-		return nil, fmt.Errorf("check md5 error")
+	filePart, err := file.DoSavedFilePart(request.OwnerId, inputFile.Id)
+	if filePart.SavedMd5Hash != inputFile.Md5Checksum {
+		return nil, fmt.Errorf("check md5 error: %s, %s", filePart.SavedMd5Hash, inputFile.Md5Checksum)
 	}
 
 	fileData, err := file.NewFileData(filePart.FilePartId,
-		filePart.FilePath,
+		filePart.SavedMd5Hash,
 		inputFile.Name,
 		filePart.FileSize,
-		md5Checksum)
+		filePart.SavedMd5Hash)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -171,27 +181,28 @@ func (s *PhotoServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, reques
 
 	var (
 		// reply *mtproto.PhotoDataRsp
-		isBigFile = request.GetMedia().GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
+		// isBigFile = request.GetMedia().GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
 	)
 
 	// TODO(@benqi): 出错以后，回滚数据库操作
-	filePart, err := file.MakeFilePartData(request.OwnerId, inputFile.Id, false, isBigFile)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	}
+	//filePart, err := file.MakeFilePartData(request.OwnerId, inputFile.Id, false, isBigFile)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//}
 
-	var filename = core.NBFS_DATA_PATH + filePart.FilePath
-	md5Checksum, _ := core.CalcMd5File(filename)
-	if md5Checksum != inputFile.Md5Checksum {
-		return nil, fmt.Errorf("check md5 error")
+	// var filename = core.NBFS_DATA_PATH + filePart.FilePath
+	filePart, err := file.DoSavedFilePart(request.OwnerId, inputFile.Id)
+	// core.CalcMd5File(filename)
+	if filePart.SavedMd5Hash != inputFile.Md5Checksum {
+		return nil, fmt.Errorf("check md5 error: %s, %s", filePart.SavedMd5Hash, inputFile.Md5Checksum)
 	}
 
 	fileData, err := file.NewFileData(filePart.FilePartId,
-		filePart.FilePath,
+		filePart.SavedFilePath,
 		inputFile.Name,
 		filePart.FileSize,
-		md5Checksum)
+		filePart.SavedMd5Hash)
 	if err != nil {
 		glog.Error(err)
 		return nil, err

@@ -37,7 +37,7 @@ const (
 // upload.saveFilePart#b304a621 file_id:long file_part:int bytes:bytes = Bool;
 func (s *UploadServiceImpl) UploadSaveFilePart(ctx context.Context, request *mtproto.TLUploadSaveFilePart) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("UploadSaveFilePart - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("upload.saveFilePart#b304a621 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): 最简单的实现保证跑通流程
 	filePartsDO := &dataobject.FilePartsDO{
@@ -71,6 +71,6 @@ func (s *UploadServiceImpl) UploadSaveFilePart(ctx context.Context, request *mtp
 		dao.GetFilesDAO(dao.DB_MASTER).Insert(filesDO)
 	}
 
-	glog.Infof("UploadSaveFilePart - reply: {true}")
+	glog.Infof("upload.saveFilePart#b304a621 - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

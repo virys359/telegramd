@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"errors"
+	"encoding/hex"
 )
 
 // 客户端or服务端
@@ -206,6 +207,8 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 		// glog.Errorf("MTProtoProxyCodec - first 56~59 byte != 0xef")
 		return nil, errors.New("mtproto buf[56:60]'s byte != 0xef!!")
 	}
+
+	glog.Info("first_bytes_64: ", hex.EncodeToString(b_0_1), hex.EncodeToString(b_1_3), hex.EncodeToString(b_4_60))
 
 	return NewMTProtoFullCodec(c.conn, d, e), nil
 }

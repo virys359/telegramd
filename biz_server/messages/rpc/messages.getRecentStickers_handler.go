@@ -28,11 +28,14 @@ import (
 // messages.getRecentStickers#5ea192c9 flags:# attached:flags.0?true hash:int = messages.RecentStickers;
 func (s *MessagesServiceImpl) MessagesGetRecentStickers(ctx context.Context, request *mtproto.TLMessagesGetRecentStickers) (*mtproto.Messages_RecentStickers, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetRecentStickers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getRecentStickers#5ea192c9 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl MessagesGetRecentStickers logic
-	stickers := mtproto.NewTLMessagesRecentStickersNotModified()
+	stickers := &mtproto.TLMessagesRecentStickers{Data2: &mtproto.Messages_RecentStickers_Data{
+		Hash: request.Hash,
+		Stickers: []*mtproto.Document{},
+	}}
 
-	glog.Infof("MessagesGetPinnedDialogs - reply: %s", logger.JsonDebugData(stickers))
+	glog.Infof("messages.getRecentStickers#5ea192c9 - reply: %s", logger.JsonDebugData(stickers))
 	return stickers.To_Messages_RecentStickers(), nil
 }

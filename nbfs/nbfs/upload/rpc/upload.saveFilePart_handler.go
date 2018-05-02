@@ -24,12 +24,18 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/nbfs/biz/core/file"
+	"io/ioutil"
+	"fmt"
 )
 
 // upload.saveFilePart#b304a621 file_id:long file_part:int bytes:bytes = Bool;
 func (s *UploadServiceImpl) UploadSaveFilePart(ctx context.Context, request *mtproto.TLUploadSaveFilePart) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("upload.saveFilePart#b304a621 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("upload.saveFilePart#b304a621 - metadata: %s, request: {file_id: %d, file_part: %d, bytes_len: %d}",
+		logger.JsonDebugData(md),
+		request.FileId,
+		request.FilePart,
+		len(request.Bytes))
 
 	// TODO(@benqi): Check file_part <= bigFileSize/kMaxFileSize, Check len(bytes) <= kMaxFilePartSize
 
@@ -39,6 +45,7 @@ func (s *UploadServiceImpl) UploadSaveFilePart(ctx context.Context, request *mtp
 		return nil, err
 	}
 
+	ioutil.WriteFile(fmt.Sprintf("/tmp/uploads/%d_%d.tmp", request.GetFileId(), request.GetFilePart()), request.GetBytes(), 0644)
 	err = filePartLogic.SaveFilePart(request.FilePart, request.Bytes)
 	if err != nil {
 		glog.Error(err)

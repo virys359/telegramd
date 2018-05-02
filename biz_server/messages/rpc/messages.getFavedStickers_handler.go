@@ -28,11 +28,15 @@ import (
 // messages.getFavedStickers#21ce0b0e hash:int = messages.FavedStickers;
 func (s *MessagesServiceImpl) MessagesGetFavedStickers(ctx context.Context, request *mtproto.TLMessagesGetFavedStickers) (*mtproto.Messages_FavedStickers, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetFavedStickers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getFavedStickers#21ce0b0e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl MessagesGetFavedStickers logic
-	stickers := mtproto.NewTLMessagesFavedStickersNotModified()
+	stickers := mtproto.TLMessagesFavedStickers{Data2: &mtproto.Messages_FavedStickers_Data{
+		Hash: request.Hash,
+		Packs: []*mtproto.StickerPack{},
+		Stickers: []*mtproto.Document{},
+	}}
 
-	glog.Infof("MessagesGetFavedStickers - reply: %s", logger.JsonDebugData(stickers))
+	glog.Infof("messages.getFavedStickers#21ce0b0e - reply: %s", logger.JsonDebugData(stickers))
 	return stickers.To_Messages_FavedStickers(), nil
 }
