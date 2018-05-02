@@ -31,7 +31,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	instance := server.NewSessionServer("/Users/benqi/go/src/github.com/nebulaim/telegramd/access/session/session.toml")
+	instance := server.NewSessionServer("./session.toml")
 	app.DoMainAppInstance(instance)
 }
 
