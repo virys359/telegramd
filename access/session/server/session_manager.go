@@ -26,6 +26,7 @@ import (
 	//"github.com/golang/glog"
 	"github.com/golang/glog"
 	"fmt"
+	"encoding/hex"
 )
 
 type sessionManager struct {
@@ -44,6 +45,17 @@ func newSessionManager(cache AuthKeyStorager) *sessionManager {
 }
 
 func (s *sessionManager) onSessionData(conn *net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
+	if len(buf) > 10240 {
+		glog.Infof("onSessionData: peer(%v) data: {session_id: %d, md: %v, buf_len: %d, buf: %s, buf_end: %s}",
+			conn.RemoteAddr(),
+			sessionID,
+			md,
+			len(buf),
+			hex.EncodeToString(buf[:256]),
+			hex.EncodeToString(buf[len(buf)-256:]))
+	} else {
+		glog.Infof("onSessionData: peer(%v) data: {session_id: %d, md: %v, buf_len: %d}", conn.RemoteAddr(), sessionID, md, len(buf))
+	}
 	authKeyId := int64(binary.LittleEndian.Uint64(buf))
 	sess, ok := s.sessions[authKeyId]
 	if !ok {

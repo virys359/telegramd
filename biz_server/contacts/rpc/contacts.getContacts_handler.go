@@ -43,23 +43,25 @@ func (s *ContactsServiceImpl) ContactsGetContacts(ctx context.Context, request *
 		idList := make([]int32, 0, len(contactList))
 		cList := make([]*mtproto.Contact, 0, len(contactList))
 		for _, c := range contactList {
-			idList = append(idList, c.Id)
+			idList = append(idList, c.ContactUserId)
 			c2 := &mtproto.Contact{
 				Constructor: mtproto.TLConstructor_CRC32_contact,
 				Data2: &mtproto.Contact_Data{
-					UserId: c.Id,
+					UserId: c.ContactUserId,
 					Mutual: mtproto.ToBool(c.Mutual == 1),
 				},
 			}
 			cList = append(cList, c2)
 		}
 
+		glog.Infof("contactIdList - {%v}", idList)
+
 		users := user.GetUsersBySelfAndIDList(md.UserId, idList)
 		contacts = &mtproto.Contacts_Contacts{
 			Constructor: mtproto.TLConstructor_CRC32_contacts_contacts,
 			Data2: &mtproto.Contacts_Contacts_Data{
 				Contacts:   cList,
-				SavedCount: int32(len(cList)),
+				SavedCount: 0,
 				Users:      users,
 			},
 		}

@@ -74,8 +74,8 @@ func GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtp
 		// TODO(@benqi):  需要优化，makeUserDataByDO需要查询用户状态以及获取Mutual和Contact状态信息而导致多次查询
 		userDOList := dao.GetUsersDAO(dao.DB_SLAVE).SelectUsersByIdList(userIdList)
 		users = make([]*mtproto.User, 0, len(userDOList))
-		for _, userDO := range userDOList {
-			user := makeUserDataByDO(selfUserId, &userDO)
+		for i := 0; i < len(userDOList); i++ {
+			user := makeUserDataByDO(selfUserId, &userDOList[i])
 			//
 			//// TODO(@benqi): fill bot, photo, about...
 			//user := &mtproto.TLUser{Data2: &mtproto.User_Data{

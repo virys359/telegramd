@@ -236,8 +236,6 @@ func (s *FrontendServer) OnNewConnection(conn *net2.TcpConnection) {
 }
 
 func (s *FrontendServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg interface{}) error {
-	glog.Infof("onConnectionDataArrived - peer(%s) recv data", conn)
-
 	ctx, _ := conn.Context.(*connContext)
 	message, ok := msg.(*mtproto.MTPRawMessage)
 
@@ -319,7 +317,7 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 }
 
 func (s *FrontendServer) OnClientClosed(client *net2.TcpClient) {
-	glog.Infof("onClientClosed - peer(%s) recv data", client.GetConnection())
+	glog.Infof("onClientClosed - peer(%s)", client.GetConnection())
 
 	if client.AutoReconnect() {
 		client.Reconnect()
@@ -332,7 +330,8 @@ func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
-	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data", conn)
+	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data, len = %d", conn, len(mmsg.Payload))
+
 	ctx.Lock()
 	if ctx.state == mtproto.STATE_CONNECTED2 {
 		ctx.state = mtproto.STATE_HANDSHAKE
@@ -351,7 +350,7 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 		SessionId: conn.GetConnID(),
 		SeqNum:    1, // TODO(@benqi): gen seqNum
 		Metadata:  s.newMetadata(conn),
-		Message: &mtproto.ZProtoRawPayload{
+		Message:   &mtproto.ZProtoRawPayload{
 			Payload: hmsg.Encode(),
 		},
 	}
@@ -360,7 +359,7 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 }
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
-	glog.Infof("onEncryptedRawMessage - peer(%s) recv data", conn)
+	glog.Infof("onEncryptedRawMessage - peer(%s) recv data, len = %d", conn, len(mmsg.Payload))
 	// sentToClient
 	hmsg := &mtproto.ZProtoSessionData{
 		MTPMessage: mmsg,
@@ -369,7 +368,7 @@ func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpC
 		SessionId: conn.GetConnID(),
 		SeqNum:    1, // TODO(@benqi): gen seqNum
 		Metadata:  s.newMetadata(conn),
-		Message: &mtproto.ZProtoRawPayload{
+		Message:   &mtproto.ZProtoRawPayload{
 			Payload: hmsg.Encode(),
 		},
 	}

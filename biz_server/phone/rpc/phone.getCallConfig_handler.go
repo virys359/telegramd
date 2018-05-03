@@ -58,61 +58,61 @@ import (
  */
 
 type callConfigDataJSON struct {
-	audioFrameSize         int     `json:"audio_frame_size"`
-	jitterMinDelay20       int     `json:"jitter_min_delay_20"`
-	jitterMinDelay40       int     `json:"jitter_min_delay_40"`
-	jitterMinDelay60       int     `json:"jitter_min_delay_60"`
-	jitterMaxDelay20       int     `json:"jitter_max_delay_20"`
-	jitterMaxDelay40       int     `json:"jitter_max_delay_40"`
-	jitterMaxDelay60       int     `json:"jitter_max_delay_60"`
-	jitterMaxSlots20       int     `json:"jitter_max_slots_20"`
-	jitterMaxSlots40       int     `json:"jitter_max_slots_40"`
-	jitterMaxSlots60       int     `json:"jitter_max_slots_60"`
-	jitterLossesToReset    int     `json:"jitter_losses_to_reset"`
-	jitterResyncThreshold  float32 `json:"jitter_resync_threshold"`
-	audioCongestionWindow  int     `json:"audio_congestion_window"`
-	audioMaxBitrate        int     `json:"audio_max_bitrate"`
-	audioMaxBitrateEdge    int     `json:"audio_max_bitrate_edge"`
-	audioMaxBitrateGprs    int     `json:"audio_max_bitrate_gprs"`
-	audioMaxBitrateSaving  int     `json:"audio_max_bitrate_saving"`
-	audioInitBitrate       int     `json:"audio_init_bitrate"`
-	audioInitBitrateEdge   int     `json:"audio_init_bitrate_edge"`
-	audioInitBitrateGrps   int     `json:"audio_init_bitrate_gprs"`
-	audioInitBitrateSaving int     `json:"audio_init_bitrate_saving"`
-	audioBitrateStepIncr   int     `json:"audio_bitrate_step_incr"`
-	audioBitrateStepDecr   int     `json:"audio_bitrate_step_decr"`
-	useSystemNs            bool    `json:"use_system_ns"`
-	useSystemAec           bool    `json:"us audioInitBitrateGrps inte_system_aec"`
+	AudioFrameSize         int     `json:"audio_frame_size"`
+	JitterMinDelay20       int     `json:"jitter_min_delay_20"`
+	JitterMinDelay40       int     `json:"jitter_min_delay_40"`
+	JitterMinDelay60       int     `json:"jitter_min_delay_60"`
+	JitterMaxDelay20       int     `json:"jitter_max_delay_20"`
+	JitterMaxDelay40       int     `json:"jitter_max_delay_40"`
+	JitterMaxDelay60       int     `json:"jitter_max_delay_60"`
+	JitterMaxSlots20       int     `json:"jitter_max_slots_20"`
+	JitterMaxSlots40       int     `json:"jitter_max_slots_40"`
+	JitterMaxSlots60       int     `json:"jitter_max_slots_60"`
+	JitterLossesToReset    int     `json:"jitter_losses_to_reset"`
+	JitterResyncThreshold  float32 `json:"jitter_resync_threshold"`
+	AudioCongestionWindow  int     `json:"audio_congestion_window"`
+	AudioMaxBitrate        int     `json:"audio_max_bitrate"`
+	AudioMaxBitrateEdge    int     `json:"audio_max_bitrate_edge"`
+	AudioMaxBitrateGprs    int     `json:"audio_max_bitrate_gprs"`
+	AudioMaxBitrateSaving  int     `json:"audio_max_bitrate_saving"`
+	AudioInitBitrate       int     `json:"audio_init_bitrate"`
+	AudioInitBitrateEdge   int     `json:"audio_init_bitrate_edge"`
+	AudioInitBitrateGrps   int     `json:"audio_init_bitrate_gprs"`
+	AudioInitBitrateSaving int     `json:"audio_init_bitrate_saving"`
+	AudioBitrateStepIncr   int     `json:"audio_bitrate_step_incr"`
+	AudioBitrateStepDecr   int     `json:"audio_bitrate_step_decr"`
+	UseSystemNs            bool    `json:"use_system_ns"`
+	UseSystemAec           bool    `json:"us audioInitBitrateGrps inte_system_aec"`
 }
 
 // TODO(@benqi): 写死配置
 func NewCallConfigDataJSON() *callConfigDataJSON {
 	return &callConfigDataJSON{
-		audioFrameSize:         60,
-		jitterMinDelay20:       6,
-		jitterMinDelay40:       4,
-		jitterMinDelay60:       2,
-		jitterMaxDelay20:       25,
-		jitterMaxDelay40:       15,
-		jitterMaxDelay60:       10,
-		jitterMaxSlots20:       50,
-		jitterMaxSlots40:       30,
-		jitterMaxSlots60:       20,
-		jitterLossesToReset:    20,
-		jitterResyncThreshold:  0.5,
-		audioCongestionWindow:  1024,
-		audioMaxBitrate:        20000,
-		audioMaxBitrateEdge:    16000,
-		audioMaxBitrateGprs:    8000,
-		audioMaxBitrateSaving:  8000,
-		audioInitBitrate:       16000,
-		audioInitBitrateEdge:   8000,
-		audioInitBitrateGrps:   8000,
-		audioInitBitrateSaving: 8000,
-		audioBitrateStepIncr:   1000,
-		audioBitrateStepDecr:   1000,
-		useSystemNs:            true,
-		useSystemAec:           true,
+		AudioFrameSize:         60,
+		JitterMinDelay20:       6,
+		JitterMinDelay40:       4,
+		JitterMinDelay60:       2,
+		JitterMaxDelay20:       25,
+		JitterMaxDelay40:       15,
+		JitterMaxDelay60:       10,
+		JitterMaxSlots20:       50,
+		JitterMaxSlots40:       30,
+		JitterMaxSlots60:       20,
+		JitterLossesToReset:    20,
+		JitterResyncThreshold:  0.5,
+		AudioCongestionWindow:  1024,
+		AudioMaxBitrate:        20000,
+		AudioMaxBitrateEdge:    16000,
+		AudioMaxBitrateGprs:    8000,
+		AudioMaxBitrateSaving:  8000,
+		AudioInitBitrate:       16000,
+		AudioInitBitrateEdge:   8000,
+		AudioInitBitrateGrps:   8000,
+		AudioInitBitrateSaving: 8000,
+		AudioBitrateStepIncr:   1000,
+		AudioBitrateStepDecr:   1000,
+		UseSystemNs:            true,
+		UseSystemAec:           true,
 	}
 }
 
@@ -122,9 +122,15 @@ func (s *PhoneServiceImpl) PhoneGetCallConfig(ctx context.Context, request *mtpr
 	glog.Infof("phone.getCallConfig#55451fa9 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	callConfig := NewCallConfigDataJSON()
-	callConfigData, _ := json.Marshal(callConfig)
-	reply := mtproto.NewTLDataJSON()
+	callConfigData, err := json.Marshal(callConfig)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
 	j := string(callConfigData)
+	glog.Info("callConfigData: ", callConfig, ", ", j)
+
+	reply := mtproto.NewTLDataJSON()
 	reply.SetData(j)
 
 	glog.Infof("phone.getCallConfig#55451fa9 - reply %s", logger.JsonDebugData(reply))

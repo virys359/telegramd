@@ -23,8 +23,8 @@ import (
 	// _ "github.com/go-sql-driver/mysql" // import your used driver
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"testing"
 	"github.com/nebulaim/telegramd/baselib/logger"
+	"testing"
 )
 
 func TestGetAuthKey(t *testing.T) {

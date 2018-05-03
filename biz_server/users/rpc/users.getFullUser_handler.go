@@ -33,6 +33,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("users.getFullUser#ca30a5b1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+	var user *mtproto.User
 	fullUser := mtproto.NewTLUserFull()
 	fullUser.SetPhoneCallsAvailable(true)
 	fullUser.SetPhoneCallsPrivate(false)
@@ -53,7 +54,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 			//AccessHash: userDO.AccessHash,
 			//Phone:      userDO.Phone,
 		//}}
-		user := user2.GetUserById(md.UserId, md.UserId).To_User()
+		user = user2.GetUserById(md.UserId, md.UserId).To_User()
 	    fullUser.SetUser(user)
 	    //GetUser()user.To_User())
 
@@ -80,7 +81,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 			//Phone:      userDO.Phone,
 		//}}
 
-		user := user2.GetUserById(md.UserId, inputUser.GetUserId()).To_User()
+		user = user2.GetUserById(md.UserId, inputUser.GetUserId()).To_User()
 		fullUser.SetUser(user)
 
 	    // Link
@@ -92,6 +93,9 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 		fullUser.SetLink(link.To_Contacts_Link())
 	case mtproto.TLConstructor_CRC32_inputUserEmpty:
 	    // TODO(@benqi): BAD_REQUEST: 400
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error(err)
+		return nil, err
 	}
 
 	// NotifySettings
@@ -103,8 +107,10 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 
 	fullUser.SetNotifySettings(peerNotifySettings.To_PeerNotifySettings())
 
-
-	photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
+	photoId := user.GetData2().GetPhoto().GetData2().GetPhotoId()
+	// profilePhoto := user.GetData2().GetPhoto()
+	// profilePhoto.GetData2().
+	// photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
 	sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
 	// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
 	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{

@@ -20,10 +20,12 @@ package mtproto
 import (
 	"fmt"
 	"encoding/binary"
-	"bytes"
+	// "bytes"
 	"github.com/golang/glog"
-	"encoding/hex"
+	// "encoding/hex"
 	"github.com/nebulaim/telegramd/baselib/crypto"
+	"bytes"
+	"encoding/hex"
 )
 
 const (
@@ -144,6 +146,12 @@ type EncryptedMessage2 struct {
 	Object TLObject
 }
 
+func NewEncryptedMessage2(authKeyId int64) *EncryptedMessage2 {
+	return &EncryptedMessage2{
+		authKeyId: authKeyId,
+	}
+}
+
 func (m *EncryptedMessage2) MessageType() int {
 	return ENCRYPTED_MESSAGE
 }
@@ -256,7 +264,7 @@ func (m *EncryptedMessage2) descrypt(msgKey, authKey, data []byte) ([]byte, erro
 		return nil, err
 	}
 
-	sha256MsgKey := make([]byte, 32)
+	sha256MsgKey := make([]byte, 96)
 	switch MTPROTO_VERSION {
 	case 2:
 		t_d := make([]byte, 0, 32 + dataLen)
@@ -268,7 +276,12 @@ func (m *EncryptedMessage2) descrypt(msgKey, authKey, data []byte) ([]byte, erro
 	}
 
 	if !bytes.Equal(sha256MsgKey[8:8+16], msgKey[:16]) {
-		err = fmt.Errorf("descrypted data error: msgKey verify error, sign: %s, msgKey: %s",
+		err = fmt.Errorf("descrypted data error: (data: %s, aesKey: %s, aseIV: %s, authKeyId: %d, authKey: %s), msgKey verify error, sign: %s, msgKey: %s",
+			hex.EncodeToString(data[:64]),
+			hex.EncodeToString(aesKey),
+			hex.EncodeToString(aesIV),
+			m.authKeyId,
+			hex.EncodeToString(authKey[88:88+32]),
 			hex.EncodeToString(sha256MsgKey[8:8+16]),
 			hex.EncodeToString(msgKey[:16]))
 		glog.Error(err)

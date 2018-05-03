@@ -59,16 +59,19 @@ func (c *MTProtoFullCodec) Receive() (interface{}, error) {
 
 	if b[0] < 0x7f {
 		size = int(b[0]) << 2
-		// glog.Info("size1: ", size)
+		glog.Info("size1: ", size)
+		if size == 0 {
+			return nil, nil
+		}
 	} else {
 		glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
-		b := make([]byte, 3)
-		n, err = io.ReadFull(c.stream, b)
+		b2 := make([]byte, 3)
+		n, err = io.ReadFull(c.stream, b2)
 		if err != nil {
 			return nil, err
 		}
-		size = (int(b[0]) | int(b[1])<<8 | int(b[2])<<16) << 2
-		// glog.Info("size2: ", size)
+		size = (int(b2[0]) | int(b2[1])<<8 | int(b2[2])<<16) << 2
+		glog.Info("size2: ", size)
 	}
 
 	left := size
@@ -76,17 +79,21 @@ func (c *MTProtoFullCodec) Receive() (interface{}, error) {
 	for left > 0 {
 		n, err = io.ReadFull(c.stream, buf[size-left:])
 		if err != nil {
+			glog.Error("ReadFull2 error: ", err)
 			return nil, err
 		}
-		// glog.Info("ReadFull2: ", hex.EncodeToString(buf))
 		left -= n
+	}
+	if size > 10240 {
+		glog.Info("ReadFull2: ", hex.EncodeToString(buf[:256]))
 	}
 
 	// TODO(@benqi): process report ack and quickack
 	// 截断QuickAck消息，客户端有问题
 	if size == 4 {
 		glog.Errorf("Server response error: ", int32(binary.LittleEndian.Uint32(buf)))
-		return nil, fmt.Errorf("Recv QuickAckMessage, ignore!!!!") //  connId: ", c.stream, ", by client ", m.RemoteAddr())
+		// return nil, fmt.Errorf("Recv QuickAckMessage, ignore!!!!") //  connId: ", c.stream, ", by client ", m.RemoteAddr())
+		return nil, nil
 	}
 
 	authKeyId := int64(binary.LittleEndian.Uint64(buf))
@@ -162,8 +169,8 @@ func NewAesCTR128Stream(conn *net.TCPConn, d *crypto.AesCTR128Encrypt, e *crypto
 func (this *AesCTR128Stream) Read(p []byte) (int, error) {
 	n, err := this.conn.Read(p)
 	if err == nil {
-		this.decrypt.Encrypt(p[:])
-		return n, err
+		this.decrypt.Encrypt(p[:n])
+		return n, nil
 	}
 	return n, err
 }

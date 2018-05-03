@@ -31,7 +31,10 @@ func (s *MessagesServiceImpl) MessagesGetSavedGifs(ctx context.Context, request 
 	glog.Infof("MessagesGetSavedGifs - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl MessagesGetSavedGifs logic
-	stickers := mtproto.NewTLMessagesSavedGifsNotModified()
+	stickers := mtproto.TLMessagesSavedGifs{Data2: &mtproto.Messages_SavedGifs_Data{
+		Hash: request.Hash,
+		Gifs: []*mtproto.Document{},
+	}}
 
 	glog.Infof("MessagesGetSavedGifs - reply: %s\n", logger.JsonDebugData(stickers))
 	return stickers.To_Messages_SavedGifs(), nil

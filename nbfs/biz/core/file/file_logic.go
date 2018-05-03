@@ -27,6 +27,7 @@ import (
 	"os"
 	"github.com/nebulaim/telegramd/nbfs/biz/core"
 	"strings"
+	// "github.com/golang/glog"
 )
 
 
@@ -51,6 +52,24 @@ func NewFileData(filePartId int64, filePath, uploadName string, fileSize int64, 
 		Md5Checksum: md5Checksum,
 		UploadName:  uploadName,
 	}
+
+	//var oldpath = core.NBFS_DATA_PATH + filePath
+	//var onewpath = core.NBFS_DATA_PATH + data2.FilePath
+	//
+	//f, err := os.Create(onewpath)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//}
+	//defer f.Close()
+	//
+	//for i := 0; i <
+	//_, err = f.Write(bytes)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return err
+	//}
+	//f.Sync()
 
 	// var oldpath = core.NBFS_DATA_PATH + filePath
 	// var newpath =

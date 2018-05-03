@@ -177,7 +177,8 @@ func makeConnection() *mtproto.PhoneConnection {
 		Constructor: mtproto.TLConstructor_CRC32_phoneConnection,
 		Data2: 		 &mtproto.PhoneConnection_Data{
 			Id:      50003,
-			Ip:      "50001",
+			// Ip:      "192.168.4.32",
+			Ip:      "192.168.1.104",
 			Ipv6:    "",
 			Port:    50001,
 			PeerTag: []byte("24ffcbeb7980d28b"),

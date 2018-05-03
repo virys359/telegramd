@@ -1,6 +1,7 @@
 # config
 
 phonecallsEnabled = true
+defaultP2pContacts = false
 # date = Now
 # expires = 1509070295 [INT]
 testMode = false
@@ -22,6 +23,7 @@ editTimeLimit = 172800
 ratingEDecay = 2419200
 stickersRecentLimit = 30
 stickersFavedLimit = 5
+channelsReadMediaPeriod = 604800
 tmpSessions = 0
 pinnedDialogsCountMax = 5
 callReceiveTimeoutMs = 20000
@@ -39,7 +41,7 @@ tcpoOnly = false
 cdn = false
 static = false
 id = 2
-ipAddress = "127.0.0.1"
+ipAddress = "192.168.4.32"
 port = 12345
 
 [[DisabledFeatures]]

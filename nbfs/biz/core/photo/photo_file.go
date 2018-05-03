@@ -35,6 +35,7 @@ import (
 )
 
 const (
+
 	kPhotoSizeOriginalType      = "0"	// client upload original photo
 	kPhotoSizeSmallType	 		= "s"
 	kPhotoSizeMediumType  		= "m"
@@ -263,25 +264,25 @@ func UploadPhotoFile(photoId int64, filePath, extName string, isABC bool) ([]*mt
 func GetPhotoSizeList(photoId int64) (sizes []*mtproto.PhotoSize) {
 	doList := dao.GetPhotoDatasDAO(dao.DB_SLAVE).SelectListByPhotoId(photoId)
 	sizes = make([]*mtproto.PhotoSize, 0, len(doList))
-	for _, do := range doList {
+	for i := 1; i < len(doList); i++ {
 		sizeData := &mtproto.PhotoSize_Data{
-			Type: getSizeType(int(do.LocalId)),
-			W:    do.Width,
-			H:    do.Height,
-			Size: do.FileSize,
+			Type: getSizeType(int(doList[i].LocalId)),
+			W:    doList[i].Width,
+			H:    doList[i].Height,
+			Size: doList[i].FileSize,
 			Location: &mtproto.FileLocation{
 				Constructor: mtproto.TLConstructor_CRC32_fileLocation,
 				Data2: &mtproto.FileLocation_Data{
-					VolumeId: do.VolumeId,
-					LocalId:  int32(do.LocalId),
-					Secret:   do.AccessHash,
-					DcId:     do.DcId,
+					VolumeId: doList[i].VolumeId,
+					LocalId:  int32(doList[i].LocalId),
+					Secret:   doList[i].AccessHash,
+					DcId:     doList[i].DcId,
 				},
 			},
 		}
 
-		if do.LocalId== 0 {
-			var filename = core.NBFS_DATA_PATH + do.FilePath
+		if i == 1 {
+			var filename = core.NBFS_DATA_PATH + doList[i].FilePath
 			cacheData, err := ioutil.ReadFile(filename)
 			if err != nil {
 				glog.Errorf("read file %s error: %v", filename, err)
@@ -291,11 +292,13 @@ func GetPhotoSizeList(photoId int64) (sizes []*mtproto.PhotoSize) {
 			}
 			sizes = append(sizes, &mtproto.PhotoSize{
 				Constructor: mtproto.TLConstructor_CRC32_photoCachedSize,
-				Data2:       sizeData,})
+				Data2:       sizeData,
+			})
 		} else {
 			sizes = append(sizes, &mtproto.PhotoSize{
 				Constructor: mtproto.TLConstructor_CRC32_photoSize,
-				Data2:       sizeData,})
+				Data2:       sizeData,
+			})
 		}
 	}
 	return

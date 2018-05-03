@@ -59,6 +59,7 @@ func (m *TLMessage2) Decode(dbuf *DecodeBuf) error {
 	m.MsgId = dbuf.Long()
 	m.Seqno = dbuf.Int()
 	m.Bytes = dbuf.Int()
+	glog.Infof("message2: {msg_id: %d, seqno: %d, bytes: %d}")
 	b := dbuf.Bytes(int(m.Bytes))
 
 	dbuf2 := NewDecodeBuf(b)
