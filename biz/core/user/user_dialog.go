@@ -188,6 +188,7 @@ func CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int3
 		dialog.UnreadCount = 1
 		dialog.TopMessage = topMessage
 		dialog.CreatedAt = base2.NowFormatYMDHMS()
+		dialog.DraftMessageData = ""
 		dialog.Date2 = date
 		master.Insert(dialog)
 	} else {

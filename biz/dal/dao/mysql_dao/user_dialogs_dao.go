@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewUserDialogsDAO(db *sqlx.DB) *UserDialogsDAO {
 	return &UserDialogsDAO{db}
 }
 
-// insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :date2, :created_at)
+// insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, draft_message_data, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :draft_message_data, :date2, :created_at)
 // TODO(@benqi): sqlmap
 func (dao *UserDialogsDAO) Insert(do *dataobject.UserDialogsDO) int64 {
-	var query = "insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :date2, :created_at)"
+	var query = "insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, draft_message_data, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :draft_message_data, :date2, :created_at)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)

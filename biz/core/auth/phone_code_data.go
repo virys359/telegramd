@@ -457,6 +457,7 @@ func (code *phoneCodeData) DoSignUp(phoneCode string) error {
 
 	// TODO(@benqi): 重复请求处理...
 	// check state invalid.
+	// TODO(@benqi): remote client error, state is Ok
 	if do.State != kCodeStateSignIn && do.State != kCodeStateDeleted {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR), "code state error")
 		glog.Error(err)

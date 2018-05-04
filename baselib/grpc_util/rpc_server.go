@@ -52,7 +52,7 @@ func NewRpcServer(addr string, discovery *service_discovery.ServiceDiscoveryServ
 				Addr: discovery.RPCAddr,
 				//Metadata: map[string]string{"weight": "1"},
 			},
-			Ttl: 1000 * time.Second,
+			Ttl: time.Duration(discovery.TTL), // * time.Second,
 		})
 	if err != nil {
 		glog.Fatal(err)
