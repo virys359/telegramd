@@ -26,7 +26,6 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"time"
 	"github.com/nebulaim/telegramd/biz_server/sync_client"
-	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/nbfs_client"
@@ -52,9 +51,9 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 
 		// fileData := mediaData.GetFile().GetData2()
 		photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
-			Id:          base.NextSnowflakeId(),
+			Id:          result.PhotoId,
 			HasStickers: len(uploadedPhoto.GetStickers()) > 0,
-			AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+			AccessHash:  result.AccessHash, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 			Date:        now,
 			Sizes:       result.SizeList,
 		}}

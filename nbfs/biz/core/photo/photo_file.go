@@ -148,7 +148,7 @@ func getFileSize(filename string) int32 {
 //  在当前简单实现里，volume_id由sonwflake生成，local_id对应于图片类型，secret为access_hash
 // TODO(@benqi):
 //  参数使用mtproto.File
-func UploadPhotoFile(photoId int64, filePath, extName string, isABC bool) ([]*mtproto.PhotoSize, error) {
+func UploadPhotoFile(photoId, accessHash int64, filePath, extName string, isABC bool) ([]*mtproto.PhotoSize, error) {
 	fileName := core.NBFS_DATA_PATH + filePath
 
 	f, err := os.Open(fileName)
@@ -205,6 +205,7 @@ func UploadPhotoFile(photoId int64, filePath, extName string, isABC bool) ([]*mt
 			photoDatasDO.Height = int32(img.Bounds().Dy())
 			photoDatasDO.FileSize = getFileSize(fileName)
 			photoDatasDO.FilePath = filePath
+			photoDatasDO.AccessHash = accessHash
 		} else {
 			var dst *image.NRGBA
 			if imgSz.isWidth {

@@ -55,9 +55,6 @@ type MysqlDAOList struct {
 	TmpPasswordsDAO          *mysql_dao.TmpPasswordsDAO
 	ChatsDAO                 *mysql_dao.ChatsDAO
 	ChatParticipantsDAO      *mysql_dao.ChatParticipantsDAO
-	FilePartsDAO             *mysql_dao.FilePartsDAO
-	FilesDAO                 *mysql_dao.FilesDAO
-	PhotoDatasDAO            *mysql_dao.PhotoDatasDAO
 	UserPtsUpdatesDAO        *mysql_dao.UserPtsUpdatesDAO
 	UserQtsUpdatesDAO        *mysql_dao.UserQtsUpdatesDAO
 	AuthSeqUpdatesDAO        *mysql_dao.AuthSeqUpdatesDAO
@@ -105,9 +102,6 @@ func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
 		daoList.TmpPasswordsDAO = mysql_dao.NewTmpPasswordsDAO(v)
 		daoList.ChatsDAO = mysql_dao.NewChatsDAO(v)
 		daoList.ChatParticipantsDAO = mysql_dao.NewChatParticipantsDAO(v)
-		daoList.FilePartsDAO = mysql_dao.NewFilePartsDAO(v)
-		daoList.FilesDAO = mysql_dao.NewFilesDAO(v)
-		daoList.PhotoDatasDAO = mysql_dao.NewPhotoDatasDAO(v)
 		daoList.UserPtsUpdatesDAO = mysql_dao.NewUserPtsUpdatesDAO(v)
 		daoList.UserQtsUpdatesDAO = mysql_dao.NewUserQtsUpdatesDAO(v)
 		daoList.AuthSeqUpdatesDAO = mysql_dao.NewAuthSeqUpdatesDAO(v)
@@ -291,33 +285,6 @@ func GetChatParticipantsDAO(dbName string) (dao *mysql_dao.ChatParticipantsDAO) 
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.ChatParticipantsDAO
-	}
-	return
-}
-
-func GetFilePartsDAO(dbName string) (dao *mysql_dao.FilePartsDAO) {
-	daoList := GetMysqlDAOList(dbName)
-	// err := mysqlDAOManager.daoListMap[dbName]
-	if daoList != nil {
-		dao = daoList.FilePartsDAO
-	}
-	return
-}
-
-func GetFilesDAO(dbName string) (dao *mysql_dao.FilesDAO) {
-	daoList := GetMysqlDAOList(dbName)
-	// err := mysqlDAOManager.daoListMap[dbName]
-	if daoList != nil {
-		dao = daoList.FilesDAO
-	}
-	return
-}
-
-func GetPhotoDatasDAO(dbName string) (dao *mysql_dao.PhotoDatasDAO) {
-	daoList := GetMysqlDAOList(dbName)
-	// err := mysqlDAOManager.daoListMap[dbName]
-	if daoList != nil {
-		dao = daoList.PhotoDatasDAO
 	}
 	return
 }

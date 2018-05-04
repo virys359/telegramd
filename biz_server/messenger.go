@@ -34,7 +34,6 @@ import (
 	photos "github.com/nebulaim/telegramd/biz_server/photos/rpc"
 	stickers "github.com/nebulaim/telegramd/biz_server/stickers/rpc"
 	updates "github.com/nebulaim/telegramd/biz_server/updates/rpc"
-	upload "github.com/nebulaim/telegramd/biz_server/upload/rpc"
 	users "github.com/nebulaim/telegramd/biz_server/users/rpc"
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
@@ -126,7 +125,6 @@ func main() {
 		mtproto.RegisterRPCPhotosServer(s, &photos.PhotosServiceImpl{})
 		mtproto.RegisterRPCStickersServer(s, &stickers.StickersServiceImpl{})
 		mtproto.RegisterRPCUpdatesServer(s, &updates.UpdatesServiceImpl{})
-		mtproto.RegisterRPCUploadServer(s, &upload.UploadServiceImpl{})
 
 		mtproto.RegisterRPCUsersServer(s, &users.UsersServiceImpl{})
 	})

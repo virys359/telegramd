@@ -25,7 +25,6 @@ import (
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/chat"
 	"github.com/nebulaim/telegramd/biz/base"
-	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	"time"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	// "github.com/nebulaim/telegramd/biz/core/user"
@@ -91,7 +90,7 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 		photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
 			Id:          photoId,
 			HasStickers: false,
-			AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+			AccessHash:  result.AccessHash, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 			Date:        int32(time.Now().Unix()),
 			Sizes:       result.SizeList,
 		}}

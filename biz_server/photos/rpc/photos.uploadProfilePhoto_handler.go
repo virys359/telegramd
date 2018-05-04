@@ -146,7 +146,7 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
 		Id:          result.PhotoId,
 		HasStickers: false,
-		AccessHash:  photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+		AccessHash:  result.AccessHash, //photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
 		Date:        int32(time.Now().Unix()),
 		Sizes:       result.SizeList,
 	}}

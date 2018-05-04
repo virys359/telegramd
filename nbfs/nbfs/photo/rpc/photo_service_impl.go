@@ -29,6 +29,7 @@ import (
 	"github.com/nebulaim/telegramd/nbfs/biz/base"
 	"time"
 	document2 "github.com/nebulaim/telegramd/nbfs/biz/core/document"
+	"math/rand"
 )
 
 type PhotoServiceImpl struct {
@@ -78,15 +79,18 @@ func (s *PhotoServiceImpl) NbfsUploadPhotoFile(ctx context.Context, request *mtp
 	}
 
 	photoId := base.NextSnowflakeId()
-	szList, err := photo.UploadPhotoFile(photoId, fileData.FilePath, fileData.Ext, false)
+	accessHash := rand.Int63()
+	szList, err := photo.UploadPhotoFile(photoId, accessHash, fileData.FilePath, fileData.Ext, false)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
 
 	reply = &mtproto.PhotoDataRsp{
-		PhotoId:  photoId,
-		SizeList: szList,
+		PhotoId:    photoId,
+		AccessHash: accessHash,
+		Date:       int32(time.Now().Unix()),
+		SizeList:   szList,
 	}
 
 	glog.Infof("nbfs.uploadPhotoFile - reply: %s", logger.JsonDebugData(reply))
@@ -148,7 +152,8 @@ func (s *PhotoServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *
 	}
 
 	photoId := base.NextSnowflakeId()
-	szList, err := photo.UploadPhotoFile(photoId, fileData.FilePath, fileData.Ext, false)
+	accessHash := rand.Int63()
+	szList, err := photo.UploadPhotoFile(photoId, accessHash, fileData.FilePath, fileData.Ext, false)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -157,7 +162,7 @@ func (s *PhotoServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *
 	photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 		Id:          photoId,
 		HasStickers: false,
-		AccessHash:  fileData.AccessHash,
+		AccessHash:  accessHash,
 		Date:        int32(time.Now().Unix()),
 		Sizes:       szList,
 	}}
