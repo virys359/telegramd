@@ -28,7 +28,7 @@ import (
 	"log"
 	"net"
 	"sync"
-	"time"
+	// "time"
 )
 
 var nodeID = flag.String("node", "node1", "node ID")
@@ -86,7 +86,7 @@ func StartService() {
 				Addr: fmt.Sprintf("127.0.0.1:%d", *port),
 				//Metadata: map[string]string{"weight": "1"},
 			},
-			Ttl: 1000 * time.Second,
+			Ttl: 10, // * time.Second,
 		})
 	if err != nil {
 		log.Panic(err)

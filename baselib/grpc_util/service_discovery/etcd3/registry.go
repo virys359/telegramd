@@ -79,8 +79,13 @@ func NewRegistry(option Option) (*EtcdReigistry, error) {
 func (e *EtcdReigistry) Register() error {
 
 	insertFunc := func() error {
-		resp, _ := e.etcd3Client.Grant(e.ctx, int64(e.ttl))
-		_, err := e.etcd3Client.Get(e.ctx, e.key)
+		// fmt.Println("Grant: ", e)
+		resp, err := e.etcd3Client.Grant(e.ctx, 1000) // int64(e.ttl))
+		if err != nil {
+			fmt.Println("Grant error: ", err)
+			return err
+		}
+		_, err = e.etcd3Client.Get(e.ctx, e.key)
 		if err != nil {
 			if err == rpctypes.ErrKeyNotFound {
 				if _, err := e.etcd3Client.Put(e.ctx, e.key, e.value, etcd3.WithLease(resp.ID)); err != nil {
@@ -92,6 +97,7 @@ func (e *EtcdReigistry) Register() error {
 			return err
 		} else {
 			// refresh set to true for not notifying the watcher
+			// fmt.Println("refresh: ", resp)
 			if _, err := e.etcd3Client.Put(e.ctx, e.key, e.value, etcd3.WithLease(resp.ID)); err != nil {
 				grpclog.Printf("grpclb: refresh key '%s' with ttl to etcd3 failed: %s", e.key, err.Error())
 				return err
