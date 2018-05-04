@@ -237,7 +237,8 @@ func UploadPhotoFile(photoId, accessHash int64, filePath, extName string, isABC 
 			Type: getSizeType(i),
 			W:    photoDatasDO.Width,
 			H:    photoDatasDO.Height,
-			Size: int32(len(photoDatasDO.Bytes)),
+			// Size: int32(len(photoDatasDO.Bytes)),
+			Size: photoDatasDO.FileSize,
 			Location: &mtproto.FileLocation{
 				Constructor: mtproto.TLConstructor_CRC32_fileLocation,
 				Data2: &mtproto.FileLocation_Data{
@@ -246,11 +247,15 @@ func UploadPhotoFile(photoId, accessHash int64, filePath, extName string, isABC 
 					Secret:   photoDatasDO.AccessHash,
 					DcId: 	photoDatasDO.DcId}}}
 
-		if i== 0 {
+		if i == 0 {
+			continue
+		} else if i == 1 {
 			sizes = append(sizes, &mtproto.PhotoSize{
 				Constructor: mtproto.TLConstructor_CRC32_photoCachedSize,
 				Data2:       photoSizeData,})
-			photoSizeData.Bytes = photoDatasDO.Bytes
+			// TODO(@benqi): 如上预先存起来
+			photoSizeData.Bytes, _ = ioutil.ReadFile(core.NBFS_DATA_PATH + photoDatasDO.FilePath)
+			// photoDatasDO.Bytes
 		} else {
 			sizes = append(sizes, &mtproto.PhotoSize{
 				Constructor: mtproto.TLConstructor_CRC32_photoSize,
