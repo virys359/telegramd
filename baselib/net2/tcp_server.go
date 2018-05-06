@@ -151,6 +151,7 @@ func (s *TcpServer) establishTcpConnection(conn *TcpConnection) {
 		//
 		if err := recover(); err != nil {
 			glog.Errorf("tcp_server handle panic: %v\n%s", err, debug.Stack())
+			conn.Close()
 		}
 	}()
 

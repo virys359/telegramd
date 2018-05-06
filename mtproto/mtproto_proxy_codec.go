@@ -139,9 +139,8 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	}
 
 	if b_0_1[0] == MTPROTO_ABRIDGED_FLAG {
-		// MTPROTO_ABRIDGED_VERSION
-		glog.Warning("MTProtoProxyCodec - mtproto abridged version, impl in the future!!")
-		return nil, errors.New("mtproto abridged version not impl!!")
+		glog.Warning("mtproto abridged version!!")
+		return NewMTProtoAbridgedCodec(c.conn), nil
 	}
 
 	// not abridged version, we'll lookup codec!
@@ -209,7 +208,6 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	}
 
 	glog.Info("first_bytes_64: ", hex.EncodeToString(b_0_1), hex.EncodeToString(b_1_3), hex.EncodeToString(b_4_60))
-
 	return NewMTProtoFullCodec(c.conn, d, e), nil
 }
 
