@@ -276,13 +276,49 @@ func (s *FrontendServer) OnNewClient(client *net2.TcpClient) {
 	glog.Infof("onNewClient - peer(%s)", client.GetConnection())
 }
 
+func (s *FrontendServer) genSessionId(conn *net2.TcpConnection) uint64 {
+	var sid = conn.GetConnID()
+	if conn.Name() == "frontend443" {
+		// 0
+		// sid = sid
+	} else if conn.Name() == "frontend80" {
+		sid = sid | 1 << 56
+	} else if conn.Name() == "frontend5222" {
+		sid = sid | 2 << 56
+	}
+
+	return sid
+}
+
+func (s *FrontendServer) getConnBySessionID(id uint64) *net2.TcpConnection {
+	//
+	var server *net2.TcpServer
+	sid := id >> 56
+	if sid == 0 {
+		server = s.server443
+	} else if sid == 1 {
+		server = s.server80
+	} else if sid == 2 {
+		server = s.server5222
+	} else {
+		return nil
+	}
+
+	id = id & 0xffffffffffffff
+	return server.GetConnection(id)
+}
+
 func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
 	zmsg, _ := msg.(*mtproto.ZProtoMessage)
-	conn := s.server443.GetConnection(zmsg.SessionId)
+
+	///////////////////////////////////////////////////////////////////
+	conn := s.getConnBySessionID(zmsg.SessionId)
+	// s.server443.GetConnection(zmsg.SessionId)
 	if conn == nil {
 		glog.Warning("conn closed, connID = ", zmsg.SessionId)
 		return nil
 	}
+
 	payload, _ := zmsg.Message.(*mtproto.ZProtoRawPayload)
 	msgType := binary.LittleEndian.Uint32(payload.Payload)
 	switch msgType {
@@ -337,6 +373,26 @@ func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {
 	glog.Infof("onClientTimer")
 }
 
+/*
+	[server80]
+	name = "frontend80"
+	protoName = "mtproto"
+	addr = "0.0.0.0:8000"
+	# 80
+
+	[server443]
+	name = "frontend443"
+	protoName = "mtproto"
+	addr = "0.0.0.0:12345"
+	# 43
+
+	[server5222]
+	name = "frontend5222"
+	protoName = "mtproto"
+	addr = "0.0.0.0:5222"
+	# 5222
+ */
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
 	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data, len = %d, ctx: %v", conn, len(mmsg.Payload), ctx)
@@ -355,8 +411,9 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 		State:      ctx.handshakeState,
 		MTPMessage: mmsg,
 	}
+
 	zmsg := &mtproto.ZProtoMessage{
-		SessionId: conn.GetConnID(),
+		SessionId: s.genSessionId(conn), // conn.GetConnID(),
 		SeqNum:    1, // TODO(@benqi): gen seqNum
 		Metadata:  s.newMetadata(conn),
 		Message:   &mtproto.ZProtoRawPayload{
@@ -374,7 +431,8 @@ func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpC
 		MTPMessage: mmsg,
 	}
 	zmsg := &mtproto.ZProtoMessage{
-		SessionId: conn.GetConnID(),
+		// SessionId: conn.GetConnID(),
+		SessionId: s.genSessionId(conn), // conn.GetConnID(),
 		SeqNum:    1, // TODO(@benqi): gen seqNum
 		Metadata:  s.newMetadata(conn),
 		Message:   &mtproto.ZProtoRawPayload{

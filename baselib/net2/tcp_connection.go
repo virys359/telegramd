@@ -46,6 +46,10 @@ type TcpConnection struct {
 }
 
 func NewServerTcpConnection(name string, conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
+	if globalConnectionId >= 0xfffffffffffffff {
+		atomic.StoreUint64(&globalConnectionId, 0)
+	}
+
 	conn2 := &TcpConnection{
 		name:          name,
 		conn:          conn,
