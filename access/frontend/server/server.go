@@ -35,6 +35,13 @@ type ServerConfig struct {
 	Addr      string
 }
 
+type ClientConfig struct {
+	Name      string
+	ProtoName string
+	AddrList  []string
+	Balancer  string
+}
+
 func newTcpServer(config *ServerConfig, cb net2.TcpConnectionCallback) (*net2.TcpServer, error) {
 	lsn, err := net.Listen("tcp", config.Addr)
 	if err != nil {
@@ -52,41 +59,20 @@ func newTcpServer(config *ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tc
 }
 
 type FrontendConfig struct {
-	ServerId  int32 // 服务器ID
-	Server80  *ServerConfig
-	Server443 *ServerConfig
+	ServerId      int32 // 服务器ID
+	Server80      *ServerConfig
+	Server443     *ServerConfig
+	Server5222    *ServerConfig
+	SessionClient *ClientConfig
 }
 
-//const (
-//	STATE_UNKNOWN = iota
-//	STATE_CONNECTED
-//
-//	STATE_pq
-//	STATE_pq_res
-//	STATE_pq_ack
-//
-//	STATE_DH_params
-//	STATE_DH_params_res
-//	STATE_DH_params_ack
-//
-//	STATE_dh_gen
-//	STATE_dh_gen_res
-//	STATE_dh_gen_ack
-//
-//	STATE_HANDSHAKE
-//	STATE_AUTH_KEY
-//	STATE_ERROR
-//)
-//
-//const (
-//	RES_STATE_UNKNOWN = iota
-//	RES_STATE_NONE
-//	RES_STATE_OK
-//	RES_STATE_ERROR
-//)
-
-func isHandshake(state int) bool {
-	return state >= mtproto.STATE_CONNECTED2 && state <= mtproto.STATE_dh_gen_ack
+func (c *FrontendConfig) String() string {
+	return fmt.Sprintf("{server_id: %d, server80: %v. server443: %v, server5222: %v, session_client: %v}",
+		c.ServerId,
+		c.Server80,
+		c.Server443,
+		c.Server5222,
+		c.SessionClient)
 }
 
 type handshakeState struct {
@@ -140,9 +126,11 @@ type FrontendServer struct {
 	config     *FrontendConfig
 
 	// TODO(@benqi): manager server80 and server443
-	server80  *net2.TcpServer
-	server443 *net2.TcpServer
-	client    *net2.TcpClientGroupManager
+	server80   *net2.TcpServer
+	server443  *net2.TcpServer
+	server5222 *net2.TcpServer
+
+	client     *net2.TcpClientGroupManager
 }
 
 func NewFrontendServer(configPath string) *FrontendServer {
@@ -162,12 +150,13 @@ func (s *FrontendServer) Initialize() error {
 		return err
 	}
 
+	glog.Infof("config loaded: %v", s.config)
+
 	if s.config.Server80 == nil && s.server443 == nil {
 		err := fmt.Errorf("config error, server80 and server443 is nil, in config: %v", s.config)
 		return err
 	}
-
-	glog.Info(s.config)
+	// glog.Info(s.config)
 
 	s.server80, err = newTcpServer(s.config.Server80, s)
 	if err != nil {
@@ -181,22 +170,31 @@ func (s *FrontendServer) Initialize() error {
 		return err
 	}
 
-	clients := map[string][]string{
-		"session": []string{"127.0.0.1:10000"},
+	s.server5222, err = newTcpServer(s.config.Server5222, s)
+	if err != nil {
+		glog.Error(err)
+		return err
 	}
-	s.client = net2.NewTcpClientGroupManager("zproto", clients, s)
+
+	clients := map[string][]string{
+		"session": s.config.SessionClient.AddrList,
+		// s.config.SessionClient.Name: s.config.SessionClient.AddrList,
+	}
+	s.client = net2.NewTcpClientGroupManager(s.config.SessionClient.ProtoName, clients, s)
 	return nil
 }
 
 func (s *FrontendServer) RunLoop() {
 	go s.server80.Serve()
 	go s.server443.Serve()
+	go s.server5222.Serve()
 	go s.client.Serve()
 }
 
 func (s *FrontendServer) Destroy() {
 	s.server80.Stop()
 	s.server443.Stop()
+	s.server5222.Stop()
 	s.client.Stop()
 }
 
@@ -279,8 +277,6 @@ func (s *FrontendServer) OnNewClient(client *net2.TcpClient) {
 }
 
 func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
-	glog.Infof("onClientDataArrived - peer(%s) recv data", client.GetConnection())
-
 	zmsg, _ := msg.(*mtproto.ZProtoMessage)
 	conn := s.server443.GetConnection(zmsg.SessionId)
 	if conn == nil {
@@ -297,7 +293,10 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 		}
 		hmsg.Decode(payload.Payload[4:])
 
-		glog.Infof("handshake - state: {%v}", hmsg.State)
+		glog.Infof("onClientDataArrived - handshake: peer(%s), state: {%v}",
+			client.GetConnection(),
+			hmsg.State)
+
 		ctx := conn.Context.(*connContext)
 		ctx.Lock()
 		ctx.handshakeState = hmsg.State
@@ -308,10 +307,20 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 			MTPMessage: &mtproto.MTPRawMessage{},
 		}
 		smsg.Decode(payload.Payload[4:])
+
+		glog.Infof("onClientDataArrived - session_data: peer(%s), auth_key_id: %d, len: %d",
+			client.GetConnection(),
+			smsg.MTPMessage.AuthKeyId,
+			len(payload.Payload))
+
 		return conn.Send(smsg.MTPMessage)
 	default:
 		err := fmt.Errorf("invalid zmsg: %v", zmsg)
-		glog.Error(err)
+
+		glog.Errorf("onClientDataArrived - invalid zmsg: peer(%s), zmsg: {%v}",
+			client.GetConnection(),
+			zmsg)
+
 		return err
 	}
 }
@@ -325,12 +334,12 @@ func (s *FrontendServer) OnClientClosed(client *net2.TcpClient) {
 }
 
 func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {
-	glog.Infof("OnTimer")
+	glog.Infof("onClientTimer")
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
-	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data, len = %d", conn, len(mmsg.Payload))
+	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data, len = %d, ctx: %v", conn, len(mmsg.Payload), ctx)
 
 	ctx.Lock()
 	if ctx.state == mtproto.STATE_CONNECTED2 {
@@ -359,7 +368,7 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 }
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
-	glog.Infof("onEncryptedRawMessage - peer(%s) recv data, len = %d", conn, len(mmsg.Payload))
+	glog.Infof("onEncryptedRawMessage - peer(%s) recv data, len = %d, auth_key_id = %d", conn, len(mmsg.Payload), mmsg.AuthKeyId)
 	// sentToClient
 	hmsg := &mtproto.ZProtoSessionData{
 		MTPMessage: mmsg,

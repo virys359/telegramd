@@ -4,35 +4,26 @@ ver = "0.0.1"
 #logPath = "/tmp/frontend.log"
 serverId = 1
 
-[server]
-addr = "0.0.0.0:12345"
-
 [server80]
-name = "frontend"
+name = "frontend80"
 protoName = "mtproto"
 addr = "0.0.0.0:8000"
+# 80
 
 [server443]
-name = "frontend"
+name = "frontend443"
 protoName = "mtproto"
 addr = "0.0.0.0:12345"
+# 43
 
-[syncRpcClient]
-serviceName = "sync"
-etcdAddrs = ["http://127.0.0.1:2379"]
-balancer = "round_robin"
+[server5222]
+name = "frontend5222"
+protoName = "mtproto"
+addr = "0.0.0.0:5222"
+# 5222
 
-[bizRpcClient]
-serviceName = "biz"
-etcdAddrs = ["http://127.0.0.1:2379"]
-balancer = "round_robin"
-
-[authKeyRpcClient]
-serviceName = "auth_key"
-etcdAddrs = ["http://127.0.0.1:2379"]
-balancer = "round_robin"
-
-[authSessionRpcClient]
-serviceName = "auth_session"
-etcdAddrs = ["http://127.0.0.1:2379"]
+[sessionClient]
+name = "session"
+protoName = "zproto"
+addrList = ["127.0.0.1:10000"]
 balancer = "round_robin"

@@ -98,10 +98,10 @@ type ZProtoPackageData struct {
 }
 
 type ZProtoMessage struct {
-	SessionId uint64
-	SeqNum    uint64
-	Metadata  *ZProtoMetadata
-	Message   net2.MessageBase
+	SessionId  uint64
+	SeqNum     uint64
+	Metadata   *ZProtoMetadata
+	Message    net2.MessageBase
 }
 
 func (m *ZProtoMessage) Encode() []byte {

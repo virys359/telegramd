@@ -97,7 +97,7 @@ func (s *TcpServer) Serve() {
 			return
 		}
 
-		tcpConn := NewServerTcpConnection(conn.(*net.TCPConn), s.sendChanSize, codec, s)
+		tcpConn := NewServerTcpConnection(s.serverName, conn.(*net.TCPConn), s.sendChanSize, codec, s)
 		go s.establishTcpConnection(tcpConn)
 	}
 

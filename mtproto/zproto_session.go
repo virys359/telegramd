@@ -17,6 +17,11 @@
 
 package mtproto
 
+import (
+	"fmt"
+	"encoding/hex"
+)
+
 // import "github.com/golang/glog"
 
 const (
@@ -60,6 +65,10 @@ type HandshakeState struct {
 	State    int    // 状态
 	ResState int    // 后端握手返回的结果
 	Ctx      []byte // 握手上下文数据，透传给后端
+}
+
+func (s *HandshakeState) String() string {
+	return fmt.Sprintf("{state: %d, res_state: %d, ctx: %s}", s.State, s.ResState, hex.EncodeToString(s.Ctx))
 }
 
 type ZProtoHandshakeMessage struct {
