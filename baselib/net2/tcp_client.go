@@ -76,7 +76,7 @@ func (c *TcpClient) Serve() bool {
 	}
 
 	codec, err := NewCodecByName(c.protoName, tcpConn.(*net.TCPConn))
-	c.conn = NewClientTcpConnection(tcpConn.(*net.TCPConn), c.chanSize, codec, c)
+	c.conn = NewClientTcpConnection(c.remoteName, tcpConn.(*net.TCPConn), c.chanSize, codec, c)
 	go c.establishTcpConnection(c.conn)
 	return true
 }
@@ -162,7 +162,6 @@ func (c *TcpClient) GetTimer() time.Duration {
 }
 
 func (c *TcpClient) StartTimer() {
-
 	if c.conn != nil && !c.conn.IsClosed() {
 		//
 		if c.callback != nil {

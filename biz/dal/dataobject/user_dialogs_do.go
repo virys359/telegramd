@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +37,7 @@ type UserDialogsDO struct {
 	DraftType           int8   `db:"draft_type"`
 	DraftMessageData    string `db:"draft_message_data"`
 	Date2               int32  `db:"date2"`
+	Version             int64  `db:"version"`
 	CreatedAt           string `db:"created_at"`
 	UpdatedAt           string `db:"updated_at"`
 }

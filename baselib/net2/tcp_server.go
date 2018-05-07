@@ -97,7 +97,7 @@ func (s *TcpServer) Serve() {
 			return
 		}
 
-		tcpConn := NewServerTcpConnection(conn.(*net.TCPConn), s.sendChanSize, codec, s)
+		tcpConn := NewServerTcpConnection(s.serverName, conn.(*net.TCPConn), s.sendChanSize, codec, s)
 		go s.establishTcpConnection(tcpConn)
 	}
 
@@ -151,6 +151,7 @@ func (s *TcpServer) establishTcpConnection(conn *TcpConnection) {
 		//
 		if err := recover(); err != nil {
 			glog.Errorf("tcp_server handle panic: %v\n%s", err, debug.Stack())
+			conn.Close()
 		}
 	}()
 

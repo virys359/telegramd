@@ -29,6 +29,7 @@ import (
 	"github.com/nebulaim/telegramd/nbfs/biz/base"
 	"time"
 	document2 "github.com/nebulaim/telegramd/nbfs/biz/core/document"
+	"math/rand"
 )
 
 type PhotoServiceImpl struct {
@@ -78,15 +79,18 @@ func (s *PhotoServiceImpl) NbfsUploadPhotoFile(ctx context.Context, request *mtp
 	}
 
 	photoId := base.NextSnowflakeId()
-	szList, err := photo.UploadPhotoFile(photoId, fileData.FilePath, fileData.Ext, false)
+	accessHash := rand.Int63()
+	szList, err := photo.UploadPhotoFile(photoId, accessHash, fileData.FilePath, fileData.Ext, false)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
 
 	reply = &mtproto.PhotoDataRsp{
-		PhotoId:  photoId,
-		SizeList: szList,
+		PhotoId:    photoId,
+		AccessHash: accessHash,
+		Date:       int32(time.Now().Unix()),
+		SizeList:   szList,
 	}
 
 	glog.Infof("nbfs.uploadPhotoFile - reply: %s", logger.JsonDebugData(reply))
@@ -148,7 +152,8 @@ func (s *PhotoServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *
 	}
 
 	photoId := base.NextSnowflakeId()
-	szList, err := photo.UploadPhotoFile(photoId, fileData.FilePath, fileData.Ext, false)
+	accessHash := rand.Int63()
+	szList, err := photo.UploadPhotoFile(photoId, accessHash, fileData.FilePath, fileData.Ext, false)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -157,7 +162,7 @@ func (s *PhotoServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *
 	photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 		Id:          photoId,
 		HasStickers: false,
-		AccessHash:  fileData.AccessHash,
+		AccessHash:  accessHash,
 		Date:        int32(time.Now().Unix()),
 		Sizes:       szList,
 	}}
@@ -177,11 +182,12 @@ func (s *PhotoServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *
 func (s *PhotoServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, request *mtproto.NbfsUploadedDocumentMedia) (*mtproto.TLMessageMediaDocument, error) {
 	glog.Infof("nbfs.uploadedDocumentMedia - request: %s", logger.JsonDebugData(request))
 
-	inputFile := request.GetMedia().GetFile().GetData2()
-
 	var (
+		inputFile = request.GetMedia().GetFile().GetData2()
+		// inputThumb = request.GetMedia().GetThumb()
 		// reply *mtproto.PhotoDataRsp
 		// isBigFile = request.GetMedia().GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
+		thumb *mtproto.PhotoSize
 	)
 
 	// TODO(@benqi): 出错以后，回滚数据库操作
@@ -218,16 +224,59 @@ func (s *PhotoServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, reques
 		request.GetMedia().GetMimeType(),
 		0)
 
-	thumb := &mtproto.TLPhotoSizeEmpty{Data2: &mtproto.PhotoSize_Data{
-		Type: "",
-	}}
+	//thumb := &mtproto.TLPhotoSizeEmpty{Data2: &mtproto.PhotoSize_Data{
+	//	Type: "",
+	//}}
+	if request.GetMedia().GetThumb() != nil {
+		thumbFile := request.GetMedia().GetThumb().GetData2()
+		// var filename = core.NBFS_DATA_PATH + filePart.FilePath
+		filePart, err := file.DoSavedFilePart(request.OwnerId, thumbFile.Id)
+		// core.CalcMd5File(filename)
+		if filePart.SavedMd5Hash != thumbFile.Md5Checksum {
+			return nil, fmt.Errorf("check md5 error: %s, %s", filePart.SavedMd5Hash, thumbFile.Md5Checksum)
+		}
+
+		fileData, err := file.NewFileData(filePart.FilePartId,
+			filePart.SavedFilePath,
+			thumbFile.Name,
+			filePart.FileSize,
+			filePart.SavedMd5Hash)
+		if err != nil {
+			glog.Error(err)
+			return nil, err
+		}
+
+		photoId := base.NextSnowflakeId()
+		accessHash := rand.Int63()
+		szList, err := photo.UploadPhotoFile(photoId, accessHash, fileData.FilePath, fileData.Ext, false)
+		if err != nil {
+			glog.Error(err)
+			return nil, err
+		}
+
+		thumb = &mtproto.PhotoSize{
+			Constructor: mtproto.TLConstructor_CRC32_photoSize,
+			Data2: szList[0].GetData2(),
+		}
+		if thumb.Data2.Size == 0 {
+			thumb.Data2.Size = int32(len(thumb.Data2.Bytes))
+		}
+	} else {
+		thumb = &mtproto.PhotoSize{
+			Constructor: mtproto.TLConstructor_CRC32_photoSizeEmpty,
+			Data2: &mtproto.PhotoSize_Data{
+				Type: "s",
+			},
+		}
+	}
+
 	document := &mtproto.TLDocument{Data2: &mtproto.Document_Data{
 		Id:          documentId,
 		AccessHash:  data.AccessHash,
 		Date:        int32(time.Now().Unix()),
 		MimeType:    data.MimeType,
 		Size:        int32(data.FileSize),
-		Thumb:       thumb.To_PhotoSize(),
+		Thumb:       thumb,
 		DcId:        2,
 		Version:     0,
 		Attributes:  request.GetMedia().GetAttributes(),

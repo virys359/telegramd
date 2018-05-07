@@ -31,24 +31,27 @@ var ConnectionBlockedError = errors.New("Connection Blocked")
 var globalConnectionId uint64
 
 type TcpConnection struct {
-	name       string
-	conn 			  *net.TCPConn
-	id                uint64
-	codec             Codec
-	sendChan          chan interface{}
-	recvMutex         sync.Mutex
-	sendMutex         sync.RWMutex
-
-	closeFlag  int32
-	closeChan  chan int
-	closeMutex sync.Mutex
-
+	name          string
+	conn          *net.TCPConn
+	id            uint64
+	codec         Codec
+	sendChan      chan interface{}
+	recvMutex     sync.Mutex
+	sendMutex     sync.RWMutex
+	closeFlag     int32
+	closeChan     chan int
+	closeMutex    sync.Mutex
 	closeCallback closeCallback
-	Context interface{}
+	Context       interface{}
 }
 
-func NewServerTcpConnection(conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
+func NewServerTcpConnection(name string, conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
+	if globalConnectionId >= 0xfffffffffffffff {
+		atomic.StoreUint64(&globalConnectionId, 0)
+	}
+
 	conn2 := &TcpConnection{
+		name:          name,
 		conn:          conn,
 		codec:         codec,
 		closeChan:     make(chan int),
@@ -63,8 +66,9 @@ func NewServerTcpConnection(conn *net.TCPConn, sendChanSize int, codec Codec, cb
 	return conn2
 }
 
-func NewClientTcpConnection(conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
+func NewClientTcpConnection(name string, conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
 	conn2 := &TcpConnection{
+		name:          name,
 		conn:          conn,
 		codec:         codec,
 		closeChan:     make(chan int),
@@ -89,6 +93,10 @@ func (c *TcpConnection) LoadAddr() net.Addr {
 
 func (c *TcpConnection) RemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
+}
+
+func (c *TcpConnection) Name() string {
+	return c.name
 }
 
 func (c *TcpConnection) GetConnID() uint64 {

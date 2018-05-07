@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-04-24 07:49:42
+-- Generation Time: 2018-05-06 02:35:24
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -374,10 +374,10 @@ CREATE TABLE `files` (
   `id` bigint(20) NOT NULL,
   `file_id` bigint(20) NOT NULL,
   `access_hash` bigint(20) NOT NULL,
-  `creator_id` bigint(20) NOT NULL,
-  `creator_user_id` int(11) NOT NULL,
-  `file_part_id` bigint(20) NOT NULL,
-  `file_parts` int(11) NOT NULL,
+  `creator_id` bigint(20) NOT NULL DEFAULT '0',
+  `creator_user_id` int(11) NOT NULL DEFAULT '0',
+  `file_part_id` bigint(20) NOT NULL DEFAULT '0',
+  `file_parts` int(11) NOT NULL DEFAULT '0',
   `file_size` bigint(20) NOT NULL,
   `file_path` varchar(255) NOT NULL,
   `ext` varchar(32) NOT NULL DEFAULT '',
@@ -395,16 +395,15 @@ CREATE TABLE `files` (
 
 CREATE TABLE `file_parts` (
   `id` bigint(20) NOT NULL,
-  `creator_id` bigint(20) NOT NULL,
-  `creator_user_id` int(11) NOT NULL,
-  `file_id` bigint(20) NOT NULL,
+  `creator_id` bigint(20) NOT NULL DEFAULT '0',
+  `creator_user_id` int(11) NOT NULL DEFAULT '0',
+  `file_id` bigint(20) NOT NULL DEFAULT '0',
   `file_part_id` bigint(20) NOT NULL,
   `file_part` int(11) NOT NULL DEFAULT '0',
   `is_big_file` tinyint(4) NOT NULL DEFAULT '0',
   `file_total_parts` int(11) NOT NULL DEFAULT '0',
   `file_path` varchar(255) NOT NULL,
   `file_size` bigint(20) NOT NULL DEFAULT '0',
-  `bytes` blob NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -512,7 +511,6 @@ CREATE TABLE `photo_datas` (
   `file_size` int(11) NOT NULL DEFAULT '0',
   `file_path` varchar(255) NOT NULL,
   `ext` varchar(32) NOT NULL DEFAULT '',
-  `bytes` mediumblob NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -642,8 +640,8 @@ CREATE TABLE `users` (
   `about` varchar(512) NOT NULL DEFAULT '',
   `state` int(11) NOT NULL DEFAULT '0',
   `is_bot` tinyint(1) NOT NULL DEFAULT '0',
-  `banned` bigint(20) NOT NULL,
-  `banned_reason` varchar(128) NOT NULL,
+  `banned` bigint(20) NOT NULL DEFAULT '0',
+  `banned_reason` varchar(128) NOT NULL DEFAULT '',
   `account_days_ttl` int(11) NOT NULL DEFAULT '180',
   `photos` varchar(1024) NOT NULL DEFAULT '',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
@@ -775,7 +773,7 @@ CREATE TABLE `user_presences` (
   `user_id` int(11) NOT NULL,
   `last_seen_at` bigint(20) NOT NULL,
   `last_seen_auth_key_id` bigint(20) NOT NULL,
-  `last_seen_ip` varchar(64) NOT NULL,
+  `last_seen_ip` varchar(64) NOT NULL DEFAULT '',
   `version` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

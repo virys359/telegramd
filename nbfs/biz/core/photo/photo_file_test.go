@@ -62,8 +62,8 @@ func TestUploadPhotoFile(t *testing.T) {
 		return
 	}
 
-	UploadPhotoFile(fileData.FileId, fileData.FilePath, fileData.Ext, false)
-	UploadPhotoFile(fileData.FileId, fileData.FilePath, fileData.Ext, true)
+	UploadPhotoFile(fileData.FileId, 1, fileData.FilePath, fileData.Ext, false)
+	UploadPhotoFile(fileData.FileId, 2, fileData.FilePath, fileData.Ext, true)
 
 	//func MakeFileDataByLoad(fileId, accessHash int64) (*fileData, error) {
 	//
