@@ -80,7 +80,7 @@ func (e *EtcdReigistry) Register() error {
 
 	insertFunc := func() error {
 		// fmt.Println("Grant: ", e)
-		resp, err := e.etcd3Client.Grant(e.ctx, 1000) // int64(e.ttl))
+		resp, err := e.etcd3Client.Grant(e.ctx, 10) // int64(e.ttl))
 		if err != nil {
 			fmt.Println("Grant error: ", err)
 			return err

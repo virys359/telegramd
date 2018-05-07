@@ -32,6 +32,9 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"fmt"
 	"encoding/binary"
+	"sync"
+	"github.com/nebulaim/telegramd/baselib/net2/watcher2"
+	"github.com/coreos/etcd/clientv3"
 )
 
 func init() {
@@ -46,24 +49,41 @@ type rpcServerConfig struct {
 }
 
 type syncConfig struct {
-	Server 		*rpcServerConfig
-	Discovery service_discovery.ServiceDiscoveryServerConfig
-	Redis 		[]redis_client.RedisConfig
-	Mysql     []mysql_client.MySQLConfig
+	Server        *rpcServerConfig
+	Discovery     service_discovery.ServiceDiscoveryServerConfig
+	Redis         []redis_client.RedisConfig
+	Mysql         []mysql_client.MySQLConfig
+	SessionClient *ClientConfig
+}
+
+type ClientConfig struct {
+	Name      string
+	ProtoName string
+	AddrList  []string
+	EtcdAddrs []string
+	Balancer  string
+}
+
+type connContext struct {
+	serverId int32
+	sessionId uint64
 }
 
 type syncServer struct {
-	configPath string
-	config     *syncConfig
-	client     *net2.TcpClientGroupManager
-	server     *grpc_util.RPCServer
-	impl       *SyncServiceImpl
+	configPath    string
+	config        *syncConfig
+	clientWatcher *watcher2.ClientWatcher
+	client        *net2.TcpClientGroupManager
+	server        *grpc_util.RPCServer
+	impl          *SyncServiceImpl
+	sessionMap    sync.Map
 }
 
 func NewSyncServer(configPath string) *syncServer {
 	return &syncServer{
 		configPath: configPath,
 		config:     &syncConfig{},
+		// sessionMap: map[int]int64{},
 	}
 }
 
@@ -87,18 +107,22 @@ func (s *syncServer) Initialize() error {
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	clients := map[string][]string{
-		"session":[]string{"127.0.0.1:10000"},
-	}
-
-	s.client = net2.NewTcpClientGroupManager("zproto", clients, s)
 	s.server = grpc_util.NewRpcServer(s.config.Server.Addr, &s.config.Discovery)
 
-	return nil
+	clients := map[string][]string{
+		// "session":[]string{"127.0.0.1:10000"},
+	}
+	s.client = net2.NewTcpClientGroupManager("zproto", clients, s)
+	etcdConfg := clientv3.Config{
+		Endpoints: s.config.SessionClient.EtcdAddrs,
+	}
+	s.clientWatcher, err = watcher2.NewClientWatcher("/nebulaim", "session", etcdConfg, s.client)
+	return err
 }
 
 func (s *syncServer) RunLoop() {
-	go s.client.Serve()
+	go s.clientWatcher.WatchClients(nil)
+	// go s.client.Serve()
 	go s.server.Serve(func(s2 *grpc.Server) {
 		// cache := cache2.NewAuthKeyCacheManager()
 		// mtproto.RegisterRPCAuthKeyServer(s, rpc.NewAuthKeyService(cache))
@@ -193,6 +217,11 @@ func (s *syncServer) OnClientDataArrived(client *net2.TcpClient, msg interface{}
 			// TODO(@benqi): bind server_id, server_name
 			res, _ := message.(*mtproto.SessionServerConnectedRsp)
 			res.GetServerId()
+			ctx := &connContext{serverId: res.GetServerId(), sessionId: client.GetConnection().GetConnID()}
+			client.GetConnection().Context = ctx
+			glog.Info("store serverId: ", ctx)
+			s.sessionMap.Store(ctx.serverId, client)
+			// glog.Info("store serverId: ", ctx)
 		case *mtproto.VoidRsp:
 			glog.Infof("onSyncData - request(PushUpdatesData): {%v}", message)
 		default:
@@ -204,8 +233,20 @@ func (s *syncServer) OnClientDataArrived(client *net2.TcpClient, msg interface{}
 	return nil
 }
 
+//func (s *syncServer) onSessionServerAdd(sid int32, sessionId int64) {
+//	//s.mu.Lock()
+//	//defer s.mu.Unlock()
+//}
+
 func (s *syncServer) OnClientClosed(client *net2.TcpClient) {
 	glog.Infof("OnConnectionClosed")
+
+	ctx := client.GetConnection().Context
+	if ctx != nil {
+		if connCtx, ok := ctx.(*connContext); ok {
+			s.sessionMap.Delete(connCtx.serverId)
+		}
+	}
 
 	if client.AutoReconnect() {
 		client.Reconnect()
@@ -218,10 +259,20 @@ func (s *syncServer) OnClientTimer(client *net2.TcpClient) {
 
 func (s *syncServer) sendToSessionServer(serverId int, m proto.Message) {
 	zmsg := &mtproto.ZProtoMessage{
-		// SessionId: client.GetConnection().GetConnID(),
 		SeqNum:    1, // TODO(@benqi): gen seqNum
 		Metadata:  s.newMetadata(),
 	}
 	zmsg.Message, _ = protoToRawPayload(m)
-	s.client.SendData("session", zmsg)
+	// s.client.SendData("session", zmsg)
+
+	if c, ok := s.sessionMap.Load(int32(serverId)); ok {
+		client := c.(*net2.TcpClient)
+		if client != nil {
+			client.Send(zmsg)
+		} else {
+			glog.Error("client type invalid")
+		}
+	} else {
+		glog.Error("not found server id: ", serverId)
+	}
 }

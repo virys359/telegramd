@@ -27,6 +27,11 @@ import (
 	"sync"
 	"encoding/binary"
 	"time"
+	"github.com/nebulaim/telegramd/baselib/net2/watcher2"
+	"github.com/coreos/etcd/clientv3"
+	// "github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
+	"github.com/nebulaim/telegramd/baselib/base"
 )
 
 type ServerConfig struct {
@@ -39,6 +44,7 @@ type ClientConfig struct {
 	Name      string
 	ProtoName string
 	AddrList  []string
+	EtcdAddrs []string
 	Balancer  string
 }
 
@@ -130,13 +136,16 @@ type FrontendServer struct {
 	server443  *net2.TcpServer
 	server5222 *net2.TcpServer
 
-	client     *net2.TcpClientGroupManager
+	client        *net2.TcpClientGroupManager
+	clientWatcher *watcher2.ClientWatcher
+	ketama        *load_balancer.Ketama
 }
 
 func NewFrontendServer(configPath string) *FrontendServer {
 	return &FrontendServer{
 		configPath: configPath,
 		config:     &FrontendConfig{},
+		ketama:     load_balancer.NewKetama(10, nil),
 	}
 }
 
@@ -177,10 +186,17 @@ func (s *FrontendServer) Initialize() error {
 	}
 
 	clients := map[string][]string{
-		"session": s.config.SessionClient.AddrList,
+		// "session": s.config.SessionClient.AddrList,
 		// s.config.SessionClient.Name: s.config.SessionClient.AddrList,
 	}
 	s.client = net2.NewTcpClientGroupManager(s.config.SessionClient.ProtoName, clients, s)
+
+	// session service discovery
+	etcdConfg := clientv3.Config{
+		Endpoints: s.config.SessionClient.EtcdAddrs,
+	}
+	s.clientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "session", etcdConfg, s.client)
+
 	return nil
 }
 
@@ -188,7 +204,16 @@ func (s *FrontendServer) RunLoop() {
 	go s.server80.Serve()
 	go s.server443.Serve()
 	go s.server5222.Serve()
-	go s.client.Serve()
+
+	// go s.client.Serve()
+	go s.clientWatcher.WatchClients(func(etype, addr string) {
+		switch etype {
+		case "add":
+			s.ketama.Add(addr)
+		case "delete":
+			s.ketama.Remove(addr)
+		}
+	})
 }
 
 func (s *FrontendServer) Destroy() {
@@ -439,5 +464,10 @@ func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpC
 			Payload: hmsg.Encode(),
 		},
 	}
-	return s.client.SendData("session", zmsg)
+
+	if kaddr, ok := s.ketama.Get(base.Int64ToString(mmsg.AuthKeyId)); ok {
+		return s.client.SendDataToAddress("session", kaddr, zmsg)
+	} else {
+		return fmt.Errorf("kaddr not exists")
+	}
 }

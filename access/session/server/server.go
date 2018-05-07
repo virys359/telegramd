@@ -30,6 +30,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/coreos/etcd/clientv3"
+	"time"
 )
 
 type ServerConfig struct {
@@ -61,6 +64,7 @@ type SessionConfig struct {
 	BizRpcClient  service_discovery.ServiceDiscoveryClientConfig
 	NbfsRpcClient service_discovery.ServiceDiscoveryClientConfig
 	Server        ServerConfig
+	Discovery     service_discovery.ServiceDiscoveryServerConfig
 }
 
 type SessionServer struct {
@@ -73,6 +77,7 @@ type SessionServer struct {
 	handshake      *handshake
 	sessionManager *sessionManager
 	syncHandler    *syncHandler
+	registry       *etcd3.EtcdReigistry
 }
 
 func NewSessionServer(configPath string) *SessionServer {
@@ -113,6 +118,28 @@ func (s *SessionServer) Initialize() error {
 		glog.Error(err)
 		return err
 	}
+
+	etcdConfg := clientv3.Config{
+		Endpoints: s.config.Discovery.EtcdAddrs,
+	}
+	s.registry, err = etcd3.NewRegistry(
+		etcd3.Option{
+			EtcdConfig:  etcdConfg,
+			RegistryDir: "/nebulaim",
+			ServiceName: s.config.Discovery.ServiceName,
+			NodeID:      s.config.Discovery.NodeID,
+			NData: etcd3.NodeData{
+				Addr: s.config.Discovery.RPCAddr,
+				Metadata: map[string]string{},
+				// Metadata: map[string]string{"weight": "1"},
+			},
+			Ttl: time.Duration(s.config.Discovery.TTL), // * time.Second,
+		})
+	if err != nil {
+		glog.Fatal(err)
+		// return nil
+	}
+
 	return nil
 }
 
@@ -120,12 +147,16 @@ func (s *SessionServer) RunLoop() {
 	// TODO(@benqi): check error
 	s.bizRpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
 	s.nbfsRpcClient, _ = grpc_util.NewRPCClient(&s.config.NbfsRpcClient)
+	go s.registry.Register()
 	s.server.Serve()
 	// go s.client.Serve()
 }
 
 func (s *SessionServer) Destroy() {
+	glog.Infof("sessionServer - destroy...")
+	s.registry.Deregister()
 	s.server.Stop()
+	time.Sleep(1*time.Second)
 	// s.client.Stop()
 }
 

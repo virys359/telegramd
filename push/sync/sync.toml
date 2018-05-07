@@ -14,6 +14,13 @@ etcdAddrs = ["http://127.0.0.1:2379"]
 interval = "2s"
 tTL = "10s"
 
+[sessionClient]
+name = "session"
+protoName = "zproto"
+etcdAddrs = ["http://127.0.0.1:2379"]
+addrList = ["127.0.0.1:10000"]
+balancer = "round_robin"
+
 [[redis]]
 name = "cache"
 addr = "127.0.0.1:6379"

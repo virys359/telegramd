@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	"errors"
 	"math/rand"
+	"fmt"
 )
 
 type TcpClientGroupManager struct {
@@ -88,7 +89,7 @@ func (this *TcpClientGroupManager) GetConfig() interface{} {
 }
 
 func (this *TcpClientGroupManager) AddClient(name string, address string) {
-	glog.Info("TcpClientGroup AddClient name ", name, " address ", address)
+	// glog.Info("TcpClientGroup AddClient name ", name, " address ", address)
 	this.clientMapLock.Lock()
 	defer this.clientMapLock.Unlock()
 
@@ -114,7 +115,7 @@ func (this *TcpClientGroupManager) AddClient(name string, address string) {
 }
 
 func (this *TcpClientGroupManager) RemoveClient(name string, address string) {
-	glog.Info("TcpClientGroup RemoveClient name ", name, " address ", address)
+	// glog.Info("TcpClientGroup RemoveClient name ", name, " address ", address)
 
 	this.clientMapLock.Lock()
 	defer this.clientMapLock.Unlock()
@@ -136,6 +137,28 @@ func (this *TcpClientGroupManager) RemoveClient(name string, address string) {
 	c.Stop()
 
 	delete(this.clientMap[name], address)
+}
+
+func (this *TcpClientGroupManager) SendDataToAddress(name, address string, msg interface{}) error {
+	this.clientMapLock.RLock()
+	m, ok := this.clientMap[name]
+	if !ok {
+		this.clientMapLock.RUnlock()
+		err := fmt.Errorf("sendDataToAddress - name not exists: %s", name)
+		// glog.Error(err)
+		return err
+	}
+
+	c, ok := m[address]
+	if !ok {
+		this.clientMapLock.RUnlock()
+		err := fmt.Errorf("sendDataToAddress - address not exists: %s", address)
+		// glog.Error(err)
+		return err
+	}
+
+	this.clientMapLock.RUnlock()
+	return c.Send(msg)
 }
 
 func (this *TcpClientGroupManager) SendData(name string, msg interface{}) error {
