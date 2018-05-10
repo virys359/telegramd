@@ -17,19 +17,14 @@
 
 package dataobject
 
-type DocumentsDO struct {
-	Id               int64  `db:"id"`
-	DocumentId       int64  `db:"document_id"`
-	AccessHash       int64  `db:"access_hash"`
-	DcId             int32  `db:"dc_id"`
-	FilePath         string `db:"file_path"`
-	FileSize         int32  `db:"file_size"`
-	UploadedFileName string `db:"uploaded_file_name"`
-	Ext              string `db:"ext"`
-	MimeType         string `db:"mime_type"`
-	ThumbId          int64  `db:"thumb_id"`
-	Version          int32  `db:"version"`
-	Attributes       string `db:"attributes"`
-	CreatedAt        string `db:"created_at"`
-	UpdatedAt        string `db:"updated_at"`
+type StickerSetsDO struct {
+	Id           int32  `db:"id"`
+	StickerSetId int64  `db:"sticker_set_id"`
+	AccessHash   int64  `db:"access_hash"`
+	Title        string `db:"title"`
+	ShortName    string `db:"short_name"`
+	Count        int32  `db:"count"`
+	Hash         int32  `db:"hash"`
+	CreatedAt    string `db:"created_at"`
+	UpdatedAt    string `db:"updated_at"`
 }

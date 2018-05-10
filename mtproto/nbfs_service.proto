@@ -53,9 +53,29 @@ message NbfsUploadedDocumentMedia {
     TL_inputMediaUploadedDocument media = 2;
 }
 
+message DocumentId {
+    int64 id = 1;
+    int64 access_hash = 2;
+    int32 version = 3;
+}
+
+message DocumentAttributeList {
+    repeated DocumentAttribute attributes = 1;
+}
+
+message DocumentIdList {
+    repeated int64 id_list = 1;
+}
+
+message DocumentList {
+    repeated Document documents = 1;
+}
+
 service RPCNbfs {
     rpc nbfs_uploadPhotoFile(UploadPhotoFileRequest) returns (PhotoDataRsp);
     rpc nbfs_getPhotoFileData(GetPhotoFileDataRequest) returns (PhotoDataRsp);
     rpc nbfs_uploadedPhotoMedia(NbfsUploadedPhotoMedia) returns (TL_messageMediaPhoto);
     rpc nbfs_uploadedDocumentMedia(NbfsUploadedDocumentMedia) returns (TL_messageMediaDocument);
+    rpc nbfs_getDocument(DocumentId) returns (Document);
+    rpc nbfs_getDocumentList(DocumentIdList) returns (DocumentList);
 }

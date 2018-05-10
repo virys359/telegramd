@@ -292,3 +292,23 @@ func (s *PhotoServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, reques
 	glog.Infof("nbfs.uploadedDocumentMedia - reply: %s", logger.JsonDebugData(reply))
 	return reply, nil
 }
+
+// rpc nbfs_getDocument(DocumentId) returns (PhotoDataRsp);
+func (s *PhotoServiceImpl) NbfsGetDocument(ctx context.Context, request *mtproto.DocumentId) (*mtproto.Document, error) {
+	glog.Infof("nbfs_getDocument - request: %s", logger.JsonDebugData(request))
+
+	reply := document2.GetDocument(request.Id, request.AccessHash, request.Version)
+
+	glog.Infof("nbfs_getDocument - reply: %s", logger.JsonDebugData(reply))
+	return reply, nil
+}
+
+// rpc nbfs_getDocumentList(DocumentIdList) returns (DocumentList);
+func (s *PhotoServiceImpl) NbfsGetDocumentList(ctx context.Context, request *mtproto.DocumentIdList) (*mtproto.DocumentList, error) {
+	glog.Infof("nbfs_getDocumentList - request: %s", logger.JsonDebugData(request))
+
+	documents := document2.GetDocumentList(request.IdList)
+
+	glog.Infof("nbfs_getDocumentList - reply: %s", logger.JsonDebugData(documents))
+	return &mtproto.DocumentList{Documents: documents}, nil
+}

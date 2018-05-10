@@ -27,6 +27,8 @@ import (
 	"os"
 	"time"
 	"math/rand"
+	"github.com/nebulaim/telegramd/nbfs/biz/core/photo"
+	"encoding/json"
 )
 
 type documentData struct {
@@ -84,3 +86,124 @@ func GetDocumentFileData(id, accessHash int64, version int32, offset, limit int3
 	}}
 	return uploadFile.To_Upload_File(), nil
 }
+
+func makeDocumentByDO(do *dataobject.DocumentsDO) *mtproto.Document {
+	var (
+		thumb *mtproto.PhotoSize
+		document *mtproto.Document
+	)
+
+	if do == nil {
+		document = mtproto.NewTLDocumentEmpty().To_Document()
+	} else {
+		if do.ThumbId != 0 {
+			sizeList := photo.GetPhotoSizeList(do.ThumbId)
+			if len(sizeList) > 0 {
+				thumb = sizeList[0]
+			}
+		}
+
+		attributes := &mtproto.DocumentAttributeList{}
+		err := json.Unmarshal([]byte(do.Attributes), attributes)
+		if err != nil {
+			glog.Error(err)
+			attributes.Attributes = []*mtproto.DocumentAttribute{}
+		}
+
+		// if do.Attributes
+		document = &mtproto.Document{
+			Constructor: mtproto.TLConstructor_CRC32_document,
+			Data2: &mtproto.Document_Data{
+				Id:          do.DocumentId,
+				AccessHash:  do.AccessHash,
+				Date:        int32(time.Now().Unix()),
+				MimeType:    do.MimeType,
+				Size:        do.FileSize,
+				Thumb:       thumb,
+				DcId:        2,
+				Version:     do.Version,
+				Attributes:  attributes.Attributes,
+			},
+		}
+	}
+
+	return document
+}
+
+func GetDocument(id, accessHash int64, version int32) (*mtproto.Document) {
+	do := dao.GetDocumentsDAO(dao.DB_SLAVE).SelectByFileLocation(id, accessHash, version)
+	if do == nil {
+		glog.Warning("")
+	}
+	return makeDocumentByDO(do)
+}
+
+func GetDocumentList(idList []int64) ([]*mtproto.Document) {
+	doList := dao.GetDocumentsDAO(dao.DB_SLAVE).SelectByIdList(idList)
+	documetList := make([]*mtproto.Document, len(doList))
+	for i := 0; i < len(doList); i++ {
+		documetList[i] = makeDocumentByDO(&doList[i])
+	}
+	return documetList
+}
+
+//func MakeStickerDocuemnt(id, accessHash int64) *mtproto.Document {
+//	//
+//	thumb := &mtproto.TLPhotoSize{Data2: &mtproto.PhotoSize_Data{
+//		Type:     "m",
+//		Location: &mtproto.FileLocation{
+//			Constructor: mtproto.TLConstructor_CRC32_fileLocation,
+//			Data2: 		 &mtproto.FileLocation_Data{
+//				DcId:     2,
+//				VolumeId: 226607193,
+//				LocalId:  35316,
+//				Secret:   2434071452955778983,
+//			}},
+//		W:        128,
+//		H:        128,
+//		Size:     5648,
+//	}}
+//
+//	document := &mtproto.TLDocument{Data2: &mtproto.Document_Data{
+//		Id:          id,
+//		AccessHash:  accessHash,
+//		Date:        int32(time.Now().Unix()),
+//		MimeType:    "image/jpg",
+//		Size:        37634,
+//		Thumb:       thumb.To_PhotoSize(),
+//		DcId:        2,
+//		Version:     0,
+//		Attributes:  MakeDocumentAttributes(id, accessHash),
+//	}}
+//
+//	return document.To_Document()
+//}
+//
+//func MakeDocumentAttributes(id, accessHash int64) []*mtproto.DocumentAttribute {
+//	attributes := make([]*mtproto.DocumentAttribute, 0, 3)
+//	imageSize := &mtproto.TLDocumentAttributeImageSize{Data2: &mtproto.DocumentAttribute_Data{
+//		W: 512,
+//		H: 512,
+//	}}
+//	attributes = append(attributes, imageSize.To_DocumentAttribute())
+//
+//	sticker := &mtproto.TLDocumentAttributeSticker{Data2: &mtproto.DocumentAttribute_Data{
+//		Alt: "😂",
+//		Stickerset: &mtproto.InputStickerSet{
+//			Constructor: mtproto.TLConstructor_CRC32_inputStickerSetID,
+//			Data2: &mtproto.InputStickerSet_Data{
+//				Id:         id,
+//				AccessHash: accessHash,
+//			},
+//		},
+//		MaskCoords: nil,
+//	}}
+//	attributes = append(attributes, sticker.To_DocumentAttribute())
+//
+//	fileName := &mtproto.TLDocumentAttributeFilename{Data2: &mtproto.DocumentAttribute_Data{
+//		FileName: "sticker.wep",
+//	}}
+//	attributes = append(attributes, fileName.To_DocumentAttribute())
+//
+//	return attributes
+//}

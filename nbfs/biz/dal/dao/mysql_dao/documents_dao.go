@@ -33,10 +33,10 @@ func NewDocumentsDAO(db *sqlx.DB) *DocumentsDAO {
 	return &DocumentsDAO{db}
 }
 
-// insert into documents(document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id) values (:document_id, :access_hash, :dc_id, :file_path, :file_size, :uploaded_file_name, :ext, :mime_type, :thumb_id)
+// insert into documents(document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, attributes) values (:document_id, :access_hash, :dc_id, :file_path, :file_size, :uploaded_file_name, :ext, :mime_type, :thumb_id, :attributes)
 // TODO(@benqi): sqlmap
 func (dao *DocumentsDAO) Insert(do *dataobject.DocumentsDO) int64 {
-	var query = "insert into documents(document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id) values (:document_id, :access_hash, :dc_id, :file_path, :file_size, :uploaded_file_name, :ext, :mime_type, :thumb_id)"
+	var query = "insert into documents(document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, attributes) values (:document_id, :access_hash, :dc_id, :file_path, :file_size, :uploaded_file_name, :ext, :mime_type, :thumb_id, :attributes)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,10 @@ func (dao *DocumentsDAO) Insert(do *dataobject.DocumentsDO) int64 {
 	return id
 }
 
-// select id, document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, version from documents where dc_id = 2 and document_id = :document_id and access_hash = :access_hash and version = :version
+// select id, document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, attributes, version from documents where dc_id = 2 and document_id = :document_id and access_hash = :access_hash and version = :version
 // TODO(@benqi): sqlmap
 func (dao *DocumentsDAO) SelectByFileLocation(document_id int64, access_hash int64, version int32) *dataobject.DocumentsDO {
-	var query = "select id, document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, version from documents where dc_id = 2 and document_id = ? and access_hash = ? and version = ?"
+	var query = "select id, document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, attributes, version from documents where dc_id = 2 and document_id = ? and access_hash = ? and version = ?"
 	rows, err := dao.db.Queryx(query, document_id, access_hash, version)
 
 	if err != nil {
@@ -80,4 +80,36 @@ func (dao *DocumentsDAO) SelectByFileLocation(document_id int64, access_hash int
 	}
 
 	return do
+}
+
+// select id, document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, attributes, version from documents where document_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *DocumentsDAO) SelectByIdList(idList []int64) []dataobject.DocumentsDO {
+	var q = "select id, document_id, access_hash, dc_id, file_path, file_size, uploaded_file_name, ext, mime_type, thumb_id, attributes, version from documents where document_id in (?)"
+	query, a, err := sqlx.In(q, idList)
+	rows, err := dao.db.Queryx(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.DocumentsDO
+	for rows.Next() {
+		v := dataobject.DocumentsDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByIdList(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	return values
 }

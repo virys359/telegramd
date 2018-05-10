@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-05-06 02:35:24
+-- Generation Time: 2018-05-10 11:32:06
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -360,6 +360,7 @@ CREATE TABLE `documents` (
   `mime_type` varchar(32) NOT NULL DEFAULT '',
   `thumb_id` bigint(20) NOT NULL DEFAULT '0',
   `version` int(11) NOT NULL DEFAULT '0',
+  `attributes` text CHARACTER SET utf8mb4 NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -600,9 +601,28 @@ CREATE TABLE `sticker_data` (
 
 CREATE TABLE `sticker_packs` (
   `id` int(11) NOT NULL,
-  `access_salt` varchar(255) NOT NULL,
-  `owner_user_id` int(11) NOT NULL,
-  `is_default` tinyint(1) NOT NULL DEFAULT '0'
+  `sticker_set_id` bigint(20) NOT NULL,
+  `emoticon` varchar(64) CHARACTER SET utf8mb4 NOT NULL,
+  `document_id` bigint(20) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `sticker_sets`
+--
+
+CREATE TABLE `sticker_sets` (
+  `id` int(11) NOT NULL,
+  `sticker_set_id` bigint(20) NOT NULL,
+  `access_hash` bigint(20) NOT NULL,
+  `title` varchar(64) NOT NULL,
+  `short_name` varchar(64) NOT NULL,
+  `count` int(11) NOT NULL DEFAULT '0',
+  `hash` int(11) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1063,6 +1083,13 @@ ALTER TABLE `sticker_packs`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `sticker_sets`
+--
+ALTER TABLE `sticker_sets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `sticker_set_id` (`sticker_set_id`);
+
+--
 -- Indexes for table `tmp_passwords`
 --
 ALTER TABLE `tmp_passwords`
@@ -1320,6 +1347,18 @@ ALTER TABLE `reports`
 -- 使用表AUTO_INCREMENT `secret_messages`
 --
 ALTER TABLE `secret_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `sticker_packs`
+--
+ALTER TABLE `sticker_packs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `sticker_sets`
+--
+ALTER TABLE `sticker_sets`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
