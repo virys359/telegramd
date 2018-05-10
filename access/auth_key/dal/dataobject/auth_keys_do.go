@@ -15,35 +15,12 @@
  * limitations under the License.
  */
 
-syntax = "proto3";
+package dataobject
 
-option java_multiple_files = true;
-option java_package = "com.nebulaim.zproto";
-option java_outer_classname = "ZProtoRpcMetaData";
-option optimize_for = CODE_SIZE;
-
-package mtproto;
-
-message AuthKeyMetadata {
-    bytes nonce = 1;
-    bytes server_nonce = 2;
-    bytes new_nonce = 3;
-    bytes a = 4;
-    bytes p = 5;
-    int64 auth_key_id = 6;
-    bytes auth_key = 7;
-}
-
-message AuthKeyRequest {
-    int64 auth_key_id = 1;
-}
-
-message AuthKeyData {
-    int32 result = 1;
-    int64 auth_key_id = 2;
-    bytes auth_key = 3;
-}
-
-service ZRPCAuthKey {
-    rpc QueryAuthKey(AuthKeyRequest) returns (AuthKeyData);
+type AuthKeysDO struct {
+	Id        int32  `db:"id"`
+	AuthId    int64  `db:"auth_id"`
+	Body      string `db:"body"`
+	CreatedAt string `db:"created_at"`
+	DeletedAt string `db:"deleted_at"`
 }

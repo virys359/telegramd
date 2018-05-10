@@ -86,11 +86,14 @@ func (m *UnencryptedMessage) encode() ([]byte, error) {
 	x.Long(0)
 	m.MessageId = GenerateMessageId()
 	x.Long(m.MessageId)
-	b := m.Object.Encode()
-	x.Int(int32(len(b)))
-	x.Bytes(b)
 
-	// glog.Info("Encode object: ", m.Object)
+	if m.Object == nil {
+		x.Int(0)
+	} else {
+		b := m.Object.Encode()
+		x.Int(int32(len(b)))
+		x.Bytes(b)
+	}
 	return x.buf, nil
 }
 
@@ -110,15 +113,18 @@ func (m *UnencryptedMessage) decode(b []byte) error {
 	// }
 
 	messageLen := dbuf.Int()
+	if messageLen < 4 {
+		return fmt.Errorf("message len(%d) < 4", messageLen)
+	}
 	// glog.Info("messageLen:", m.messageId)
 
 	if int(messageLen) != dbuf.size-12 {
-		return fmt.Errorf("Message len: %d (need %d)", messageLen, dbuf.size-12)
+		return fmt.Errorf("message len: %d (need %d)", messageLen, dbuf.size-12)
 	}
 
 	m.Object = dbuf.Object()
 	if m.Object == nil {
-		return fmt.Errorf("Decode object is nil")
+		return fmt.Errorf("decode object is nil")
 	}
 
 	// proto.Message()

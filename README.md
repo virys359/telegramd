@@ -26,6 +26,12 @@ Go语言开源mtproto服务器，兼容telegram客户端
     cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
     go get
     go build
+
+编译auth_key
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
+    go get
+    go build
     
 编译sync
 
@@ -50,6 +56,9 @@ Go语言开源mtproto服务器，兼容telegram客户端
 
     cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
     ./frontend
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
+    ./auth_key
 
     cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
     ./sync

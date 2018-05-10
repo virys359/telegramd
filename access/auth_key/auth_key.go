@@ -15,35 +15,23 @@
  * limitations under the License.
  */
 
-syntax = "proto3";
+package main
 
-option java_multiple_files = true;
-option java_package = "com.nebulaim.zproto";
-option java_outer_classname = "ZProtoRpcMetaData";
-option optimize_for = CODE_SIZE;
+import (
+	"github.com/nebulaim/telegramd/baselib/app"
+	"flag"
+	"github.com/nebulaim/telegramd/access/auth_key/server"
+)
 
-package mtproto;
-
-message AuthKeyMetadata {
-    bytes nonce = 1;
-    bytes server_nonce = 2;
-    bytes new_nonce = 3;
-    bytes a = 4;
-    bytes p = 5;
-    int64 auth_key_id = 6;
-    bytes auth_key = 7;
+func init() {
+	flag.Set("alsologtostderr", "true")
+	flag.Set("log_dir", "false")
 }
 
-message AuthKeyRequest {
-    int64 auth_key_id = 1;
+func main() {
+	flag.Parse()
+
+	instance := server.NewAuthKeyServer("./auth_key.toml")
+	app.DoMainAppInstance(instance)
 }
 
-message AuthKeyData {
-    int32 result = 1;
-    int64 auth_key_id = 2;
-    bytes auth_key = 3;
-}
-
-service ZRPCAuthKey {
-    rpc QueryAuthKey(AuthKeyRequest) returns (AuthKeyData);
-}

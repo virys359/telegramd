@@ -52,7 +52,7 @@ func sendDataByConnection(conn* net2.TcpConnection, sessionID uint64, md *mtprot
 func sendDataByConnID(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
 	sessionServer, ok := app.GAppInstance.(*SessionServer)
 	if !ok {
-		err := fmt.Errorf("not use app instance framework!")
+		err := fmt.Errorf("not use app instance framework")
 		glog.Error(err)
 		return err
 	}
@@ -62,7 +62,7 @@ func sendDataByConnID(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf 
 func getBizRPCClient() (*grpc_util.RPCClient, error) {
 	sessionServer, ok := app.GAppInstance.(*SessionServer)
 	if !ok {
-		err := fmt.Errorf("not use app instance framework!")
+		err := fmt.Errorf("not use app instance framework")
 		glog.Error(err)
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func getBizRPCClient() (*grpc_util.RPCClient, error) {
 func getNbfsRPCClient() (*grpc_util.RPCClient, error) {
 	sessionServer, ok := app.GAppInstance.(*SessionServer)
 	if !ok {
-		err := fmt.Errorf("not use app instance framework!")
+		err := fmt.Errorf("not use app instance framework")
 		glog.Error(err)
 		return nil, err
 	}

@@ -26,19 +26,23 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"encoding/binary"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
+	"github.com/nebulaim/telegramd/access/auth_key/dal/dao"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
 	"github.com/coreos/etcd/clientv3"
 	"time"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"google.golang.org/grpc"
 )
 
 type ServerConfig struct {
 	Name      string
 	ProtoName string
 	Addr      string
+}
+
+type rpcServerConfig struct {
+	Addr string
 }
 
 func newTcpServer(config ServerConfig, cb net2.TcpConnectionCallback) (*net2.TcpServer, error) {
@@ -57,41 +61,36 @@ func newTcpServer(config ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tcp
 	return server, nil
 }
 
-type SessionConfig struct {
+type AuthKeyConfig struct {
 	ServerId      int32 // 服务器ID
 	Mysql         []mysql_client.MySQLConfig
-	Redis         []redis_client.RedisConfig
-	BizRpcClient  service_discovery.ServiceDiscoveryClientConfig
-	NbfsRpcClient service_discovery.ServiceDiscoveryClientConfig
 	Server        ServerConfig
 	Discovery     service_discovery.ServiceDiscoveryServerConfig
+
+	RpcServer     *rpcServerConfig
+	RpcDiscovery  service_discovery.ServiceDiscoveryServerConfig
 }
 
-type SessionServer struct {
+type AuthKeyServer struct {
 	configPath     string
-	config         *SessionConfig
+	config         *AuthKeyConfig
 	server         *net2.TcpServer
-	client         *net2.TcpClientGroupManager
-	bizRpcClient   *grpc_util.RPCClient
-	nbfsRpcClient  *grpc_util.RPCClient
 	handshake      *handshake
-	sessionManager *sessionManager
-	syncHandler    *syncHandler
 	registry       *etcd3.EtcdReigistry
+	rpcServer      *grpc_util.RPCServer
+
 }
 
-func NewSessionServer(configPath string) *SessionServer {
-	return &SessionServer{
+func NewAuthKeyServer(configPath string) *AuthKeyServer {
+	return &AuthKeyServer{
 		configPath:     configPath,
-		config:         &SessionConfig{},
-		// handshake:      &handshake{},
-		// sessionManager: newSessionManager(),
+		config:         &AuthKeyConfig{},
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // AppInstance interface
-func (s *SessionServer) Initialize() error {
+func (s *AuthKeyServer) Initialize() error {
 	var err error
 
 	if _, err = toml.DecodeFile(s.configPath, s.config); err != nil {
@@ -103,16 +102,11 @@ func (s *SessionServer) Initialize() error {
 
 	// 初始化mysql_client、redis_client
 	mysql_client.InstallMysqlClientManager(s.config.Mysql)
-	redis_client.InstallRedisClientManager(s.config.Redis)
 
 	// 初始化redis_dao、mysql_dao
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
-	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	cache := NewAuthKeyCacheManager()
-	s.handshake = newHandshake(cache)
-	s.sessionManager = newSessionManager(cache)
-	s.syncHandler = newSyncHandler(s.sessionManager)
+	s.handshake = newHandshake()
 	s.server, err = newTcpServer(s.config.Server, s)
 	if err != nil {
 		glog.Error(err)
@@ -137,39 +131,40 @@ func (s *SessionServer) Initialize() error {
 		})
 	if err != nil {
 		glog.Fatal(err)
-		// return nil
 	}
 
+	s.rpcServer = grpc_util.NewRpcServer(s.config.RpcServer.Addr, &s.config.RpcDiscovery)
 	return nil
 }
 
-func (s *SessionServer) RunLoop() {
+func (s *AuthKeyServer) RunLoop() {
 	// TODO(@benqi): check error
-	s.bizRpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
-	s.nbfsRpcClient, _ = grpc_util.NewRPCClient(&s.config.NbfsRpcClient)
 	go s.registry.Register()
 	go s.server.Serve()
-	// go s.client.Serve()
+	go s.rpcServer.Serve(func(s2 *grpc.Server) {
+		mtproto.RegisterZRPCAuthKeyServer(s2, new(AuthKeyServiceImpl))
+	})
 }
 
-func (s *SessionServer) Destroy() {
+func (s *AuthKeyServer) Destroy() {
 	glog.Infof("sessionServer - destroy...")
 	s.registry.Deregister()
 	s.server.Stop()
+	s.rpcServer.Stop()
 	time.Sleep(1*time.Second)
-	// s.client.Stop()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TcpConnectionCallback
-func (s *SessionServer) OnNewConnection(conn *net2.TcpConnection) {
-	glog.Infof("OnNewConnection %v", conn.RemoteAddr())
+func (s *AuthKeyServer) OnNewConnection(conn *net2.TcpConnection) {
+	glog.Infof("onNewConnection %v", conn.RemoteAddr())
 }
 
-func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg interface{}) error {
+func (s *AuthKeyServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg interface{}) error {
 	// var err error
 	zmsg, ok := msg.(*mtproto.ZProtoMessage)
 	if !ok {
+		glog.Error("invalid ZProtoMessage type")
 		return fmt.Errorf("invalid ZProtoMessage type: %v", msg)
 	}
 	glog.Infof("recv peer(%v) data: {%v}", conn.RemoteAddr(), zmsg)
@@ -198,21 +193,6 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 			} else {
 				return nil
 			}
-		case mtproto.SESSION_SESSION_DATA:
-			return s.sessionManager.onSessionData(conn, zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
-		case mtproto.SYNC_DATA:
-			sres, err := s.syncHandler.onSyncData(conn, payload.Payload[4:])
-			if err != nil {
-				glog.Error(err)
-				return nil
-			}
-			res := &mtproto.ZProtoMessage{
-				SessionId: zmsg.SessionId,
-				SeqNum:    1,
-				Metadata:  zmsg.Metadata,
-				Message:   sres,
-			}
-			return conn.Send(res)
 		default:
 			return fmt.Errorf("invalid payload type: %v", msg)
 		}
@@ -221,17 +201,6 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 	}
 }
 
-func (s *SessionServer) OnConnectionClosed(conn *net2.TcpConnection) {
-	glog.Infof("OnConnectionClosed - %v", conn.RemoteAddr())
-}
-
-func (s *SessionServer) SendToClientData(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
-	conn := s.server.GetConnection(connID)
-	if conn != nil {
-		return sendDataByConnection(conn, sessionID, md, buf)
-	} else {
-		err := fmt.Errorf("send data error, conn offline, connID: %d", connID)
-		glog.Error(err)
-		return err
-	}
+func (s *AuthKeyServer) OnConnectionClosed(conn *net2.TcpConnection) {
+	glog.Infof("onConnectionClosed - %v", conn.RemoteAddr())
 }

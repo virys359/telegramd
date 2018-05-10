@@ -70,15 +70,17 @@ type FrontendConfig struct {
 	Server443     *ServerConfig
 	Server5222    *ServerConfig
 	SessionClient *ClientConfig
+	AuthKeyClient *ClientConfig
 }
 
 func (c *FrontendConfig) String() string {
-	return fmt.Sprintf("{server_id: %d, server80: %v. server443: %v, server5222: %v, session_client: %v}",
+	return fmt.Sprintf("{server_id: %d, server80: %v. server443: %v, server5222: %v, session_client: %v, auth_key_client: %v}",
 		c.ServerId,
 		c.Server80,
 		c.Server443,
 		c.Server5222,
-		c.SessionClient)
+		c.SessionClient,
+		c.AuthKeyClient)
 }
 
 type handshakeState struct {
@@ -128,17 +130,16 @@ func (ctx *connContext) encryptedMessageAble() bool {
 }
 
 type FrontendServer struct {
-	configPath string
-	config     *FrontendConfig
-
-	// TODO(@benqi): manager server80 and server443
-	server80   *net2.TcpServer
-	server443  *net2.TcpServer
-	server5222 *net2.TcpServer
-
-	client        *net2.TcpClientGroupManager
-	clientWatcher *watcher2.ClientWatcher
-	ketama        *load_balancer.Ketama
+	configPath           string
+	config               *FrontendConfig
+	server80             *net2.TcpServer
+	server443            *net2.TcpServer
+	server5222           *net2.TcpServer
+	client               *net2.TcpClientGroupManager
+	clientWatcher        *watcher2.ClientWatcher
+	ketama               *load_balancer.Ketama
+	authKeyClient        *net2.TcpClientGroupManager
+	authKeyClientWatcher *watcher2.ClientWatcher
 }
 
 func NewFrontendServer(configPath string) *FrontendServer {
@@ -197,6 +198,13 @@ func (s *FrontendServer) Initialize() error {
 	}
 	s.clientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "session", etcdConfg, s.client)
 
+	///////////////////////////////////////
+	s.authKeyClient = net2.NewTcpClientGroupManager(s.config.AuthKeyClient.ProtoName, clients, s)
+	etcdConfg2 := clientv3.Config{
+		Endpoints: s.config.AuthKeyClient.EtcdAddrs,
+	}
+	s.authKeyClientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "auth_key", etcdConfg2, s.authKeyClient)
+
 	return nil
 }
 
@@ -206,6 +214,7 @@ func (s *FrontendServer) RunLoop() {
 	go s.server5222.Serve()
 
 	// go s.client.Serve()
+	go s.authKeyClientWatcher.WatchClients(nil)
 	go s.clientWatcher.WatchClients(func(etype, addr string) {
 		switch etype {
 		case "add":
@@ -221,6 +230,7 @@ func (s *FrontendServer) Destroy() {
 	s.server443.Stop()
 	s.server5222.Stop()
 	s.client.Stop()
+	s.authKeyClient.Stop()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -304,8 +314,7 @@ func (s *FrontendServer) OnNewClient(client *net2.TcpClient) {
 func (s *FrontendServer) genSessionId(conn *net2.TcpConnection) uint64 {
 	var sid = conn.GetConnID()
 	if conn.Name() == "frontend443" {
-		// 0
-		// sid = sid
+		// sid = sid | 0 << 56
 	} else if conn.Name() == "frontend80" {
 		sid = sid | 1 << 56
 	} else if conn.Name() == "frontend5222" {
@@ -358,11 +367,17 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 			client.GetConnection(),
 			hmsg.State)
 
-		ctx := conn.Context.(*connContext)
-		ctx.Lock()
-		ctx.handshakeState = hmsg.State
-		ctx.Unlock()
-		return conn.Send(hmsg.MTPMessage)
+		if hmsg.State.ResState == mtproto.RES_STATE_ERROR {
+			// TODO(@benqi): Close.
+			conn.Close()
+			return nil
+		} else {
+			ctx := conn.Context.(*connContext)
+			ctx.Lock()
+			ctx.handshakeState = hmsg.State
+			ctx.Unlock()
+			return conn.Send(hmsg.MTPMessage)
+		}
 	case mtproto.SESSION_SESSION_DATA:
 		smsg := &mtproto.ZProtoSessionData{
 			MTPMessage: &mtproto.MTPRawMessage{},
@@ -398,26 +413,6 @@ func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {
 	glog.Infof("onClientTimer")
 }
 
-/*
-	[server80]
-	name = "frontend80"
-	protoName = "mtproto"
-	addr = "0.0.0.0:8000"
-	# 80
-
-	[server443]
-	name = "frontend443"
-	protoName = "mtproto"
-	addr = "0.0.0.0:12345"
-	# 43
-
-	[server5222]
-	name = "frontend5222"
-	protoName = "mtproto"
-	addr = "0.0.0.0:5222"
-	# 5222
- */
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
 	glog.Infof("onUnencryptedRawMessage - peer(%s) recv data, len = %d, ctx: %v", conn, len(mmsg.Payload), ctx)
@@ -446,7 +441,7 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 		},
 	}
 	// glog.Infof("sendToSessionClient: %v", zmsg)
-	return s.client.SendData("session", zmsg)
+	return s.authKeyClient.SendData("auth_key", zmsg)
 }
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
@@ -456,7 +451,6 @@ func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpC
 		MTPMessage: mmsg,
 	}
 	zmsg := &mtproto.ZProtoMessage{
-		// SessionId: conn.GetConnID(),
 		SessionId: s.genSessionId(conn), // conn.GetConnID(),
 		SeqNum:    1, // TODO(@benqi): gen seqNum
 		Metadata:  s.newMetadata(conn),
