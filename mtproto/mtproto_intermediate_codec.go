@@ -21,62 +21,63 @@ import (
 	"net"
 	"io"
 	"github.com/golang/glog"
-	"encoding/hex"
 	"encoding/binary"
 	"fmt"
 )
 
-// There is an abridged version of the same protocol:
-// if the client sends 0xef as the first byte (**important:** only prior to the very first data packet),
-// then packet length is encoded by a single byte (0x01..0x7e = data length divided by 4;
-// or 0x7f followed by 3 length bytes (little endian) divided by 4) followed
-// by the data themselves (sequence number and CRC32 not added).
-// In this case, server responses look the same (the server does not send 0xefas the first byte).
+// In case 4-byte data alignment is needed,
+// an intermediate version of the original protocol may be used:
+// if the client sends 0xeeeeeeee as the first int (four bytes),
+// then packet length is encoded always by four bytes as in the original version,
+// but the sequence number and CRC32 are omitted,
+// thus decreasing total packet size by 8 bytes.
 //
-type MTProtoAbridgedCodec struct {
+type MTProtoIntermediateCodec struct {
 	conn *net.TCPConn
 }
 
-func NewMTProtoAbridgedCodec(conn *net.TCPConn) *MTProtoAbridgedCodec {
-	return &MTProtoAbridgedCodec{
+func NewMTProtoIntermediateCodec(conn *net.TCPConn) *MTProtoIntermediateCodec {
+	return &MTProtoIntermediateCodec{
 		conn: conn,
 	}
 }
 
-func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
+func (c *MTProtoIntermediateCodec) Receive() (interface{}, error) {
 	var size int
 	var n int
 	var err error
 
-	b := make([]byte, 1)
+	b := make([]byte, 4)
 	n, err = io.ReadFull(c.conn, b)
 	if err != nil {
 		return nil, err
 	}
 
+	size = int(binary.LittleEndian.Uint32(b) << 2)
+
 	// glog.Info("first_byte: ", hex.EncodeToString(b[:1]))
-	needAck := bool(b[0] >> 7 == 1)
-	_ = needAck
+	// needAck := bool(b[0] >> 7 == 1)
+	// _ = needAck
 
-	b[0] = b[0] & 0x7f
-	// glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
-
-	if b[0] < 0x7f {
-		size = int(b[0]) << 2
-		glog.Info("size1: ", size)
-		if size == 0 {
-			return nil, nil
-		}
-	} else {
-		glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
-		b2 := make([]byte, 3)
-		n, err = io.ReadFull(c.conn, b2)
-		if err != nil {
-			return nil, err
-		}
-		size = (int(b2[0]) | int(b2[1])<<8 | int(b2[2])<<16) << 2
-		glog.Info("size2: ", size)
-	}
+	//b[0] = b[0] & 0x7f
+	//// glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
+	//
+	//if b[0] < 0x7f {
+	//	size = int(b[0]) << 2
+	//	glog.Info("size1: ", size)
+	//	if size == 0 {
+	//		return nil, nil
+	//	}
+	//} else {
+	//	glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
+	//	b2 := make([]byte, 3)
+	//	n, err = io.ReadFull(c.conn, b2)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	size = (int(b2[0]) | int(b2[1])<<8 | int(b2[2])<<16) << 2
+	//	glog.Info("size2: ", size)
+	//}
 
 	left := size
 	buf := make([]byte, size)
@@ -88,9 +89,9 @@ func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
 		}
 		left -= n
 	}
-	if size > 10240 {
-		glog.Info("ReadFull2: ", hex.EncodeToString(buf[:256]))
-	}
+	//if size > 10240 {
+	//	glog.Info("ReadFull2: ", hex.EncodeToString(buf[:256]))
+	//}
 
 	// TODO(@benqi): process report ack and quickack
 	// 截断QuickAck消息，客户端有问题
@@ -106,7 +107,7 @@ func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
 	return message, nil
 }
 
-func (c *MTProtoAbridgedCodec) Send(msg interface{}) error {
+func (c *MTProtoIntermediateCodec) Send(msg interface{}) error {
 	message, ok := msg.(*MTPRawMessage)
 	if !ok {
 		err := fmt.Errorf("msg type error, only MTPRawMessage, msg: {%v}", msg)
@@ -120,11 +121,11 @@ func (c *MTProtoAbridgedCodec) Send(msg interface{}) error {
 	// minus padding
 	size := len(b)/4
 
-	if size < 127 {
-		sb = []byte{byte(size)}
-	} else {
-		binary.LittleEndian.PutUint32(sb, uint32(size<<8|127))
-	}
+	//if size < 127 {
+	//	sb = []byte{byte(size)}
+	//} else {
+	binary.LittleEndian.PutUint32(sb, uint32(size))
+	//}
 
 	b = append(sb, b...)
 	_, err := c.conn.Write(b)
@@ -136,6 +137,6 @@ func (c *MTProtoAbridgedCodec) Send(msg interface{}) error {
 	return err
 }
 
-func (c *MTProtoAbridgedCodec) Close() error {
+func (c *MTProtoIntermediateCodec) Close() error {
 	return c.conn.Close()
 }

@@ -22,34 +22,30 @@ import (
 	"io"
 	"github.com/golang/glog"
 	"encoding/hex"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/binary"
 	"fmt"
 )
 
-// There is an abridged version of the same protocol:
-// if the client sends 0xef as the first byte (**important:** only prior to the very first data packet),
-// then packet length is encoded by a single byte (0x01..0x7e = data length divided by 4;
-// or 0x7f followed by 3 length bytes (little endian) divided by 4) followed
-// by the data themselves (sequence number and CRC32 not added).
-// In this case, server responses look the same (the server does not send 0xefas the first byte).
-//
-type MTProtoAbridgedCodec struct {
-	conn *net.TCPConn
+type MTProtoAppCodec struct {
+	// conn *net.TCPConn
+	stream *AesCTR128Stream
 }
 
-func NewMTProtoAbridgedCodec(conn *net.TCPConn) *MTProtoAbridgedCodec {
-	return &MTProtoAbridgedCodec{
-		conn: conn,
+func NewMTProtoAppCodec(conn *net.TCPConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *MTProtoAppCodec {
+	return &MTProtoAppCodec{
+		// conn:   conn,
+		stream: NewAesCTR128Stream(conn, d, e),
 	}
 }
 
-func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
+func (c *MTProtoAppCodec) Receive() (interface{}, error) {
 	var size int
 	var n int
 	var err error
 
 	b := make([]byte, 1)
-	n, err = io.ReadFull(c.conn, b)
+	n, err = io.ReadFull(c.stream, b)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +66,7 @@ func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
 	} else {
 		glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
 		b2 := make([]byte, 3)
-		n, err = io.ReadFull(c.conn, b2)
+		n, err = io.ReadFull(c.stream, b2)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +77,7 @@ func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
 	left := size
 	buf := make([]byte, size)
 	for left > 0 {
-		n, err = io.ReadFull(c.conn, buf[size-left:])
+		n, err = io.ReadFull(c.stream, buf[size-left:])
 		if err != nil {
 			glog.Error("ReadFull2 error: ", err)
 			return nil, err
@@ -104,9 +100,25 @@ func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
 	message := NewMTPRawMessage(authKeyId, 0)
 	message.Decode(buf)
 	return message, nil
+
+	//var message MessageBase
+	//if authKeyId == 0 {
+	//	message = NewUnencryptedRawMessage()
+	//	// message.Decode(buf[8:])
+	//} else {
+	//	message = NewEncryptedRawMessage(authKeyId)
+	//}
+	//
+	//err = message.Decode(buf[8:])
+	//if err != nil {
+	//	glog.Errorf("decode message error: {%v}", err)
+	//	return nil, err
+	//}
+	//
+	// return message, nil
 }
 
-func (c *MTProtoAbridgedCodec) Send(msg interface{}) error {
+func (c *MTProtoAppCodec) Send(msg interface{}) error {
 	message, ok := msg.(*MTPRawMessage)
 	if !ok {
 		err := fmt.Errorf("msg type error, only MTPRawMessage, msg: {%v}", msg)
@@ -127,7 +139,7 @@ func (c *MTProtoAbridgedCodec) Send(msg interface{}) error {
 	}
 
 	b = append(sb, b...)
-	_, err := c.conn.Write(b)
+	_, err := c.stream.Write(b)
 
 	if err != nil {
 		glog.Errorf("Send msg error: %s", err)
@@ -136,6 +148,34 @@ func (c *MTProtoAbridgedCodec) Send(msg interface{}) error {
 	return err
 }
 
-func (c *MTProtoAbridgedCodec) Close() error {
-	return c.conn.Close()
+func (c *MTProtoAppCodec) Close() error {
+	return c.stream.conn.Close()
+}
+
+type AesCTR128Stream struct {
+	conn      *net.TCPConn
+	encrypt *crypto.AesCTR128Encrypt
+	decrypt *crypto.AesCTR128Encrypt
+}
+
+func NewAesCTR128Stream(conn *net.TCPConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *AesCTR128Stream {
+	return &AesCTR128Stream{
+		conn:    conn,
+		decrypt: d,
+		encrypt: e,
+	}
+}
+
+func (this *AesCTR128Stream) Read(p []byte) (int, error) {
+	n, err := this.conn.Read(p)
+	if err == nil {
+		this.decrypt.Encrypt(p[:n])
+		return n, nil
+	}
+	return n, err
+}
+
+func (this *AesCTR128Stream) Write(p []byte) (int, error) {
+	this.encrypt.Encrypt(p[:])
+	return this.conn.Write(p)
 }
