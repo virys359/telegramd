@@ -25,6 +25,8 @@ import (
 	"fmt"
 )
 
+// https://core.telegram.org/mtproto#tcp-transport
+//
 // In case 4-byte data alignment is needed,
 // an intermediate version of the original protocol may be used:
 // if the client sends 0xeeeeeeee as the first int (four bytes),

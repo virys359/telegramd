@@ -26,6 +26,8 @@ import (
 	"fmt"
 )
 
+// https://core.telegram.org/mtproto#tcp-transport
+//
 // There is an abridged version of the same protocol:
 // if the client sends 0xef as the first byte (**important:** only prior to the very first data packet),
 // then packet length is encoded by a single byte (0x01..0x7e = data length divided by 4;

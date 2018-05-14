@@ -25,6 +25,16 @@ import (
 	"fmt"
 )
 
+// https://core.telegram.org/mtproto#tcp-transport
+//
+// If a payload (packet) needs to be transmitted from server to client or from client to server,
+// it is encapsulated as follows:
+// 4 length bytes are added at the front
+// (to include the length, the sequence number, and CRC32; always divisible by 4)
+// and 4 bytes with the packet sequence number within this TCP connection
+// (the first packet sent is numbered 0, the next one 1, etc.),
+// and 4 CRC32 bytes at the end (length, sequence number, and payload together).
+//
 type MTProtoFullCodec struct {
 	conn *net.TCPConn
 }
