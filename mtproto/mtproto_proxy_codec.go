@@ -37,7 +37,7 @@ const (
 const (
 	MTPROTO_ABRIDGED_VERSION = 1		// 删节版本
 	MTPROTO_INTERMEDIATE_VERSION = 2	// 中间版本
-	MTPROTO_FULL_VERSION = 3		// 完整版本
+	MTPROTO_FULL_VERSION = 3			// 完整版本
 )
 
 // Transport类型，不支持UDP

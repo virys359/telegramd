@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-05-10 11:32:06
+-- Generation Time: 2018-05-14 10:46:14
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -863,6 +863,21 @@ CREATE TABLE `user_qts_updates` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `user_sticker_sets`
+--
+
+CREATE TABLE `user_sticker_sets` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `user_id` int(11) NOT NULL DEFAULT '0',
+  `sticker_set_id` bigint(20) NOT NULL DEFAULT '0',
+  `archived` tinyint(4) NOT NULL DEFAULT '0',
+  `faved` tinyint(4) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `wall_papers`
 --
 
@@ -1172,6 +1187,14 @@ ALTER TABLE `user_qts_updates`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `user_sticker_sets`
+--
+ALTER TABLE `user_sticker_sets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq` (`user_id`,`sticker_set_id`) USING BTREE,
+  ADD KEY `user_id` (`user_id`) USING BTREE;
+
+--
 -- Indexes for table `wall_papers`
 --
 ALTER TABLE `wall_papers`
@@ -1432,6 +1455,12 @@ ALTER TABLE `user_pts_updates`
 --
 ALTER TABLE `user_qts_updates`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `user_sticker_sets`
+--
+ALTER TABLE `user_sticker_sets`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `wall_papers`
