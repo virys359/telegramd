@@ -31,6 +31,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"google.golang.org/grpc"
+	"github.com/nebulaim/telegramd/nbfs/biz/core"
 )
 
 func init() {
@@ -63,7 +64,10 @@ func main() {
 		return
 	}
 
-	glog.Info(config)
+	glog.Info(config.Nbfs, ", ", config.Server, ", ", config.Discovery, ", ", config.Mysql)
+
+	// Init
+	core.InitNbfsDataPath(config.Nbfs.DataPath)
 
 	// 初始化mysql_client、redis_client
 	// redis_client.InstallRedisClientManager(config.Redis)

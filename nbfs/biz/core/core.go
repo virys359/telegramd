@@ -26,10 +26,16 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 )
 
-const (
-	NBFS_DATA_PATH = "/opt/nbfs"
-	// kMaxFilePartSize = 32768
-)
+//const (
+//	NBFS_DATA_PATH = "/opt/nbfs"
+//	// kMaxFilePartSize = 32768
+//)
+
+var NBFS_DATA_PATH = "/opt/nbfs"
+
+func InitNbfsDataPath(path string) {
+	NBFS_DATA_PATH = path
+}
 
 func MakeStorageFileType(extName string) *mtproto.Storage_FileType {
 	fileType := &mtproto.Storage_FileType{Data2: &mtproto.Storage_FileType_Data{}}
