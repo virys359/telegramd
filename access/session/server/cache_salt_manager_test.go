@@ -15,34 +15,32 @@
  * limitations under the License.
  */
 
-// salt cache
 package server
 
 import (
+	"testing"
 	"math/rand"
-	"time"
 )
 
-var salts = newSaltCache()
-
-type saltCache struct {
-	salt int64
-	time int64
-}
-
-func newSaltCache() *saltCache {
-	return &saltCache{
-		salt: int64(rand.Uint64()),
-		time: time.Now().Unix(),
+// GetOrInsertSaltList
+func TestGetOrInsertSaltList(t *testing.T) {
+	id := rand.Int63()
+	salts, err := GetOrInsertSaltList(id, 32)
+	if err != nil {
+		t.Error(err)
+	} else {
+		t.Log(salts)
 	}
-}
 
-// TODO(@benqi): refresh salt per 24 hours
-func getSalt() int64 {
-	return salts.salt
-}
+	var salt int64 = 0
+	salt, err = GetOrInsertSalt(id)
+	t.Log(salt)
 
-func checkSalt(salt int64) bool {
-	// TODO(@benqi): check salt value and time expired
-	return salts.salt == salt
+	if CheckBySalt(id, salt) {
+		t.Logf("CheckBySalt(%d, %d) = true", id, salt)
+	}
+
+	if !CheckBySalt(id, 123) {
+		t.Logf("CheckBySalt(%d, 123) = false", id)
+	}
 }

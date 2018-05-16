@@ -61,6 +61,7 @@ type SessionConfig struct {
 	ServerId      int32 // 服务器ID
 	Mysql         []mysql_client.MySQLConfig
 	Redis         []redis_client.RedisConfig
+	SaltCache	  redis_client.RedisConfig
 	BizRpcClient  service_discovery.ServiceDiscoveryClientConfig
 	NbfsRpcClient service_discovery.ServiceDiscoveryClientConfig
 	Server        ServerConfig
@@ -108,6 +109,9 @@ func (s *SessionServer) Initialize() error {
 	// 初始化redis_dao、mysql_dao
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
+
+	// salt cache...
+	// InstallCacheSaltsManager(s.config.SaltCache.ToRedisCacheConfig())
 
 	cache := NewAuthKeyCacheManager()
 	s.handshake = newHandshake(cache)

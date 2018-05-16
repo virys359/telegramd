@@ -236,15 +236,41 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 	}
 
 	// check salt
-	if !checkSalt(message.Salt) {
+	if !CheckBySalt(sess.authKeyId, message.Salt) {
+		salt, _ := GetOrInsertSalt(sess.authKeyId)
+		sess.salt = salt
 		badServerSalt := mtproto.NewTLBadServerSalt()
 		badServerSalt.SetBadMsgId(message.MessageId)
 		badServerSalt.SetErrorCode(48)
 		badServerSalt.SetBadMsgSeqno(message.SeqNo)
-		badServerSalt.SetNewServerSalt(getSalt())
+		badServerSalt.SetNewServerSalt(salt)
 		b, _ := sess.encodeMessage(s.authKeyId, s.authKey, false, badServerSalt)
 		return sendDataByConnection(conn, sessionID, md, b)
 	}
+
+	// TODO(@benqi): Time Synchronization, https://core.telegram.org/mtproto#time-synchronization
+	//
+	// Time Synchronization
+	//
+	// If client time diverges widely from server time,
+	// a server may start ignoring client messages,
+	// or vice versa, because of an invalid message identifier (which is closely related to creation time).
+	// Under these circumstances,
+	// the server will send the client a special message containing the correct time and
+	// a certain 128-bit salt (either explicitly provided by the client in a special RPC synchronization request or
+	// equal to the key of the latest message received from the client during the current session).
+	// This message could be the first one in a container that includes other messages
+	// (if the time discrepancy is significant but does not as yet result in the client’s messages being ignored).
+	//
+	// Having received such a message or a container holding it,
+	// the client first performs a time synchronization (in effect,
+	// simply storing the difference between the server’s time
+	// and its own to be able to compute the “correct” time in the future)
+	// and then verifies that the message identifiers for correctness.
+	//
+	// Where a correction has been neglected,
+	// the client will have to generate a new session to assure the monotonicity of message identifiers.
+	//
 
 	sessDatas := newSessionDataList(sessionID, md, message)
 	if len(sessDatas.messages) == 0 {

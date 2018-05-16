@@ -553,6 +553,18 @@ func (s *handshake) onSetClient_DHParams(state *mtproto.HandshakeState, request 
 		return nil, err
 	}
 
+	/*
+	 // TODO(@benqi): gen handshake server salt
+	 handshakeServerSalt = new TL_future_salt();
+	 handshakeServerSalt->valid_since = currentTime + timeDifference - 5;
+	 handshakeServerSalt->valid_until = handshakeServerSalt->valid_since + 30 * 60;
+	 for (int32_t a = 7; a >= 0; a--) {
+	 	handshakeServerSalt->salt <<= 8;
+	 	handshakeServerSalt->salt |= (authNewNonce->bytes[a] ^ authServerNonce->bytes[a]);
+	 }
+ 	*/
+
+
 	glog.Infof("onSetClient_DHParams - metadata: {%v}, reply: %s", authKeyMD, logger.JsonDebugData(dhGenOk))
 
 	// s.authKeyMetadataToTrailer(ctx, authKeyMD)
