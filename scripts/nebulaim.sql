@@ -621,6 +621,8 @@ CREATE TABLE `sticker_sets` (
   `short_name` varchar(64) NOT NULL,
   `count` int(11) NOT NULL DEFAULT '0',
   `hash` int(11) NOT NULL DEFAULT '0',
+  `official` tinyint(4) NOT NULL DEFAULT '0',
+  `masks` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -871,7 +873,6 @@ CREATE TABLE `user_sticker_sets` (
   `user_id` int(11) NOT NULL DEFAULT '0',
   `sticker_set_id` bigint(20) NOT NULL DEFAULT '0',
   `archived` tinyint(4) NOT NULL DEFAULT '0',
-  `faved` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
