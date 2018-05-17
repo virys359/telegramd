@@ -39,7 +39,6 @@ type MysqlDAOList struct {
 	// auth_key
 	AuthKeysDAO  *mysql_dao.AuthKeysDAO
 	AuthsDAO     *mysql_dao.AuthsDAO
-	AuthSaltsDAO *mysql_dao.AuthSaltsDAO
 	AuthUsersDAO *mysql_dao.AuthUsersDAO
 
 	// biz
@@ -63,6 +62,9 @@ type MysqlDAOList struct {
 	UserPasswordsDAO		 *mysql_dao.UserPasswordsDAO
 	WallPapersDAO		     *mysql_dao.WallPapersDAO
 	PhoneCallSessionsDAO     *mysql_dao.PhoneCallSessionsDAO
+
+	StickerSetsDAO 			 *mysql_dao.StickerSetsDAO
+	StickerPacksDAO 		 *mysql_dao.StickerPacksDAO
 }
 
 // TODO(@benqi): 一主多从
@@ -85,7 +87,6 @@ func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
 		// auth_key
 		daoList.AuthKeysDAO = mysql_dao.NewAuthKeysDAO(v)
 		daoList.AuthsDAO = mysql_dao.NewAuthsDAO(v)
-		daoList.AuthSaltsDAO = mysql_dao.NewAuthSaltsDAO(v)
 		daoList.AuthUsersDAO = mysql_dao.NewAuthUsersDAO(v)
 
 		// biz
@@ -109,6 +110,8 @@ func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
 		daoList.UserPasswordsDAO = mysql_dao.NewUserPasswordsDAO(v)
 		daoList.WallPapersDAO = mysql_dao.NewWallPapersDAO(v)
 		daoList.PhoneCallSessionsDAO = mysql_dao.NewPhoneCallSessionsDAO(v)
+		daoList.StickerSetsDAO = mysql_dao.NewStickerSetsDAO(v)
+		daoList.StickerPacksDAO = mysql_dao.NewStickerPacksDAO(v)
 
 		mysqlDAOManager.daoListMap[k] = daoList
 		return true
@@ -150,15 +153,6 @@ func GetAuthsDAO(dbName string) (dao *mysql_dao.AuthsDAO) {
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.AuthsDAO
-	}
-	return
-}
-
-func GetAuthSaltsDAO(dbName string) (dao *mysql_dao.AuthSaltsDAO) {
-	daoList := GetMysqlDAOList(dbName)
-	// err := mysqlDAOManager.daoListMap[dbName]
-	if daoList != nil {
-		dao = daoList.AuthSaltsDAO
 	}
 	return
 }
@@ -348,6 +342,24 @@ func GetPhoneCallSessionsDAO(dbName string) (dao *mysql_dao.PhoneCallSessionsDAO
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.PhoneCallSessionsDAO
+	}
+	return
+}
+
+func GetStickerSetsDAO(dbName string) (dao *mysql_dao.StickerSetsDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.StickerSetsDAO
+	}
+	return
+}
+
+func GetStickerPacksDAO(dbName string) (dao *mysql_dao.StickerPacksDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.StickerPacksDAO
 	}
 	return
 }

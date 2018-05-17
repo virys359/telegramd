@@ -18,20 +18,44 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/sticker"
+	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
 // messages.getStickerSet#2619a90e stickerset:InputStickerSet = messages.StickerSet;
 func (s *MessagesServiceImpl) MessagesGetStickerSet(ctx context.Context, request *mtproto.TLMessagesGetStickerSet) (*mtproto.Messages_StickerSet, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetStickerSet - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getStickerSet#2619a90e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetStickerSet logic
+	// TODO(@benqi): check inputStickerSetEmpty
+	set := sticker.GetStickerSet(request.GetStickerset())
+	packs, idList := sticker.GetStickerPackList(set.GetData2().GetId())
+	var (
+		documents []*mtproto.Document
+		err error
+	)
 
-	return nil, fmt.Errorf("Not impl MessagesGetStickerSet")
+	if len(idList) == 0 {
+		documents = []*mtproto.Document{}
+	} else {
+		documents, err = nbfs_client.GetDocumentByIdList(idList)
+		if err != nil {
+			glog.Error(err)
+			documents = []*mtproto.Document{}
+		}
+	}
+
+	reply := &mtproto.TLMessagesStickerSet{Data2: &mtproto.Messages_StickerSet_Data{
+		Set:       set,
+		Packs:     packs,
+		Documents: documents,
+	}}
+
+	glog.Infof("messages.getStickerSet#2619a90e - reply: %s", logger.JsonDebugData(reply))
+	return reply.To_Messages_StickerSet(), nil
 }

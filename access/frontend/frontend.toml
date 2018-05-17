@@ -25,5 +25,13 @@ addr = "0.0.0.0:5222"
 [sessionClient]
 name = "session"
 protoName = "zproto"
+etcdAddrs = ["http://127.0.0.1:2379"]
 addrList = ["127.0.0.1:10000"]
+balancer = "round_robin"
+
+[authKeyClient]
+name = "auth_key"
+protoName = "zproto"
+etcdAddrs = ["http://127.0.0.1:2379"]
+addrList = ["127.0.0.1:10005"]
 balancer = "round_robin"

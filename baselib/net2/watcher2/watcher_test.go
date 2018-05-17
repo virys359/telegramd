@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-package dataobject
+package watcher2
 
-type AuthSaltsDO struct {
-	Id         int32  `db:"id"`
-	AuthId     int64  `db:"auth_id"`
-	Salt       int64  `db:"salt"`
-	ValidSince int32  `db:"valid_since"`
-	CreatedAt  string `db:"created_at"`
-	UpdatedAt  string `db:"updated_at"`
-	DeletedAt  string `db:"deleted_at"`
+import (
+	"testing"
+	"github.com/coreos/etcd/clientv3"
+)
+
+func TestClientWatcher(t *testing.T) {
+	etcdConfg := clientv3.Config{
+		Endpoints: []string{"http://127.0.0.1:2379"},
+	}
+
+	w, _ := NewClientWatcher("/nebulaim", "session", etcdConfg, nil)
+	w.WatchClients()
 }

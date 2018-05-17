@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,63 +21,63 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/jmoiron/sqlx"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/access/auth_key/dal/dataobject"
 )
 
-type AuthSaltsDAO struct {
+type AuthKeysDAO struct {
 	db *sqlx.DB
 }
 
-func NewAuthSaltsDAO(db *sqlx.DB) *AuthSaltsDAO {
-	return &AuthSaltsDAO{db}
+func NewAuthKeysDAO(db *sqlx.DB) *AuthKeysDAO {
+	return &AuthKeysDAO{db}
 }
 
-// insert into auth_salts(auth_id, salt) values (:auth_id, :salt)
+// insert into auth_keys(auth_id, body) values (:auth_id, :body)
 // TODO(@benqi): sqlmap
-func (dao *AuthSaltsDAO) Insert(do *dataobject.AuthSaltsDO) int64 {
-	var query = "insert into auth_salts(auth_id, salt) values (:auth_id, :salt)"
+func (dao *AuthKeysDAO) Insert(do *dataobject.AuthKeysDO) (int64, error) {
+	var query = "insert into auth_keys(auth_id, body) values (:auth_id, :body)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
 		glog.Error(errDesc)
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		return 0, err
 	}
 
 	id, err := r.LastInsertId()
 	if err != nil {
 		errDesc := fmt.Sprintf("LastInsertId in Insert(%v)_error: %v", do, err)
 		glog.Error(errDesc)
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		return 0, err
+		// panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
-	return id
+	return id, nil
 }
 
-// select auth_id, salt from auth_salts where auth_id = :auth_id
+// select body from auth_keys where auth_id = :auth_id
 // TODO(@benqi): sqlmap
-func (dao *AuthSaltsDAO) SelectByAuthId(auth_id int64) *dataobject.AuthSaltsDO {
-	var query = "select auth_id, salt from auth_salts where auth_id = ?"
+func (dao *AuthKeysDAO) SelectByAuthId(auth_id int64) (*dataobject.AuthKeysDO, error) {
+	var query = "select body from auth_keys where auth_id = ?"
 	rows, err := dao.db.Queryx(query, auth_id)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Queryx in SelectByAuthId(_), error: %v", err)
 		glog.Error(errDesc)
-		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		return nil, err
 	}
 
 	defer rows.Close()
 
-	do := &dataobject.AuthSaltsDO{}
+	do := &dataobject.AuthKeysDO{}
 	if rows.Next() {
 		err = rows.StructScan(do)
 		if err != nil {
 			errDesc := fmt.Sprintf("StructScan in SelectByAuthId(_), error: %v", err)
 			glog.Error(errDesc)
-			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+			return nil, err
 		}
 	} else {
-		return nil
+		return nil, nil
 	}
 
-	return do
+	return do, nil
 }

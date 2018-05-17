@@ -24,7 +24,7 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/biz/core/user"
-	"math"
+	// "math"
 )
 
 type sessionClient struct {
@@ -35,6 +35,7 @@ type sessionClient struct {
 	bizRPCClient    *grpc_util.RPCClient
 	nbfsRPCClient   *grpc_util.RPCClient
 	sessionId       int64
+	salt			int64
 	nextSeqNo       uint32
 	state           int
 	authUserId      int32
@@ -55,7 +56,7 @@ type messageData struct {
 
 func (c* sessionClient) encodeMessage(authKeyId int64, authKey []byte, confirm bool, tl mtproto.TLObject) ([]byte, error) {
 	message := &mtproto.EncryptedMessage2{
-		Salt:      getSalt(),
+		Salt:      c.salt,
 		SessionId: c.sessionId,
 		SeqNo:     c.generateMessageSeqNo(confirm),
 		Object:    tl,
@@ -199,11 +200,13 @@ func (c *sessionClient) onSessionClientDestroy(sessionId int64) {
 
 func (c *sessionClient) onNewSessionCreated(msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Info("onNewSessionCreated - request data: ", request)
+	serverSalt, _ := GetOrInsertSalt(c.authKeyId)
+	c.salt = serverSalt
 	notify := &mtproto.TLNewSessionCreated{Data2: &mtproto.NewSession_Data{
 		FirstMsgId: msgId,
 		//// TODO(@benqi): gen new_session_created.unique_id
 		UniqueId:   int64(c.clientSession.clientSessionId),
-		ServerSalt: getSalt(),
+		ServerSalt: serverSalt,
 	}}
 	c.sendMessageList = append(c.sendMessageList, &messageData{true, false, notify})
 	c.state = kSessionStateOnline
@@ -271,15 +274,16 @@ func (c *sessionClient) onGetFutureSalts(md *mtproto.ZProtoMetadata, msgId int64
 	getFutureSalts, _ := request.(*mtproto.TLGetFutureSalts)
 	glog.Info("onGetFutureSalts - request data: ", getFutureSalts)
 
-	// TODO(@benqi): 简单实现
-	salts := make([]*mtproto.TLFutureSalt, getFutureSalts.Num)
-	for i := int32(0); i < getFutureSalts.Num; i++ {
-		salt := mtproto.NewTLFutureSalt()
-		salt.SetSalt(getSalt())
-		salt.SetValidSince(int32(time.Now().Unix()))
-		salt.SetValidUntil(math.MaxInt32)
-		salts[i] = salt
-	}
+	salts, _ := GetOrInsertSaltList(c.authKeyId, int(getFutureSalts.Num))
+	//// TODO(@benqi): 简单实现
+	//salts := make([]*mtproto.TLFutureSalt, getFutureSalts.Num)
+	//for i := int32(0); i < getFutureSalts.Num; i++ {
+	//	salt := mtproto.NewTLFutureSalt()
+	//	salt.SetSalt(getSalt())
+	//	salt.SetValidSince(int32(time.Now().Unix()))
+	//	salt.SetValidUntil(math.MaxInt32)
+	//	salts[i] = salt
+	//}
 
 	futureSalts := &mtproto.TLFutureSalts{ Data2: &mtproto.FutureSalts_Data{
 		ReqMsgId: msgId,

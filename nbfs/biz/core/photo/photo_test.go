@@ -19,12 +19,12 @@ package photo
 
 import (
 	"testing"
-	"fmt"
-	"github.com/disintegration/imaging"
-	"bytes"
+	//"fmt"
+	//"github.com/disintegration/imaging"
+	//"bytes"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"image"
+	"github.com/nebulaim/telegramd/nbfs/biz/dal/dao"
+	//"image"
 )
 
 func init()  {
@@ -39,32 +39,32 @@ func init()  {
 }
 
 func TestResize(t *testing.T) {
-	id := int64(-8540733062663239681)
-	filePartsDOList := dao.GetFilePartsDAO(dao.DB_MASTER).SelectFileParts(id)
-	fileDatas := []byte{}
-	for _, p := range filePartsDOList {
-		fileDatas = append(fileDatas, p.Bytes...)
-	}
-
-	// bufio.Reader{}
-	img, err := imaging.Decode(bytes.NewReader(fileDatas))
-	if err != nil {
-		fmt.Printf("Decode error: {%v}\n", err)
-		return
-	}
-
-	imgSz := makeResizeInfo(img)
-	for i, sz := range sizeList {
-		var dst *image.NRGBA
-		if imgSz.isWidth {
-			dst = imaging.Resize(img, sz, 0, imaging.Lanczos)
-		} else {
-			dst = imaging.Resize(img, 0, sz, imaging.Lanczos)
-		}
-
-		err := imaging.Save(dst, fmt.Sprintf("/tmp/telegramd/%d.jpg", i))
-		if err != nil {
-			fmt.Printf("Save error: {%v}\n", err)
-		}
-	}
+	//id := int64(-8540733062663239681)
+	//filePartsDO := dao.GetFilePartsDAO(dao.DB_MASTER).SelectFileParts(1, id)
+	////fileDatas := []byte{}
+	////for _, p := range filePartsDOList {
+	////	fileDatas = append(fileDatas, p.Bytes...)
+	////}
+	//
+	//// bufio.Reader{}
+	//img, err := imaging.Decode(bytes.NewReader(fileDatas))
+	//if err != nil {
+	//	fmt.Printf("Decode error: {%v}\n", err)
+	//	return
+	//}
+	//
+	//imgSz := makeResizeInfo(img)
+	//for i, sz := range sizeList {
+	//	var dst *image.NRGBA
+	//	if imgSz.isWidth {
+	//		dst = imaging.Resize(img, sz, 0, imaging.Lanczos)
+	//	} else {
+	//		dst = imaging.Resize(img, 0, sz, imaging.Lanczos)
+	//	}
+	//
+	//	err := imaging.Save(dst, fmt.Sprintf("/tmp/telegramd/%d.jpg", i))
+	//	if err != nil {
+	//		fmt.Printf("Save error: {%v}\n", err)
+	//	}
+	//}
 }

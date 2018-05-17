@@ -100,3 +100,28 @@ func UploadedDocumentMedia(ownerId int64, media *mtproto.TLInputMediaUploadedDoc
 	}
 	return reply, nil
 }
+
+func GetDocumentById(id, accessHash int64) (*mtproto.Document, error) {
+	// TODO(@benqi): Check nbfsInstance.client inited
+
+	request := &mtproto.DocumentId{
+		Id:         id,
+		AccessHash: accessHash,
+		Version:    0,
+	}
+	reply, err := nbfsInstance.client.NbfsGetDocument(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func GetDocumentByIdList(idList []int64) ([]*mtproto.Document, error) {
+	// TODO(@benqi): Check nbfsInstance.client inited
+	reply, err := nbfsInstance.client.NbfsGetDocumentList(context.Background(), &mtproto.DocumentIdList{IdList: idList})
+	if err != nil {
+		return nil, err
+	}
+
+	return reply.Documents, nil
+}

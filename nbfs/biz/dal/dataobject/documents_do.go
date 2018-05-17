@@ -29,6 +29,7 @@ type DocumentsDO struct {
 	MimeType         string `db:"mime_type"`
 	ThumbId          int64  `db:"thumb_id"`
 	Version          int32  `db:"version"`
+	Attributes       string `db:"attributes"`
 	CreatedAt        string `db:"created_at"`
 	UpdatedAt        string `db:"updated_at"`
 }

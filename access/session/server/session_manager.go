@@ -57,6 +57,8 @@ func (s *sessionManager) onSessionData(conn *net2.TcpConnection, sessionID uint6
 		glog.Infof("onSessionData: peer(%v) data: {session_id: %d, md: %v, buf_len: %d}", conn.RemoteAddr(), sessionID, md, len(buf))
 	}
 	authKeyId := int64(binary.LittleEndian.Uint64(buf))
+
+	// TODO(@benqi): sync s.sessions
 	sess, ok := s.sessions[authKeyId]
 	if !ok {
 		authKey := s.cache.GetAuthKey(authKeyId)

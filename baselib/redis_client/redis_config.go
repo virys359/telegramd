@@ -19,6 +19,7 @@ package redis_client
 
 import (
 	"github.com/nebulaim/telegramd/baselib/base"
+	"fmt"
 )
 
 // Redis client config.
@@ -36,3 +37,14 @@ type RedisConfig struct {
 	Password 		string			// 密码
 }
 
+func (c *RedisConfig) ToRedisCacheConfig() string {
+	// config is like {"key":"collection key","conn":"connection info","dbNum":"0"}
+	// rc.key = cf["key"]
+	// rc.conninfo = cf["conn"]
+	// rc.dbNum, _ = strconv.Atoi(cf["dbNum"])
+	// rc.password = cf["password"]
+	return fmt.Sprintf(`{"conn":"%s", "dbNum":"%s", "password":"%s"}`,
+		c.Addr,
+		c.DBNum,
+		c.Password)
+}

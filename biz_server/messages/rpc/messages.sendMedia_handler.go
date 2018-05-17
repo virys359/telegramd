@@ -70,6 +70,20 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 		messageMedia, _ := nbfs_client.UploadedDocumentMedia(authKeyId, uploadedDocument)
 		return messageMedia.To_MessageMedia()
 		// id:InputDocument caption:string ttl_seconds:flags.0?int
+	case mtproto.TLConstructor_CRC32_inputMediaDocument:
+		// inputMediaDocument#5acb668e flags:# id:InputDocument caption:string ttl_seconds:flags.0?int = InputMedia;
+		// document := media.To_InputMediaDocument()
+		id := media.To_InputMediaDocument().GetId()
+		document3, _ := nbfs_client.GetDocumentById(id.GetData2().GetId(), id.GetData2().GetAccessHash())
+
+		// messageMediaDocument#7c4414d3 flags:# document:flags.0?Document caption:flags.1?string ttl_seconds:flags.2?int = MessageMedia;
+		messageMedia := &mtproto.TLMessageMediaDocument{Data2: &mtproto.MessageMedia_Data{
+			Document: document3,
+			Caption: media.To_InputMediaDocument().GetCaption(),
+			TtlSeconds: media.To_InputMediaDocument().GetTtlSeconds(),
+		}}
+
+		return messageMedia.To_MessageMedia()
 	}
 
 	return mtproto.NewTLMessageMediaEmpty().To_MessageMedia()

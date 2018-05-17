@@ -37,7 +37,8 @@ const (
 const (
 	MTPROTO_ABRIDGED_VERSION = 1		// 删节版本
 	MTPROTO_INTERMEDIATE_VERSION = 2	// 中间版本
-	MTPROTO_FULL_VERSION = 3		// 完整版本
+	MTPROTO_FULL_VERSION = 3			// 完整版本
+	MTPROTO_APP_VERSION = 4				// Androd等当前客户端使用版本
 )
 
 // Transport类型，不支持UDP
@@ -73,6 +74,7 @@ func init() {
 	net2.RegisterProtocol("mtproto", &MTProtoProxy{})
 }
 
+// https://core.telegram.org/mtproto#tcp-transport
 // 服务端MTPProto代理
 // 服务端需要兼容各种协议
 type MTProtoProxy struct {
@@ -139,7 +141,7 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	}
 
 	if b_0_1[0] == MTPROTO_ABRIDGED_FLAG {
-		glog.Warning("mtproto abridged version!!")
+		glog.Info("mtproto abridged version.")
 		return NewMTProtoAbridgedCodec(c.conn), nil
 	}
 
@@ -162,8 +164,10 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	// an intermediate version
 	if val == MTPROTO_INTERMEDIATE_FLAG {
 		// http 协议
-		glog.Warning("MTProtoProxyCodec - mtproto intermediate version, impl in the future!!")
-		return nil, errors.New("mtproto intermediate version not impl!!")
+		//glog.Warning("MTProtoProxyCodec - mtproto intermediate version, impl in the future!!")
+		//return nil, errors.New("mtproto intermediate version not impl!!")
+		glog.Info("mtproto intermediate version.")
+		return NewMTProtoIntermediateCodec(c.conn), nil
 	}
 
 	// recv 4~64 bytes
@@ -176,8 +180,8 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 
 	val2 := (uint32(b_4_60[3]) << 24) | (uint32(b_4_60[2]) << 16) | (uint32(b_4_60[1]) << 8) | (uint32(b_4_60[0]))
 	if val2 == VAL2_FLAG {
-		// glog.Errorf("MTProtoProxyCodec - mtproto val2 is 0x00000000")
-		return nil, errors.New("mtproto val2 is 0x00000000, who known?")
+		glog.Info("mtproto full version.")
+		return NewMTProtoFullCodec(c.conn), nil
 	}
 
 	var tmp [64]byte
@@ -208,7 +212,7 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	}
 
 	glog.Info("first_bytes_64: ", hex.EncodeToString(b_0_1), hex.EncodeToString(b_1_3), hex.EncodeToString(b_4_60))
-	return NewMTProtoFullCodec(c.conn, d, e), nil
+	return NewMTProtoAppCodec(c.conn, d, e), nil
 }
 
 func (c *MTProtoProxyCodec) Receive() (interface{}, error) {

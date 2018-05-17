@@ -26,6 +26,15 @@ import (
 	"fmt"
 )
 
+// https://core.telegram.org/mtproto#tcp-transport
+//
+// There is an abridged version of the same protocol:
+// if the client sends 0xef as the first byte (**important:** only prior to the very first data packet),
+// then packet length is encoded by a single byte (0x01..0x7e = data length divided by 4;
+// or 0x7f followed by 3 length bytes (little endian) divided by 4) followed
+// by the data themselves (sequence number and CRC32 not added).
+// In this case, server responses look the same (the server does not send 0xefas the first byte).
+//
 type MTProtoAbridgedCodec struct {
 	conn *net.TCPConn
 }

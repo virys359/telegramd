@@ -33,3 +33,17 @@ message AuthKeyMetadata {
     int64 auth_key_id = 6;
     bytes auth_key = 7;
 }
+
+message AuthKeyRequest {
+    int64 auth_key_id = 1;
+}
+
+message AuthKeyData {
+    int32 result = 1;
+    int64 auth_key_id = 2;
+    bytes auth_key = 3;
+}
+
+service ZRPCAuthKey {
+    rpc QueryAuthKey(AuthKeyRequest) returns (AuthKeyData);
+}

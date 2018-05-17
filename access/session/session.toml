@@ -9,6 +9,14 @@ name = "session"
 protoName = "zproto"
 addr = "0.0.0.0:10000"
 
+[discovery]
+serviceName = "session"
+nodeID = "node1"
+rPCAddr = "127.0.0.1:10000"
+etcdAddrs = ["http://127.0.0.1:2379"]
+interval = "2s"
+tTL = "10s"
+
 [syncRpcClient]
 serviceName = "sync"
 etcdAddrs = ["http://127.0.0.1:2379"]

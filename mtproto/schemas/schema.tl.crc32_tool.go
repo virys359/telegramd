@@ -26,7 +26,7 @@ import (
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Println(" ./chema.tl.crc32_tool xxx [...]")
+		fmt.Println(" ./schema.tl.crc32_tool xxx [...]")
 		os.Exit(0)
 	}
 

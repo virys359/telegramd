@@ -23,6 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/sticker"
 )
 
 // messages.getAllStickers#1c9618b1 hash:int = messages.AllStickers;
@@ -30,10 +31,9 @@ func (s *MessagesServiceImpl) MessagesGetAllStickers(ctx context.Context, reques
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.getAllStickers#1c9618b1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetAllStickers logic
 	stickers := &mtproto.TLMessagesAllStickers{Data2: &mtproto.Messages_AllStickers_Data{
-		Hash: request.Hash,
-		Sets: []*mtproto.StickerSet{},
+		Hash: 0, // TODO(@benqi): hash规则
+		Sets: sticker.GetStickerSetList(request.Hash),
 	}}
 
 	glog.Infof("messages.getAllStickers#1c9618b1 - reply: %s", logger.JsonDebugData(stickers))

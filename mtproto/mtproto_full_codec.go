@@ -21,21 +21,27 @@ import (
 	"net"
 	"io"
 	"github.com/golang/glog"
-	"encoding/hex"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/binary"
 	"fmt"
 )
 
+// https://core.telegram.org/mtproto#tcp-transport
+//
+// If a payload (packet) needs to be transmitted from server to client or from client to server,
+// it is encapsulated as follows:
+// 4 length bytes are added at the front
+// (to include the length, the sequence number, and CRC32; always divisible by 4)
+// and 4 bytes with the packet sequence number within this TCP connection
+// (the first packet sent is numbered 0, the next one 1, etc.),
+// and 4 CRC32 bytes at the end (length, sequence number, and payload together).
+//
 type MTProtoFullCodec struct {
-	// conn *net.TCPConn
-	stream *AesCTR128Stream
+	conn *net.TCPConn
 }
 
-func NewMTProtoFullCodec(conn *net.TCPConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *MTProtoFullCodec {
+func NewMTProtoFullCodec(conn *net.TCPConn) *MTProtoFullCodec {
 	return &MTProtoFullCodec{
-		// conn:   conn,
-		stream: NewAesCTR128Stream(conn, d, e),
+		conn: conn,
 	}
 }
 
@@ -44,78 +50,48 @@ func (c *MTProtoFullCodec) Receive() (interface{}, error) {
 	var n int
 	var err error
 
-	b := make([]byte, 1)
-	n, err = io.ReadFull(c.stream, b)
+	b := make([]byte, 4)
+	n, err = io.ReadFull(c.conn, b)
 	if err != nil {
 		return nil, err
 	}
 
-	// glog.Info("first_byte: ", hex.EncodeToString(b[:1]))
-	needAck := bool(b[0] >> 7 == 1)
-	_ = needAck
-
-	b[0] = b[0] & 0x7f
-	// glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
-
-	if b[0] < 0x7f {
-		size = int(b[0]) << 2
-		glog.Info("size1: ", size)
-		if size == 0 {
-			return nil, nil
-		}
-	} else {
-		glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
-		b2 := make([]byte, 3)
-		n, err = io.ReadFull(c.stream, b2)
-		if err != nil {
-			return nil, err
-		}
-		size = (int(b2[0]) | int(b2[1])<<8 | int(b2[2])<<16) << 2
-		glog.Info("size2: ", size)
+	size = int(binary.LittleEndian.Uint32(b) << 2)
+	// Check bufLen
+	if size < 12 || size % 4 != 0 {
+		err = fmt.Errorf("invalid len: %d", size)
+		return nil, err
 	}
 
+	//buf := make([]byte, size - 4)
+	//n, err = io.ReadFull(c.conn, buf)
+	//if err != nil {
+	//	return nil, err
+	//}
+
 	left := size
-	buf := make([]byte, size)
+	buf := make([]byte, size - 4)
 	for left > 0 {
-		n, err = io.ReadFull(c.stream, buf[size-left:])
+		n, err = io.ReadFull(c.conn, buf[size-left:])
 		if err != nil {
 			glog.Error("ReadFull2 error: ", err)
 			return nil, err
 		}
 		left -= n
 	}
-	if size > 10240 {
-		glog.Info("ReadFull2: ", hex.EncodeToString(buf[:256]))
-	}
 
-	// TODO(@benqi): process report ack and quickack
-	// 截断QuickAck消息，客户端有问题
-	if size == 4 {
-		glog.Errorf("Server response error: ", int32(binary.LittleEndian.Uint32(buf)))
-		// return nil, fmt.Errorf("Recv QuickAckMessage, ignore!!!!") //  connId: ", c.stream, ", by client ", m.RemoteAddr())
-		return nil, nil
-	}
+	seqNum := binary.LittleEndian.Uint32(buf[:4])
+	// TODO(@benqi): check seqNum, save last seq_num
+	_ = seqNum
 
-	authKeyId := int64(binary.LittleEndian.Uint64(buf))
+	crc32 := binary.LittleEndian.Uint32(buf[len(buf)-4:])
+	// TODO(@benqi): check crc32
+	_ = crc32
+
+	authKeyId := int64(binary.LittleEndian.Uint64(buf[4:]))
 	message := NewMTPRawMessage(authKeyId, 0)
 	message.Decode(buf)
 	return message, nil
-
-	//var message MessageBase
-	//if authKeyId == 0 {
-	//	message = NewUnencryptedRawMessage()
-	//	// message.Decode(buf[8:])
-	//} else {
-	//	message = NewEncryptedRawMessage(authKeyId)
-	//}
-	//
-	//err = message.Decode(buf[8:])
-	//if err != nil {
-	//	glog.Errorf("decode message error: {%v}", err)
-	//	return nil, err
-	//}
-	//
-	// return message, nil
 }
 
 func (c *MTProtoFullCodec) Send(msg interface{}) error {
@@ -128,19 +104,26 @@ func (c *MTProtoFullCodec) Send(msg interface{}) error {
 
 	b := message.Encode()
 
-	sb := make([]byte, 4)
+	sb := make([]byte, 8)
 	// minus padding
 	size := len(b)/4
 
-	if size < 127 {
-		sb = []byte{byte(size)}
-	} else {
-		binary.LittleEndian.PutUint32(sb, uint32(size<<8|127))
-	}
+	//if size < 127 {
+	//	sb = []byte{byte(size)}
+	//} else {
 
+	binary.LittleEndian.PutUint32(sb, uint32(size))
+	// TODO(@benqi): gen seq_num
+	var seqNum uint32 = 0
+	binary.LittleEndian.PutUint32(sb[4:], seqNum)
+	//}
 	b = append(sb, b...)
-	_, err := c.stream.Write(b)
+	var crc32Buf []byte = make([]byte, 4)
+	var crc32 uint32 = 0
+	binary.LittleEndian.PutUint32(crc32Buf, crc32)
+	b = append(sb, crc32Buf...)
 
+	_, err := c.conn.Write(b)
 	if err != nil {
 		glog.Errorf("Send msg error: %s", err)
 	}
@@ -149,33 +132,5 @@ func (c *MTProtoFullCodec) Send(msg interface{}) error {
 }
 
 func (c *MTProtoFullCodec) Close() error {
-	return c.stream.conn.Close()
-}
-
-type AesCTR128Stream struct {
-	conn      *net.TCPConn
-	encrypt *crypto.AesCTR128Encrypt
-	decrypt *crypto.AesCTR128Encrypt
-}
-
-func NewAesCTR128Stream(conn *net.TCPConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *AesCTR128Stream {
-	return &AesCTR128Stream{
-		conn:    conn,
-		decrypt: d,
-		encrypt: e,
-	}
-}
-
-func (this *AesCTR128Stream) Read(p []byte) (int, error) {
-	n, err := this.conn.Read(p)
-	if err == nil {
-		this.decrypt.Encrypt(p[:n])
-		return n, nil
-	}
-	return n, err
-}
-
-func (this *AesCTR128Stream) Write(p []byte) (int, error) {
-	this.encrypt.Encrypt(p[:])
-	return this.conn.Write(p)
+	return c.conn.Close()
 }

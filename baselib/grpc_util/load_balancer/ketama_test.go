@@ -15,34 +15,22 @@
  * limitations under the License.
  */
 
-// salt cache
-package server
+package load_balancer
 
 import (
-	"math/rand"
-	"time"
+	"testing"
+	"fmt"
 )
 
-var salts = newSaltCache()
+func TestKetama(t *testing.T) {
+	k := NewKetama(10, nil)
+	k.Add("127.0.0.1:10000")
+	k.Add("127.0.0.1:10001")
+	k.Add("127.0.0.1:10002")
+	k.Add("127.0.0.1:10003")
 
-type saltCache struct {
-	salt int64
-	time int64
-}
-
-func newSaltCache() *saltCache {
-	return &saltCache{
-		salt: int64(rand.Uint64()),
-		time: time.Now().Unix(),
-	}
-}
-
-// TODO(@benqi): refresh salt per 24 hours
-func getSalt() int64 {
-	return salts.salt
-}
-
-func checkSalt(salt int64) bool {
-	// TODO(@benqi): check salt value and time expired
-	return salts.salt == salt
+	fmt.Println(k.Get("123"))
+	fmt.Println(k.Get("123"))
+	fmt.Println(k.Get("234"))
+	fmt.Println(k.Get("345"))
 }
