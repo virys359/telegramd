@@ -91,26 +91,26 @@
 	salt->salt = messageSalt;
 	datacenter->addServerSalt(salt);
 	```
- */
-
+*/
 
 // salt cache
 package server
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
-	"github.com/nebulaim/telegramd/baselib/cache"
+
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/cache"
 	"github.com/nebulaim/telegramd/mtproto"
-	"fmt"
 )
 
 const (
-	kSaltTimeout = 30 * 60	// salt timeout
+	kSaltTimeout = 30 * 60 // salt timeout
 	// kCacheConfig = `{"conn":":"127.0.0.1:6039"}`
-	kAdapterName = "memory"
-	kCacheConfig = `{"interval":60}`
+	kAdapterName     = "memory"
+	kCacheConfig     = `{"interval":60}`
 	kCacheSaltPrefix = "salts"
 )
 
@@ -123,10 +123,10 @@ func init() {
 
 type cacheSaltManager struct {
 	cache   cache.Cache
-	timeout time.Duration	// salt timeout
+	timeout time.Duration // salt timeout
 }
 
-func initCacheSaltsManager(name, config string) (error) {
+func initCacheSaltsManager(name, config string) error {
 	if config == "" {
 		config = kCacheConfig
 	}
@@ -150,7 +150,7 @@ func GetOrInsertSaltList(keyId int64, size int) ([]*mtproto.TLFutureSalt, error)
 		salts = make([]*mtproto.TLFutureSalt, size)
 		// saltKey =
 
-		date = int32(time.Now().Unix())
+		date           = int32(time.Now().Unix())
 		lastValidUntil = date
 
 		// ok = false
@@ -192,7 +192,7 @@ func GetOrInsertSaltList(keyId int64, size int) ([]*mtproto.TLFutureSalt, error)
 	}
 
 	if left > 0 {
-		err := cacheSalts.cache.Put(genCacheSaltKey(keyId), saltsData, time.Duration(len(saltsData)) * kSaltTimeout * time.Second)
+		err := cacheSalts.cache.Put(genCacheSaltKey(keyId), saltsData, time.Duration(len(saltsData))*kSaltTimeout*time.Second)
 		if err != nil {
 			glog.Error(err)
 			return nil, err
@@ -221,12 +221,12 @@ func GetOrInsertSalt(keyId int64) (int64, error) {
 		salt = rand.Int63()
 		saltData := &mtproto.FutureSalt_Data{
 			ValidSince: date,
-			ValidUntil: date + kSaltTimeout,
+			ValidUntil: date + kSaltTimeout + kSaltTimeout,
 			Salt:       salt,
 		}
 
 		// Put cache.
-		err := cacheSalts.cache.Put(genCacheSaltKey(keyId), []*mtproto.FutureSalt_Data{saltData}, kSaltTimeout * time.Second)
+		err := cacheSalts.cache.Put(genCacheSaltKey(keyId), []*mtproto.FutureSalt_Data{saltData}, kSaltTimeout*time.Second)
 		if err != nil {
 			glog.Error(err)
 			return 0, err
@@ -257,8 +257,8 @@ func CheckBySalt(keyId, salt int64) bool {
 
 	if saltList, ok := v.([]*mtproto.FutureSalt_Data); ok {
 		for _, v := range saltList {
-			// TODO(@benqi): (although, messages with the old salt are still accepted for a further 300 seconds)
-			if v.ValidSince <= date && v.ValidUntil > date && salt == v.Salt {
+			// old salt are still accepted for a further 300 seconds
+			if v.ValidSince <= date && v.ValidUntil+kSaltTimeout > date && salt == v.Salt {
 				return true
 			}
 		}
@@ -266,4 +266,3 @@ func CheckBySalt(keyId, salt int64) bool {
 
 	return false
 }
-
