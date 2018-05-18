@@ -19,21 +19,21 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/golang/glog"
 	"encoding/hex"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/mtproto"
 	// "container/list"
 	// "container/list"
-	"github.com/nebulaim/telegramd/baselib/net2"
 	"fmt"
+	"github.com/nebulaim/telegramd/baselib/net2"
 )
 
-// PUSU ==> ConnectionTypePush
+// PUSH ==> ConnectionTypePush
 // ConnectionTypePush和其它类型不太一样，session一旦创建以后不会改变
 const (
-	GENERIC = 0
+	GENERIC  = 0
 	DOWNLOAD = 1
-	UPLOAD = 3
+	UPLOAD   = 3
 
 	// Android
 	PUSH = 7
@@ -47,9 +47,9 @@ const (
 )
 
 const (
-	DOWNLOAD_CONNECTIONS_COUNT = 2 	// Download conn count
-	UPLOAD_CONNECTIONS_COUNT = 4	//
-	MAX_CONNECTIONS_COUNT = 9		// 最大连接数为9
+	DOWNLOAD_CONNECTIONS_COUNT = 2 // Download conn count
+	UPLOAD_CONNECTIONS_COUNT   = 4 //
+	MAX_CONNECTIONS_COUNT      = 9 // 最大连接数为9
 )
 
 const (
@@ -60,13 +60,13 @@ const (
 )
 
 type sessionDataList struct {
-	clientSessionId   uint64
-	quickAckId  int32
-	metadata    *mtproto.ZProtoMetadata
-	salt		int64
-	sessionId   int64
-	Layer       int32
-	messages    []*mtproto.TLMessage2
+	clientSessionId uint64
+	quickAckId      int32
+	metadata        *mtproto.ZProtoMetadata
+	salt            int64
+	sessionId       int64
+	Layer           int32
+	messages        []*mtproto.TLMessage2
 }
 
 func newSessionDataList(sessionId uint64, md *mtproto.ZProtoMetadata, message *mtproto.EncryptedMessage2) *sessionDataList {
@@ -191,9 +191,9 @@ type sessionClientList struct {
 
 func newSessionClientList(authKeyId int64, authKey []byte) *sessionClientList {
 	sessionList := &sessionClientList{
-		authKeyId:  authKeyId,
-		authKey:    authKey,
-		sessions:   make(map[int64]*sessionClient),
+		authKeyId: authKeyId,
+		authKey:   authKey,
+		sessions:  make(map[int64]*sessionClient),
 	}
 	return sessionList
 }
@@ -285,7 +285,7 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 			}
 		}
 		if hasLoginedMessage {
-			s.authUserId = getUserIDByAuthKeyID(s.authKeyId)
+			s.authUserId = getCacheUserID(s.authKeyId)
 			if s.authUserId == 0 {
 				err = fmt.Errorf("recv without login message: %v", sessDatas)
 				glog.Errorf("onSessionClientData - authKeyId: %d, error: %v", s.authKeyId, err)
@@ -307,7 +307,7 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 		glog.Info("authUserId: ", s.authUserId)
 	}
 
-	if s.authUserId !=0 {
+	if s.authUserId != 0 {
 		// TODO(@benqi): Set user online for a period of time (timeout)
 		sess.onUserOnline(1)
 	}
@@ -321,7 +321,7 @@ func (s *sessionClientList) onSessionClientData(conn *net2.TcpConnection, sessio
 func (s *sessionClientList) onClientClose(sessionID int64) {
 }
 
-func (s* sessionClientList) SendToClientData(client *sessionClient, quickAckId int32, md *mtproto.ZProtoMetadata, messages []*messageData) error {
+func (s *sessionClientList) SendToClientData(client *sessionClient, quickAckId int32, md *mtproto.ZProtoMetadata, messages []*messageData) error {
 	if client.clientSession == nil || len(messages) == 0 {
 		return fmt.Errorf("client offline or messages is nil.")
 	}

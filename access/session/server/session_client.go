@@ -19,11 +19,11 @@ package server
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"time"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/mtproto"
+	"time"
 	// "math"
 )
 
@@ -35,7 +35,7 @@ type sessionClient struct {
 	bizRPCClient    *grpc_util.RPCClient
 	nbfsRPCClient   *grpc_util.RPCClient
 	sessionId       int64
-	salt			int64
+	salt            int64
 	nextSeqNo       uint32
 	state           int
 	authUserId      int32
@@ -44,17 +44,17 @@ type sessionClient struct {
 }
 
 type clientSession struct {
-	conn      		*net2.TcpConnection
+	conn            *net2.TcpConnection
 	clientSessionId uint64
 }
 
 type messageData struct {
-	confirmFlag bool
+	confirmFlag  bool
 	compressFlag bool
-	obj mtproto.TLObject
+	obj          mtproto.TLObject
 }
 
-func (c* sessionClient) encodeMessage(authKeyId int64, authKey []byte, confirm bool, tl mtproto.TLObject) ([]byte, error) {
+func (c *sessionClient) encodeMessage(authKeyId int64, authKey []byte, confirm bool, tl mtproto.TLObject) ([]byte, error) {
 	message := &mtproto.EncryptedMessage2{
 		Salt:      c.salt,
 		SessionId: c.sessionId,
@@ -64,13 +64,13 @@ func (c* sessionClient) encodeMessage(authKeyId int64, authKey []byte, confirm b
 	return message.Encode(authKeyId, authKey)
 }
 
-func (c* sessionClient) generateMessageSeqNo(increment bool) int32 {
+func (c *sessionClient) generateMessageSeqNo(increment bool) int32 {
 	value := c.nextSeqNo
 	if increment {
 		c.nextSeqNo++
 		return int32(value*2 + 1)
 	} else {
-		return int32(value*2)
+		return int32(value * 2)
 	}
 }
 
@@ -102,41 +102,41 @@ func (c *sessionClient) sendDataListToClient(md *mtproto.ZProtoMetadata, message
 //}
 
 /*****
-	///////////////////////////////
-	////////////// System messages
-	///////////////////////////////
-	// msgs_state_req#da69fb52 msg_ids:Vector<long> = MsgsStateReq;
-	// msg_resend_req#7d861a08 msg_ids:Vector<long> = MsgResendReq;
-	// msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;
-	// http_wait#9299359f max_delay:int wait_after:int max_wait:int = HttpWait;
+///////////////////////////////
+////////////// System messages
+///////////////////////////////
+// msgs_state_req#da69fb52 msg_ids:Vector<long> = MsgsStateReq;
+// msg_resend_req#7d861a08 msg_ids:Vector<long> = MsgResendReq;
+// msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;
+// http_wait#9299359f max_delay:int wait_after:int max_wait:int = HttpWait;
 
-	//rpc_result#f35c6d01 req_msg_id:long result:Object = RpcResult; // parsed manually
-	// message msg_id:long seqno:int bytes:int body:Object = Message; // parsed manually
-	// msg_container#73f1f8dc messages:vector<message> = MessageContainer; // parsed manually
-	// msg_copy#e06046b2 orig_message:Message = MessageCopy; // parsed manually, not used - use msg_container
-	// gzip_packed#3072cfa1 packed_data:string = Object; // parsed manually
+//rpc_result#f35c6d01 req_msg_id:long result:Object = RpcResult; // parsed manually
+// message msg_id:long seqno:int bytes:int body:Object = Message; // parsed manually
+// msg_container#73f1f8dc messages:vector<message> = MessageContainer; // parsed manually
+// msg_copy#e06046b2 orig_message:Message = MessageCopy; // parsed manually, not used - use msg_container
+// gzip_packed#3072cfa1 packed_data:string = Object; // parsed manually
 
-	// http_wait#9299359f max_delay:int wait_after:int max_wait:int = HttpWait;
-	// help.configSimple#d997c3c5 date:int expires:int dc_id:int ip_port_list:Vector<ipPort> = help.ConfigSimple;
-
-
-	// rpc_drop_answer#58e4a740 req_msg_id:long = RpcDropAnswer;
-	// get_future_salts#b921bd04 num:int = FutureSalts;
-	// ping#7abe77ec ping_id:long = Pong;
-	// ping_delay_disconnect#f3427b8c ping_id:long disconnect_delay:int = Pong;
-	// destroy_session#e7512126 session_id:long = DestroySessionRes;
-	// contest.saveDeveloperInfo#9a5f6e95 vk_id:int name:string phone_number:string age:int city:string = Bool;
+// http_wait#9299359f max_delay:int wait_after:int max_wait:int = HttpWait;
+// help.configSimple#d997c3c5 date:int expires:int dc_id:int ip_port_list:Vector<ipPort> = help.ConfigSimple;
 
 
-	///////////////////////////////
-	///////// Main application API
-	///////////////////////////////
-	// invokeAfterMsg#cb9f372d {X:Type} msg_id:long query:!X = X;
-	// invokeAfterMsgs#3dc4b4f0 {X:Type} msg_ids:Vector<long> query:!X = X;
-	// initConnection#c7481da6 {X:Type} api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string query:!X = X;
-	// invokeWithLayer#da9b0d0d {X:Type} layer:int query:!X = X;
-	// invokeWithoutUpdates#bf9459b7 {X:Type} query:!X = X;
- */
+// rpc_drop_answer#58e4a740 req_msg_id:long = RpcDropAnswer;
+// get_future_salts#b921bd04 num:int = FutureSalts;
+// ping#7abe77ec ping_id:long = Pong;
+// ping_delay_disconnect#f3427b8c ping_id:long disconnect_delay:int = Pong;
+// destroy_session#e7512126 session_id:long = DestroySessionRes;
+// contest.saveDeveloperInfo#9a5f6e95 vk_id:int name:string phone_number:string age:int city:string = Bool;
+
+
+///////////////////////////////
+///////// Main application API
+///////////////////////////////
+// invokeAfterMsg#cb9f372d {X:Type} msg_id:long query:!X = X;
+// invokeAfterMsgs#3dc4b4f0 {X:Type} msg_ids:Vector<long> query:!X = X;
+// initConnection#c7481da6 {X:Type} api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string query:!X = X;
+// invokeWithLayer#da9b0d0d {X:Type} layer:int query:!X = X;
+// invokeWithoutUpdates#bf9459b7 {X:Type} query:!X = X;
+*/
 func (c *sessionClient) onSessionClientData(sessDataList *sessionDataList) {
 	if sessDataList.Layer != 0 {
 		c.Layer = sessDataList.Layer
@@ -146,7 +146,7 @@ func (c *sessionClient) onSessionClientData(sessDataList *sessionDataList) {
 
 		// TODO(@benqi): 暂时这么用
 		if c.authUserId == 0 {
-			c.authUserId = getUserIDByAuthKeyID(c.authKeyId)
+			c.authUserId = getCacheUserID(c.authKeyId)
 		}
 
 		// check new_session_created
@@ -204,7 +204,7 @@ func (c *sessionClient) onNewSessionCreated(msgId int64, seqNo int32, request mt
 	c.salt = serverSalt
 	notify := &mtproto.TLNewSessionCreated{Data2: &mtproto.NewSession_Data{
 		FirstMsgId: msgId,
-		//// TODO(@benqi): gen new_session_created.unique_id
+		// TODO(@benqi): gen new_session_created.unique_id
 		UniqueId:   int64(c.clientSession.clientSessionId),
 		ServerSalt: serverSalt,
 	}}
@@ -228,7 +228,7 @@ func (c *sessionClient) onPing(md *mtproto.ZProtoMetadata, msgId int64, seqNo in
 
 	// c.setOnline()
 	pong := &mtproto.TLPong{Data2: &mtproto.Pong_Data{
-		MsgId: msgId,
+		MsgId:  msgId,
 		PingId: ping.PingId,
 	}}
 
@@ -251,8 +251,8 @@ func (c *sessionClient) onPingDelayDisconnect(md *mtproto.ZProtoMetadata, msgId 
 	//	}
 	//}
 	// c.setOnline()
-	pong := &mtproto.TLPong{ Data2: &mtproto.Pong_Data{
-		MsgId: msgId,
+	pong := &mtproto.TLPong{Data2: &mtproto.Pong_Data{
+		MsgId:  msgId,
 		PingId: pingDelayDissconnect.PingId,
 	}}
 
@@ -264,7 +264,7 @@ func (c *sessionClient) onDestroySession(md *mtproto.ZProtoMetadata, msgId int64
 	glog.Info("onDestroySession - request data: ", destroySession)
 
 	// TODO(@benqi): 实现destroySession处理逻辑
-	destroySessionOk := &mtproto.TLDestroySessionOk{ Data2: &mtproto.DestroySessionRes_Data{
+	destroySessionOk := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
 		SessionId: destroySession.SessionId,
 	}}
 	c.sendMessageList = append(c.sendMessageList, &messageData{false, false, destroySessionOk})
@@ -285,10 +285,10 @@ func (c *sessionClient) onGetFutureSalts(md *mtproto.ZProtoMetadata, msgId int64
 	//	salts[i] = salt
 	//}
 
-	futureSalts := &mtproto.TLFutureSalts{ Data2: &mtproto.FutureSalts_Data{
+	futureSalts := &mtproto.TLFutureSalts{Data2: &mtproto.FutureSalts_Data{
 		ReqMsgId: msgId,
-		Now: int32(time.Now().Unix()),
-		Salts: salts,
+		Now:      int32(time.Now().Unix()),
+		Salts:    salts,
 	}}
 
 	c.sendMessageList = append(c.sendMessageList, &messageData{true, false, futureSalts})
@@ -301,8 +301,7 @@ func (c *sessionClient) onRpcDropAnswer(md *mtproto.ZProtoMetadata, msgId int64,
 	rpcDropAnswer, _ := request.(*mtproto.TLRpcDropAnswer)
 	glog.Info("processRpcDropAnswer - request data: ", rpcDropAnswer.String())
 
-	rpcAnswer := &mtproto.RpcDropAnswer{Data2: &mtproto.RpcDropAnswer_Data{
-	}}
+	rpcAnswer := &mtproto.RpcDropAnswer{Data2: &mtproto.RpcDropAnswer_Data{}}
 	// TODO(@benqi): 实现rpcDropAnswer处理逻辑
 	c.sendMessageList = append(c.sendMessageList, &messageData{false, false, rpcAnswer})
 
@@ -333,7 +332,6 @@ func (c *sessionClient) onMsgsStateReq(md *mtproto.ZProtoMetadata, msgId int64, 
 func (c *sessionClient) onInitConnection(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Infof("onInitConnection - request: %s", request.String())
 }
-
 
 func (c *sessionClient) onMsgResendReq(md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Infof("onMsgResendReq - request: %s", request.String())
@@ -371,7 +369,7 @@ func (c *sessionClient) onRpcRequest(md *mtproto.ZProtoMetadata, msgId int64, se
 	// TODO(@benqi): rpc proxy
 
 	var (
-		err error
+		err       error
 		rpcResult mtproto.TLObject
 	)
 
@@ -432,4 +430,3 @@ func (c *sessionClient) onUserOnline(serverId int32) {
 
 	user.SetOnline(status)
 }
-

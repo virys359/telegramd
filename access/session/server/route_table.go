@@ -19,7 +19,6 @@ package server
 
 import (
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/biz/core"
 )
 
 //const (
@@ -42,26 +41,37 @@ import (
 //type RouteTable struct {
 //}
 
+const (
+	TOKEN_TYPE_APNS         = 1
+	TOKEN_TYPE_GCM          = 2
+	TOKEN_TYPE_MPNS         = 3
+	TOKEN_TYPE_SIMPLE_PUSH  = 4
+	TOKEN_TYPE_UBUNTU_PHONE = 5
+	TOKEN_TYPE_BLACKBERRY   = 6
+	// Android里使用
+	TOKEN_TYPE_INTERNAL_PUSH = 7
+)
+
 func getConntctionType(tl mtproto.TLObject) int {
 	switch tl.(type) {
 	case *mtproto.TLAccountRegisterDevice:
 		// check android internal push connection
 		reg, _ := tl.(*mtproto.TLAccountRegisterDevice)
-		if reg.GetTokenType() == core.TOKEN_TYPE_INTERNAL_PUSH {
+		if reg.GetTokenType() == TOKEN_TYPE_INTERNAL_PUSH {
 			// android
 			return PUSH
 		} else {
 			return GENERIC
 		}
 	case *mtproto.TLUploadSaveFilePart,
-			*mtproto.TLUploadSaveBigFilePart:
+		*mtproto.TLUploadSaveBigFilePart:
 		// upload connection
 		return UPLOAD
 	case *mtproto.TLUploadGetFile,
-			*mtproto.TLUploadGetWebFile,
-			*mtproto.TLUploadGetCdnFile,
-			*mtproto.TLUploadReuploadCdnFile,
-			*mtproto.TLUploadGetCdnFileHashes:
+		*mtproto.TLUploadGetWebFile,
+		*mtproto.TLUploadGetCdnFile,
+		*mtproto.TLUploadReuploadCdnFile,
+		*mtproto.TLUploadGetCdnFileHashes:
 		// download connection
 		return DOWNLOAD
 	case *mtproto.TLHelpGetConfig:
@@ -119,33 +129,33 @@ func checkWithoutLogin(tl mtproto.TLObject) bool {
 		return true
 
 	case *mtproto.TLAuthCheckPhone,
-			*mtproto.TLAuthSendCode,
-			*mtproto.TLAuthSignIn,
-			*mtproto.TLAuthSignUp,
-			*mtproto.TLAuthExportedAuthorization,
-			*mtproto.TLAuthExportAuthorization,
-			*mtproto.TLAuthImportAuthorization,
-			*mtproto.TLAuthCancelCode,
-			*mtproto.TLAuthResendCode,
-			*mtproto.TLAuthRequestPasswordRecovery,
-			*mtproto.TLAuthCheckPassword,
-			*mtproto.TLAuthRecoverPassword:
+		*mtproto.TLAuthSendCode,
+		*mtproto.TLAuthSignIn,
+		*mtproto.TLAuthSignUp,
+		*mtproto.TLAuthExportedAuthorization,
+		*mtproto.TLAuthExportAuthorization,
+		*mtproto.TLAuthImportAuthorization,
+		*mtproto.TLAuthCancelCode,
+		*mtproto.TLAuthResendCode,
+		*mtproto.TLAuthRequestPasswordRecovery,
+		*mtproto.TLAuthCheckPassword,
+		*mtproto.TLAuthRecoverPassword:
 		return true
 
 	case *mtproto.TLHelpGetConfig,
-			*mtproto.TLHelpGetCdnConfig:
+		*mtproto.TLHelpGetCdnConfig:
 		return true
 
 	case *mtproto.TLLangpackGetLanguages,
-			*mtproto.TLLangpackGetDifference,
-			*mtproto.TLLangpackGetLangPack,
-			*mtproto.TLLangpackGetStrings:
+		*mtproto.TLLangpackGetDifference,
+		*mtproto.TLLangpackGetLangPack,
+		*mtproto.TLLangpackGetStrings:
 		return true
 
 	case *mtproto.TLAccountGetPassword,
-			*mtproto.TLAccountDeleteAccount,
-			*mtproto.TLAccountUpdatePasswordSettings,
-			*mtproto.TLAccountGetPasswordSettings:
+		*mtproto.TLAccountDeleteAccount,
+		*mtproto.TLAccountUpdatePasswordSettings,
+		*mtproto.TLAccountGetPasswordSettings:
 		return true
 
 	case *mtproto.TLInitConnection:

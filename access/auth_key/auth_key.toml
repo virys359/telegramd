@@ -3,12 +3,12 @@
 ver = "0.0.1"
 
 [server]
-name = "auth_key"
+name = "handshake"
 protoName = "zproto"
 addr = "0.0.0.0:10005"
 
 [discovery]
-serviceName = "auth_key"
+serviceName = "handshake"
 nodeID = "node1"
 rPCAddr = "127.0.0.1:10005"
 etcdAddrs = ["http://127.0.0.1:2379"]
@@ -19,7 +19,7 @@ tTL = "10s"
 addr = "0.0.0.0:10006"
 
 [rpcDiscovery]
-serviceName = "rpc_auth_key"
+serviceName = "auth_key"
 nodeID = "node1"
 rPCAddr = "127.0.0.1:10006"
 etcdAddrs = ["http://127.0.0.1:2379"]

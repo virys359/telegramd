@@ -44,6 +44,19 @@ message AuthKeyData {
     bytes auth_key = 3;
 }
 
+// TODO(@benqi): remove to biz_auth service
+message AuthKeyIdRequest {
+    int64 auth_key_id = 1;
+}
+
+message UserIdResponse {
+    int32 result = 1;
+    int64 auth_key_id = 2;
+    int32 user_id = 3;
+}
+
 service ZRPCAuthKey {
     rpc QueryAuthKey(AuthKeyRequest) returns (AuthKeyData);
+    // TODO(@benqi): remove to biz_auth service
+    rpc QueryUserId(AuthKeyIdRequest) returns (UserIdResponse);
 }

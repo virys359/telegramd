@@ -18,9 +18,9 @@
 package main
 
 import (
-	"github.com/nebulaim/telegramd/baselib/app"
 	"flag"
 	"github.com/nebulaim/telegramd/access/session/server"
+	"github.com/nebulaim/telegramd/baselib/app"
 )
 
 func init() {
@@ -34,4 +34,3 @@ func main() {
 	instance := server.NewSessionServer("./session.toml")
 	app.DoMainAppInstance(instance)
 }
-

@@ -236,7 +236,6 @@ func GetOrInsertSalt(keyId int64) (int64, error) {
 	return salt, nil
 }
 
-// TODO(@benqi)
 // Server Salt
 //
 // A (random) 64-bit number periodically (say, every 24 hours) changed

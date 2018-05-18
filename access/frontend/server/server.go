@@ -203,7 +203,7 @@ func (s *FrontendServer) Initialize() error {
 	etcdConfg2 := clientv3.Config{
 		Endpoints: s.config.AuthKeyClient.EtcdAddrs,
 	}
-	s.authKeyClientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "auth_key", etcdConfg2, s.authKeyClient)
+	s.authKeyClientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "handshake", etcdConfg2, s.authKeyClient)
 
 	return nil
 }
@@ -441,7 +441,7 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 		},
 	}
 	// glog.Infof("sendToSessionClient: %v", zmsg)
-	return s.authKeyClient.SendData("auth_key", zmsg)
+	return s.authKeyClient.SendData("handshake", zmsg)
 }
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {

@@ -1,2 +1,7 @@
 ## cache
-> Copy from https://github.com/astaxie/beego/tree/master/cache
+
+### cache
+> Copy from https://github.com/astaxie/beego/tree/master/cache, remove memcache and ssdb.
+
+### lru_cache
+

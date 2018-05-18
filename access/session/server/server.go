@@ -18,20 +18,19 @@
 package server
 
 import (
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"net"
+	"encoding/binary"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"github.com/nebulaim/telegramd/mtproto"
-	"encoding/binary"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/mtproto"
+	"net"
 	"time"
 )
 
@@ -58,14 +57,14 @@ func newTcpServer(config ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tcp
 }
 
 type SessionConfig struct {
-	ServerId      int32 // 服务器ID
-	Mysql         []mysql_client.MySQLConfig
-	Redis         []redis_client.RedisConfig
-	SaltCache	  redis_client.RedisConfig
-	BizRpcClient  service_discovery.ServiceDiscoveryClientConfig
-	NbfsRpcClient service_discovery.ServiceDiscoveryClientConfig
-	Server        ServerConfig
-	Discovery     service_discovery.ServiceDiscoveryServerConfig
+	ServerId         int32 // 服务器ID
+	Redis            []redis_client.RedisConfig
+	SaltCache        redis_client.RedisConfig
+	AuthKeyRpcClient service_discovery.ServiceDiscoveryClientConfig
+	BizRpcClient     service_discovery.ServiceDiscoveryClientConfig
+	NbfsRpcClient    service_discovery.ServiceDiscoveryClientConfig
+	Server           ServerConfig
+	Discovery        service_discovery.ServiceDiscoveryServerConfig
 }
 
 type SessionServer struct {
@@ -75,7 +74,6 @@ type SessionServer struct {
 	client         *net2.TcpClientGroupManager
 	bizRpcClient   *grpc_util.RPCClient
 	nbfsRpcClient  *grpc_util.RPCClient
-	handshake      *handshake
 	sessionManager *sessionManager
 	syncHandler    *syncHandler
 	registry       *etcd3.EtcdReigistry
@@ -83,10 +81,8 @@ type SessionServer struct {
 
 func NewSessionServer(configPath string) *SessionServer {
 	return &SessionServer{
-		configPath:     configPath,
-		config:         &SessionConfig{},
-		// handshake:      &handshake{},
-		// sessionManager: newSessionManager(),
+		configPath: configPath,
+		config:     &SessionConfig{},
 	}
 }
 
@@ -103,19 +99,15 @@ func (s *SessionServer) Initialize() error {
 	glog.Infof("config loaded: %v", s.config)
 
 	// 初始化mysql_client、redis_client
-	mysql_client.InstallMysqlClientManager(s.config.Mysql)
 	redis_client.InstallRedisClientManager(s.config.Redis)
 
 	// 初始化redis_dao、mysql_dao
-	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	// salt cache...
-	// InstallCacheSaltsManager(s.config.SaltCache.ToRedisCacheConfig())
+	// TODO(@benqi): config cap
+	InitCacheAuthManager(1024*1024, &s.config.AuthKeyRpcClient)
 
-	cache := NewAuthKeyCacheManager()
-	s.handshake = newHandshake(cache)
-	s.sessionManager = newSessionManager(cache)
+	s.sessionManager = newSessionManager()
 	s.syncHandler = newSyncHandler(s.sessionManager)
 	s.server, err = newTcpServer(s.config.Server, s)
 	if err != nil {
@@ -132,8 +124,8 @@ func (s *SessionServer) Initialize() error {
 			RegistryDir: "/nebulaim",
 			ServiceName: s.config.Discovery.ServiceName,
 			NodeID:      s.config.Discovery.NodeID,
-			NData: etcd3.NodeData{
-				Addr: s.config.Discovery.RPCAddr,
+			NData: 		 etcd3.NodeData{
+				Addr:     s.config.Discovery.RPCAddr,
 				Metadata: map[string]string{},
 				// Metadata: map[string]string{"weight": "1"},
 			},
@@ -160,7 +152,7 @@ func (s *SessionServer) Destroy() {
 	glog.Infof("sessionServer - destroy...")
 	s.registry.Deregister()
 	s.server.Stop()
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 	// s.client.Stop()
 }
 
@@ -185,23 +177,6 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 		payload, _ := zmsg.Message.(*mtproto.ZProtoRawPayload)
 		msgType := binary.LittleEndian.Uint32(payload.Payload[:4])
 		switch msgType {
-		case mtproto.SESSION_HANDSHAKE:
-			hrsp, err := s.handshake.onHandshake(conn, payload)
-			if err != nil {
-				glog.Error(err)
-				return nil
-			}
-			if hrsp != nil {
-				res := &mtproto.ZProtoMessage{
-					SessionId: zmsg.SessionId,
-					SeqNum:    1,
-					Metadata:  zmsg.Metadata,
-					Message:   hrsp,
-				}
-				return conn.Send(res)
-			} else {
-				return nil
-			}
 		case mtproto.SESSION_SESSION_DATA:
 			return s.sessionManager.onSessionData(conn, zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
 		case mtproto.SYNC_DATA:

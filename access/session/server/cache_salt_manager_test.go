@@ -18,8 +18,8 @@
 package server
 
 import (
-	"testing"
 	"math/rand"
+	"testing"
 )
 
 // GetOrInsertSaltList
@@ -42,5 +42,12 @@ func TestGetOrInsertSaltList(t *testing.T) {
 
 	if !CheckBySalt(id, 123) {
 		t.Logf("CheckBySalt(%d, 123) = false", id)
+	}
+}
+
+func BenchmarkGetSalt(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		val, _ := GetOrInsertSalt(rand.Int63())
+		_ = val
 	}
 }

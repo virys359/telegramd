@@ -27,6 +27,18 @@ import (
 	"encoding/hex"
 )
 
+// TODO(@benqi): Quick ack (https://core.telegram.org/mtproto#tcp-transport)
+//
+// The full, the intermediate and the abridged versions of the protocol have support for quick acknowledgment.
+// In this case, the client sets the highest-order length bit in the query packet,
+// and the server responds with a special 4 bytes as a separate packet.
+// They are the 32 higher-order bits of SHA256 of the encrypted
+// portion of the packet prepended by 32 bytes from the authorization key
+// (the same hash as computed for verifying the message key),
+// with the most significant bit set to make clear that this is not the length of a regular server response packet;
+// if the abridged version is used, bswap is applied to these four bytes.
+//
+
 // 客户端or服务端
 const (
 	CODEC_TYPE_CLIENT = 1	// Client端

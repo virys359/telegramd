@@ -18,29 +18,24 @@
 package server
 
 import (
+	"encoding/binary"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/mtproto"
-	"encoding/binary"
 	//"fmt"
 	//"encoding/hex"
 	//"github.com/golang/glog"
-	"github.com/golang/glog"
-	"fmt"
 	"encoding/hex"
+	"fmt"
+	"github.com/golang/glog"
 )
 
 type sessionManager struct {
-	// sync.RWMutex
-	cache      AuthKeyStorager
-	sessions   map[int64]*sessionClientList
-	// ioCallback ClientIOCallback
+	sessions map[int64]*sessionClientList
 }
 
-func newSessionManager(cache AuthKeyStorager) *sessionManager {
+func newSessionManager() *sessionManager {
 	return &sessionManager{
-		cache:      cache,
-		sessions:   make(map[int64]*sessionClientList),
-		// ioCallback: ioCallback,
+		sessions: make(map[int64]*sessionClientList),
 	}
 }
 
@@ -61,7 +56,7 @@ func (s *sessionManager) onSessionData(conn *net2.TcpConnection, sessionID uint6
 	// TODO(@benqi): sync s.sessions
 	sess, ok := s.sessions[authKeyId]
 	if !ok {
-		authKey := s.cache.GetAuthKey(authKeyId)
+		authKey := getCacheAuthKey(authKeyId)
 		if authKey == nil {
 			err := fmt.Errorf("onSessionData - not found authKeyId: {%d}", authKeyId)
 			glog.Error(err)

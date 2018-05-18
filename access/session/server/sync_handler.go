@@ -18,12 +18,12 @@
 package server
 
 import (
+	"fmt"
+	"github.com/gogo/protobuf/proto"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/golang/glog"
-	"github.com/gogo/protobuf/proto"
-	"fmt"
 )
 
 func init() {
@@ -55,7 +55,7 @@ func protoToRawPayload(m proto.Message) (*mtproto.ZProtoRawPayload, error) {
 	return &mtproto.ZProtoRawPayload{Payload: x.GetBuf()}, err
 }
 
-func (s *syncHandler) onSyncData(conn *net2.TcpConnection, buf []byte)  (*mtproto.ZProtoRawPayload, error) {
+func (s *syncHandler) onSyncData(conn *net2.TcpConnection, buf []byte) (*mtproto.ZProtoRawPayload, error) {
 	dbuf := mtproto.NewDecodeBuf(buf)
 	len2 := int(dbuf.Int())
 	messageName := string(dbuf.Bytes(len2))
@@ -85,9 +85,9 @@ func (s *syncHandler) onSyncData(conn *net2.TcpConnection, buf []byte)  (*mtprot
 		pushData, _ := message.(*mtproto.PushUpdatesData)
 		dbuf := mtproto.NewDecodeBuf(pushData.GetUpdatesData())
 		mdata := &messageData{
-			confirmFlag: true,
+			confirmFlag:  true,
 			compressFlag: false,
-			obj: dbuf.Object(),
+			obj:          dbuf.Object(),
 		}
 		if mdata.obj == nil {
 			glog.Errorf("onSyncData - recv invalid pushData: {%v}", message)

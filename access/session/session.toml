@@ -17,8 +17,8 @@ etcdAddrs = ["http://127.0.0.1:2379"]
 interval = "2s"
 tTL = "10s"
 
-[syncRpcClient]
-serviceName = "sync"
+[authKeyRpcClient]
+serviceName = "auth_key"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
 
@@ -31,20 +31,6 @@ balancer = "round_robin"
 serviceName = "nbfs"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
-
-[[mysql]]
-name = "immaster"
-dsn = "root:@/nebulaim?charset=utf8"
-#root:1@tcp(127.0.0.1:3306)/nebulaim?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
-active = 5
-idle = 2
-
-[[mysql]]
-name = "imslave"
-dsn = "root:@/nebulaim?charset=utf8"
-# root:1@tcp(127.0.0.1:3306)/nebulaim?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
-active = 5
-idle = 2
 
 [[redis]]
 name = "cache"

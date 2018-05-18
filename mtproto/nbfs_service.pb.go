@@ -1387,6 +1387,8 @@ It has these top-level messages:
 	AuthKeyMetadata
 	AuthKeyRequest
 	AuthKeyData
+	AuthKeyIdRequest
+	UserIdResponse
 	VoidRsp
 	ClientUpdatesState
 	ConnectToSessionServerReq
