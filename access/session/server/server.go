@@ -187,7 +187,7 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 			}
 			res := &mtproto.ZProtoMessage{
 				SessionId: zmsg.SessionId,
-				SeqNum:    1,
+				SeqNum:    zmsg.SeqNum,
 				Metadata:  zmsg.Metadata,
 				Message:   sres,
 			}
