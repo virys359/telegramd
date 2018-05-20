@@ -20,7 +20,7 @@ package server
 import (
 	"context"
 	"github.com/golang/glog"
-	"github.com/nebulaim/nebula/cache"
+	"github.com/nebulaim/telegramd/baselib/cache"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
