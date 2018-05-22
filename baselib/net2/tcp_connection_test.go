@@ -65,7 +65,7 @@ func TestSend(t *testing.T) {
 
 	mockCodec := &mockCodec{reader, writer, sync.WaitGroup{}}
 
-	tcpConn := NewServerTcpConnection(`conn0`, nil, 5, mockCodec, nil)
+	tcpConn := NewTcpConnection(`conn0`, nil, 5, mockCodec, nil)
 	sendMsgCount := 100
 	for i := 0; i < sendMsgCount; i++ {
 		mockCodec.sendCounter.Add(1)
