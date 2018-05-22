@@ -236,6 +236,8 @@ func GetOrInsertSalt(keyId int64) (int64, error) {
 	return salt, nil
 }
 
+// https://core.telegram.org/mtproto/description#server-salt
+//
 // Server Salt
 //
 // A (random) 64-bit number periodically (say, every 24 hours) changed

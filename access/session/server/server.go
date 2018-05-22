@@ -141,6 +141,8 @@ func (s *SessionServer) Initialize() error {
 
 func (s *SessionServer) RunLoop() {
 	// TODO(@benqi): check error
+	timingWheel.Start()
+
 	s.bizRpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
 	s.nbfsRpcClient, _ = grpc_util.NewRPCClient(&s.config.NbfsRpcClient)
 	go s.registry.Register()
@@ -150,6 +152,7 @@ func (s *SessionServer) RunLoop() {
 
 func (s *SessionServer) Destroy() {
 	glog.Infof("sessionServer - destroy...")
+	timingWheel.Stop()
 	s.registry.Deregister()
 	s.server.Stop()
 	time.Sleep(1 * time.Second)

@@ -170,7 +170,7 @@ func (m *EncryptedMessage2) Encode(authKeyId int64, authKey []byte) ([]byte, err
 func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, error) {
 	objData := m.Object.Encode()
 	var additional_size = (32 + len(objData)) % 16
-	if (additional_size != 0) {
+	if additional_size != 0 {
 		additional_size = 16 - additional_size
 	}
 	if MTPROTO_VERSION == 2 && additional_size < 12 {
