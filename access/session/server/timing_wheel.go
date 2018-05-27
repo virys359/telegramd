@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-var timingWheel = new(TimingWheel)
+// var timingWheel = new(TimingWheel)
 
 type Entry interface {
 	AddRef()
