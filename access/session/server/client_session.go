@@ -18,7 +18,7 @@
 package server
 
 import (
-	"github.com/nebulaim/nebula/sync2"
+	"github.com/nebulaim/telegramd/baselib/sync2"
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/golang/glog"
 	"time"
