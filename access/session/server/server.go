@@ -181,7 +181,8 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 		msgType := binary.LittleEndian.Uint32(payload.Payload[:4])
 		switch msgType {
 		case mtproto.SESSION_SESSION_DATA:
-			return s.sessionManager.onSessionData(conn, zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
+			return s.sessionManager.onSessionData2(conn.GetConnID(), zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
+			// return s.sessionManager.onSessionData(conn, zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
 		case mtproto.SYNC_DATA:
 			sres, err := s.syncHandler.onSyncData(conn, payload.Payload[4:])
 			if err != nil {
@@ -208,6 +209,7 @@ func (s *SessionServer) OnConnectionClosed(conn *net2.TcpConnection) {
 }
 
 func (s *SessionServer) SendToClientData(connID, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
+	glog.Infof("sendToClientData - {%d, %d}", connID, sessionID)
 	conn := s.server.GetConnection(connID)
 	if conn != nil {
 		return sendDataByConnection(conn, sessionID, md, buf)

@@ -16,3 +16,20 @@
  */
 
 package server
+
+import (
+	"testing"
+	"fmt"
+)
+
+func TestSessionClientManager(t *testing.T) {
+	s := newSessionClientManager(100000, []byte{1}, 1)
+	s.Start()
+
+	fmt.Println("ready.")
+	for i := 0; i < 10; i++ {
+		s.onSessionData(&sessionData{1, 1, nil, []byte{1}})
+	}
+
+	s.Stop()
+}

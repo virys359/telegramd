@@ -94,7 +94,8 @@ func (s *syncHandler) onSyncData(conn *net2.TcpConnection, buf []byte) (*mtproto
 		} else {
 			md := &mtproto.ZProtoMetadata{}
 			// push
-			s.smgr.pushToSessionData(pushData.GetAuthKeyId(), pushData.GetSessionId(), md, mdata)
+			// s.smgr.pushToSessionData(pushData.GetAuthKeyId(), pushData.GetSessionId(), md, mdata)
+			s.smgr.onSyncData2(pushData.GetAuthKeyId(), pushData.GetSessionId(), md, mdata)
 		}
 
 		return protoToRawPayload(&mtproto.VoidRsp{})

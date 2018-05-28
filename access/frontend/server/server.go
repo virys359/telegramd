@@ -32,7 +32,7 @@ import (
 	// "github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
 	"github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/baselib/sync2"
+	// "github.com/nebulaim/telegramd/baselib/sync2"
 )
 
 type ServerConfig struct {

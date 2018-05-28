@@ -52,17 +52,21 @@ const (
 	TOKEN_TYPE_INTERNAL_PUSH = 7
 )
 
-func getConntctionType(tl mtproto.TLObject) int {
+func getConnectionType(tl mtproto.TLObject) int {
 	switch tl.(type) {
-	case *mtproto.TLAccountRegisterDevice:
+	case *mtproto.TLAccountRegisterDevice,
+		*mtproto.TLAccountUnregisterDevice,
+		*mtproto.TLAccountRegisterDeviceLayer74,
+		*mtproto.TLAccountUnregisterDeviceLayer74:
+		return PUSH
 		// check android internal push connection
-		reg, _ := tl.(*mtproto.TLAccountRegisterDevice)
-		if reg.GetTokenType() == TOKEN_TYPE_INTERNAL_PUSH {
-			// android
-			return PUSH
-		} else {
-			return GENERIC
-		}
+		//reg, _ := tl.(*mtproto.TLAccountRegisterDevice)
+		//if reg.GetTokenType() == TOKEN_TYPE_INTERNAL_PUSH {
+		//	// android
+		//	return PUSH
+		//} else {
+		//	return GENERIC
+		//}
 	case *mtproto.TLUploadSaveFilePart,
 		*mtproto.TLUploadSaveBigFilePart:
 		// upload connection

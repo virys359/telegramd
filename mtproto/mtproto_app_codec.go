@@ -50,6 +50,7 @@ func (c *MTProtoAppCodec) Receive() (interface{}, error) {
 		return nil, err
 	}
 
+	// TODO(@benqi): dispatch to session
 	// glog.Info("first_byte: ", hex.EncodeToString(b[:1]))
 	needAck := bool(b[0] >> 7 == 1)
 	_ = needAck

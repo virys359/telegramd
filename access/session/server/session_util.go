@@ -26,10 +26,6 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 )
 
-type sessionClientCallback interface {
-	SendToClientData(*sessionClient, int32, *mtproto.ZProtoMetadata, []*messageData) error
-}
-
 func sendDataByConnection(conn *net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
 	smsg := &mtproto.ZProtoSessionData{
 		MTPMessage: &mtproto.MTPRawMessage{
