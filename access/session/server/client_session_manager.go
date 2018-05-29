@@ -46,30 +46,26 @@ const (
 	kNetworkMessageStateRunning 			= 2		// invoke api
 	kNetworkMessageStateWaitReplyTimeout 	= 5		// invoke timeout
 	kNetworkMessageStateInvoked 			= 4		// invoke ok, send to client
-	kNetworkMessageStateAcked				= 6		// received client ack
+	kNetworkMessageStateAck  				= 6		// received client ack
 	kNetworkMessageStateWaitAckTimeout		= 7		// wait ack timeout
 	kNetworkMessageStateError				= 8		// invalid error
 	kNetworkMessageStateEnd					= 9		// end state
 )
 
 type networkApiMessage struct {
+	date       int64
 	quickAckId int32 // 0: not use
 	rpcRequest *mtproto.TLMessage2
-	state      int
+	state      int	// TODO(@benqi): sync.AtomicInt32
+	rpcMsgId   int64
 	rpcResult  mtproto.TLObject
 }
 
 type networkSyncMessage struct {
+	date       int64
 	update *mtproto.TLMessage2
 	state  int
 }
-
-//type clientNetworkApiMessage struct {
-//	md              *mtproto.ZProtoMetadata
-//	sessionId       int64
-//	clientSessionId uint64
-//	apiMessage      *networkApiMessage
-//}
 
 type rpcApiMessage struct {
 	connID     ClientConnID
@@ -77,35 +73,6 @@ type rpcApiMessage struct {
 	sessionId  int64
 	rpcMessage *networkApiMessage
 }
-
-//type sessionContainerMessage struct {
-//	clientSessionId uint64
-//	sessionId       int64
-//	quickAckId      int32
-//	metadata        *mtproto.ZProtoMetadata
-//	salt            int64
-//	Layer           int32
-//	messages        []*mtproto.TLMessage2
-//}
-//
-//type clientConn interface {
-//	getConnType() int
-//}
-//
-//func NewClientConn(connType int) clientConn {
-//	switch connType {
-//	case GENERIC:
-//		return &genericClient{}
-//	case DOWNLOAD:
-//	case UPLOAD:
-//	case PUSH:
-//	case TEMP:
-//	case UNKNOWN:
-//	default:
-//	}
-//	return &unknownClient{}
-//}
-//
 
 type sessionData struct {
 	connID ClientConnID
@@ -204,21 +171,37 @@ func (s *clientSessionManager) runLoop() {
 				// b, _ := sess.encodeMessage(s.authKeyId, s.authKey, false, result.rpcMessage.rpcResult)
 				// sendDataByConnID(result.connID.clientConnID, result.connID.frontendConnID, result.md, b)
 			} else {
-				sess.sendToClient(result.connID, result.md, result.rpcMessage.rpcResult)
+				// result.rpcMessage.state = kNetworkMessageStateAcked
+				result.rpcMessage.rpcMsgId = mtproto.GenerateMessageId()
+				sess.sendToClient(result.connID, result.md, result.rpcMessage.rpcMsgId, true, result.rpcMessage.rpcResult)
 			}
-		// case timeout:
-			// timer
-		default:
+		case <-time.After(time.Second):
+			var delList = []int64{}
+			for k, v := range s.sessions {
+				if !v.onTimer() {
+					delList = append(delList, k)
+				}
+			}
+
+			for _, id := range delList {
+				delete(s.sessions, id)
+			}
+
+			if len(s.sessions) == 0 {
+				deleteClientSessionManager(s.authKeyId)
+			}
 		}
 	}
+
+	glog.Info("quit runLoop...")
 }
 
 func (s *clientSessionManager) rpcRunLoop() {
 	for {
 		apiRequest := s.rpcQueue.Pop()
 		if apiRequest == nil {
-			// request.state
-			continue
+			glog.Info("quit rpcRunLoop...")
+			return
 		} else {
 			request, _ := apiRequest.(*rpcApiMessage)
 			s.onRpcRequest(request)
@@ -389,19 +372,39 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 	var messages = &messageListWrapper{[]*mtproto.TLMessage2{}}
 	s.onClientMessage(message.MessageId, message.SeqNo, message.Object, messages)
 
-	sess, ok := s.sessions[message.SessionId]
-	if !ok {
-		sess = NewClientSession(message.SessionId, s)
-		s.sessions[message.SessionId] = sess
+
+	for _, message := range messages.messages {
+		if message.Object == nil {
+			continue
+		}
+
+		switch message.Object.(type) {
+		case *mtproto.TLDestroySession:			// GENERIC
+			destroySession, _ := message.Object.(*mtproto.TLDestroySession)
+			if sess, ok := s.sessions[destroySession.SessionId]; ok {
+				//
+				destroySessionOk := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
+					SessionId: destroySession.SessionId,
+				}}
+				sess.sendToClient(sessionMsg.connID, sessionMsg.md, 0, false, destroySessionOk.To_DestroySessionRes())
+				delete(s.sessions, destroySession.SessionId)
+			} else {
+				// TODO(@benqi): seqNo???
+				destroySessionNone := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
+					SessionId: destroySession.SessionId,
+				}}
+				_ = destroySessionNone
+				// sess.sendToClient(sessionMsg.connID, sessionMsg.md, 0, false, destroySessionOk.To_DestroySessionRes())
+			}
+		}
 	}
-	sess.clientConnID = sessionMsg.connID
 
 	//=============================================================================================
 	// Check Server Salt
 	var salt int64
 	if !CheckBySalt(s.authKeyId, message.Salt) {
 		salt, _ = GetOrInsertSalt(s.authKeyId)
-		sess.salt = salt
+		// sess.salt = salt
 		badServerSalt := mtproto.NewTLBadServerSalt()
 		badServerSalt.SetBadMsgId(message.MessageId)
 		badServerSalt.SetErrorCode(48)
@@ -413,13 +416,21 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 	} else {
 		salt = message.Salt
 	}
+
+	sess, ok := s.sessions[message.SessionId]
+	if !ok {
+		sess = NewClientSession(message.SessionId, s)
+		s.sessions[message.SessionId] = sess
+		sess.onNewSessionCreated(sessionMsg.connID, sessionMsg.md, message.MessageId)
+	}
+	sess.clientConnID = sessionMsg.connID
 	sess.onMessageData(sessionMsg.connID, sessionMsg.md, messages.messages)
 }
 
 func (s *clientSessionManager) onSyncData(syncMsg *syncData) {
 	sess, ok := s.sessions[syncMsg.sessionID]
 	if ok {
-		sess.sendToClient(sess.clientConnID, syncMsg.md, syncMsg.data.obj)
+		sess.onSyncData(sess.clientConnID, syncMsg.md, syncMsg.data.obj)
 	}
 }
 

@@ -22,6 +22,7 @@ import (
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/golang/glog"
 	"time"
+	"container/list"
 )
 
 // PUSH ==> ConnectionTypePush
@@ -42,6 +43,11 @@ const (
 	INVALID_TYPE = -1 // math.MaxInt32
 )
 
+const (
+	kDefaultPingTimeout = 30
+	kPingAddTimeout = 15
+)
+
 type messageData struct {
 	confirmFlag  bool
 	compressFlag bool
@@ -49,27 +55,27 @@ type messageData struct {
 }
 
 type clientSession struct {
+	closeDate       int64
 	connType        int
 	clientConnID    ClientConnID
 	salt            int64
 	nextSeqNo       uint32
 	sessionId       int64
 	manager			*clientSessionManager
-	apiMessages     []*networkApiMessage
-	syncMessages    []*networkSyncMessage
+	apiMessages     *list.List // []*networkApiMessage
+	syncMessages    *list.List // []*networkSyncMessage
 	refcount        sync2.AtomicInt32
-
-	// sendMessageList []*messageData
 }
 
 func NewClientSession(sessionId int64, m *clientSessionManager) *clientSession{
 	return &clientSession{
+		closeDate:       time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout,
 		connType:        UNKNOWN,
-		// clientConnID:    connID,
+		// clientConnID: connID,
 		sessionId:       sessionId,
 		manager:         m,
-		apiMessages:     []*networkApiMessage{},
-		syncMessages:    []*networkSyncMessage{},
+		apiMessages:     list.New(), // []*networkApiMessage{},
+		syncMessages:    list.New(), // []*networkSyncMessage{},
 	}
 }
 
@@ -89,24 +95,49 @@ func getConnectionType2(messages []*mtproto.TLMessage2) int {
 }
 
 //============================================================================================
-func (c *clientSession) AddRef() {
-	c.refcount.Add(1)
+// return false, will delete this clientSession
+func (c *clientSession) onTimer() bool {
+	date := time.Now().Unix()
+
+	for e := c.apiMessages.Front(); e != nil; e = e.Next() {
+		if date - e.Value.(*networkApiMessage).date > 300 {
+			c.apiMessages.Remove(e)
+		}
+	}
+
+	for e := c.syncMessages.Front(); e != nil; e = e.Next() {
+		if date - e.Value.(*networkSyncMessage).date > 300 {
+			c.apiMessages.Remove(e)
+		}
+	}
+
+	if date >= c.closeDate {
+		return false
+	} else {
+		return true
+	}
 }
 
-func (c *clientSession) Release() int32 {
-	return c.refcount.Add(-1)
-}
-
-func (c *clientSession) TimerCallback() {
-	// TODO(@benqi): disconnect client conn, notify status server offline
-}
+//func (c *clientSession) AddRef() {
+//	c.refcount.Add(1)
+//}
+//
+//func (c *clientSession) Release() int32 {
+//	return c.refcount.Add(-1)
+//}
+//
+//func (c *clientSession) TimerCallback() {
+//	// TODO(@benqi): disconnect client conn, notify status server offline
+//}
 
 //============================================================================================
-func (c *clientSession) encodeMessage(authKeyId int64, authKey []byte, confirm bool, tl mtproto.TLObject) ([]byte, error) {
+func (c *clientSession) encodeMessage(authKeyId int64, authKey []byte, messageId int64, confirm bool, tl mtproto.TLObject) ([]byte, error) {
 	message := &mtproto.EncryptedMessage2{
 		Salt:      c.salt,
-		SessionId: c.sessionId,
 		SeqNo:     c.generateMessageSeqNo(confirm),
+		MessageId: messageId,
+		// mtproto.GenerateMessageId(),
+		SessionId: c.sessionId,
 		Object:    tl,
 	}
 	return message.Encode(authKeyId, authKey)
@@ -122,10 +153,9 @@ func (c *clientSession) generateMessageSeqNo(increment bool) int32 {
 	}
 }
 
-func (c *clientSession) sendToClient(connID ClientConnID, md *mtproto.ZProtoMetadata, obj mtproto.TLObject) error {
-	glog.Infof("sendToClient - manager: %v", c.manager)
-
-	b, err := c.encodeMessage(c.manager.authKeyId, c.manager.authKey, false, obj)
+func (c *clientSession) sendToClient(connID ClientConnID, md *mtproto.ZProtoMetadata, messageId int64, confirm bool, obj mtproto.TLObject) error {
+	// glog.Infof("sendToClient - manager: %v", c.manager)
+	b, err := c.encodeMessage(c.manager.authKeyId, c.manager.authKey, messageId, confirm, obj)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -134,8 +164,25 @@ func (c *clientSession) sendToClient(connID ClientConnID, md *mtproto.ZProtoMeta
 
 }
 
+func (c *clientSession) onSyncData(connID ClientConnID, md *mtproto.ZProtoMetadata, obj mtproto.TLObject) {
+
+}
+
+func (c *clientSession) onNewSessionCreated(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64) {
+	glog.Info("onNewSessionCreated - request data: ", msgId)
+	serverSalt, _ := GetOrInsertSalt(c.manager.authKeyId)
+	c.salt = serverSalt
+	newSessionCreated := &mtproto.TLNewSessionCreated{Data2: &mtproto.NewSession_Data{
+		FirstMsgId: msgId,
+		// TODO(@benqi): gen new_session_created.unique_id
+		UniqueId:   int64(connID.frontendConnID),
+		ServerSalt: serverSalt,
+	}}
+	c.sendToClient(connID, md, 0, true, newSessionCreated)
+}
+
 func (c *clientSession) onMessageData(connID ClientConnID, md *mtproto.ZProtoMetadata, messages []*mtproto.TLMessage2) {
-	glog.Info("onMessageData - ", messages)
+	// glog.Info("onMessageData - ", messages)
 	if c.connType == UNKNOWN {
 		connType := getConnectionType2(messages)
 		if connType != UNKNOWN {
@@ -155,10 +202,11 @@ func (c *clientSession) onMessageData(connID ClientConnID, md *mtproto.ZProtoMet
 	//
 
 	for _, message := range messages{
+		glog.Info("onMessageData - ", message)
+
 		if message.Object == nil {
 			continue
 		}
-		glog.Info("onMessageData - ", message)
 
 		switch message.Object.(type) {
 		case *mtproto.TLRpcDropAnswer:	// 所有链接都有可能
@@ -179,7 +227,8 @@ func (c *clientSession) onMessageData(connID ClientConnID, md *mtproto.ZProtoMet
 			destroySession, _ := message.Object.(*mtproto.TLDestroySession)
 			c.onDestroySession(connID, md, message.MsgId, message.Seqno, destroySession)
 		case *mtproto.TLMsgsAck:				// 所有链接都有可能
-			c.onMsgsAck(connID, md, message.MsgId, message.Seqno, message.Object)
+			msgsAck, _ := message.Object.(*mtproto.TLMsgsAck)
+			c.onMsgsAck(connID, md, message.MsgId, message.Seqno, msgsAck)
 		case *mtproto.TLMsgsStateReq:	// android未用
 			c.onMsgsStateReq(connID, md, message.MsgId, message.Seqno, message.Object)
 		case *mtproto.TLMsgsStateInfo:	// android未用
@@ -225,7 +274,10 @@ func (c *clientSession) onPing(connID ClientConnID, md *mtproto.ZProtoMetadata, 
 		MsgId:  msgId,
 		PingId: ping.PingId,
 	}}
-	c.sendToClient(connID, md, pong)
+	c.sendToClient(connID, md, 0, false, pong)
+
+	c.closeDate = time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout
+
 	// _ = pong
 	// c.sendMessageList = append(c.sendMessageList, &messageData{false, false, pong})
 
@@ -241,7 +293,9 @@ func (c *clientSession) onPingDelayDisconnect(connID ClientConnID, md *mtproto.Z
 		PingId: pingDelayDisconnect.PingId,
 	}}
 
-	c.sendToClient(connID, md, pong)
+	c.sendToClient(connID, md, 0, false, pong)
+
+	c.closeDate = time.Now().Unix() + int64(pingDelayDisconnect.DisconnectDelay) + kPingAddTimeout
 
 	// _ = pong
 	// c.sendMessageList = append(c.sendMessageList, &messageData{false, false, pong})
@@ -250,8 +304,28 @@ func (c *clientSession) onPingDelayDisconnect(connID ClientConnID, md *mtproto.Z
 	// timingWheel.AddTimer(c, int(pingDelayDisconnect.DisconnectDelay) + kPingAddTimeout)
 }
 
-func (c *clientSession) onMsgsAck(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Infof("onMsgsAck - request: %s", request.String())
+func (c *clientSession) onMsgsAck(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLMsgsAck) {
+	glog.Infof("onMsgsAck - request: %s", request)
+
+	for _, id := range request.GetMsgIds() {
+		// reqMsgId := msgId
+		for e := c.apiMessages.Front(); e != nil; e = e.Next() {
+			v, _ := e.Value.(*networkApiMessage)
+			if v.rpcMsgId == id {
+				v.state = kNetworkMessageStateAck
+				glog.Info("onMsgsAck - networkSyncMessage change kNetworkMessageStateAck")
+			}
+		}
+
+		for e := c.syncMessages.Front(); e != nil; e = e.Next() {
+			v, _ := e.Value.(*networkSyncMessage)
+			if v.update.MsgId == id {
+				v.state = kNetworkMessageStateAck
+				glog.Info("onMsgsAck - networkSyncMessage change kNetworkMessageStateAck")
+				// TODO(@benqi): update pts, qts, seq etc...
+			}
+		}
+	}
 }
 
 func (c *clientSession) onHttpWait(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
@@ -286,7 +360,8 @@ func (c *clientSession) onDestroySession(connID ClientConnID, md *mtproto.ZProto
 	destroySessionOk := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
 		SessionId: request.SessionId,
 	}}
-	c.sendToClient(connID, md, destroySessionOk)
+
+	c.sendToClient(connID, md, 0, false, destroySessionOk)
 
 	//c.sendMessageList = append(c.sendMessageList, &messageData{false, false, destroySessionOk})
 }
@@ -302,23 +377,55 @@ func (c *clientSession) onGetFutureSalts(connID ClientConnID, md *mtproto.ZProto
 		Salts:    salts,
 	}}
 
-	c.sendToClient(connID, md, futureSalts)
-
-	//c.sendMessageList = append(c.sendMessageList, &messageData{true, false, futureSalts})
+	c.sendToClient(connID, md, 0, false, futureSalts)
 }
 
-// rpc_answer_unknown#5e2ad36e = RpcDropAnswer;
-// rpc_answer_dropped_running#cd78e586 = RpcDropAnswer;
-// rpc_answer_dropped#a43ad8b7 msg_id:long seq_no:int bytes:int = RpcDropAnswer;
+// sendToClient:
+// 	rpc_answer_unknown#5e2ad36e = RpcDropAnswer;
+// 	rpc_answer_dropped_running#cd78e586 = RpcDropAnswer;
+// 	rpc_answer_dropped#a43ad8b7 msg_id:long seq_no:int bytes:int = RpcDropAnswer;
 func (c *clientSession) onRpcDropAnswer(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLRpcDropAnswer) {
 	glog.Info("processRpcDropAnswer - request data: ", request)
 	//
+	// reqMsgId := msgId
+
 	rpcAnswer := &mtproto.RpcDropAnswer{Data2: &mtproto.RpcDropAnswer_Data{}}
 
-	// TODO(@benqi): 实现rpcDropAnswer处理逻辑
-	c.sendToClient(connID, md, rpcAnswer)
+	var found = false
+	for e := c.apiMessages.Front(); e != nil; e = e.Next() {
+		v, _ := e.Value.(*networkApiMessage)
+		if v.rpcRequest.MsgId == request.ReqMsgId {
+			if v.state == kNetworkMessageStateReceived {
+				rpcAnswer.Constructor = mtproto.TLConstructor_CRC32_rpc_answer_dropped
+				rpcAnswer.Data2.MsgId = request.ReqMsgId
+				// TODO(@benqi): set seqno and bytes
+				// rpcAnswer.Data2.SeqNo = 0
+				// rpcAnswer.Data2.Bytes = 0
+			} else if v.state == kNetworkMessageStateInvoked {
+				rpcAnswer.Constructor = mtproto.TLConstructor_CRC32_rpc_answer_dropped_running
+			} else {
+				rpcAnswer.Constructor = mtproto.TLConstructor_CRC32_rpc_answer_unknown
+			}
+			found = true
+			break
+		}
+	}
 
-	// c.sendMessageList = append(c.sendMessageList, &messageData{false, false, rpcAnswer})
+	if !found {
+		rpcAnswer.Constructor = mtproto.TLConstructor_CRC32_rpc_answer_unknown
+	}
+
+	// android client code:
+	/*
+	 if (notifyServer) {
+		TL_rpc_drop_answer *dropAnswer = new TL_rpc_drop_answer();
+		dropAnswer->req_msg_id = request->messageId;
+		sendRequest(dropAnswer, nullptr, nullptr, RequestFlagEnableUnauthorized | RequestFlagWithoutLogin | RequestFlagFailOnServerErrors, request->datacenterId, request->connectionType, true);
+	 }
+	 */
+
+	// and both of these responses require an acknowledgment from the client.
+	c.sendToClient(connID, md, 0, true, &mtproto.TLRpcResult{ReqMsgId: msgId, Result: rpcAnswer})
 }
 
 func (c *clientSession) onContestSaveDeveloperInfo(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLContestSaveDeveloperInfo) {
@@ -327,7 +434,7 @@ func (c *clientSession) onContestSaveDeveloperInfo(connID ClientConnID, md *mtpr
 
 	// TODO(@benqi): 实现scontestSaveDeveloperInfo处理逻辑
 	// r := &mtproto.TLTrue{}
-	c.sendToClient(connID, md, &mtproto.TLTrue{})
+	// c.sendToClient(connID, md, false, &mtproto.TLTrue{})
 
 	// _ = r
 }
@@ -452,11 +559,25 @@ func (c *clientSession) onRpcRequest(connID ClientConnID, md *mtproto.ZProtoMeta
 		Object: object,
 	}
 
-	apiMessage := &networkApiMessage {
-		rpcRequest: requestMessage,
-		state: kNetworkMessageStateReceived,
+
+	// reqMsgId := msgId
+	for e := c.apiMessages.Front(); e != nil; e = e.Next() {
+		v, _ := e.Value.(*networkApiMessage)
+		if v.rpcRequest.MsgId == msgId {
+			if v.state >= kNetworkMessageStateInvoked {
+				c.sendToClient(connID, md, v.rpcMsgId, true, v.rpcResult)
+				return
+			}
+		}
 	}
-	c.apiMessages = append(c.apiMessages, apiMessage)
+
+	apiMessage := &networkApiMessage{
+		date:       time.Now().Unix(),
+		rpcRequest: requestMessage,
+		state:      kNetworkMessageStateReceived,
+	}
+	// c.apiMessages = append(c.apiMessages, apiMessage)
+	c.apiMessages.PushBack(apiMessage)
 	c.manager.rpcQueue.Push(&rpcApiMessage{connID: connID, sessionId: c.sessionId, rpcMessage: apiMessage})
 }
 

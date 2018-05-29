@@ -91,20 +91,9 @@ func (s *sessionManager) onNewSessionClientManager(sess *clientSessionManager) {
 	sess.Start()
 }
 
-//func (s *sessionManager) onSessionDataArrived(sess *sessionClientManager, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
-//	return nil
-//}
-//
-//func (s *sessionManager) onSyncDataArrived(sess *sessionClientManager, sessionId int64, md *mtproto.ZProtoMetadata, data *messageData) error {
-//	return nil
-//}
-
-func (s *sessionManager) onCloseSessionClientManager(authKeyId int64, authKey []byte) {
+func (s *sessionManager) onCloseSessionClientManager(authKeyId int64) {
 	if vv, ok := s.sessions.Load(authKeyId); ok {
 		vv.(*clientSessionManager).Stop()
 		s.sessions.Delete(authKeyId)
 	}
 }
-
-
-

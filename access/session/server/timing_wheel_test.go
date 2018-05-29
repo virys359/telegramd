@@ -21,13 +21,12 @@ import (
 	"testing"
 	"fmt"
 	"math/rand"
-	"github.com/cosiner/gohper/time2"
 	"time"
-	"github.com/nebulaim/nebula/sync2"
+	"github.com/nebulaim/telegramd/baselib/sync2"
 )
 
 func init() {
-	rand.Seed(time2.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 }
 
 type MockEntry struct {

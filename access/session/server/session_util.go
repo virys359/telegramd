@@ -72,3 +72,12 @@ func getNbfsRPCClient() (*grpc_util.RPCClient, error) {
 	}
 	return sessionServer.nbfsRpcClient, nil
 }
+
+func deleteClientSessionManager(authKeyID int64) {
+	if sessionServer, ok := app.GAppInstance.(*SessionServer); !ok {
+		err := fmt.Errorf("not use app instance framework")
+		glog.Error(err)
+	} else {
+		sessionServer.sessionManager.onCloseSessionClientManager(authKeyID)
+	}
+}

@@ -52,14 +52,19 @@ func NewTimingWheel(size int) *TimingWheel {
 
 func (t *TimingWheel) Start() {
 	t.running = true
-	time.AfterFunc(time.Second, func() {
-		t.onTimer()
-	})
+	go t.timerLoop()
 }
 
 func (t *TimingWheel) Stop() {
 	t.running = false
 	t.bucketIdx = 0
+}
+
+func (t *TimingWheel) timerLoop() {
+	for t.running {
+		<- time.After(time.Second)
+		t.onTimer()
+	}
 }
 
 func (t *TimingWheel) onTimer() {
@@ -80,12 +85,6 @@ func (t *TimingWheel) onTimer() {
 	t.bucketIdx++
 	if t.bucketIdx >= t.bucketSize {
 		t.bucketIdx = 0
-	}
-
-	if t.running {
-		time.AfterFunc(time.Second, func() {
-			t.onTimer()
-		})
 	}
 }
 

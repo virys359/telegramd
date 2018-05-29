@@ -183,7 +183,9 @@ func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, err
 	// x.Bytes(msgKey)
 	x.Long(m.Salt)
 	x.Long(m.SessionId)
-	m.MessageId = GenerateMessageId()
+	if m.MessageId == 0 {
+		m.MessageId = GenerateMessageId()
+	}
 	x.Long(m.MessageId)
 	x.Int(m.SeqNo)
 	x.Int(int32(len(objData)))
