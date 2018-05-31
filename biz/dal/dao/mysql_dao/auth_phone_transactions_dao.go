@@ -79,6 +79,13 @@ func (dao *AuthPhoneTransactionsDAO) SelectByPhoneCodeHash(auth_key_id int64, ph
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByPhoneCodeHash(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 

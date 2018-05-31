@@ -25,6 +25,8 @@ type StickerSetsDO struct {
 	ShortName    string `db:"short_name"`
 	Count        int32  `db:"count"`
 	Hash         int32  `db:"hash"`
+	Official     int8   `db:"official"`
+	Mask         int8   `db:"mask"`
 	CreatedAt    string `db:"created_at"`
 	UpdatedAt    string `db:"updated_at"`
 }

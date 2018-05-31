@@ -101,6 +101,13 @@ func (dao *{{.TableName}}DAO) {{.FuncName}}({{ range $i, $v := .Params }} {{if n
 		return nil
 	}
 
+    err = rows.Err()
+    if err != nil {
+        errDesc := fmt.Sprintf("rows in {{.FuncName}}(_), error: %v", err)
+        glog.Error(errDesc)
+        panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+    }
+
 	return do
 }
 {{end}}
@@ -135,6 +142,13 @@ func (dao *{{.TableName}}DAO) {{.FuncName}}({{ range $i, $v := .Params }} {{if n
             panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
         }
 		values = append(values, v)
+    }
+
+    err = rows.Err()
+    if err != nil {
+        errDesc := fmt.Sprintf("rows in {{.FuncName}}(_), error: %v", err)
+        glog.Error(errDesc)
+        panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
     }
 
     return values
@@ -172,6 +186,13 @@ func (dao *{{.TableName}}DAO) {{.FuncName}}({{ range $i, $v := .Params }} {{if n
             panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
         }
 		values = append(values, v)
+    }
+
+    err = rows.Err()
+    if err != nil {
+        errDesc := fmt.Sprintf("rows in {{.FuncName}}(_), error: %v", err)
+        glog.Error(errDesc)
+        panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
     }
 
     return values

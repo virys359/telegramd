@@ -30,6 +30,5 @@ type PhotoDatasDO struct {
 	FileSize   int32  `db:"file_size"`
 	FilePath   string `db:"file_path"`
 	Ext        string `db:"ext"`
-	Bytes      []byte `db:"bytes"`
 	CreatedAt  string `db:"created_at"`
 }

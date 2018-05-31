@@ -28,7 +28,6 @@ type FilePartsDO struct {
 	FileTotalParts int32  `db:"file_total_parts"`
 	FilePath       string `db:"file_path"`
 	FileSize       int64  `db:"file_size"`
-	Bytes          []byte `db:"bytes"`
 	CreatedAt      string `db:"created_at"`
 	UpdatedAt      string `db:"updated_at"`
 }

@@ -101,5 +101,12 @@ func (dao *UserPrivacysDAO) SelectPrivacy(user_id int32, key_type int8) *dataobj
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectPrivacy(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
