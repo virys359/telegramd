@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"time"
 	"github.com/nebulaim/telegramd/baselib/queue2"
-	"encoding/hex"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/biz/core/user"
 )
@@ -239,35 +238,6 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 		return
 	}
 
-	//=================================================================================================
-	// Check Message Identifier (msg_id)
-	//
-	// https://core.telegram.org/mtproto/description#message-identifier-msg-id
-	// Message Identifier (msg_id)
-	//
-	// A (time-dependent) 64-bit number used uniquely to identify a message within a session.
-	// Client message identifiers are divisible by 4,
-	// server message identifiers modulo 4 yield 1 if the message is a response to a client message, and 3 otherwise.
-	// Client message identifiers must increase monotonically (within a single session),
-	// the same as server message identifiers, and must approximately equal unixtime*2^32.
-	// This way, a message identifier points to the approximate moment in time the message was created.
-	// A message is rejected over 300 seconds after it is created or 30 seconds
-	// before it is created (this is needed to protect from replay attacks).
-	// In this situation,
-	// it must be re-sent with a different identifier (or placed in a container with a higher identifier).
-	// The identifier of a message container must be strictly greater than those of its nested messages.
-	//
-	// Important: to counter replay-attacks the lower 32 bits of msg_id passed
-	// by the client must not be empty and must present a fractional
-	// part of the time point when the message was created.
-	//
-	if message.MessageId % 4 != 0 {
-		err = fmt.Errorf("client message identifiers are divisible by 4: %d", message.MessageId)
-		glog.Error(err)
-
-		// TODO(@benqi): ignore this message or close client conn??
-		return
-	}
 
 	if message.MessageId & 0xffffffff == 0 {
 		err = fmt.Errorf("the lower 32 bits of msg_id passed by the client must not be empty: %d", message.MessageId)
@@ -277,72 +247,7 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 		return
 	}
 
-	//timeMessage := int32(message.MessageId / 4294967296.0)
-	//date := int32(time.Now().Unix())
-	//if date - timeMessage < 30 || timeMessage - date > 300 {
-	//	err = fmt.Errorf("message is rejected over 300 seconds after it is created or 30 seconds: %d", message.MessageId)
-	//	glog.Error(err)
-	//
-	//	// TODO(@benqi): ignore this message or close client conn??
-	//	return
-	//}
-
 	/*
-		if sess.lastMsgId > message.MessageId {
-			err = fmt.Errorf("client message identifiers must increase monotonically (within a single session): %d", message.MessageId)
-			glog.Error(err)
-
-			// TODO(@benqi): ignore this message or close client conn??
-			return
-		}
-		// TODO(@benqi): Notice of Ignored Error Message
-		//
-		// https://core.telegram.org/mtproto/service_messages_about_messages
-		//
-
-		sess.lastMsgId = message.MessageId
-
-		//=============================================================================================
-		// Check Server Salt
-		if !CheckBySalt(s.authKeyId, message.Salt) {
-			salt, _ := GetOrInsertSalt(s.authKeyId)
-			sess.salt = salt
-			badServerSalt := mtproto.NewTLBadServerSalt()
-			badServerSalt.SetBadMsgId(message.MessageId)
-			badServerSalt.SetErrorCode(48)
-			badServerSalt.SetBadMsgSeqno(message.SeqNo)
-			badServerSalt.SetNewServerSalt(salt)
-			b, _ := sess.encodeMessage(s.authKeyId, s.authKey, false, badServerSalt)
-			sendDataByConnID(sessionMsg.clientSessionId, sessionMsg.sessionID, sessionMsg.md, b)
-			// _ = b
-			return
-		}
-
-		//=============================================================================================
-		// TODO(@benqi): Time Synchronization, https://core.telegram.org/mtproto#time-synchronization
-		//
-		// Time Synchronization
-		//
-		// If client time diverges widely from server time,
-		// a server may start ignoring client messages,
-		// or vice versa, because of an invalid message identifier (which is closely related to creation time).
-		// Under these circumstances,
-		// the server will send the client a special message containing the correct time and
-		// a certain 128-bit salt (either explicitly provided by the client in a special RPC synchronization request or
-		// equal to the key of the latest message received from the client during the current session).
-		// This message could be the first one in a container that includes other messages
-		// (if the time discrepancy is significant but does not as yet result in the client’s messages being ignored).
-		//
-		// Having received such a message or a container holding it,
-		// the client first performs a time synchronization (in effect,
-		// simply storing the difference between the server’s time
-		// and its own to be able to compute the “correct” time in the future)
-		// and then verifies that the message identifiers for correctness.
-		//
-		// Where a correction has been neglected,
-		// the client will have to generate a new session to assure the monotonicity of message identifiers.
-		//
-
 		//=============================================================================================
 		// Check Message Sequence Number (msg_seqno)
 		//
@@ -370,60 +275,44 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 	 */
 
 	var messages = &messageListWrapper{[]*mtproto.TLMessage2{}}
-	s.onClientMessage(message.MessageId, message.SeqNo, message.Object, messages)
-
-
-	for _, message := range messages.messages {
-		if message.Object == nil {
-			continue
-		}
-
-		switch message.Object.(type) {
-		case *mtproto.TLDestroySession:			// GENERIC
-			destroySession, _ := message.Object.(*mtproto.TLDestroySession)
-			if sess, ok := s.sessions[destroySession.SessionId]; ok {
-				//
-				destroySessionOk := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
-					SessionId: destroySession.SessionId,
-				}}
-				sess.sendToClient(sessionMsg.connID, sessionMsg.md, 0, false, destroySessionOk.To_DestroySessionRes())
-				delete(s.sessions, destroySession.SessionId)
-			} else {
-				// TODO(@benqi): seqNo???
-				destroySessionNone := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
-					SessionId: destroySession.SessionId,
-				}}
-				_ = destroySessionNone
-				// sess.sendToClient(sessionMsg.connID, sessionMsg.md, 0, false, destroySessionOk.To_DestroySessionRes())
-			}
-		}
-	}
-
-	//=============================================================================================
-	// Check Server Salt
-	var salt int64
-	if !CheckBySalt(s.authKeyId, message.Salt) {
-		salt, _ = GetOrInsertSalt(s.authKeyId)
-		// sess.salt = salt
-		badServerSalt := mtproto.NewTLBadServerSalt()
-		badServerSalt.SetBadMsgId(message.MessageId)
-		badServerSalt.SetErrorCode(48)
-		badServerSalt.SetBadMsgSeqno(message.SeqNo)
-		badServerSalt.SetNewServerSalt(salt)
-		// b, _ := sess.encodeMessage(s.authKeyId, s.authKey, false, badServerSalt)
-		// sendDataByConnID(sessionMsg.connID.clientConnID, sessionMsg.connID.frontendConnID, sessionMsg.md, b)
-		// return
-	} else {
-		salt = message.Salt
-	}
-
 	sess, ok := s.sessions[message.SessionId]
 	if !ok {
-		sess = NewClientSession(message.SessionId, s)
+		sess = NewClientSession(message.SessionId, message.Salt, message.MessageId, s)
+		if !sess.CheckBadServerSalt(sessionMsg.connID, sessionMsg.md, message.MessageId, message.SeqNo, message.Salt) {
+			// glog.Error("salt invalid..")
+			return
+		}
+		// sess.salt = salt
 		s.sessions[message.SessionId] = sess
 		sess.onNewSessionCreated(sessionMsg.connID, sessionMsg.md, message.MessageId)
+	} else {
+		if !sess.CheckBadServerSalt(sessionMsg.connID, sessionMsg.md, message.MessageId, message.SeqNo, message.Salt) {
+			// glog.Error("salt invalid..")
+			return
+		}
+
+		// New Session Creation Notification
+		//
+		// The server notifies the client that a new session (from the server’s standpoint)
+		// had to be created to handle a client message.
+		// If, after this, the server receives a message with an even smaller msg_id within the same session,
+		// a similar notification will be generated for this msg_id as well.
+		// No such notifications are generated for high msg_id values.
+		//
+		if message.MessageId < sess.firstMsgId {
+			sess.firstMsgId = message.MessageId
+			sess.onNewSessionCreated(sessionMsg.connID, sessionMsg.md, message.MessageId)
+		}
 	}
+
+	_, isContainer := message.Object.(*mtproto.TLMsgContainer)
+	if !sess.CheckBadMsgNotification(sessionMsg.connID, sessionMsg.md, message.MessageId, message.SeqNo, isContainer) {
+		glog.Error("bad msg invalid..")
+		return
+	}
+
 	sess.clientConnID = sessionMsg.connID
+	sess.onClientMessage(message.MessageId, message.SeqNo, message.Object, messages)
 	sess.onMessageData(sessionMsg.connID, sessionMsg.md, messages.messages)
 }
 
@@ -434,93 +323,6 @@ func (s *clientSessionManager) onSyncData(syncMsg *syncData) {
 	}
 }
 
-//==================================================================================================
-func (s *clientSessionManager) onClientMessage(msgId int64, seqNo int32, object mtproto.TLObject, messages *messageListWrapper) {
-	switch object.(type) {
-	case *mtproto.TLMsgContainer:
-		msgContainer, _ := object.(*mtproto.TLMsgContainer)
-		for _, m := range msgContainer.Messages {
-			glog.Info("processMsgContainer - request data: ", m)
-			if m.Object == nil {
-				continue
-			}
-
-			// Check msgId
-			//
-			// A container is always generated after its entire contents; therefore,
-			// its sequence number is greater than or equal to the sequence numbers of the messages contained in it.
-			//
-			// if  m.Seqno > seqNo {
-			//	glog.Errorf("sequence number is greater than or equal to the sequence numbers of the messages contained in it: %d", seqNo)
-			//	continue
-			// }
-			s.onClientMessage(m.MsgId, m.Seqno, m.Object, messages)
-		}
-
-	case *mtproto.TLGzipPacked:
-		gzipPacked, _ := object.(*mtproto.TLGzipPacked)
-		glog.Info("processGzipPacked - request data: ", gzipPacked)
-
-		dbuf := mtproto.NewDecodeBuf(gzipPacked.PackedData)
-		o := dbuf.Object()
-		if o == nil {
-			glog.Errorf("Decode query error: %s", hex.EncodeToString(gzipPacked.PackedData))
-			return
-		}
-		// return s.onGzipPacked(sessionId, msgId, seqNo, request)
-		s.onClientMessage(msgId, seqNo, o, messages)
-
-	case *mtproto.TLMsgCopy:
-		// not use in client
-		glog.Error("android client not use msg_copy: ", object)
-
-	case *mtproto.TLInvokeAfterMsg:
-		invokeAfterMsg := object.(*mtproto.TLInvokeAfterMsg)
-		invokeAfterMsgExt := NewInvokeAfterMsgExt(invokeAfterMsg)
-		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: invokeAfterMsgExt})
-
-	case *mtproto.TLInvokeAfterMsgs:
-		invokeAfterMsgs := object.(*mtproto.TLInvokeAfterMsgs)
-		invokeAfterMsgsExt := NewInvokeAfterMsgsExt(invokeAfterMsgs)
-		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: invokeAfterMsgsExt})
-
-	case *mtproto.TLInvokeWithLayer:
-		invokeWithLayer := object.(*mtproto.TLInvokeWithLayer)
-		if invokeWithLayer.Layer != s.Layer {
-			s.Layer = invokeWithLayer.Layer
-			// TODO(@benqi):
-		}
-
-		if invokeWithLayer.GetQuery() == nil {
-			glog.Errorf("invokeWithLayer Query is nil, query: {%v}", invokeWithLayer)
-			return
-		} else {
-			dbuf := mtproto.NewDecodeBuf(invokeWithLayer.Query)
-			classID := dbuf.Int()
-			if classID != int32(mtproto.TLConstructor_CRC32_initConnection) {
-				glog.Errorf("Not initConnection classID: %d", classID)
-				return
-			}
-
-			initConnection := &mtproto.TLInitConnection{}
-			err := initConnection.Decode(dbuf)
-			if err != nil {
-				glog.Error("Decode initConnection error: ", err)
-				return
-			}
-
-			initConnectionExt := NewInitConnectionExt(initConnection)
-			messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: initConnectionExt})
-		}
-
-	case *mtproto.TLInvokeWithoutUpdates:
-		glog.Error("android client not use invokeWithoutUpdates: ", object)
-
-	default:
-		glog.Info("processOthers - request data: ", object)
-		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: object})
-	}
-}
 
 func (s *clientSessionManager) PushApiRequest(apiRequest *mtproto.TLMessage2) {
 	s.rpcQueue.Push(apiRequest)

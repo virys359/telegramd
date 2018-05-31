@@ -18,11 +18,12 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/baselib/sync2"
 	"github.com/nebulaim/telegramd/mtproto"
 	"github.com/golang/glog"
 	"time"
 	"container/list"
+	"math/rand"
+	"encoding/hex"
 )
 
 // PUSH ==> ConnectionTypePush
@@ -48,6 +49,10 @@ const (
 	kPingAddTimeout = 15
 )
 
+//const (
+//
+//)
+
 type messageData struct {
 	confirmFlag  bool
 	compressFlag bool
@@ -55,27 +60,31 @@ type messageData struct {
 }
 
 type clientSession struct {
-	closeDate       int64
-	connType        int
-	clientConnID    ClientConnID
-	salt            int64
-	nextSeqNo       uint32
-	sessionId       int64
-	manager			*clientSessionManager
-	apiMessages     *list.List // []*networkApiMessage
-	syncMessages    *list.List // []*networkSyncMessage
-	refcount        sync2.AtomicInt32
+	closeDate    int64
+	connType     int
+	clientConnID ClientConnID
+	salt         int64
+	nextSeqNo    uint32
+	sessionId    int64
+	manager      *clientSessionManager
+	apiMessages  *list.List // []*networkApiMessage
+	syncMessages *list.List // []*networkSyncMessage
+	firstMsgId   int64
+	uniqueId	 int64
+	// state        int
 }
 
-func NewClientSession(sessionId int64, m *clientSessionManager) *clientSession{
+func NewClientSession(sessionId, salt, firstMsgId int64, m *clientSessionManager) *clientSession{
 	return &clientSession{
-		closeDate:       time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout,
-		connType:        UNKNOWN,
-		// clientConnID: connID,
-		sessionId:       sessionId,
-		manager:         m,
-		apiMessages:     list.New(), // []*networkApiMessage{},
-		syncMessages:    list.New(), // []*networkSyncMessage{},
+		closeDate:    time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout,
+		connType:     UNKNOWN,
+		salt:         salt,
+		sessionId:    sessionId,
+		manager:      m,
+		apiMessages:  list.New(), // []*networkApiMessage{},
+		syncMessages: list.New(), // []*networkSyncMessage{},
+		firstMsgId:   firstMsgId,
+		uniqueId:     rand.Int63(),
 	}
 }
 
@@ -168,17 +177,324 @@ func (c *clientSession) onSyncData(connID ClientConnID, md *mtproto.ZProtoMetada
 
 }
 
+//// Check Server Salt
+//func (c *clientSession) onCheckSalt(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, salt int64) bool {
+//	if !CheckBySalt(c.manager.authKeyId, salt) {
+//		c.salt, _ = GetOrInsertSalt(c.manager.authKeyId)
+//		badServerSalt := mtproto.NewTLBadServerSalt()
+//		badServerSalt.SetBadMsgId(msgId)
+//		badServerSalt.SetErrorCode(48)
+//		badServerSalt.SetBadMsgSeqno(seqNo)
+//		badServerSalt.SetNewServerSalt(salt)
+//		c.sendToClient(connID, md, 0, false, badServerSalt)
+//		return false
+//	}
+//	return true
+//}
+//
+
+func (c *clientSession) CheckBadServerSalt(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, salt int64) bool {
+	// Notice of Ignored Error Message
+	//
+	// Here, error_code can also take on the following values:
+	//  48: incorrect server salt (in this case,
+	//      the bad_server_salt response is received with the correct salt,
+	//      and the message is to be re-sent with it)
+	//
+	if !CheckBySalt(c.manager.authKeyId, salt) {
+		c.salt, _ = GetOrInsertSalt(c.manager.authKeyId)
+		badServerSalt := &mtproto.TLBadServerSalt{Data2: &mtproto.BadMsgNotification_Data{
+			BadMsgId:      msgId,
+			ErrorCode:     48,
+			BadMsgSeqno:   seqNo,
+			NewServerSalt: c.salt,
+		}}
+		c.sendToClient(connID, md, 0, false, badServerSalt.To_BadMsgNotification())
+		return false
+	}
+
+	return true
+}
+
+func (c *clientSession) CheckBadMsgNotification(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, isContainer bool) bool {
+	// Notice of Ignored Error Message
+	//
+	// In certain cases, a server may notify a client that its incoming message was ignored for whatever reason.
+	// Note that such a notification cannot be generated unless a message is correctly decoded by the server.
+	//
+	// bad_msg_notification#a7eff811 bad_msg_id:long bad_msg_seqno:int error_code:int = BadMsgNotification;
+	// bad_server_salt#edab447b bad_msg_id:long bad_msg_seqno:int error_code:int new_server_salt:long = BadMsgNotification;
+	//
+	// Here, error_code can also take on the following values:
+	//
+	//  16: msg_id too low (most likely, client time is wrong;
+	//      it would be worthwhile to synchronize it using msg_id notifications
+	//      and re-send the original message with the “correct” msg_id or wrap
+	//      it in a container with a new msg_id
+	//      if the original message had waited too long on the client to be transmitted)
+	//  17: msg_id too high (similar to the previous case,
+	//      the client time has to be synchronized, and the message re-sent with the correct msg_id)
+	//  18: incorrect two lower order msg_id bits (the server expects client message msg_id to be divisible by 4)
+	//  19: container msg_id is the same as msg_id of a previously received message (this must never happen)
+	//  20: message too old, and it cannot be verified whether the server has received a message with this msg_id or not
+	//  32: msg_seqno too low (the server has already received a message with a lower msg_id
+	//      but with either a higher or an equal and odd seqno)
+	//  33: msg_seqno too high (similarly, there is a message with a higher msg_id
+	//      but with either a lower or an equal and odd seqno)
+	//  34: an even msg_seqno expected (irrelevant message), but odd received
+	//  35: odd msg_seqno expected (relevant message), but even received
+	//  48: incorrect server salt (in this case,
+	//      the bad_server_salt response is received with the correct salt,
+	//      and the message is to be re-sent with it)
+	//  64: invalid container.
+	//
+	// The intention is that error_code values are grouped (error_code >> 4):
+	// for example, the codes 0x40 - 0x4f correspond to errors in container decomposition.
+	//
+	// Notifications of an ignored message do not require acknowledgment (i.e., are irrelevant).
+	//
+	// Important: if server_salt has changed on the server or if client time is incorrect,
+	// any query will result in a notification in the above format.
+	// The client must check that it has, in fact,
+	// recently sent a message with the specified msg_id, and if that is the case,
+	// update its time correction value (the difference between the client’s and the server’s clocks)
+	// and the server salt based on msg_id and the server_salt notification,
+	// so as to use these to (re)send future messages. In the meantime,
+	// the original message (the one that caused the error message to be returned)
+	// must also be re-sent with a better msg_id and/or server_salt.
+	//
+	// In addition, the client can update the server_salt value used to send messages to the server,
+	// based on the values of RPC responses or containers carrying an RPC response,
+	// provided that this RPC response is actually a match for the query sent recently.
+	// (If there is doubt, it is best not to update since there is risk of a replay attack).
+	//
+
+	//=============================================================================================
+	// TODO(@benqi): Time Synchronization, https://core.telegram.org/mtproto#time-synchronization
+	//
+	// Time Synchronization
+	//
+	// If client time diverges widely from server time,
+	// a server may start ignoring client messages,
+	// or vice versa, because of an invalid message identifier (which is closely related to creation time).
+	// Under these circumstances,
+	// the server will send the client a special message containing the correct time and
+	// a certain 128-bit salt (either explicitly provided by the client in a special RPC synchronization request or
+	// equal to the key of the latest message received from the client during the current session).
+	// This message could be the first one in a container that includes other messages
+	// (if the time discrepancy is significant but does not as yet result in the client’s messages being ignored).
+	//
+	// Having received such a message or a container holding it,
+	// the client first performs a time synchronization (in effect,
+	// simply storing the difference between the server’s time
+	// and its own to be able to compute the “correct” time in the future)
+	// and then verifies that the message identifiers for correctness.
+	//
+	// Where a correction has been neglected,
+	// the client will have to generate a new session to assure the monotonicity of message identifiers.
+	//
+
+	var errorCode int32 = 0
+
+	timeMessage := msgId / 4294967296.0
+	date := time.Now().Unix()
+	// glog.Info("date: ", date, ", timeMessage: ", timeMessage)
+
+	if timeMessage + 30 < date {
+		errorCode = 16
+	}
+	if date > timeMessage + 300 {
+		errorCode = 17
+	}
+
+	//=================================================================================================
+	// Check Message Identifier (msg_id)
+	//
+	// https://core.telegram.org/mtproto/description#message-identifier-msg-id
+	// Message Identifier (msg_id)
+	//
+	// A (time-dependent) 64-bit number used uniquely to identify a message within a session.
+	// Client message identifiers are divisible by 4,
+	// server message identifiers modulo 4 yield 1 if the message is a response to a client message, and 3 otherwise.
+	// Client message identifiers must increase monotonically (within a single session),
+	// the same as server message identifiers, and must approximately equal unixtime*2^32.
+	// This way, a message identifier points to the approximate moment in time the message was created.
+	// A message is rejected over 300 seconds after it is created or 30 seconds
+	// before it is created (this is needed to protect from replay attacks).
+	// In this situation,
+	// it must be re-sent with a different identifier (or placed in a container with a higher identifier).
+	// The identifier of a message container must be strictly greater than those of its nested messages.
+	//
+	// Important: to counter replay-attacks the lower 32 bits of msg_id passed
+	// by the client must not be empty and must present a fractional
+	// part of the time point when the message was created.
+	//
+	if msgId % 4 != 0 {
+		errorCode = 18
+	}
+
+	// TODO(@benqi): other error code??
+
+	if errorCode != 0 {
+		badMsgNotification := &mtproto.TLBadMsgNotification{Data2: &mtproto.BadMsgNotification_Data{
+			BadMsgId:    msgId,
+			BadMsgSeqno: seqNo,
+			ErrorCode:   errorCode,
+		}}
+		// glog.Info("badMsgNotification - ", badMsgNotification)
+		// _ = badMsgNotification
+		c.sendToClient(connID, md, 0, false, badMsgNotification.To_BadMsgNotification())
+		return false
+	}
+
+	return true
+}
+
 func (c *clientSession) onNewSessionCreated(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64) {
 	glog.Info("onNewSessionCreated - request data: ", msgId)
-	serverSalt, _ := GetOrInsertSalt(c.manager.authKeyId)
-	c.salt = serverSalt
 	newSessionCreated := &mtproto.TLNewSessionCreated{Data2: &mtproto.NewSession_Data{
 		FirstMsgId: msgId,
-		// TODO(@benqi): gen new_session_created.unique_id
-		UniqueId:   int64(connID.frontendConnID),
-		ServerSalt: serverSalt,
+		UniqueId:   c.uniqueId,
+		ServerSalt: c.salt,
 	}}
+
 	c.sendToClient(connID, md, 0, true, newSessionCreated)
+
+	// TODO(@benqi): if not receive new_session_created confirm, will resend the message.
+}
+
+func (c *clientSession) onCloseSession() {
+	// TODO(@benqi): remove queue???
+}
+
+//==================================================================================================
+func (c *clientSession) onClientMessage(msgId int64, seqNo int32, object mtproto.TLObject, messages *messageListWrapper) {
+	switch object.(type) {
+	case *mtproto.TLMsgContainer:
+		msgContainer, _ := object.(*mtproto.TLMsgContainer)
+		// Simple Container
+		//
+		// A simple container carries several messages as follows:
+		//
+		//  msg_container#73f1f8dc messages:vector message = MessageContainer;
+		//
+		// Here message refers to any message together with its length and msg_id:
+		//
+		//  message msg_id:long seqno:int bytes:int body:Object = Message;
+		//
+		// bytes is the number of bytes in the body serialization.
+		//
+		// All messages in a container must have msg_id lower than that of the container itself.
+		// A container does not require an acknowledgment and may not carry other simple containers.
+		// When messages are re-sent, they may be combined into a container in a different manner or sent individually.
+		//
+		// Empty containers are also allowed.
+		// They are used by the server, for example,
+		// to respond to an HTTP request when the timeout specified in http_wait expires,
+		// and there are no messages to transmit.
+		//
+
+		// A container does not require an acknowledgment
+		if seqNo % 2 != 0 {
+			// invalid
+			// TODO(@benqi): close client and add to banned??
+			glog.Error("A container does not require an acknowledgment.")
+			return
+		}
+
+		// TODO(@benqi): 19: container msg_id is the same as msg_id of a previously received message (this must never happen)
+		//
+
+		for _, m := range msgContainer.Messages {
+			glog.Info("processMsgContainer - request data: ", m)
+			if m.Object == nil {
+				continue
+			}
+
+			// Check msgId
+			//
+			// A container is always generated after its entire contents; therefore,
+			// its sequence number is greater than or equal to the sequence numbers of the messages contained in it.
+			//
+			if  m.Seqno > seqNo {
+				glog.Errorf("sequence number is greater than or equal to the sequence numbers of the messages contained in it: %d", seqNo)
+				// TODO(@benqi): close client and add to banned??
+				continue
+			}
+
+			// may not carry other simple containers
+			if _, ok := m.Object.(*mtproto.TLMsgContainer); ok {
+				glog.Error("may not carry other simple containers")
+				// TODO(@benqi): close client and add to banned??
+				continue
+			}
+
+			c.onClientMessage(m.MsgId, m.Seqno, m.Object, messages)
+		}
+
+	case *mtproto.TLGzipPacked:
+		gzipPacked, _ := object.(*mtproto.TLGzipPacked)
+		glog.Info("processGzipPacked - request data: ", gzipPacked)
+
+		dbuf := mtproto.NewDecodeBuf(gzipPacked.PackedData)
+		o := dbuf.Object()
+		if o == nil {
+			glog.Errorf("Decode query error: %s", hex.EncodeToString(gzipPacked.PackedData))
+			return
+		}
+		// return s.onGzipPacked(sessionId, msgId, seqNo, request)
+		c.onClientMessage(msgId, seqNo, o, messages)
+
+	case *mtproto.TLMsgCopy:
+		// not use in client
+		glog.Error("android client not use msg_copy: ", object)
+
+	case *mtproto.TLInvokeAfterMsg:
+		invokeAfterMsg := object.(*mtproto.TLInvokeAfterMsg)
+		invokeAfterMsgExt := NewInvokeAfterMsgExt(invokeAfterMsg)
+		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: invokeAfterMsgExt})
+
+	case *mtproto.TLInvokeAfterMsgs:
+		invokeAfterMsgs := object.(*mtproto.TLInvokeAfterMsgs)
+		invokeAfterMsgsExt := NewInvokeAfterMsgsExt(invokeAfterMsgs)
+		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: invokeAfterMsgsExt})
+
+	case *mtproto.TLInvokeWithLayer:
+		invokeWithLayer := object.(*mtproto.TLInvokeWithLayer)
+		if invokeWithLayer.Layer != c.manager.Layer {
+			c.manager.Layer = invokeWithLayer.Layer
+			// TODO(@benqi):
+		}
+
+		if invokeWithLayer.GetQuery() == nil {
+			glog.Errorf("invokeWithLayer Query is nil, query: {%v}", invokeWithLayer)
+			return
+		} else {
+			dbuf := mtproto.NewDecodeBuf(invokeWithLayer.Query)
+			classID := dbuf.Int()
+			if classID != int32(mtproto.TLConstructor_CRC32_initConnection) {
+				glog.Errorf("Not initConnection classID: %d", classID)
+				return
+			}
+
+			initConnection := &mtproto.TLInitConnection{}
+			err := initConnection.Decode(dbuf)
+			if err != nil {
+				glog.Error("Decode initConnection error: ", err)
+				return
+			}
+
+			initConnectionExt := NewInitConnectionExt(initConnection)
+			messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: initConnectionExt})
+		}
+
+	case *mtproto.TLInvokeWithoutUpdates:
+		glog.Error("android client not use invokeWithoutUpdates: ", object)
+
+	default:
+		glog.Info("processOthers - request data: ", object)
+		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: object})
+	}
 }
 
 func (c *clientSession) onMessageData(connID ClientConnID, md *mtproto.ZProtoMetadata, messages []*mtproto.TLMessage2) {
@@ -277,12 +593,6 @@ func (c *clientSession) onPing(connID ClientConnID, md *mtproto.ZProtoMetadata, 
 	c.sendToClient(connID, md, 0, false, pong)
 
 	c.closeDate = time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout
-
-	// _ = pong
-	// c.sendMessageList = append(c.sendMessageList, &messageData{false, false, pong})
-
-	// 启动定时器
-	// timingWheel.AddTimer(c, kDefaultPingTimeout + kPingAddTimeout)
 }
 
 func (c *clientSession) onPingDelayDisconnect(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, pingDelayDisconnect *mtproto.TLPingDelayDisconnect) {
@@ -296,12 +606,6 @@ func (c *clientSession) onPingDelayDisconnect(connID ClientConnID, md *mtproto.Z
 	c.sendToClient(connID, md, 0, false, pong)
 
 	c.closeDate = time.Now().Unix() + int64(pingDelayDisconnect.DisconnectDelay) + kPingAddTimeout
-
-	// _ = pong
-	// c.sendMessageList = append(c.sendMessageList, &messageData{false, false, pong})
-
-	// 启动定时器
-	// timingWheel.AddTimer(c, int(pingDelayDisconnect.DisconnectDelay) + kPingAddTimeout)
 }
 
 func (c *clientSession) onMsgsAck(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLMsgsAck) {
@@ -355,15 +659,40 @@ func (c *clientSession) onMsgsAllInfo(connID ClientConnID, md *mtproto.ZProtoMet
 
 func (c *clientSession) onDestroySession(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLDestroySession) {
 	glog.Info("onDestroySession - request data: ", request)
+
+	// Request to Destroy Session
 	//
-	//// TODO(@benqi): 实现destroySession处理逻辑
-	destroySessionOk := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
-		SessionId: request.SessionId,
-	}}
+	// Used by the client to notify the server that it may
+	// forget the data from a different session belonging to the same user (i. e. with the same auth_key_id).
+	// The result of this being applied to the current session is undefined.
+	//
+	// destroy_session#e7512126 session_id:long = DestroySessionRes;
+	// destroy_session_ok#e22045fc session_id:long = DestroySessionRes;
+	// destroy_session_none#62d350c9 session_id:long = DestroySessionRes;
+	//
 
-	c.sendToClient(connID, md, 0, false, destroySessionOk)
+	if request.SessionId == c.sessionId {
+		// The result of this being applied to the current session is undefined.
+		glog.Error("the result of this being applied to the current session is undefined.")
 
-	//c.sendMessageList = append(c.sendMessageList, &messageData{false, false, destroySessionOk})
+		// TODO(@benqi): handle error???
+		return
+	}
+
+	if sess, ok := c.manager.sessions[request.SessionId]; ok {
+		destroySessionOk := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
+			SessionId: request.SessionId,
+		}}
+		sess.sendToClient(connID, md, 0, false, destroySessionOk.To_DestroySessionRes())
+		delete(c.manager.sessions, request.SessionId)
+
+		// TODO(@benqi): saved destroyed session???
+	} else {
+		destroySessionNone := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
+			SessionId: request.SessionId,
+		}}
+		sess.sendToClient(connID, md, 0, false, destroySessionNone.To_DestroySessionRes())
+	}
 }
 
 func (c *clientSession) onGetFutureSalts(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLGetFutureSalts) {
