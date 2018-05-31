@@ -79,5 +79,13 @@ func (dao *AuthKeysDAO) SelectByAuthId(auth_id int64) (*dataobject.AuthKeysDO, e
 		return nil, nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByAuthId(_), error: %v", err)
+		glog.Error(errDesc)
+		return nil, err
+		// panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do, nil
 }
