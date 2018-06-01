@@ -1,4 +1,5 @@
 # telegramd - Unofficial open source telegram server written in golang
+> 打造一套高性能、稳定并且功能完善的开源telegram服务端系统，能让整个开源telegram客户端生态系统除了官方服务之外还有其他的选择！
 
 ## Chinese
 
@@ -14,9 +15,6 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 - 支持可切换的多个服务注册和发现系统
 - 集成了grpc的recovery等中间件
   
-最终目标是打造一个高性能、稳定并且功能完善的开源telegram服务端，能让整个开源telegram客户端生态系统除了官方服务之外还有其他的选择！
-
-
 ### 文档
 [RoadMap](doc/road-map.md)
 
@@ -100,6 +98,20 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
     cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
     ./session
+
+### 配套客户端
+[android客户端](https://github.com/nebulaim/TelegramAndroid)， 使用参考[文档](https://github.com/nebulaim/TelegramAndroid)
+
+iOS客户端（敬请期待）
+
+Mac客户端（敬请期待）
+
+Web客户端（敬请期待）
+
+桌面客户端（敬请期待）
+
+### TODO
+channels, Secret Chats, bots and payments这几大功能还未实现
 
 ## English
 
