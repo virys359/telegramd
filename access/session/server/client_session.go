@@ -175,6 +175,13 @@ func (c *clientSession) sendToClient(connID ClientConnID, md *mtproto.ZProtoMeta
 
 func (c *clientSession) onSyncData(connID ClientConnID, md *mtproto.ZProtoMetadata, obj mtproto.TLObject) {
 	// TODO(@benqi): confirm??
+
+	switch obj.(type) {
+	case *mtproto.Updates:
+		// updates service
+	default:
+		// rpc result message
+	}
 	c.sendToClient(connID, md, 0, true, obj)
 }
 
@@ -351,6 +358,51 @@ func (c *clientSession) onNewSessionCreated(connID ClientConnID, md *mtproto.ZPr
 
 func (c *clientSession) onCloseSession() {
 	// TODO(@benqi): remove queue???
+}
+
+func (c *clientSession) notifyMsgsStateReq() {
+	// TODO(@benqi):
+}
+
+func (c *clientSession) notifyMsgsAllInfo() {
+	// TODO(@benqi):
+}
+
+func (c *clientSession) notifyMsgDetailedInfo() {
+	// TODO(@benqi):
+
+	// Extended Voluntary Communication of Status of One Message
+	//
+	// Normally used by the server to respond to the receipt of a duplicate msg_id,
+	// especially if a response to the message has already been generated and the response is large.
+	// If the response is small, the server may re-send the answer itself instead.
+	// This message can also be used as a notification instead of resending a large message.
+	//
+	// msg_detailed_info#276d3ec6 msg_id:long answer_msg_id:long bytes:int status:int = MsgDetailedInfo;
+	// msg_new_detailed_info#809db6df answer_msg_id:long bytes:int status:int = MsgDetailedInfo;
+	//
+	// The second version is used to notify of messages that were created on the server
+	// not in response to an RPC query (such as notifications of new messages)
+	// and were transmitted to the client some time ago, but not acknowledged.
+	//
+	// Currently, status is always zero. This may change in future.
+	//
+	// This message does not require an acknowledgment.
+	//
+}
+
+func (c *clientSession) notifyMsgResendAnsSeq() {
+	// TODO(@benqi):
+
+	// Explicit Request to Re-Send Answers
+	//
+	// msg_resend_ans_req#8610baeb msg_ids:Vector long = MsgResendReq;
+	//
+	// The remote party immediately responds by re-sending answers to the requested messages,
+	// normally using the same connection that was used to transmit the query.
+	// MsgsStateInfo is returned for all messages requested
+	// as if the MsgResendReq query had been a MsgsStateReq query as well.
+	//
 }
 
 //==================================================================================================
@@ -624,6 +676,41 @@ func (c *clientSession) onHttpWait(connID ClientConnID, md *mtproto.ZProtoMetada
 
 func (c *clientSession) onMsgsStateReq(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Infof("onMsgsStateReq - request: %s", request.String())
+
+	// Request for Message Status Information
+	//
+	// If either party has not received information on the status of its outgoing messages for a while,
+	// it may explicitly request it from the other party:
+	//
+	// msgs_state_req#da69fb52 msg_ids:Vector long = MsgsStateReq;
+	// The response to the query contains the following information:
+	//
+	// Informational Message regarding Status of Messages
+	// msgs_state_info#04deb57d req_msg_id:long info:string = MsgsStateInfo;
+	//
+	// Here, info is a string that contains exactly one byte of message status for
+	// each message from the incoming msg_ids list:
+	//
+	// 1 = nothing is known about the message (msg_id too low, the other party may have forgotten it)
+	// 2 = message not received (msg_id falls within the range of stored identifiers; however,
+	// 	   the other party has certainly not received a message like that)
+	// 3 = message not received (msg_id too high; however, the other party has certainly not received it yet)
+	// 4 = message received (note that this response is also at the same time a receipt acknowledgment)
+	// +8 = message already acknowledged
+	// +16 = message not requiring acknowledgment
+	// +32 = RPC query contained in message being processed or processing already complete
+	// +64 = content-related response to message already generated
+	// +128 = other party knows for a fact that message is already received
+	//
+	// This response does not require an acknowledgment.
+	// It is an acknowledgment of the relevant msgs_state_req, in and of itself.
+	//
+	// Note that if it turns out suddenly that the other party does not have a message
+	// that looks like it has been sent to it, the message can simply be re-sent.
+	// Even if the other party should receive two copies of the message at the same time,
+	// the duplicate will be ignored. (If too much time has passed,
+	// and the original msg_id is not longer valid, the message is to be wrapped in msg_copy).
+	//
 }
 
 func (c *clientSession) onInitConnectionEx(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *TLInitConnectionExt) {
@@ -633,6 +720,19 @@ func (c *clientSession) onInitConnectionEx(connID ClientConnID, md *mtproto.ZPro
 
 func (c *clientSession) onMsgResendReq(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Infof("onMsgResendReq - request: %s", request.String())
+
+	// Explicit Request to Re-Send Messages
+	//
+	// msg_resend_req#7d861a08 msg_ids:Vector long = MsgResendReq;
+	//
+	// The remote party immediately responds by re-sending the requested messages,
+	// normally using the same connection that was used to transmit the query.
+	// If at least one message with requested msg_id does not exist or has already been forgotten,
+	// or has been sent by the requesting party (known from parity),
+	// MsgsStateInfo is returned for all messages requested
+	// as if the MsgResendReq query had been a MsgsStateReq query as well.
+	//
+
 }
 
 func (c *clientSession) onMsgsStateInfo(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
@@ -641,6 +741,19 @@ func (c *clientSession) onMsgsStateInfo(connID ClientConnID, md *mtproto.ZProtoM
 
 func (c *clientSession) onMsgsAllInfo(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
 	glog.Infof("onMsgResendReq - request: %s", request.String())
+
+	// Voluntary Communication of Status of Messages
+	//
+	// Either party may voluntarily inform the other party of the status of the messages transmitted by the other party.
+	//
+	// msgs_all_info#8cc0d131 msg_ids:Vector long info:string = MsgsAllInfo
+	//
+	// All message codes known to this party are enumerated,
+	// with the exception of those for which the +128 and the +16 flags are set.
+	// However, if the +32 flag is set but not +64, then the message status will still be communicated.
+	//
+	// This message does not require an acknowledgment.
+	//
 }
 
 func (c *clientSession) onDestroySession(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLDestroySession) {
