@@ -174,25 +174,11 @@ func (c *clientSession) sendToClient(connID ClientConnID, md *mtproto.ZProtoMeta
 }
 
 func (c *clientSession) onSyncData(connID ClientConnID, md *mtproto.ZProtoMetadata, obj mtproto.TLObject) {
-
+	// TODO(@benqi): confirm??
+	c.sendToClient(connID, md, 0, true, obj)
 }
 
 //// Check Server Salt
-//func (c *clientSession) onCheckSalt(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, salt int64) bool {
-//	if !CheckBySalt(c.manager.authKeyId, salt) {
-//		c.salt, _ = GetOrInsertSalt(c.manager.authKeyId)
-//		badServerSalt := mtproto.NewTLBadServerSalt()
-//		badServerSalt.SetBadMsgId(msgId)
-//		badServerSalt.SetErrorCode(48)
-//		badServerSalt.SetBadMsgSeqno(seqNo)
-//		badServerSalt.SetNewServerSalt(salt)
-//		c.sendToClient(connID, md, 0, false, badServerSalt)
-//		return false
-//	}
-//	return true
-//}
-//
-
 func (c *clientSession) CheckBadServerSalt(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, salt int64) bool {
 	// Notice of Ignored Error Message
 	//
