@@ -1,4 +1,6 @@
 # Telegramd roadmap
+> 最终目标是打造一个高性能、稳定并且功能完善的 telegram 服务端，能让整个开源 telegram 客户端生 态系统除了官方服务之外能有多一个选择。
+
 ## 客户端和测试服务器
 
 ## 基础库（baselib）

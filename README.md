@@ -1,20 +1,30 @@
-# telegramd
+# telegramd - Unofficial open source telegram server written in golang
 
 ## Chinese
 
 ### 简介
-Go语言开源telegram服务器，兼容telegram客户端，一些特色：
+Go语言非官方开源telegram服务端，包括但不限于如下一些特色：
 
-- 通过 mtprotoc 自动将 tl 转换成protobuf 协议，并生成 tl 的 codec 代码，将客户端收到的 tl 的二进制数据转换成 protobuf 对象 后，通过 grpc 接入到内部各服务节点处理，这样就可以利用很完善的 grpc 生态环境来实现我们 的系统。
-- dalgen 数据访问层代码生成器(github.com/nebulaim/nebula-dal-generator):集成了 sqlparser 解析器，从配置文件里读入每条 sql，并为每条 sql 生成一个 dao 方法，而且生成时可 以预先检查 sql 语法，可以极大减少手写 sql 的出错几率以及手写 sql 的工作量。
-- 基于 grpc 集成了可替换的服务注册和发现系统(当前代码库里使用了 etcd)
-- 集成了 grpc 的 recovery 等中间件，使得业务服务器尽可能少地关注各种异常处理
-- 目前已经实现了 handshake、auth、contacts、updates、dialogs、help 等的基本功能，以及发送单聊消息、创建和修改群组、发送群聊消息和发送图片消息等核心功能。
+- [mtprotoc](https://github.com/nebulaim/mtprotoc)代码生成器
+	- 可自动将tl转换成protobuf协议
+	- 自动生成tl二进制数据的的codec代码，可将接收到客户端tl的二进制数据转换成protobuf对象，并通过grpc接入到内部各服务节点处理，这样就可以借助很完善的grpc生态环境来实现我们的系统
+- [dalgen](https://github.com/nebulaim/nebula-dal-generator)数据访问层代码生成器()
+	- 集成了sqlparser解析器，通过可配置的sql自动生成dao代码
+	- 代码生成时检查sql语法，极大减少传统手写sql实现的出错几率和手写sql调用的工作量
+- 支持可切换的多个服务注册和发现系统
+- 集成了grpc的recovery等中间件
   
-最终目标是打造一个高性能、稳定并且功能完善的 telegram 服务端，能让整个开源 telegram 客户端生 态系统除了官方服务之外能有多一个选择。
+最终目标是打造一个高性能、稳定并且功能完善的开源telegram服务端，能让整个开源telegram客户端生态系统除了官方服务之外还有其他的选择！
 
-### Road map
-[road map](./doc/reoad-map.md)
+
+### 文档
+[RoadMap](doc/road-map.md)
+
+[Diffie–Hellman key exchange](doc/dh-key-exchange.md)
+
+[Creating an Authorization Key](doc/Creating_an_Authorization_Key.md)
+
+[Mobile Protocol: Detailed Description (v.1.0, DEPRECATED)](doc/Mobile_Protocol-Detailed_Description_v.1.0_DEPRECATED.md)
 
 ### 编译
 
