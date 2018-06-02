@@ -18,15 +18,15 @@
 package mtproto
 
 import (
+	"encoding/binary"
+	"encoding/hex"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/crypto"
+	"io"
 	"net"
 	"os"
 	"sync"
-	"io"
-	"github.com/golang/glog"
 	"sync/atomic"
-	"encoding/hex"
-	"encoding/binary"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
 const (
@@ -36,7 +36,7 @@ const (
 	FIRST4_INT32 = 0x20544547
 	FIRST5_INT32 = 0xeeeeeeee
 	SECOND_INT32 = 0x00000000
-	FIRST_BYTE 	 = 0xef
+	FIRST_BYTE   = 0xef
 )
 
 var _ net.Listener = &Listener{}
@@ -115,12 +115,12 @@ func (l *Listener) handshake(conn net.Conn) {
 	// 检查val和val2
 	first := binary.BigEndian.Uint32(buf[:4])
 	second := binary.BigEndian.Uint32(buf[4:8])
-	if buf[0]  == FIRST_BYTE   ||
-		first  == FIRST1_INT32 ||
-		first  == FIRST2_INT32 ||
-		first  == FIRST3_INT32 ||
-		first  == FIRST4_INT32 ||
-		first  == FIRST5_INT32 ||
+	if buf[0] == FIRST_BYTE ||
+		first == FIRST1_INT32 ||
+		first == FIRST2_INT32 ||
+		first == FIRST3_INT32 ||
+		first == FIRST4_INT32 ||
+		first == FIRST5_INT32 ||
 		second == SECOND_INT32 {
 
 		glog.Errorf("Invalid key: ", hex.EncodeToString(buf[:8]))
@@ -131,7 +131,7 @@ func (l *Listener) handshake(conn net.Conn) {
 	var tmp [64]byte
 	// 生成decrypt_key
 	for i := 0; i < 48; i++ {
-		tmp[i] = buf[55 - i]
+		tmp[i] = buf[55-i]
 	}
 
 	var connID = atomic.AddUint64(&l.atomicConnID, 1)
@@ -163,8 +163,8 @@ func (l *Listener) handshake(conn net.Conn) {
 
 	glog.Info("Create AesCTR128 key sucessful in connID: ", connID, ", by ", conn.RemoteAddr())
 	select {
-		case l.acceptChan <- mtprotoConn:
-		case <-l.closeChan:
+	case l.acceptChan <- mtprotoConn:
+	case <-l.closeChan:
 	}
 }
 

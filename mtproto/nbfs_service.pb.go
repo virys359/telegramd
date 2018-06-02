@@ -1074,6 +1074,19 @@ It has these top-level messages:
 	ShippingOption_Data
 	ShippingOption
 	TLShippingOption
+	SchemeParam_Data
+	SchemeParam
+	TLSchemeParam
+	SchemeMethod_Data
+	SchemeMethod
+	TLSchemeMethod
+	SchemeType_Data
+	SchemeType
+	TLSchemeType
+	Scheme_Data
+	Scheme
+	TLSchemeNotModified
+	TLScheme
 	TLInvokeAfterMsg
 	TLInvokeAfterMsgs
 	TLInitConnection
@@ -1328,6 +1341,7 @@ It has these top-level messages:
 	Vector_CdnFileHash
 	Vector_LangPackString
 	Vector_LangPackLanguage
+	TLHelpGetScheme
 	FutureSalt_Data
 	FutureSalt
 	TLFutureSalt

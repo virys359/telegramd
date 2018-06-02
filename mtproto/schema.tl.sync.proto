@@ -7147,3 +7147,93 @@ message TL_shippingOption {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// SchemeParam <--
+//  + TL_schemeParam
+//
+message SchemeParam_Data {
+    string name = 1;
+    string type = 2;
+}
+
+message SchemeParam {
+    TLConstructor constructor = 1;
+    SchemeParam_Data data2 = 2;
+}
+
+// schemeParam#21b59bef name:string type:string = SchemeParam;
+message TL_schemeParam {
+    SchemeParam_Data data2 = 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// SchemeMethod <--
+//  + TL_schemeMethod
+//
+message SchemeMethod_Data {
+    int32 id = 1;
+    string method = 2;
+    repeated SchemeParam params = 3;
+    string type = 4;
+}
+
+message SchemeMethod {
+    TLConstructor constructor = 1;
+    SchemeMethod_Data data2 = 2;
+}
+
+// schemeMethod#479357c0 id:int method:string params:Vector<SchemeParam> type:string = SchemeMethod;
+message TL_schemeMethod {
+    SchemeMethod_Data data2 = 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// SchemeType <--
+//  + TL_schemeType
+//
+message SchemeType_Data {
+    int32 id = 1;
+    string predicate = 2;
+    repeated SchemeParam params = 3;
+    string type = 4;
+}
+
+message SchemeType {
+    TLConstructor constructor = 1;
+    SchemeType_Data data2 = 2;
+}
+
+// schemeType#a8e1e989 id:int predicate:string params:Vector<SchemeParam> type:string = SchemeType;
+message TL_schemeType {
+    SchemeType_Data data2 = 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Scheme <--
+//  + TL_schemeNotModified
+//  + TL_scheme
+//
+message Scheme_Data {
+    string scheme_raw = 1;
+    repeated SchemeType types = 2;
+    repeated SchemeMethod methods = 3;
+    int32 version = 4;
+}
+
+message Scheme {
+    TLConstructor constructor = 1;
+    Scheme_Data data2 = 2;
+}
+
+// schemeNotModified#263c9c58 = Scheme;
+message TL_schemeNotModified {
+    Scheme_Data data2 = 2;
+}
+
+// scheme#4e6ef65e scheme_raw:string types:Vector<SchemeType> methods:Vector<SchemeMethod> version:int = Scheme;
+message TL_scheme {
+    Scheme_Data data2 = 2;
+}

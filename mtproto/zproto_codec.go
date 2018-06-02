@@ -19,12 +19,12 @@ package mtproto
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"io"
 	"net"
-	"encoding/hex"
 )
 
 func init() {
@@ -44,8 +44,8 @@ func (this *ZProto) NewCodec(rw io.ReadWriter) (net2.Codec, error) {
 }
 
 type ZProtoCodec struct {
-	conn             *net.TCPConn
-	headBuf          []byte
+	conn                *net.TCPConn
+	headBuf             []byte
 	recvLastPakageIndex uint32
 	sendLastPakageIndex uint32
 }
@@ -59,9 +59,9 @@ func (c *ZProtoCodec) Send(msg interface{}) error {
 		x.UInt(0)            // packageLength
 		x.UInt(kMagicNumber) // magicNumber
 		c.sendLastPakageIndex++
-		x.UInt(c.sendLastPakageIndex)            // packageIndex
+		x.UInt(c.sendLastPakageIndex) // packageIndex
 
-		x.UInt16(0) // reserved
+		x.UInt16(0)        // reserved
 		x.UInt16(kVersion) // version
 
 		//

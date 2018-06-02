@@ -18,11 +18,11 @@
 package mtproto
 
 import (
-	"github.com/golang/glog"
-	"fmt"
-	"encoding/hex"
 	"bytes"
 	"compress/gzip"
+	"encoding/hex"
+	"fmt"
+	"github.com/golang/glog"
 )
 
 //const (
@@ -35,10 +35,10 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 //message2 msg_id:long seqno:int bytes:int body:Object = Message2; // parsed manually
 type TLMessage2 struct {
-	MsgId 	int64
-	Seqno 	int32
-	Bytes 	int32
-	Object 	TLObject
+	MsgId  int64
+	Seqno  int32
+	Bytes  int32
+	Object TLObject
 }
 
 func (m *TLMessage2) String() string {

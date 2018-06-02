@@ -1,5 +1,5 @@
-# telegramd - Unofficial open source telegram server written in golang
-> 打造一套高性能、稳定并且功能完善的开源telegram服务端系统，能让整个开源telegram客户端生态系统除了官方服务之外还有其他的选择！
+# Telegramd - Unofficial open source telegram server written in golang
+> 打造高性能、稳定并且功能完善的开源telegram服务端，建设开源telegram客户端生态系统非官方首选服务！
 
 ## Chinese
 

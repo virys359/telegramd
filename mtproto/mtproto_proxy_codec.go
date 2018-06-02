@@ -18,13 +18,13 @@
 package mtproto
 
 import (
-	"net"
-	"io"
+	"encoding/hex"
+	"errors"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/nebulaim/telegramd/baselib/net2"
-	"errors"
-	"encoding/hex"
+	"io"
+	"net"
 )
 
 // TODO(@benqi): Quick ack (https://core.telegram.org/mtproto#tcp-transport)
@@ -41,23 +41,23 @@ import (
 
 // 客户端or服务端
 const (
-	CODEC_TYPE_CLIENT = 1	// Client端
-	CODEC_TYPE_SERVER = 2	// Server端
+	CODEC_TYPE_CLIENT = 1 // Client端
+	CODEC_TYPE_SERVER = 2 // Server端
 )
 
 // 协议版本
 const (
-	MTPROTO_ABRIDGED_VERSION = 1		// 删节版本
-	MTPROTO_INTERMEDIATE_VERSION = 2	// 中间版本
-	MTPROTO_FULL_VERSION = 3			// 完整版本
-	MTPROTO_APP_VERSION = 4				// Androd等当前客户端使用版本
+	MTPROTO_ABRIDGED_VERSION     = 1 // 删节版本
+	MTPROTO_INTERMEDIATE_VERSION = 2 // 中间版本
+	MTPROTO_FULL_VERSION         = 3 // 完整版本
+	MTPROTO_APP_VERSION          = 4 // Androd等当前客户端使用版本
 )
 
 // Transport类型，不支持UDP
 const (
-	TRANSPORT_TCP = 1		// TCP
-	TRANSPORT_HTTP = 2		// HTTP
-	TRANSPORT_UDP = 3		// UDP, @benqi: 未发现有支持UDP的客户端
+	TRANSPORT_TCP  = 1 // TCP
+	TRANSPORT_HTTP = 2 // HTTP
+	TRANSPORT_UDP  = 3 // UDP, @benqi: 未发现有支持UDP的客户端
 )
 
 const (
@@ -65,18 +65,18 @@ const (
 	// STATE_FIRST_BYTE		//
 	// STATE_FIRST_INT32		//
 	// STATE_FIRST_64BYTES		//
-	STATE_DATA				//
+	STATE_DATA //
 )
 
 const (
 	// Tcp Transport
-	MTPROTO_ABRIDGED_FLAG = 0xef
+	MTPROTO_ABRIDGED_FLAG     = 0xef
 	MTPROTO_INTERMEDIATE_FLAG = 0xeeeeeeee
 
 	// Http Transport
-	HTTP_HEAD_FLAG = 0x44414548
-	HTTP_POST_FLAG = 0x54534f50
-	HTTP_GET_FLAG = 0x20544547
+	HTTP_HEAD_FLAG   = 0x44414548
+	HTTP_POST_FLAG   = 0x54534f50
+	HTTP_GET_FLAG    = 0x20544547
 	HTTP_OPTION_FLAG = 0x4954504f
 
 	VAL2_FLAG = 0x00000000
@@ -101,8 +101,7 @@ type MTProtoProxy struct {
 //}
 
 func NewMTProtoProxy() *MTProtoProxy {
-	return &MTProtoProxy{
-	}
+	return &MTProtoProxy{}
 }
 
 func (m *MTProtoProxy) NewCodec(rw io.ReadWriter) (net2.Codec, error) {
@@ -141,8 +140,8 @@ type MTProtoProxyCodec struct {
 		bytes[56] = bytes[57] = bytes[58] = bytes[59] = 0xef;
 		break;
 	}
- */
-func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
+*/
+func (c *MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	// Lookup codec!
 
 	var b_0_1 = make([]byte, 1)
@@ -158,7 +157,7 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	}
 
 	// not abridged version, we'll lookup codec!
-	var b_1_3= make([]byte, 3)
+	var b_1_3 = make([]byte, 3)
 	_, err = io.ReadFull(c.conn, b_1_3)
 	if err != nil {
 		// glog.Errorf("MTProtoProxyCodec - read b_1_3 error: %v", err)
@@ -183,7 +182,7 @@ func (c* MTProtoProxyCodec) peekCodec() (net2.Codec, error) {
 	}
 
 	// recv 4~64 bytes
-	var b_4_60= make([]byte, 60)
+	var b_4_60 = make([]byte, 60)
 	_, err = io.ReadFull(c.conn, b_4_60)
 	if err != nil {
 		glog.Errorf("MTProtoProxyCodec - read b_4_60 error: %v", err)
@@ -251,4 +250,3 @@ func (c *MTProtoProxyCodec) Close() error {
 	}
 	return nil
 }
-

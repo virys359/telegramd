@@ -19,9 +19,9 @@ package mtproto
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/golang/glog"
 )
 
 // FILE_MIGRATE_X = 303000;
@@ -31,14 +31,14 @@ import (
 //
 // ERROR_SEE_OTHER code has _X is dc number, We use custom NewXXXX()
 func NewFileMigrateX(dc int32, message string) *TLRpcError {
-	return  &TLRpcError{Data2: &RpcError_Data{
+	return &TLRpcError{Data2: &RpcError_Data{
 		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("FILE_MIGRATE_%d: %s", dc, message),
 	}}
 }
 
 func NewFileMigrateX2(dc int) *TLRpcError {
-	return  &TLRpcError{Data2: &RpcError_Data{
+	return &TLRpcError{Data2: &RpcError_Data{
 		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("FILE_MIGRATE_%d", dc),
 	}}
@@ -46,42 +46,42 @@ func NewFileMigrateX2(dc int) *TLRpcError {
 
 func NewPhoneMigrateX(dc int32, message string) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
+		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("PHONE_MIGRATE_%d: %s", dc, message),
 	}}
 }
 
 func NewPhoneMigrateX2(dc int) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
+		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("PHONE_MIGRATE_%d", dc),
 	}}
 }
 
 func NewNetworkMigrateX(dc int32, message string) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
+		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("NETWORK_MIGRATE_%d: %s", dc, message),
 	}}
 }
 
 func NewNetworkMigrateX2(dc int) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
+		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("NETWORK_MIGRATE_%d", dc),
 	}}
 }
 
 func NewUserMigrateX(dc int32, message string) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
+		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("USER_MIGRATE_%d: %s", dc, message),
 	}}
 }
 
 func NewUserMigrateX2(dc int32) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
+		ErrorCode:    int32(TLRpcErrorCodes_ERROR_SEE_OTHER),
 		ErrorMessage: fmt.Sprintf("USER_MIGRATE_%d", dc),
 	}}
 }
@@ -90,14 +90,14 @@ func NewUserMigrateX2(dc int32) *TLRpcError {
 //
 func NewFloodWaitX(second int32, message string) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_FLOOD),
+		ErrorCode:    int32(TLRpcErrorCodes_FLOOD),
 		ErrorMessage: fmt.Sprintf("FLOOD_WAIT_%d: %s", second, message),
 	}}
 }
 
 func NewFloodWaitX2(second int) *TLRpcError {
 	return &TLRpcError{Data2: &RpcError_Data{
-		ErrorCode: int32(TLRpcErrorCodes_FLOOD),
+		ErrorCode:    int32(TLRpcErrorCodes_FLOOD),
 		ErrorMessage: fmt.Sprintf("FLOOD_WAIT_%d", second),
 	}}
 }
@@ -107,25 +107,25 @@ func NewRpcError(code int32, message string) (err *TLRpcError) {
 	if name, ok := TLRpcErrorCodes_name[int32(code)]; ok {
 		if code <= int32(TLRpcErrorCodes_OTHER2) {
 			err = &TLRpcError{Data2: &RpcError_Data{
-				ErrorCode: code,
+				ErrorCode:    code,
 				ErrorMessage: fmt.Sprintf("%s: %s", name, message),
 			}}
 		} else {
 			switch code {
 			// Not
 			case int32(TLRpcErrorCodes_FILE_MIGRATE_X),
-				 int32(TLRpcErrorCodes_NETWORK_MIGRATE_X),
-				 int32(TLRpcErrorCodes_PHONE_MIGRATE_X),
-				 int32(TLRpcErrorCodes_USER_MIGRATE_X):
+				int32(TLRpcErrorCodes_NETWORK_MIGRATE_X),
+				int32(TLRpcErrorCodes_PHONE_MIGRATE_X),
+				int32(TLRpcErrorCodes_USER_MIGRATE_X):
 				err = &TLRpcError{Data2: &RpcError_Data{
-					ErrorCode: int32(TLRpcErrorCodes_OTHER2),
+					ErrorCode:    int32(TLRpcErrorCodes_OTHER2),
 					ErrorMessage: fmt.Sprintf("INTERNAL_SERVER_ERROR: Not invoke NewRpcError(%s), please use New%s(dc, %s), ", name, name, message),
 				}}
 				glog.Error(err)
 
 			case int32(TLRpcErrorCodes_FLOOD_WAIT_X):
 				err = &TLRpcError{Data2: &RpcError_Data{
-					ErrorCode: int32(TLRpcErrorCodes_FLOOD),
+					ErrorCode:    int32(TLRpcErrorCodes_FLOOD),
 					ErrorMessage: fmt.Sprintf("FLOOD_WAIT_%s: %s", name, name),
 				}}
 				glog.Error(err)
@@ -137,7 +137,7 @@ func NewRpcError(code int32, message string) (err *TLRpcError) {
 
 				err = &TLRpcError{Data2: &RpcError_Data{
 					// subcode = code * 1000 + i
-					ErrorCode: int32(code2),
+					ErrorCode:    int32(code2),
 					ErrorMessage: name,
 				}}
 			}
@@ -145,7 +145,7 @@ func NewRpcError(code int32, message string) (err *TLRpcError) {
 	} else {
 		err = &TLRpcError{Data2: &RpcError_Data{
 			// subcode = code * 10000 + i
-			ErrorCode: int32(TLRpcErrorCodes_INTERNAL),
+			ErrorCode:    int32(TLRpcErrorCodes_INTERNAL),
 			ErrorMessage: fmt.Sprintf("INTERNAL_SERVER_ERROR: code = %d, message = %s", code, message),
 		}}
 	}
@@ -158,7 +158,7 @@ func NewRpcError2(code TLRpcErrorCodes) (err *TLRpcError) {
 	if name, ok := TLRpcErrorCodes_name[int32(code)]; ok {
 		if code <= TLRpcErrorCodes_OTHER2 {
 			err = &TLRpcError{Data2: &RpcError_Data{
-				ErrorCode: int32(code),
+				ErrorCode:    int32(code),
 				ErrorMessage: name,
 			}}
 		} else {
@@ -169,13 +169,13 @@ func NewRpcError2(code TLRpcErrorCodes) (err *TLRpcError) {
 				TLRpcErrorCodes_PHONE_MIGRATE_X,
 				TLRpcErrorCodes_USER_MIGRATE_X:
 				err = &TLRpcError{Data2: &RpcError_Data{
-					ErrorCode: int32(TLRpcErrorCodes_OTHER2),
+					ErrorCode:    int32(TLRpcErrorCodes_OTHER2),
 					ErrorMessage: fmt.Sprintf("INTERNAL_SERVER_ERROR: Not invoke NewRpcError(%s), please use New%s(dc), ", name, name),
 				}}
 				glog.Fatal(err)
 			case TLRpcErrorCodes_FLOOD_WAIT_X:
 				err = &TLRpcError{Data2: &RpcError_Data{
-					ErrorCode: int32(TLRpcErrorCodes_FLOOD),
+					ErrorCode:    int32(TLRpcErrorCodes_FLOOD),
 					ErrorMessage: fmt.Sprintf("INTERNAL_SERVER_ERROR: Not invoke NewRpcError(%s), please use NewFloodWaitX2(seconds), ", name),
 				}}
 				glog.Error(err)
@@ -187,7 +187,7 @@ func NewRpcError2(code TLRpcErrorCodes) (err *TLRpcError) {
 
 				err = &TLRpcError{Data2: &RpcError_Data{
 					// subcode = code * 1000 + i
-					ErrorCode: int32(code2),
+					ErrorCode:    int32(code2),
 					ErrorMessage: name,
 				}}
 			}
@@ -195,7 +195,7 @@ func NewRpcError2(code TLRpcErrorCodes) (err *TLRpcError) {
 	} else {
 		err = &TLRpcError{Data2: &RpcError_Data{
 			// subcode = code * 10000 + i
-			ErrorCode: int32(TLRpcErrorCodes_INTERNAL),
+			ErrorCode:    int32(TLRpcErrorCodes_INTERNAL),
 			ErrorMessage: "INTERNAL_SERVER_ERROR",
 		}}
 	}

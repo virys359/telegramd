@@ -1,5 +1,5 @@
 # Telegramd roadmap
-> 最终目标是打造一个高性能、稳定并且功能完善的开源telegram服务端，能让整个开源telegram客户端生态系统除了官方服务之外还有其他的选择！
+> Telegramd - 打造高性能、稳定并且功能完善的开源telegram服务端，建设开源telegram客户端生态系统非官方首选服务！
 
 ## 客户端和测试服务器
 

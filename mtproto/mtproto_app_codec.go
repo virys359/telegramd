@@ -18,13 +18,13 @@
 package mtproto
 
 import (
-	"net"
-	"io"
-	"github.com/golang/glog"
-	"encoding/hex"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/crypto"
+	"io"
+	"net"
 )
 
 type MTProtoAppCodec struct {
@@ -52,7 +52,7 @@ func (c *MTProtoAppCodec) Receive() (interface{}, error) {
 
 	// TODO(@benqi): dispatch to session
 	// glog.Info("first_byte: ", hex.EncodeToString(b[:1]))
-	needAck := bool(b[0] >> 7 == 1)
+	needAck := bool(b[0]>>7 == 1)
 	_ = needAck
 
 	b[0] = b[0] & 0x7f
@@ -131,7 +131,7 @@ func (c *MTProtoAppCodec) Send(msg interface{}) error {
 
 	sb := make([]byte, 4)
 	// minus padding
-	size := len(b)/4
+	size := len(b) / 4
 
 	if size < 127 {
 		sb = []byte{byte(size)}
@@ -154,7 +154,7 @@ func (c *MTProtoAppCodec) Close() error {
 }
 
 type AesCTR128Stream struct {
-	conn      *net.TCPConn
+	conn    *net.TCPConn
 	encrypt *crypto.AesCTR128Encrypt
 	decrypt *crypto.AesCTR128Encrypt
 }

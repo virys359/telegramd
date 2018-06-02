@@ -38,13 +38,13 @@ const (
 	RPC_ERROR          = 0x0011
 	RPC_FLOOD_WAIT     = 0x0012
 	RPC_INTERNAL_ERROR = 0x0013
-	PUSH 		   	   = 0x0014
+	PUSH               = 0x0014
 )
 
 const (
 	kFrameHeaderLen = 16
 	kMagicNumber    = 0x5A4D5450 // "ZMTP"
-	kVersion 		= 1
+	kVersion        = 1
 )
 
 type newZProtoMessage func() net2.MessageBase
@@ -98,10 +98,10 @@ type ZProtoPackageData struct {
 }
 
 type ZProtoMessage struct {
-	SessionId  uint64
-	SeqNum     uint64
-	Metadata   *ZProtoMetadata
-	Message    net2.MessageBase
+	SessionId uint64
+	SeqNum    uint64
+	Metadata  *ZProtoMetadata
+	Message   net2.MessageBase
 }
 
 func (m *ZProtoMessage) Encode() []byte {

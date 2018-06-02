@@ -18,11 +18,11 @@
 package mtproto
 
 import (
-	"net"
-	"io"
-	"github.com/golang/glog"
 	"encoding/binary"
 	"fmt"
+	"github.com/golang/glog"
+	"io"
+	"net"
 )
 
 // https://core.telegram.org/mtproto#tcp-transport
@@ -121,7 +121,7 @@ func (c *MTProtoIntermediateCodec) Send(msg interface{}) error {
 
 	sb := make([]byte, 4)
 	// minus padding
-	size := len(b)/4
+	size := len(b) / 4
 
 	//if size < 127 {
 	//	sb = []byte{byte(size)}

@@ -21,9 +21,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/golang/glog"
 	"math"
 	"math/big"
-	"github.com/golang/glog"
 )
 
 type DecodeBuf struct {

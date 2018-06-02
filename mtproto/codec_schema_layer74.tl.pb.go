@@ -151,7 +151,7 @@ func (m *TLContactsFoundLayer74) Decode(dbuf *DecodeBuf) error {
 func (m *TLExportedMessageLinkLayer74) To_ExportedMessageLink() *ExportedMessageLink {
 	return &ExportedMessageLink{
 		Constructor: TLConstructor_CRC32_exportedMessageLinkLayer74,
-		Data2: m.Data2,
+		Data2:       m.Data2,
 	}
 }
 
@@ -195,8 +195,12 @@ func (m *TLInputPaymentCredentialsAndroidPayLayer74) To_InputPaymentCredentials(
 	}
 }
 
-func (m *TLInputPaymentCredentialsAndroidPayLayer74) SetPaymentToken(v *DataJSON) { m.Data2.PaymentToken = v }
-func (m *TLInputPaymentCredentialsAndroidPayLayer74) GetPaymentToken() *DataJSON  { return m.Data2.PaymentToken }
+func (m *TLInputPaymentCredentialsAndroidPayLayer74) SetPaymentToken(v *DataJSON) {
+	m.Data2.PaymentToken = v
+}
+func (m *TLInputPaymentCredentialsAndroidPayLayer74) GetPaymentToken() *DataJSON {
+	return m.Data2.PaymentToken
+}
 
 func (m *TLInputPaymentCredentialsAndroidPayLayer74) SetGoogleTransactionId(v string) {
 	m.Data2.GoogleTransactionId = v
