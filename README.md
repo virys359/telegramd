@@ -16,7 +16,7 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 - 集成了grpc的recovery等中间件
 
 ### 架构图
-[架构图](!doc/image/architecture-001.jpeg)
+![架构图](doc/image/architecture-001.jpeg)
 
 ### 文档
 [RoadMap](doc/road-map.md)
