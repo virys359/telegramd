@@ -14,7 +14,10 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 	- 代码生成时检查sql语法，极大减少传统手写sql实现的出错几率和手写sql调用的工作量
 - 支持可切换的多个服务注册和发现系统
 - 集成了grpc的recovery等中间件
-  
+
+### 架构图
+[架构图](!doc/image/architecture-001.jpeg)
+
 ### 文档
 [RoadMap](doc/road-map.md)
 
