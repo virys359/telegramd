@@ -778,11 +778,11 @@ func (c *clientSession) onDestroySession(connID ClientConnID, md *mtproto.ZProto
 		return
 	}
 
-	if sess, ok := c.manager.sessions[request.SessionId]; ok {
+	if _, ok := c.manager.sessions[request.SessionId]; ok {
 		destroySessionOk := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
 			SessionId: request.SessionId,
 		}}
-		sess.sendToClient(connID, md, 0, false, destroySessionOk.To_DestroySessionRes())
+		c.sendToClient(connID, md, 0, false, destroySessionOk.To_DestroySessionRes())
 		delete(c.manager.sessions, request.SessionId)
 
 		// TODO(@benqi): saved destroyed session???
@@ -790,7 +790,7 @@ func (c *clientSession) onDestroySession(connID ClientConnID, md *mtproto.ZProto
 		destroySessionNone := &mtproto.TLDestroySessionOk{Data2: &mtproto.DestroySessionRes_Data{
 			SessionId: request.SessionId,
 		}}
-		sess.sendToClient(connID, md, 0, false, destroySessionNone.To_DestroySessionRes())
+		c.sendToClient(connID, md, 0, false, destroySessionNone.To_DestroySessionRes())
 	}
 }
 
