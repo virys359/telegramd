@@ -24,23 +24,25 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/user"
+)
+
+const (
+	// TODO(@benqi): add support user.
+	kSupportUserID = int32(2)
 )
 
 // help.getSupport#9cdf08cd = help.Support;
 func (s *HelpServiceImpl) HelpGetSupport(ctx context.Context, request *mtproto.TLHelpGetSupport) (*mtproto.Help_Support, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("HelpGetSupport - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("help.getSupport#9cdf08cd - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl HelpGetSupport logic
-	reply := mtproto.NewTLHelpSupport()
-	// &mtproto.TLHelpSupport{}
-	reply.SetPhoneNumber("+86 111 1111 1111")
+	reply := &mtproto.TLHelpSupport{ Data2: &mtproto.Help_Support_Data{
+		PhoneNumber: "+86 111 1111 1111",
+		User:        &mtproto.User{Constructor: mtproto.TLConstructor_CRC32_userEmpty, Data2: &mtproto.User_Data{Id: kSupportUserID}},
+	}}
 
-	//user := model.GetUserModel().GetUser(SUPPORT_USER_ID)
-	//reply.User = user.ToUser()
-	//
-	//glog.Infof("HelpGetSupport - reply: {%v}\n", reply)
-	//return reply.ToHelp_Support(), nil
-
-	return nil, fmt.Errorf("Not impl HelpGetSupport")
+	glog.Infof("help.getSupport#9cdf08cd - reply: {%v}\n", reply)
+	return reply.To_Help_Support(), nil
 }

@@ -21,7 +21,6 @@ import (
     "github.com/golang/glog"
     "github.com/nebulaim/telegramd/mtproto"
     "golang.org/x/net/context"
-    "fmt"
     "github.com/nebulaim/telegramd/baselib/grpc_util"
     "github.com/nebulaim/telegramd/baselib/logger"
 )
@@ -31,12 +30,10 @@ func (s *HelpServiceImpl) HelpGetScheme(ctx context.Context, request *mtproto.TL
     md := grpc_util.RpcMetadataFromIncoming(ctx)
     glog.Infof("help.getScheme#dbb69a9e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-    // TODO(@benqi): Impl HelpGetScheme logic
-
-    // scheme := mtproto.NewTLSchemeNotModified()	this is wrong
 	scheme := mtproto.NewTLScheme()
 	scheme.SetSchemeRaw("")
 	scheme.SetVersion(1)
 
-    return nil, fmt.Errorf("Not impl help.getScheme#dbb69a9e")
+    glog.Infof("help.getScheme#dbb69a9e - reply: %s", logger.JsonDebugData(scheme))
+    return scheme.To_Scheme(), nil
 }
