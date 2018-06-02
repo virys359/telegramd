@@ -33,5 +33,10 @@ func (s *HelpServiceImpl) HelpGetScheme(ctx context.Context, request *mtproto.TL
 
     // TODO(@benqi): Impl HelpGetScheme logic
 
+    // scheme := mtproto.NewTLSchemeNotModified()	this is wrong
+	scheme := mtproto.NewTLScheme()
+	scheme.SetSchemeRaw("")
+	scheme.SetVersion(1)
+
     return nil, fmt.Errorf("Not impl help.getScheme#dbb69a9e")
 }
