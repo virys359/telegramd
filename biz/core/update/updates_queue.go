@@ -67,7 +67,8 @@ func GetUpdatesState(authKeyId int64, userId int32) *mtproto.TLUpdatesState {
 
 	// state.SetSeq(int32(GetSequenceModel().CurrentSeqId(helper.Int64ToString(authKeyId))))
 	state.SetSeq(int32(CurrentSeqId(base.Int32ToString(userId))))
-	state.SetSeq(0)
+
+	//state.SetSeq(0)
 	//
 	//seqDO := dao.GetAuthSeqUpdatesDAO(dao.DB_SLAVE).SelectLastSeq(authKeyId, userId)
 	//if seqDO != nil {

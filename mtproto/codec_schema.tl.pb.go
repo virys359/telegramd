@@ -750,6 +750,7 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_messages_getMessages):                             func() TLObject { return NewTLMessagesGetMessages() },
 	int32(TLConstructor_CRC32_messages_getDialogs):                              func() TLObject { return NewTLMessagesGetDialogs() },
 	int32(TLConstructor_CRC32_messages_getHistory):                              func() TLObject { return NewTLMessagesGetHistory() },
+	int32(TLConstructor_CRC32_messages_getHistoryLayer71):                       func() TLObject { return NewTLMessagesGetHistoryLayer71() },
 	int32(TLConstructor_CRC32_messages_search):                                  func() TLObject { return NewTLMessagesSearch() },
 	int32(TLConstructor_CRC32_messages_readHistory):                             func() TLObject { return NewTLMessagesReadHistory() },
 	int32(TLConstructor_CRC32_messages_deleteHistory):                           func() TLObject { return NewTLMessagesDeleteHistory() },

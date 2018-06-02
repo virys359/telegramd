@@ -134,6 +134,7 @@ var rpcContextRegisters = map[string]RPCContextTuple{
 	"TLContactsGetTopPeers":                RPCContextTuple{"/mtproto.RPCContacts/contacts_getTopPeers", func() interface{} { return new(Contacts_TopPeers) }},
 	"TLMessagesGetMessages":                RPCContextTuple{"/mtproto.RPCMessages/messages_getMessages", func() interface{} { return new(Messages_Messages) }},
 	"TLMessagesGetHistory":                 RPCContextTuple{"/mtproto.RPCMessages/messages_getHistory", func() interface{} { return new(Messages_Messages) }},
+	"TLMessagesGetHistoryLayer71":          RPCContextTuple{"/mtproto.RPCMessages/messages_getHistoryLayer71", func() interface{} { return new(Messages_Messages) }},
 	"TLMessagesSearch":                     RPCContextTuple{"/mtproto.RPCMessages/messages_search", func() interface{} { return new(Messages_Messages) }},
 	"TLMessagesSearchGlobal":               RPCContextTuple{"/mtproto.RPCMessages/messages_searchGlobal", func() interface{} { return new(Messages_Messages) }},
 	"TLMessagesGetUnreadMentions":          RPCContextTuple{"/mtproto.RPCMessages/messages_getUnreadMentions", func() interface{} { return new(Messages_Messages) }},

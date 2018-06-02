@@ -1158,6 +1158,7 @@ It has these top-level messages:
 	TLMessagesGetMessages
 	TLMessagesGetDialogs
 	TLMessagesGetHistory
+	TLMessagesGetHistoryLayer71
 	TLMessagesSearch
 	TLMessagesReadHistory
 	TLMessagesDeleteHistory

@@ -78,7 +78,11 @@ func NextSeqId(key string) (seq int64) {
 }
 
 func CurrentSeqId(key string) (seq int64) {
-	seq, _ = dao.GetSequenceDAO(dao.CACHE).CurrentSeqId(key)
+	var err error
+	seq, err = dao.GetSequenceDAO(dao.CACHE).CurrentSeqId(key)
+	if err != nil {
+		seq = -1
+	}
 	return
 }
 

@@ -752,6 +752,7 @@ enum TLConstructor {
     CRC32_messages_getMessages = 1109588596;
     CRC32_messages_getDialogs = 421243333;
     CRC32_messages_getHistory = -591691168;
+    CRC32_messages_getHistoryLayer71 = -1347868602;
     CRC32_messages_search = 60726944;
     CRC32_messages_readHistory = 238054714;
     CRC32_messages_deleteHistory = 469850889;
