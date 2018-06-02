@@ -92,6 +92,9 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
 	}}
 	selfUpdates.AddUpdate(contactLink.To_Update())
+
+	// 添加成功后是我的联系人
+	contactUser.SetContact(true)
 	selfUpdates.AddUser(contactUser.To_User())
 	// TODO(@benqi): handle seq
 	sync_client.GetSyncClient().PushToUserNotMeUpdatesData(md.AuthId, md.SessionId, md.UserId, selfUpdates.ToUpdates())

@@ -100,7 +100,8 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
     ./session
 
 ### 配套客户端
-[android客户端](https://github.com/nebulaim/TelegramAndroid)， 使用参考[文档](https://github.com/nebulaim/TelegramAndroid)
+#### 官方开源客户端修改适配版本
+[android客户端](https://github.com/nebulaim/TelegramAndroid)， 使用参考[文档](https://github.com/nebulaim/TelegramAndroid/blob/master/README.Telegramd.md)
 
 iOS客户端（敬请期待）
 
@@ -109,6 +110,9 @@ Mac客户端（敬请期待）
 Web客户端（敬请期待）
 
 桌面客户端（敬请期待）
+
+#### 开源客户端库修改适配版本
+tdlib
 
 ### TODO
 channels, Secret Chats, bots and payments这几大功能还未实现
