@@ -45,28 +45,11 @@ type TcpConnection struct {
 	Context       interface{}
 }
 
-func NewServerTcpConnection(name string, conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
+func NewTcpConnection(name string, conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
 	if globalConnectionId >= 0xfffffffffffffff {
 		atomic.StoreUint64(&globalConnectionId, 0)
 	}
 
-	conn2 := &TcpConnection{
-		name:          name,
-		conn:          conn,
-		codec:         codec,
-		closeChan:     make(chan int),
-		id:            atomic.AddUint64(&globalConnectionId, 1),
-		closeCallback: cb,
-	}
-
-	if sendChanSize > 0 {
-		conn2.sendChan = make(chan interface{}, sendChanSize)
-		go conn2.sendLoop()
-	}
-	return conn2
-}
-
-func NewClientTcpConnection(name string, conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
 	conn2 := &TcpConnection{
 		name:          name,
 		conn:          conn,

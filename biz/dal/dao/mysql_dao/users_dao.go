@@ -79,6 +79,13 @@ func (dao *UsersDAO) SelectByPhoneNumber(phone string) *dataobject.UsersDO {
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByPhoneNumber(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -106,6 +113,13 @@ func (dao *UsersDAO) SelectById(id int32) *dataobject.UsersDO {
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectById(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do
@@ -140,6 +154,13 @@ func (dao *UsersDAO) SelectUsersByIdList(id_list []int32) []dataobject.UsersDO {
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectUsersByIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -169,6 +190,13 @@ func (dao *UsersDAO) SelectByQueryString(username string, first_name string, las
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByQueryString(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values
@@ -201,6 +229,13 @@ func (dao *UsersDAO) SearchByQueryNotIdList(q2 string, id_list []int32, limit in
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SearchByQueryNotIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values
@@ -364,6 +399,13 @@ func (dao *UsersDAO) SelectByUsername(username string) *dataobject.UsersDO {
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUsername(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -391,6 +433,13 @@ func (dao *UsersDAO) SelectAccountDaysTTL(id int32) *dataobject.UsersDO {
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectAccountDaysTTL(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do
@@ -442,6 +491,13 @@ func (dao *UsersDAO) SelectProfilePhotos(id int32) *dataobject.UsersDO {
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectProfilePhotos(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do

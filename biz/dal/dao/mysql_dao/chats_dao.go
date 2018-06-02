@@ -79,6 +79,13 @@ func (dao *ChatsDAO) Select(id int32) *dataobject.ChatsDO {
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in Select(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -131,6 +138,13 @@ func (dao *ChatsDAO) SelectByIdList(idList []int32) []dataobject.ChatsDO {
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values

@@ -18,11 +18,11 @@
 package mtproto
 
 import (
-	"net"
-	"time"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/crypto"
+	"net"
 	"sync"
+	"time"
 )
 
 // <<effective-go>>的接口检查章节中对这种用法做了解释：
@@ -47,14 +47,14 @@ type Config struct {
 type Dialer func() (net.Conn, error)
 
 type MTProtoConn struct {
-	base      net.Conn
+	base net.Conn
 
 	// reomoteAddr	net.Addr
 	// aes_key
 	encryptor *crypto.AesCTR128Encrypt
 	decryptor *crypto.AesCTR128Encrypt
-	listener *Listener
-	id       uint64
+	listener  *Listener
+	id        uint64
 
 	closed    bool
 	closeChan chan struct{}
@@ -63,11 +63,11 @@ type MTProtoConn struct {
 
 func newMTProtoConn(base net.Conn, id uint64, encryptor *crypto.AesCTR128Encrypt, decryptor *crypto.AesCTR128Encrypt) (conn *MTProtoConn) {
 	return &MTProtoConn{
-		base:           base,
-		id:             id,
-		encryptor:		encryptor,
-		decryptor:		decryptor,
-		closeChan:      make(chan struct{}),
+		base:      base,
+		id:        id,
+		encryptor: encryptor,
+		decryptor: decryptor,
+		closeChan: make(chan struct{}),
 	}
 }
 
@@ -126,4 +126,3 @@ func (c *MTProtoConn) Write(b []byte) (n int, err error) {
 	// glog.Info("MTProtoConn - Write data, len = ", len(b), " data: ", hex.EncodeToString(b))
 	return c.base.Write(b)
 }
-

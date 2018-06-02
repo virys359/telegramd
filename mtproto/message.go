@@ -18,14 +18,14 @@
 package mtproto
 
 import (
-	"fmt"
 	"encoding/binary"
+	"fmt"
 	// "bytes"
 	"github.com/golang/glog"
 	// "encoding/hex"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 	"bytes"
 	"encoding/hex"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
 const (
@@ -76,7 +76,7 @@ func (m *UnencryptedMessage) MessageType() int {
 	return UNENCRYPTED_MESSAGE
 }
 
-func (m *UnencryptedMessage) Encode() ([]byte) {
+func (m *UnencryptedMessage) Encode() []byte {
 	buf, _ := m.encode()
 	return buf
 }
@@ -142,14 +142,14 @@ type MsgDetailedInfoContainer struct {
 // TODO(@benqi): 将Encrypt和Descrypt移到底层
 type EncryptedMessage2 struct {
 	authKeyId int64
-	NeedAck bool
+	NeedAck   bool
 
-	msgKey []byte
-	Salt int64
+	msgKey    []byte
+	Salt      int64
 	SessionId int64
 	MessageId int64
-	SeqNo int32
-	Object TLObject
+	SeqNo     int32
+	Object    TLObject
 }
 
 func NewEncryptedMessage2(authKeyId int64) *EncryptedMessage2 {
@@ -170,20 +170,22 @@ func (m *EncryptedMessage2) Encode(authKeyId int64, authKey []byte) ([]byte, err
 func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, error) {
 	objData := m.Object.Encode()
 	var additional_size = (32 + len(objData)) % 16
-	if (additional_size != 0) {
+	if additional_size != 0 {
 		additional_size = 16 - additional_size
 	}
 	if MTPROTO_VERSION == 2 && additional_size < 12 {
 		additional_size += 16
 	}
 
-	x := NewEncodeBuf(32+len(objData)+additional_size)
+	x := NewEncodeBuf(32 + len(objData) + additional_size)
 	// x.Long(authKeyId)
 	// msgKey := make([]byte, 16)
 	// x.Bytes(msgKey)
 	x.Long(m.Salt)
 	x.Long(m.SessionId)
-	m.MessageId = GenerateMessageId()
+	if m.MessageId == 0 {
+		m.MessageId = GenerateMessageId()
+	}
 	x.Long(m.MessageId)
 	x.Int(m.SeqNo)
 	x.Int(int32(len(objData)))
@@ -193,7 +195,7 @@ func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, err
 	// glog.Info("Encode object: ", m.Object)
 
 	encryptedData, _ := m.encrypt(authKey, x.buf)
-	x2 := NewEncodeBuf(56+len(objData)+additional_size)
+	x2 := NewEncodeBuf(56 + len(objData) + additional_size)
 	x2.Long(authKeyId)
 	x2.Bytes(m.msgKey)
 	x2.Bytes(encryptedData)
@@ -218,7 +220,7 @@ func (m *EncryptedMessage2) decode(authKey []byte, b []byte) error {
 
 	dbuf := NewDecodeBuf(x)
 
-	m.Salt = dbuf.Long() // salt
+	m.Salt = dbuf.Long()      // salt
 	m.SessionId = dbuf.Long() // session_id
 	m.MessageId = dbuf.Long()
 
@@ -273,7 +275,7 @@ func (m *EncryptedMessage2) descrypt(msgKey, authKey, data []byte) ([]byte, erro
 	sha256MsgKey := make([]byte, 96)
 	switch MTPROTO_VERSION {
 	case 2:
-		t_d := make([]byte, 0, 32 + dataLen)
+		t_d := make([]byte, 0, 32+dataLen)
 		t_d = append(t_d, authKey[88:88+32]...)
 		t_d = append(t_d, x[:dataLen]...)
 		copy(sha256MsgKey, crypto.Sha256Digest(t_d))
@@ -309,7 +311,6 @@ func (m *EncryptedMessage2) encrypt(authKey []byte, data []byte) ([]byte, error)
 		copy(message_key[4:], crypto.Sha1Digest(data))
 	}
 
-
 	// copy(message_key[8:], )
 	// memcpy(p_data + 8, message_key + 8, 16);
 
@@ -322,7 +323,7 @@ func (m *EncryptedMessage2) encrypt(authKey []byte, data []byte) ([]byte, error)
 		return nil, err
 	}
 
-	m.msgKey = message_key[8:8+16]
+	m.msgKey = message_key[8 : 8+16]
 	return x, nil
 }
 

@@ -931,6 +931,14 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_account_registerDeviceLayer74):     func() TLObject { return NewTLAccountRegisterDeviceLayer74() },
 	int32(TLConstructor_CRC32_account_unregisterDeviceLayer74):   func() TLObject { return NewTLAccountUnregisterDeviceLayer74() },
 	int32(TLConstructor_CRC32_channels_exportMessageLinkLayer74): func() TLObject { return NewTLChannelsExportMessageLinkLayer74() },
+
+	// iphone_simulator_scheme.tl
+	int32(TLConstructor_CRC32_schemeNotModified): func() TLObject { return NewTLSchemeNotModified() },
+	int32(TLConstructor_CRC32_scheme):            func() TLObject { return NewTLScheme() },
+	int32(TLConstructor_CRC32_schemeParam):       func() TLObject { return NewTLSchemeParam() },
+	int32(TLConstructor_CRC32_schemeMethod):      func() TLObject { return NewTLSchemeMethod() },
+	int32(TLConstructor_CRC32_schemeType):        func() TLObject { return NewTLSchemeType() },
+	int32(TLConstructor_CRC32_help_getScheme):    func() TLObject { return NewTLHelpGetScheme() },
 }
 
 func NewTLObjectByClassID(classId int32) TLObject {

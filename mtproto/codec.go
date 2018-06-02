@@ -18,14 +18,14 @@
 package mtproto
 
 import (
-	"io"
-	net2 "github.com/nebulaim/telegramd/baselib/net2"
-	"fmt"
 	"encoding/binary"
-	"net"
-	"github.com/golang/glog"
-	"errors"
 	"encoding/hex"
+	"errors"
+	"fmt"
+	"github.com/golang/glog"
+	net2 "github.com/nebulaim/telegramd/baselib/net2"
+	"io"
+	"net"
 )
 
 const (
@@ -45,8 +45,7 @@ const (
 )
 
 func NewMTProto() *MTProto {
-	return &MTProto{
-	}
+	return &MTProto{}
 }
 
 type MTProto struct {
@@ -75,19 +74,19 @@ type MTProtoCodec struct {
 
 	//
 	AuthKeyId int64
-	AuthKey []byte
-	UserId  int32
+	AuthKey   []byte
+	UserId    int32
 
-	Salt int64
+	Salt      int64
 	SessionId int64
-	SeqNo int32
+	SeqNo     int32
 }
 
-func (m *MTProtoCodec) RemoteAddr() (net.Addr) {
+func (m *MTProtoCodec) RemoteAddr() net.Addr {
 	return m.rw.(net.Conn).RemoteAddr()
 }
 
-func (m *MTProtoCodec) LocalAddr() (net.Addr) {
+func (m *MTProtoCodec) LocalAddr() net.Addr {
 	return m.rw.(net.Conn).LocalAddr()
 }
 
@@ -97,9 +96,11 @@ func (m *MTProtoCodec) getSeqNo(increment bool) int32 {
 		m.SeqNo += 1
 	}
 	v := int32(0)
-	if increment { v = int32(1) }
+	if increment {
+		v = int32(1)
+	}
 
-	return value * 2 + v
+	return value*2 + v
 }
 
 func (m *MTProtoCodec) Receive() (interface{}, error) {
@@ -114,7 +115,7 @@ func (m *MTProtoCodec) Receive() (interface{}, error) {
 	}
 
 	// glog.Info("first_byte: ", hex.EncodeToString(b[:1]))
-	needAck := bool(b[0] >> 7 == 1)
+	needAck := bool(b[0]>>7 == 1)
 
 	b[0] = b[0] & 0x7f
 	// glog.Info("first_byte2: ", hex.EncodeToString(b[:1]))
@@ -206,7 +207,7 @@ func (m *MTProtoCodec) Send(msg interface{}) error {
 
 		sb := make([]byte, 4)
 		// minus padding
-		size := len(b)/4
+		size := len(b) / 4
 
 		if size < 127 {
 			sb = []byte{byte(size)}
@@ -251,7 +252,7 @@ func (m *MTProtoCodec) Send(msg interface{}) error {
 
 		sb := make([]byte, 4)
 		// minus padding
-		size := len(b)/4
+		size := len(b) / 4
 
 		if size < 127 {
 			sb = []byte{byte(size)}
@@ -284,15 +285,15 @@ func (m *MTProtoCodec) Send(msg interface{}) error {
 		msgDetailedInfo.SetStatus(0)
 
 		msgDetailedInfoMessage := &EncryptedMessage2{
-			NeedAck : false,
+			NeedAck: false,
 			// SeqNo:	  seqNo,
-			Object:   msgDetailedInfo,
+			Object: msgDetailedInfo,
 		}
 		m.Send(msgDetailedInfoMessage)
 
 		sb := make([]byte, 4)
 		// minus padding
-		size := len(b)/4
+		size := len(b) / 4
 
 		if size < 127 {
 			sb = []byte{byte(size)}

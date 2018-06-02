@@ -18,7 +18,7 @@
 package mtproto
 
 const (
-	MTPROTO_VERSION= 2
+	MTPROTO_VERSION = 2
 )
 
 type TLObject interface {
@@ -26,4 +26,3 @@ type TLObject interface {
 	Decode(dbuf *DecodeBuf) error
 	String() string
 }
-

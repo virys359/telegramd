@@ -79,6 +79,13 @@ func (dao *DocumentsDAO) SelectByFileLocation(document_id int64, access_hash int
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByFileLocation(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -109,6 +116,13 @@ func (dao *DocumentsDAO) SelectByIdList(idList []int64) []dataobject.DocumentsDO
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values

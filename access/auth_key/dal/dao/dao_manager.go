@@ -32,6 +32,7 @@ const (
 type MysqlDAOList struct {
 	// auth_key
 	AuthKeysDAO  *mysql_dao.AuthKeysDAO
+	AuthUsersDAO *mysql_dao.AuthUsersDAO
 }
 
 // TODO(@benqi): 一主多从
@@ -49,6 +50,8 @@ func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
 		daoList := &MysqlDAOList{}
 		// auth_key
 		daoList.AuthKeysDAO = mysql_dao.NewAuthKeysDAO(v)
+		daoList.AuthUsersDAO = mysql_dao.NewAuthUsersDAO(v)
+
 		mysqlDAOManager.daoListMap[k] = daoList
 		return true
 	})
@@ -71,6 +74,15 @@ func GetAuthKeysDAO(dbName string) (dao *mysql_dao.AuthKeysDAO) {
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.AuthKeysDAO
+	}
+	return
+}
+
+func GetAuthUsersDAO(dbName string) (dao *mysql_dao.AuthUsersDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.AuthUsersDAO
 	}
 	return
 }

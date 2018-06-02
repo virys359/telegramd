@@ -925,4 +925,10 @@ enum TLConstructor {
     CRC32_langpack_getStrings = 773776152;
     CRC32_langpack_getDifference = 187583869;
     CRC32_langpack_getLanguages = -2146445955;
+    CRC32_schemeNotModified = 641506392;
+    CRC32_scheme = 1315894878;
+    CRC32_schemeParam = 565550063;
+    CRC32_schemeMethod = 1200838592;
+    CRC32_schemeType = -1461589623;
+    CRC32_help_getScheme = -608789858;
 }

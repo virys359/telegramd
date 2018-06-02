@@ -32,6 +32,7 @@ import (
 	// "github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
 	"github.com/nebulaim/telegramd/baselib/base"
+	// "github.com/nebulaim/telegramd/baselib/sync2"
 )
 
 type ServerConfig struct {
@@ -95,6 +96,7 @@ type connContext struct {
 	state          int // 是否握手阶段
 	md             *mtproto.ZProtoMetadata
 	handshakeState *mtproto.HandshakeState
+	seqNum         uint64
 }
 
 func (ctx *connContext) getState() int {
@@ -203,7 +205,7 @@ func (s *FrontendServer) Initialize() error {
 	etcdConfg2 := clientv3.Config{
 		Endpoints: s.config.AuthKeyClient.EtcdAddrs,
 	}
-	s.authKeyClientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "auth_key", etcdConfg2, s.authKeyClient)
+	s.authKeyClientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "handshake", etcdConfg2, s.authKeyClient)
 
 	return nil
 }
@@ -263,6 +265,7 @@ func (s *FrontendServer) OnNewConnection(conn *net2.TcpConnection) {
 			State:    mtproto.STATE_CONNECTED2,
 			ResState: mtproto.RES_STATE_NONE,
 		},
+		seqNum: 1,
 	}
 
 	glog.Infof("onNewConnection - peer(%s), ctx: {%v}", conn, conn.Context)
@@ -434,14 +437,16 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 
 	zmsg := &mtproto.ZProtoMessage{
 		SessionId: s.genSessionId(conn), // conn.GetConnID(),
-		SeqNum:    1, // TODO(@benqi): gen seqNum
+		SeqNum:    ctx.seqNum, // TODO(@benqi): gen seqNum
 		Metadata:  s.newMetadata(conn),
 		Message:   &mtproto.ZProtoRawPayload{
 			Payload: hmsg.Encode(),
 		},
 	}
+
+	ctx.seqNum++
 	// glog.Infof("sendToSessionClient: %v", zmsg)
-	return s.authKeyClient.SendData("auth_key", zmsg)
+	return s.authKeyClient.SendData("handshake", zmsg)
 }
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
@@ -452,12 +457,13 @@ func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpC
 	}
 	zmsg := &mtproto.ZProtoMessage{
 		SessionId: s.genSessionId(conn), // conn.GetConnID(),
-		SeqNum:    1, // TODO(@benqi): gen seqNum
+		SeqNum:    ctx.seqNum,
 		Metadata:  s.newMetadata(conn),
 		Message:   &mtproto.ZProtoRawPayload{
 			Payload: hmsg.Encode(),
 		},
 	}
+	ctx.seqNum++
 
 	if kaddr, ok := s.ketama.Get(base.Int64ToString(mmsg.AuthKeyId)); ok {
 		return s.client.SendDataToAddress("session", kaddr, zmsg)

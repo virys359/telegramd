@@ -61,6 +61,38 @@ func (s *AuthKeyServiceImpl) QueryAuthKey(ctx context.Context, request *mtproto.
 		}
 	}
 
-	glog.Info("queryAuthKey {auth_key_id: %d} ok.", request.AuthKeyId)
+	glog.Infof("queryAuthKey {auth_key_id: %d} ok.", request.AuthKeyId)
 	return authKeyData, nil
+}
+
+// rpc QueryUserId(AuthKeyIdRequest) returns (UserIdResponse);
+func (s *AuthKeyServiceImpl) QueryUserId(ctx context.Context, request *mtproto.AuthKeyIdRequest) (*mtproto.UserIdResponse, error) {
+	glog.Infof("auth_key.queryUserId - request: %s", logger.JsonDebugData(request))
+
+	userId := &mtproto.UserIdResponse{
+		Result:    0,
+		AuthKeyId: request.AuthKeyId,
+	}
+
+	// Check auth_key_id
+	if request.AuthKeyId == 0 {
+		userId.Result = 1000
+	}
+
+	// TODO(@benqi): cache auth_key
+	do, err := dao.GetAuthUsersDAO(dao.DB_MASTER).SelectByAuthId(request.AuthKeyId)
+	if err != nil {
+		glog.Error(err)
+		userId.Result = 1001
+	} else {
+		if do == nil {
+			glog.Errorf("getUserId error: not find keyId = %d", request.AuthKeyId)
+			userId.Result = 1002
+		} else {
+			userId.UserId = do.UserId
+		}
+	}
+
+	glog.Infof("queryUserId {auth_key_id: %d} ok.", request.AuthKeyId)
+	return userId, nil
 }

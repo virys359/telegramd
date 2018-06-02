@@ -82,6 +82,13 @@ func (dao *MessagesDAO) SelectByMessageIdList(user_id int32, idList []int32) []d
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -109,6 +116,13 @@ func (dao *MessagesDAO) SelectByMessageId(user_id int32, user_message_box_id int
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do
@@ -142,6 +156,13 @@ func (dao *MessagesDAO) SelectBackwardByPeerOffsetLimit(user_id int32, peer_type
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectBackwardByPeerOffsetLimit(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -171,6 +192,13 @@ func (dao *MessagesDAO) SelectBackwardByPeerUserOffsetLimit(user_id int32, peer_
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectBackwardByPeerUserOffsetLimit(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values
@@ -204,6 +232,13 @@ func (dao *MessagesDAO) SelectForwardByPeerOffsetLimit(user_id int32, peer_type 
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectForwardByPeerOffsetLimit(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -235,6 +270,13 @@ func (dao *MessagesDAO) SelectForwardByPeerUserOffsetLimit(user_id int32, peer_i
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectForwardByPeerUserOffsetLimit(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -262,6 +304,13 @@ func (dao *MessagesDAO) SelectPeerMessageId(peerId int32, user_id int32, user_me
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectPeerMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do
@@ -296,6 +345,13 @@ func (dao *MessagesDAO) SelectPeerDialogMessageIdList(user_id int32, idList []in
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectPeerDialogMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -325,6 +381,13 @@ func (dao *MessagesDAO) SelectDialogMessageListByMessageId(user_id int32, user_m
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectDialogMessageListByMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values
@@ -358,6 +421,13 @@ func (dao *MessagesDAO) SelectPeerDialogMessageListByMessageId(user_id int32, us
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectPeerDialogMessageListByMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -385,6 +455,13 @@ func (dao *MessagesDAO) SelectLastTwoMessageId(user_id int32) *dataobject.Messag
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectLastTwoMessageId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do
@@ -417,6 +494,13 @@ func (dao *MessagesDAO) SelectDialogsByMessageIdList(user_id int32, idList []int
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectDialogsByMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values

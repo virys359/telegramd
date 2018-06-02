@@ -18,9 +18,9 @@
 package mtproto
 
 import (
-	"testing"
-	"net"
 	"log"
+	"net"
+	"testing"
 	// "fmt"
 	// net2 "github.com/nebulaim/telegramd/baselib/net2"
 	// "github.com/nebulaim/telegramd/baselib/net2/codec"

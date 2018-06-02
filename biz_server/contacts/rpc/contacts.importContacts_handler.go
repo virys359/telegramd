@@ -94,7 +94,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	selfUpdates.AddUpdate(contactLink.To_Update())
 	selfUpdates.AddUser(contactUser.To_User())
 	// TODO(@benqi): handle seq
-	sync_client.GetSyncClient().PushToUserUpdatesData(md.UserId, selfUpdates.ToUpdates())
+	sync_client.GetSyncClient().PushToUserNotMeUpdatesData(md.AuthId, md.SessionId, md.UserId, selfUpdates.ToUpdates())
 
 	// TODO(@benqi): 推给联系人逻辑需要再考虑考虑
 	if needUpdate {
@@ -107,8 +107,8 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		}}
 		contactUpdates.AddUpdate(contactLink2.To_Update())
 
-		selfUser := user.GetUserById(md.UserId, md.UserId)
-		contactUpdates.AddUser(selfUser.To_User())
+		myUser := user.GetUserById(contactUser.GetId(), md.UserId)
+		contactUpdates.AddUser(myUser.To_User())
 		// TODO(@benqi): handle seq
 		sync_client.GetSyncClient().PushToUserUpdatesData(contactUser.GetId(), contactUpdates.ToUpdates())
 	}

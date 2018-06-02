@@ -18,11 +18,11 @@
 package mtproto
 
 import (
-	"github.com/golang/glog"
-	"fmt"
-	"encoding/hex"
 	"bytes"
 	"compress/gzip"
+	"encoding/hex"
+	"fmt"
+	"github.com/golang/glog"
 )
 
 //const (
@@ -35,14 +35,17 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 //message2 msg_id:long seqno:int bytes:int body:Object = Message2; // parsed manually
 type TLMessage2 struct {
-	MsgId 	int64
-	Seqno 	int32
-	Bytes 	int32
-	Object 	TLObject
+	MsgId  int64
+	Seqno  int32
+	Bytes  int32
+	Object TLObject
 }
 
 func (m *TLMessage2) String() string {
-	return "{message2#5bb8e511}"
+	return fmt.Sprintf("{message2#5bb8e511 - msg_id: %d, seq_no: %d, object: {%v}}",
+		m.MsgId,
+		m.Seqno,
+		m.Object)
 }
 
 func (m *TLMessage2) Encode() []byte {
@@ -59,13 +62,13 @@ func (m *TLMessage2) Decode(dbuf *DecodeBuf) error {
 	m.MsgId = dbuf.Long()
 	m.Seqno = dbuf.Int()
 	m.Bytes = dbuf.Int()
-	glog.Infof("message2: {msg_id: %d, seqno: %d, bytes: %d}")
+	// glog.Infof("message2: {msg_id: %d, seqno: %d, bytes: %d}", m.MsgId, )
 	b := dbuf.Bytes(int(m.Bytes))
 
 	dbuf2 := NewDecodeBuf(b)
 	m.Object = dbuf2.Object()
 	if m.Object == nil {
-		err := fmt.Errorf("Decode core_message error: %s", hex.EncodeToString(b))
+		err := fmt.Errorf("decode core_message error: %s", hex.EncodeToString(b))
 		glog.Error(err)
 		return err
 	}

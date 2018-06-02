@@ -18,90 +18,82 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/nebulaim/telegramd/mtproto"
 	"encoding/binary"
-	//"fmt"
-	//"encoding/hex"
-	//"github.com/golang/glog"
-	"github.com/golang/glog"
-	"fmt"
+	"github.com/nebulaim/telegramd/mtproto"
 	"encoding/hex"
+	"fmt"
+	"github.com/golang/glog"
+	"sync"
 )
 
 type sessionManager struct {
-	// sync.RWMutex
-	cache      AuthKeyStorager
-	sessions   map[int64]*sessionClientList
-	// ioCallback ClientIOCallback
+	sessions sync.Map // map[int64]*sessionClientList
 }
 
-func newSessionManager(cache AuthKeyStorager) *sessionManager {
-	return &sessionManager{
-		cache:      cache,
-		sessions:   make(map[int64]*sessionClientList),
-		// ioCallback: ioCallback,
-	}
+func newSessionManager() *sessionManager {
+	return &sessionManager{}
 }
 
-func (s *sessionManager) onSessionData(conn *net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+func (s *sessionManager) onSessionData2(clientConnID, frontendConnID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
 	if len(buf) > 10240 {
-		glog.Infof("onSessionData: peer(%v) data: {session_id: %d, md: %v, buf_len: %d, buf: %s, buf_end: %s}",
-			conn.RemoteAddr(),
-			sessionID,
+		glog.Infof("onSessionData: data: {session_id: %d, md: %v, buf_len: %d, buf: %s, buf_end: %s}",
+			// conn.RemoteAddr(),
+			clientConnID,
 			md,
 			len(buf),
 			hex.EncodeToString(buf[:256]),
 			hex.EncodeToString(buf[len(buf)-256:]))
 	} else {
-		glog.Infof("onSessionData: peer(%v) data: {session_id: %d, md: %v, buf_len: %d}", conn.RemoteAddr(), sessionID, md, len(buf))
+		glog.Infof("onSessionData: data: {session_id: %d, md: %v, buf_len: %d}", clientConnID, md, len(buf))
 	}
+
+	////
 	authKeyId := int64(binary.LittleEndian.Uint64(buf))
 
 	// TODO(@benqi): sync s.sessions
-	sess, ok := s.sessions[authKeyId]
-	if !ok {
-		authKey := s.cache.GetAuthKey(authKeyId)
+	var sessList *clientSessionManager
+	if vv, ok := s.sessions.Load(authKeyId); !ok {
+		authKey := getCacheAuthKey(authKeyId)
 		if authKey == nil {
 			err := fmt.Errorf("onSessionData - not found authKeyId: {%d}", authKeyId)
 			glog.Error(err)
 			return err
 		}
-		sess = newSessionClientList(authKeyId, authKey)
-		s.sessions[authKeyId] = sess
-		// sess.onNewClient(sessionID)
+
+		sessList = newClientSessionManager(authKeyId, authKey, 0)
+		s.sessions.Store(authKeyId, sessList)
+		s.onNewSessionClientManager(sessList)
 	} else {
-		//
+		sessList, _ = vv.(*clientSessionManager)
 	}
 
-	// sessData := newSessionClientData(sess.authKeyId, sess.authKey, zmsg)
-	return sess.onSessionClientData(conn, sessionID, md, buf)
+	return sessList.OnSessionDataArrived(makeClientConnID(clientConnID, frontendConnID), md, buf)
 }
 
-// 客户端连接建立
-func (s *sessionManager) onNewClient() error {
-	return nil
-}
+func (s *sessionManager) onSyncData2(authKeyId, sessionId int64, md *mtproto.ZProtoMetadata, data *messageData) error {
+	var sessList *clientSessionManager
 
-// TODO(@benqi): 客户端连接断开
-func (s *sessionManager) onClientClose() error {
-	return nil
-}
-
-func (s *sessionManager) pushToSessionData(authKeyId, sessionId int64, md *mtproto.ZProtoMetadata, data *messageData) error {
-	// var ok bool
-	sessList, ok := s.sessions[authKeyId]
-	if !ok {
+	if vv, ok := s.sessions.Load(authKeyId); !ok {
 		err := fmt.Errorf("pushToSessionData - not find sessionList by authKeyId: {%d}", authKeyId)
 		glog.Warning(err)
 		return err
-	}
-	sess, ok := sessList.sessions[sessionId]
-	if !ok {
-		err := fmt.Errorf("pushToSessionData - not find session by sessionId: {%d}", sessionId)
-		glog.Warning(err)
-		return err
+	} else {
+		sessList, _ = vv.(*clientSessionManager)
 	}
 
-	return sessList.SendToClientData(sess, 0, md, []*messageData{data})
+	return sessList.OnSyncDataArrived(sessionId, md, data)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// session event
+func (s *sessionManager) onNewSessionClientManager(sess *clientSessionManager) {
+	sess.Start()
+}
+
+func (s *sessionManager) onCloseSessionClientManager(authKeyId int64) {
+	if vv, ok := s.sessions.Load(authKeyId); ok {
+		vv.(*clientSessionManager).Stop()
+		s.sessions.Delete(authKeyId)
+	}
 }

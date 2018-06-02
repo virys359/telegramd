@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,10 +33,10 @@ func NewUserNotifySettingsDAO(db *sqlx.DB) *UserNotifySettingsDAO {
 	return &UserNotifySettingsDAO{db}
 }
 
-// insert into user_notify_settings(user_id, peer_type, peer_id, show_previews, silent, mute_until, sound, created_at) values (:user_id, :peer_type, :peer_id, :show_previews, :silent, :mute_until, :sound, :created_at)
+// insert into user_notify_settings(user_id, peer_type, peer_id, show_previews, silent, mute_until, sound) values (:user_id, :peer_type, :peer_id, :show_previews, :silent, :mute_until, :sound)
 // TODO(@benqi): sqlmap
 func (dao *UserNotifySettingsDAO) Insert(do *dataobject.UserNotifySettingsDO) int64 {
-	var query = "insert into user_notify_settings(user_id, peer_type, peer_id, show_previews, silent, mute_until, sound, created_at) values (:user_id, :peer_type, :peer_id, :show_previews, :silent, :mute_until, :sound, :created_at)"
+	var query = "insert into user_notify_settings(user_id, peer_type, peer_id, show_previews, silent, mute_until, sound) values (:user_id, :peer_type, :peer_id, :show_previews, :silent, :mute_until, :sound)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -81,6 +81,13 @@ func (dao *UserNotifySettingsDAO) SelectByUserId(user_id int32) []dataobject.Use
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -108,6 +115,13 @@ func (dao *UserNotifySettingsDAO) SelectByPeer(user_id int32, peer_type int8, pe
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByPeer(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do
@@ -139,6 +153,13 @@ func (dao *UserNotifySettingsDAO) SelectByUsers(user_id int32) *dataobject.UserN
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUsers(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -168,6 +189,13 @@ func (dao *UserNotifySettingsDAO) SelectByChannels(user_id int32) *dataobject.Us
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByChannels(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -195,6 +223,13 @@ func (dao *UserNotifySettingsDAO) SelectByAll(user_id int32) *dataobject.UserNot
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByAll(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do

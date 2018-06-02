@@ -18,8 +18,8 @@
 package mtproto
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 	// "encoding/hex"
 	// "github.com/golang/protobuf/proto"
 	"encoding/hex"
@@ -153,7 +153,6 @@ func TestContactsFound(t *testing.T) {
 	//
 	//fmt.Println(found2)
 }
-
 
 // contacts.found#1aa1f784 results:Vector<Peer> chats:Vector<Chat> users:Vector<User> = contacts.Found;
 func (m *TLContactsFound) Encode2() []byte {

@@ -79,13 +79,20 @@ func (dao *PhotoDatasDAO) SelectByFileLocation(volume_id int64, local_id int32, 
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByFileLocation(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
-// select id, photo_id, photo_type, dc_id, volume_id, local_id, access_hash, width, height, file_size, file_path, ext from photo_datas where photo_id = :photo_id
+// select id, photo_id, photo_type, dc_id, volume_id, local_id, access_hash, width, height, file_size, file_path, ext from photo_datas where photo_id = :photo_id and local_id != 0
 // TODO(@benqi): sqlmap
 func (dao *PhotoDatasDAO) SelectListByPhotoId(photo_id int64) []dataobject.PhotoDatasDO {
-	var query = "select id, photo_id, photo_type, dc_id, volume_id, local_id, access_hash, width, height, file_size, file_path, ext from photo_datas where photo_id = ?"
+	var query = "select id, photo_id, photo_type, dc_id, volume_id, local_id, access_hash, width, height, file_size, file_path, ext from photo_datas where photo_id = ? and local_id != 0"
 	rows, err := dao.db.Queryx(query, photo_id)
 
 	if err != nil {
@@ -108,6 +115,13 @@ func (dao *PhotoDatasDAO) SelectListByPhotoId(photo_id int64) []dataobject.Photo
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectListByPhotoId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values

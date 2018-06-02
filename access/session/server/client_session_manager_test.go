@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +17,19 @@
 
 package server
 
-import "sync"
+import (
+	"testing"
+	"fmt"
+)
 
-// TODO(@benqi): 缓存key垃圾回收
-var cacheAuthKey sync.Map
+func TestClientSessionManager(t *testing.T) {
+	s := newClientSessionManager(100000, []byte{1}, 1)
+	s.Start()
 
-type CacheAuthKeyItem struct {
-	AuthKey []byte
-	UserId  int32
+	fmt.Println("ready.")
+	for i := 0; i < 10; i++ {
+		s.onSessionData(&sessionData{ClientConnID{1, 1}, nil, []byte{1}})
+	}
+
+	s.Stop()
 }
-

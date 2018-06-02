@@ -79,6 +79,13 @@ func (dao *UserPasswordsDAO) SelectByUserId(user_id int32) *dataobject.UserPassw
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -106,6 +113,13 @@ func (dao *UserPasswordsDAO) SelectCode(user_id int32) *dataobject.UserPasswords
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectCode(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do

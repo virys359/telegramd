@@ -79,8 +79,8 @@ func (this *TcpClientGroupManager) Stop() bool {
 		for _, c := range v {
 			c.Stop()
 		}
-
 	}
+
 	return true
 }
 
@@ -94,48 +94,37 @@ func (this *TcpClientGroupManager) AddClient(name string, address string) {
 	defer this.clientMapLock.Unlock()
 
 	m, ok := this.clientMap[name]
-
 	if !ok {
-		this.clientMap[name] = make(map[string]*TcpClient)
-	}
-
-	m, _ = this.clientMap[name]
-
-	_, ok = m[address]
-
-	if ok {
-		return
+		m = make(map[string]*TcpClient)
+		this.clientMap[name] = m
+	} else {
+		if _, ok = m[address]; ok {
+			return
+		}
 	}
 
 	client := NewTcpClient(name, 10 * 1024, this.protoName, address, this.callback)
-
 	m[address] = client
-
 	client.Serve()
 }
 
 func (this *TcpClientGroupManager) RemoveClient(name string, address string) {
 	// glog.Info("TcpClientGroup RemoveClient name ", name, " address ", address)
-
 	this.clientMapLock.Lock()
 	defer this.clientMapLock.Unlock()
 
 	m, ok := this.clientMap[name]
-
 	if !ok {
 		return
 	}
-
 	m, _ = this.clientMap[name]
 
 	c, ok := m[address]
-
 	if !ok {
 		return
 	}
 
 	c.Stop()
-
 	delete(this.clientMap[name], address)
 }
 
@@ -164,7 +153,7 @@ func (this *TcpClientGroupManager) SendDataToAddress(name, address string, msg i
 func (this *TcpClientGroupManager) SendData(name string, msg interface{}) error {
 	tcpConn := this.getRotationSession(name)
 	if tcpConn == nil {
-		return errors.New("Can not get connection!!")
+		return errors.New("can not get connection")
 	}
 	return tcpConn.Send(msg)
 }

@@ -18,17 +18,17 @@
 package mtproto
 
 import (
-	"fmt"
 	"encoding/hex"
+	"fmt"
 )
 
 // import "github.com/golang/glog"
 
 const (
-	STATE_ERROR     = 0x0000
+	STATE_ERROR = 0x0000
 
 	STATE_CONNECTED2 = 0x0100
-	STATE_HANDSHAKE = 0x0200
+	STATE_HANDSHAKE  = 0x0200
 
 	STATE_pq     = 0x0201
 	STATE_pq_res = 0x0202
@@ -42,19 +42,19 @@ const (
 	STATE_dh_gen_res = 0x0208
 	STATE_dh_gen_ack = 0x0209
 
-	STATE_AUTH_KEY  = 0x0300
+	STATE_AUTH_KEY = 0x0300
 )
 
 const (
-	RES_STATE_NONE    = 0x00
-	RES_STATE_OK      = 0x01
-	RES_STATE_ERROR   = 0x02
+	RES_STATE_NONE  = 0x00
+	RES_STATE_OK    = 0x01
+	RES_STATE_ERROR = 0x02
 )
 
 const (
 	SESSION_HANDSHAKE    = 0x01
 	SESSION_SESSION_DATA = 0x02
-	SYNC_DATA = 0x03
+	SYNC_DATA            = 0x03
 )
 
 //func isHandshake(state int) bool {

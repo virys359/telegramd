@@ -76,7 +76,7 @@ func (c *TcpClient) Serve() bool {
 	}
 
 	codec, err := NewCodecByName(c.protoName, tcpConn.(*net.TCPConn))
-	c.conn = NewClientTcpConnection(c.remoteName, tcpConn.(*net.TCPConn), c.chanSize, codec, c)
+	c.conn = NewTcpConnection(c.remoteName, tcpConn.(*net.TCPConn), c.chanSize, codec, c)
 	go c.establishTcpConnection(c.conn)
 	return true
 }

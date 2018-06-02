@@ -1832,6 +1832,11 @@ message Vector_LangPackLanguage {
     repeated LangPackLanguage datas = 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// help.getScheme#dbb69a9e version:int = Scheme;
+message TL_help_getScheme {
+    int32 version = 1;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // rpc
@@ -1977,6 +1982,8 @@ service RPCHelp {
     rpc help_getCdnConfig(TL_help_getCdnConfig) returns (CdnConfig) {}
 // help.getRecentMeUrls#3dc0f114 referer:string = help.RecentMeUrls;
     rpc help_getRecentMeUrls(TL_help_getRecentMeUrls) returns (help_RecentMeUrls) {}
+// help.getScheme#dbb69a9e version:int = Scheme;
+    rpc help_getScheme(TL_help_getScheme) returns (Scheme) {}
 }
 
 service RPCBots {

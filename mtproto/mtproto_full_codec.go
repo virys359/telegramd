@@ -18,11 +18,11 @@
 package mtproto
 
 import (
-	"net"
-	"io"
-	"github.com/golang/glog"
 	"encoding/binary"
 	"fmt"
+	"github.com/golang/glog"
+	"io"
+	"net"
 )
 
 // https://core.telegram.org/mtproto#tcp-transport
@@ -58,7 +58,7 @@ func (c *MTProtoFullCodec) Receive() (interface{}, error) {
 
 	size = int(binary.LittleEndian.Uint32(b) << 2)
 	// Check bufLen
-	if size < 12 || size % 4 != 0 {
+	if size < 12 || size%4 != 0 {
 		err = fmt.Errorf("invalid len: %d", size)
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (c *MTProtoFullCodec) Receive() (interface{}, error) {
 	//}
 
 	left := size
-	buf := make([]byte, size - 4)
+	buf := make([]byte, size-4)
 	for left > 0 {
 		n, err = io.ReadFull(c.conn, buf[size-left:])
 		if err != nil {
@@ -106,7 +106,7 @@ func (c *MTProtoFullCodec) Send(msg interface{}) error {
 
 	sb := make([]byte, 8)
 	// minus padding
-	size := len(b)/4
+	size := len(b) / 4
 
 	//if size < 127 {
 	//	sb = []byte{byte(size)}

@@ -18,21 +18,15 @@
 package server
 
 import (
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/baselib/app"
-	"github.com/golang/glog"
-	"fmt"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
 )
 
-
-type sessionClientCallback interface {
-	SendToClientData(*sessionClient, int32, *mtproto.ZProtoMetadata, []*messageData) error;
-}
-
-func sendDataByConnection(conn* net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
+func sendDataByConnection(conn *net2.TcpConnection, sessionID uint64, md *mtproto.ZProtoMetadata, buf []byte) error {
 	smsg := &mtproto.ZProtoSessionData{
 		MTPMessage: &mtproto.MTPRawMessage{
 			Payload: buf,
@@ -42,7 +36,7 @@ func sendDataByConnection(conn* net2.TcpConnection, sessionID uint64, md *mtprot
 		SessionId: sessionID,
 		Metadata:  md,
 		SeqNum:    2,
-		Message:   &mtproto.ZProtoRawPayload{
+		Message: &mtproto.ZProtoRawPayload{
 			Payload: smsg.Encode(),
 		},
 	}
@@ -79,18 +73,11 @@ func getNbfsRPCClient() (*grpc_util.RPCClient, error) {
 	return sessionServer.nbfsRpcClient, nil
 }
 
-func getUserIDByAuthKeyID(authKeyId int64) (useId int32) {
-	defer func() {
-		if r := recover(); r != nil {
-			glog.Error(r)
-		}
-	}()
-
-	do := dao.GetAuthUsersDAO(dao.DB_SLAVE).SelectByAuthId(authKeyId)
-	if do == nil {
-		glog.Errorf("not find userId by authKeyId: %d", authKeyId)
+func deleteClientSessionManager(authKeyID int64) {
+	if sessionServer, ok := app.GAppInstance.(*SessionServer); !ok {
+		err := fmt.Errorf("not use app instance framework")
+		glog.Error(err)
 	} else {
-		useId = do.UserId
+		sessionServer.sessionManager.onCloseSessionClientManager(authKeyID)
 	}
-	return
 }

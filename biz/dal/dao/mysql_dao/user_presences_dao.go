@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,6 +101,13 @@ func (dao *UserPresencesDAO) SelectByUserID(user_id int32) *dataobject.UserPrese
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUserID(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -129,6 +136,13 @@ func (dao *UserPresencesDAO) SelectByUserIDList(idList []int32) *dataobject.User
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUserIDList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do

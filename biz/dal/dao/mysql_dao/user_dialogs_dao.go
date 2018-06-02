@@ -81,6 +81,13 @@ func (dao *UserDialogsDAO) SelectPinnedDialogs(user_id int32) []dataobject.UserD
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectPinnedDialogs(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -110,6 +117,13 @@ func (dao *UserDialogsDAO) CheckExists(user_id int32, peer_type int8, peer_id in
 		return nil
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in CheckExists(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return do
 }
 
@@ -137,6 +151,13 @@ func (dao *UserDialogsDAO) SelectByPeer(user_id int32, peer_type int8, peer_id i
 		}
 	} else {
 		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByPeer(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return do
@@ -170,6 +191,13 @@ func (dao *UserDialogsDAO) SelectDialogsByUserID(user_id int32) []dataobject.Use
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectDialogsByUserID(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -199,6 +227,13 @@ func (dao *UserDialogsDAO) SelectByPinnedAndOffset(user_id int32, is_pinned int8
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByPinnedAndOffset(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values
@@ -232,6 +267,13 @@ func (dao *UserDialogsDAO) SelectDialogsByPinnedAndOffsetDate(user_id int32, is_
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectDialogsByPinnedAndOffsetDate(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
@@ -261,6 +303,13 @@ func (dao *UserDialogsDAO) SelectDialogsByPeerType(user_id int32, peer_type int8
 			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 		}
 		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectDialogsByPeerType(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	return values

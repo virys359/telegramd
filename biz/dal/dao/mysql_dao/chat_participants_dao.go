@@ -81,6 +81,13 @@ func (dao *ChatParticipantsDAO) SelectByChatId(chat_id int32) []dataobject.ChatP
 		values = append(values, v)
 	}
 
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByChatId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
 	return values
 }
 
