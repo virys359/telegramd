@@ -28,18 +28,20 @@ import (
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 // updates.getDifference#25939651 flags:# pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
 func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *mtproto.TLUpdatesGetDifference) (*mtproto.Updates_Difference, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("UpdatesGetDifference - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("updates.getDifference#25939651 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var (
 		lastPts = request.GetPts()
 		otherUpdates []*mtproto.Update
 		messages []*mtproto.Message
 		userList []*mtproto.User
+		chatList []*mtproto.Chat
 	)
 
 	updateList := update2.GetUpdateListByGtPts(md.UserId, lastPts)
@@ -69,8 +71,9 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 
 	//otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
 	//messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
-	userIdList, _, _ := message.PickAllIDListByMessages(messages)
+	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
 	userList = user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+	chatList = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 
 	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
 		Pts:         lastPts,
@@ -83,10 +86,10 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 		NewMessages:  messages,
 		OtherUpdates: otherUpdates,
 		Users:        userList,
-		// Chats:        nil,
+		Chats:        chatList,
 		State:        state.To_Updates_State(),
 	}}
 
-	glog.Infof("UpdatesGetDifference - reply: %s", difference)
+	glog.Infof("updates.getDifference#25939651 - reply: %s", logger.JsonDebugData(difference))
 	return difference.To_Updates_Difference(), nil
 }
