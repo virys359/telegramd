@@ -104,11 +104,11 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 ### 配套客户端
 #### 官方开源客户端修改适配版本
-[android客户端](https://github.com/nebulaim/TelegramAndroid)， 使用参考[文档](https://github.com/nebulaim/TelegramAndroid/blob/master/README.Telegramd.md)
+[Android client for telegramd](https://github.com/nebulaim/TelegramAndroid)
+
+[macOS client for telegramd](https://github.com/nebulaim/TelegramSwift)
 
 iOS客户端（敬请期待）
-
-Mac客户端（敬请期待）
 
 Web客户端（敬请期待）
 
