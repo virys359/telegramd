@@ -1,0 +1,198 @@
+#prerequisite
+follow the document to run the telegramd in your custom development environment. 
+etcd, mysql and redis are required components. for sake of simplicity docker is applied :-)
+
+### install docker
+* [Install Docker for Ubuntu.](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+for version 18.04 see [Ubuntu-18-04](https://linuxconfig.org/how-to-install-docker-on-ubuntu-18-04-bionic-beaver)
+* [Install Docker for Mac](https://docs.docker.com/docker-for-mac/install/)
+* [Install Docker for Windows](https://docs.docker.com/docker-for-windows/install/#start-docker-for-windows)
+
+### run etcd container
+to pull and run etcd enter the following command in the shell:
+```
+$ docker run --name etcd-docker -d -p 2379:2379 -p 2380:2380 appcelerator/etcd
+```
+
+### run mysql container
+note that ***my-secret-pw*** is the password to be set for the MySQL root user
+```
+$ docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:5.7
+```
+
+to run mysql client run the following command:
+```
+$ docker exec -it mysql-docker mysql -uroot -p
+```
+and enter your password defined in previous command:
+```
+mysql> exit
+```
+
+### run redis container
+to install redis run the following command
+```
+$ docker run --name redis-docker -p 6379:6379 -d redis 
+```
+
+### start containers
+After restart your development environment to start etc, mysql, and redis container run
+the following command 
+```
+$ docker start redis-docker mysql-docker etcd-docker
+```
+
+to see current running containers run the following command
+```
+$ docker ps
+```
+
+# build telegramd
+
+
+### get telegramd
+
+```
+$ mkdir $GOPATH/src/github.com/nebulaim/
+$ cd $GOPATH/src/github.com/nebulaim/
+$ git clone https://github.com/nebulaim/telegramd.git
+```
+
+### create DB schema
+run the following command to create database
+```
+$ docker exec -it mysql-docker sh -c 'exec mysql -u root -p -e"CREATE DATABASE nebulaim;"' 
+```
+ and to create db schema run the following:
+```
+$ docker exec -i mysql-docker mysql --user=root --password=my-secret-pw nebulaim < $GOPATH/src/github.com/nebulaim/telegramd/scripts/nebulaim.sql
+```
+note: ***my-secret-pw*** is the same as defined in run mysql container section
+
+#### mysql config
+to set mysql do one of the following 
+##### 1. set empty password
+- mysql connection string in different telegramd modules currently set as empty 
+so for simplicity run the following command: 
+
+```
+$ docker exec -it  mysql-docker mysqladmin -u root -p'my-secret-pw' password ''
+``` 
+##### 2. set custom password
+add password to the following files
+```
+$ $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key/auth_key.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/push/sync/sync.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs/nbfs.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/biz_server/biz_server.toml
+```
+set ***my-secret-pw*** in mysql dsn as follow:
+```
+[[mysql]]
+name = "immaster"
+dsn = "root:my-secret-pw@/nebulaim?charset=utf8"
+...
+
+[[mysql]]
+name = "imslave"
+dsn = "root:my-secret-pw@/nebulaim?charset=utf8"
+...
+```
+
+  
+ 
+### build frontend
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
+$ go get
+$ go build
+```
+
+### build session
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
+$ go get
+$ go build
+```
+
+### build auth_key
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
+$ go get
+$ go build
+```
+
+### build sync
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
+$ go get
+$ go build
+```
+
+### build nbfs
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
+$ go get
+$ go build
+```
+
+### build biz_server
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/biz_server
+$ go get
+$ go build
+```
+
+### set DcOptions
+in the following file 
+```
+$ $GOPATH/src/github.com/nebulaim/telegramd/config.toml
+```
+replace ipAddress by your IP
+```
+[[DcOptions]]
+ipv6 = false
+mediaOnly = false
+tcpoOnly = false
+cdn = false
+static = false
+id = 2
+ipAddress = "127.0.0.1"
+port = 12345
+```
+
+
+### run telegramd modules
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
+$ ./frontend
+
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
+$ ./auth_key
+
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
+$ ./sync
+
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
+$ mkdir /opt/nbfs/0
+$ mkdir /opt/nbfs/s
+$ mkdir /opt/nbfs/m
+$ mkdir /opt/nbfs/x
+$ mkdir /opt/nbfs/y
+$ mkdir /opt/nbfs/a
+$ mkdir /opt/nbfs/b
+$ mkdir /opt/nbfs/c
+$ ./nbfs
+
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/biz_server
+$ ./biz_server
+
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
+$ ./session
+```
+
+# notes
+* if a panic is raised for `http: multiple registrations for /debug/requests` then 
+[remove github.com/coreos/etcd/vendor/golang.org/x/net/trace folder](https://github.com/coreos/etcd/issues/9357)
+
+
