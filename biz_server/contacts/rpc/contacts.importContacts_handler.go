@@ -57,6 +57,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 
 	phone, err := base.CheckAndGetPhoneNumber(inputContact.GetPhone())
 	if err != nil {
+		glog.Error(err)
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_CODE_INVALID)
 		glog.Error(err, ": phone code invalid - ", inputContact.GetPhone())
 		return nil, err

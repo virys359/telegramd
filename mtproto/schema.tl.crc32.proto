@@ -688,6 +688,7 @@ enum TLConstructor {
     CRC32_invokeWithoutUpdates = -1080796745;
     CRC32_auth_checkPhone = 1877286395;
     CRC32_auth_sendCode = -2035355412;
+    CRC32_auth_sendCodeLayer51 = -855805745;
     CRC32_auth_signUp = 453408308;
     CRC32_auth_signIn = -1126886015;
     CRC32_auth_logOut = 1461180992;
@@ -745,6 +746,7 @@ enum TLConstructor {
     CRC32_contacts_exportCard = -2065352905;
     CRC32_contacts_importCard = 1340184318;
     CRC32_contacts_search = 301470424;
+    CRC32_messages_searchLayer68 = -225926539;
     CRC32_contacts_resolveUsername = -113456221;
     CRC32_contacts_getTopPeers = -728224331;
     CRC32_contacts_resetTopPeerRating = 451113900;
@@ -861,8 +863,10 @@ enum TLConstructor {
     CRC32_help_getConfig = -990308245;
     CRC32_help_getNearestDc = 531836966;
     CRC32_help_getAppUpdate = -1372724842;
+    CRC32_help_getAppUpdateLayer46 = -938300290;
     CRC32_help_saveAppLog = 1862465352;
     CRC32_help_getInviteText = 1295590211;
+    CRC32_help_getInviteTextLayer46 = -1532407418;
     CRC32_help_getSupport = -1663104819;
     CRC32_help_getAppChangelog = -1877938321;
     CRC32_help_getTermsOfService = 889286899;

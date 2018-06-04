@@ -1094,6 +1094,7 @@ It has these top-level messages:
 	TLInvokeWithoutUpdates
 	TLAuthCheckPhone
 	TLAuthSendCode
+	TLAuthSendCodeLayer51
 	TLAuthSignUp
 	TLAuthSignIn
 	TLAuthLogOut
@@ -1160,6 +1161,7 @@ It has these top-level messages:
 	TLMessagesGetHistory
 	TLMessagesGetHistoryLayer71
 	TLMessagesSearch
+	TLMessagesSearchLayer68
 	TLMessagesReadHistory
 	TLMessagesDeleteHistory
 	TLMessagesDeleteMessages
@@ -1267,8 +1269,10 @@ It has these top-level messages:
 	TLHelpGetConfig
 	TLHelpGetNearestDc
 	TLHelpGetAppUpdate
+	TLHelpGetAppUpdateLayer46
 	TLHelpSaveAppLog
 	TLHelpGetInviteText
+	TLHelpGetInviteTextLayer46
 	TLHelpGetSupport
 	TLHelpGetAppChangelog
 	TLHelpGetTermsOfService

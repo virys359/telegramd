@@ -133,6 +133,7 @@ func checkWithoutLogin(tl mtproto.TLObject) bool {
 		return true
 
 	case *mtproto.TLAuthCheckPhone,
+		*mtproto.TLAuthSendCodeLayer51,
 		*mtproto.TLAuthSendCode,
 		*mtproto.TLAuthSignIn,
 		*mtproto.TLAuthSignUp,

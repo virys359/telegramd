@@ -859,6 +859,7 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_help_getConfig):                                   func() TLObject { return NewTLHelpGetConfig() },
 	int32(TLConstructor_CRC32_help_getNearestDc):                                func() TLObject { return NewTLHelpGetNearestDc() },
 	int32(TLConstructor_CRC32_help_getAppUpdate):                                func() TLObject { return NewTLHelpGetAppUpdate() },
+	int32(TLConstructor_CRC32_help_getAppUpdateLayer46):  						 func() TLObject { return NewTLHelpGetAppUpdateLayer46() },
 	int32(TLConstructor_CRC32_help_saveAppLog):                                  func() TLObject { return NewTLHelpSaveAppLog() },
 	int32(TLConstructor_CRC32_help_getInviteText):                               func() TLObject { return NewTLHelpGetInviteText() },
 	int32(TLConstructor_CRC32_help_getSupport):                                  func() TLObject { return NewTLHelpGetSupport() },
@@ -940,6 +941,15 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_schemeMethod):      func() TLObject { return NewTLSchemeMethod() },
 	int32(TLConstructor_CRC32_schemeType):        func() TLObject { return NewTLSchemeType() },
 	int32(TLConstructor_CRC32_help_getScheme):    func() TLObject { return NewTLHelpGetScheme() },
+
+	// Layer51
+	int32(TLConstructor_CRC32_auth_sendCodeLayer51):  func() TLObject { return NewTLAuthSendCodeLayer51() },
+
+	// Layer46
+	int32(TLConstructor_CRC32_help_getInviteTextLayer46):  func() TLObject { return NewTLHelpGetInviteTextLayer46() },
+
+	// Layer68
+	int32(TLConstructor_CRC32_messages_searchLayer68):  func() TLObject { return NewTLMessagesSearch() },
 }
 
 func NewTLObjectByClassID(classId int32) TLObject {
@@ -2537,10 +2547,15 @@ func (m *TLFutureSalts) Encode() []byte {
 
 	x.Long(m.GetReqMsgId())
 	x.Int(m.GetNow())
-	x.Int(int32(TLConstructor_CRC32_vector))
+	// x.Int(int32(TLConstructor_CRC32_vector))
 	x.Int(int32(len(m.GetSalts())))
 	for _, v := range m.GetSalts() {
-		x.buf = append(x.buf, (*v).Encode()...)
+		// x.buf = append(x.buf, (*v).Encode()...)
+		
+		// TODO(@benqi): move to parsed_manually_types.go		
+		x.Int(v.GetValidSince())
+		x.Int(v.GetValidUntil())
+		x.Long(v.GetSalt())
 	}
 
 	return x.buf
@@ -2549,11 +2564,11 @@ func (m *TLFutureSalts) Encode() []byte {
 func (m *TLFutureSalts) Decode(dbuf *DecodeBuf) error {
 	m.SetReqMsgId(dbuf.Long())
 	m.SetNow(dbuf.Int())
-	c3 := dbuf.Int()
-	if c3 != int32(TLConstructor_CRC32_vector) {
-		dbuf.err = fmt.Errorf("Invalid CRC32_vector, c%d: %d", 3, c3)
-		return dbuf.err
-	}
+	//c3 := dbuf.Int()
+	//if c3 != int32(TLConstructor_CRC32_vector) {
+	//	dbuf.err = fmt.Errorf("Invalid CRC32_vector, c%d: %d", 3, c3)
+	//	return dbuf.err
+	//}
 	l3 := dbuf.Int()
 	v3 := make([]*TLFutureSalt, l3)
 	for i := int32(0); i < l3; i++ {

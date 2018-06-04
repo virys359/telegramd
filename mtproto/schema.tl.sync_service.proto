@@ -87,6 +87,18 @@ message TL_auth_sendCode {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// layer51
+// auth.sendCode#ccfd70cf flags:# allow_flashcall:flags.0?true phone_number:string current_number:flags.0?Bool api_id:int api_hash:string lang_code:string = auth.SentCode;
+message TL_auth_sendCodeLayer51 {
+    bool allow_flashcall = 2;
+    string phone_number = 3;
+    Bool current_number = 4;
+    int32 api_id = 5;
+    string api_hash = 6;
+    string lang_code = 7;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // auth.signUp#1b067634 phone_number:string phone_code_hash:string phone_code:string first_name:string last_name:string = auth.Authorization;
 message TL_auth_signUp {
     string phone_number = 1;
@@ -545,6 +557,21 @@ message TL_messages_search {
     int32 limit = 10;
     int32 max_id = 11;
     int32 min_id = 12;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Layer68
+// messages.search#f288a275 flags:# peer:InputPeer q:string from_id:flags.0?InputUser filter:MessagesFilter min_date:int max_date:int offset:int max_id:int limit:int = messages.Messages;
+message TL_messages_searchLayer68 {
+    InputPeer peer = 2;
+    string q = 3;
+    InputUser from_id = 4;
+    MessagesFilter filter = 5;
+    int32 min_date = 6;
+    int32 max_date = 7;
+    int32 offset = 8;
+    int32 max_id = 9;
+    int32 limit = 10;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1359,6 +1386,16 @@ message TL_help_getAppUpdate {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Layer46
+// help.getAppUpdate#c812ac7e device_model:string system_version:string app_version:string lang_code:string = help.AppUpdate;
+message TL_help_getAppUpdateLayer46 {
+    string device_model = 1;
+    string system_version = 2;
+    string app_version = 3;
+    string lang_code = 4;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // help.saveAppLog#6f02f748 events:Vector<InputAppEvent> = Bool;
 message TL_help_saveAppLog {
     repeated InputAppEvent events = 1;
@@ -1367,6 +1404,13 @@ message TL_help_saveAppLog {
 ///////////////////////////////////////////////////////////////////////////////
 // help.getInviteText#4d392343 = help.InviteText;
 message TL_help_getInviteText {
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Layer46
+// help.getInviteText#a4a95186 lang_code:string = help.InviteText;
+message TL_help_getInviteTextLayer46 {
+    string lang_code = 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1979,10 +2023,14 @@ service RPCHelp {
     rpc help_getNearestDc(TL_help_getNearestDc) returns (NearestDc) {}
 // help.getAppUpdate#ae2de196 = help.AppUpdate;
     rpc help_getAppUpdate(TL_help_getAppUpdate) returns (help_AppUpdate) {}
+// help.getAppUpdate#c812ac7e device_model:string system_version:string app_version:string lang_code:string = help.AppUpdate;
+    rpc help_getAppUpdateLayer46(TL_help_getAppUpdateLayer46) returns (help_AppUpdate) {}
 // help.saveAppLog#6f02f748 events:Vector<InputAppEvent> = Bool;
     rpc help_saveAppLog(TL_help_saveAppLog) returns (Bool) {}
 // help.getInviteText#4d392343 = help.InviteText;
     rpc help_getInviteText(TL_help_getInviteText) returns (help_InviteText) {}
+// help.getInviteText#a4a95186 lang_code:string = help.InviteText;
+    rpc help_getInviteTextLayer46(TL_help_getInviteTextLayer46) returns (help_InviteText) {}
 // help.getSupport#9cdf08cd = help.Support;
     rpc help_getSupport(TL_help_getSupport) returns (help_Support) {}
 // help.getAppChangelog#9010ef6f prev_app_version:string = Updates;
@@ -2076,6 +2124,8 @@ service RPCMessages {
     rpc messages_getHistoryLayer71(TL_messages_getHistoryLayer71) returns (messages_Messages) {}
 // messages.search#39e9ea0 flags:# peer:InputPeer q:string from_id:flags.0?InputUser filter:MessagesFilter min_date:int max_date:int offset_id:int add_offset:int limit:int max_id:int min_id:int = messages.Messages;
     rpc messages_search(TL_messages_search) returns (messages_Messages) {}
+// messages.search#f288a275 flags:# peer:InputPeer q:string from_id:flags.0?InputUser filter:MessagesFilter min_date:int max_date:int offset:int max_id:int limit:int = messages.Messages;
+    rpc messages_searchLayer68(TL_messages_searchLayer68) returns (messages_Messages) {}
 // messages.readHistory#e306d3a peer:InputPeer max_id:int = messages.AffectedMessages;
     rpc messages_readHistory(TL_messages_readHistory) returns (messages_AffectedMessages) {}
 // messages.deleteHistory#1c015b09 flags:# just_clear:flags.0?true peer:InputPeer max_id:int = messages.AffectedHistory;
@@ -2349,6 +2399,8 @@ service RPCAuth {
     rpc auth_checkPhone(TL_auth_checkPhone) returns (auth_CheckedPhone) {}
 // auth.sendCode#86aef0ec flags:# allow_flashcall:flags.0?true phone_number:string current_number:flags.0?Bool api_id:int api_hash:string = auth.SentCode;
     rpc auth_sendCode(TL_auth_sendCode) returns (auth_SentCode) {}
+// auth.sendCode#ccfd70cf flags:# allow_flashcall:flags.0?true phone_number:string current_number:flags.0?Bool api_id:int api_hash:string lang_code:string = auth.SentCode;
+    rpc auth_sendCodeLayer51(TL_auth_sendCodeLayer51) returns (auth_SentCode) {}
 // auth.signUp#1b067634 phone_number:string phone_code_hash:string phone_code:string first_name:string last_name:string = auth.Authorization;
     rpc auth_signUp(TL_auth_signUp) returns (auth_Authorization) {}
 // auth.signIn#bcd51581 phone_number:string phone_code_hash:string phone_code:string = auth.Authorization;

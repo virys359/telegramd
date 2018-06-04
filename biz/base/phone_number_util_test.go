@@ -24,6 +24,6 @@ import (
 )
 
 func TestCheckPhoneNumber(t *testing.T) {
-	_, err := libphonenumber.Parse("+8611111111111", "")
+	_, err := libphonenumber.Parse("+4085555270", "")
 	fmt.Println(err)
 }

@@ -805,6 +805,7 @@ func (c *clientSession) onGetFutureSalts(connID ClientConnID, md *mtproto.ZProto
 		Salts:    salts,
 	}}
 
+	glog.Info("onGetFutureSalts - reply data: ", futureSalts)
 	c.sendToClient(connID, md, 0, false, futureSalts)
 }
 
