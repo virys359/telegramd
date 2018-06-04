@@ -10,18 +10,24 @@ for version 18.04 see [Ubuntu-18-04](https://linuxconfig.org/how-to-install-dock
 * [Install Docker for Windows](https://docs.docker.com/docker-for-windows/install/#start-docker-for-windows)
 
 ### run etcd container
-to pull and run etcd enter the following command in the shell:
+to pull and run etcd container enter the following command in the shell:
 ```
 $ docker run --name etcd-docker -d -p 2379:2379 -p 2380:2380 appcelerator/etcd
 ```
 
 ### run mysql container
-note that ***my-secret-pw*** is the password to be set for the MySQL root user
+to create mysql container run the following command:
+```
+$ docker run --name mysql-docker -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -d mysql:5.7
+```
+alternatively, if you want create a mysql container with root password use the below command
+ - using such a container, before run telegramd modules corresponding config file need to be changed
 ```
 $ docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:5.7
 ```
+note that ***my-secret-pw*** is the password to be set for the MySQL root user
 
-to run mysql client run the following command:
+to run mysql client for test connection or test a sql command run the following:
 ```
 $ docker exec -it mysql-docker mysql -uroot -p
 ```
@@ -65,22 +71,20 @@ run the following command to create database
 $ docker exec -it mysql-docker sh -c 'exec mysql -u root -p -e"CREATE DATABASE nebulaim;"' 
 ```
  and to create db schema run the following:
+ 
+ 1- if root password does not set for mysql container:
+ ```
+ $ docker exec -i mysql-docker mysql --user=root nebulaim < $GOPATH/src/github.com/nebulaim/telegramd/scripts/nebulaim.sql
+ ```
+ 
+ 2- if root password is set:
 ```
 $ docker exec -i mysql-docker mysql --user=root --password=my-secret-pw nebulaim < $GOPATH/src/github.com/nebulaim/telegramd/scripts/nebulaim.sql
 ```
 note: ***my-secret-pw*** is the same as defined in run mysql container section
 
-#### mysql config
-to set mysql do one of the following 
-##### 1. set empty password
-- mysql connection string in different telegramd modules currently set as empty 
-so for simplicity run the following command: 
-
-```
-$ docker exec -it  mysql-docker mysqladmin -u root -p'my-secret-pw' password ''
-``` 
-##### 2. set custom password
-add password to the following files
+##### 2. set custom password in config files
+if password is empty ignore this section otherwise add password to the following files
 ```
 $ $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key/auth_key.toml
 $ $GOPATH/src/github.com/nebulaim/telegramd/push/sync/sync.toml
