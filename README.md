@@ -31,13 +31,17 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 [编译和安装](doc/build.md)
 
+[编译和运行脚本](scripts/build.sh)
+
+[依赖脚本](scripts/prerequisite.sh)
+
 ### 配套客户端
 #### 官方开源客户端修改适配版本
 [Android client for telegramd](https://github.com/nebulaim/TelegramAndroid)
 
 [macOS client for telegramd](https://github.com/nebulaim/TelegramSwift)
 
-iOS客户端（敬请期待）
+[iOS client for telegramd](https://github.com/nebulaim/TelegramiOS)
 
 Web客户端（敬请期待）
 
@@ -56,6 +60,10 @@ open source mtproto server implement by golang, which compatible telegram client
 
 ### Install
 [Build and install](doc/build.md)
+
+[build](scripts/build.sh)
+
+[prerequisite](scripts/prerequisite.sh)
 
 ## Feedback
 Please report bugs, concerns, suggestions by issues, or join telegram group [Telegramd](https://t.me/joinchat/D8b0DRJiuH8EcIHNZQmCxQ) to discuss problems around source code.
