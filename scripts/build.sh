@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-docker start mysql-docker2 redis-docker etcd-docker
+docker start mysql-docker redis-docker etcd-docker
 
 telegramd="$GOPATH/src/github.com/yumcoder-platform/telegramd/"
 
