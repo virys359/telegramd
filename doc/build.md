@@ -1,4 +1,5 @@
-#prerequisite
+# prerequisite
+
 follow the document to run the telegramd in your custom development environment. 
 etcd, mysql and redis are required components. for sake of simplicity docker is applied :-)
 
