@@ -13,6 +13,6 @@ docker run --name mysql-docker -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -d
 echo "run redis-docker..."
 docker run --name redis-docker -p 6379:6379 -d redis
 echo "clone telegramd..."
-mkdir $GOPATH/src/github.com/nebulaim/
-cd $GOPATH/src/github.com/nebulaim/
+mkdir ${GOPATH}/src/github.com/nebulaim2/
+cd ${GOPATH}/src/github.com/nebulaim2/
 git clone https://github.com/nebulaim/telegramd.git
