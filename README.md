@@ -27,80 +27,9 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 [Mobile Protocol: Detailed Description (v.1.0, DEPRECATED)](doc/Mobile_Protocol-Detailed_Description_v.1.0_DEPRECATED.md)
 
-### 编译
+### 编译和安装
 
-#### 下载代码
-
-    mkdir $GOPATH/src/github.com/nebulaim/
-    cd $GOPATH/src/github.com/nebulaim/
-    git clone https://github.com/nebulaim/telegramd.git
-
-#### 编译代码
-
-编译frontend
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
-    go get
-    go build
-
-编译session
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
-    go get
-    go build
-
-编译auth_key
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
-    go get
-    go build
-    
-编译sync
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
-    go get
-    go build
-
-编译nbfs
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
-    go get
-    go build
-
-编译biz_server
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/biz_server
-    go get
-    go build
-
-
-### 运行
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
-    ./frontend
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
-    ./auth_key
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
-    ./sync
-    
-    cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
-    mkdir /opt/nbfs/0
-    mkdir /opt/nbfs/s
-    mkdir /opt/nbfs/m
-    mkdir /opt/nbfs/x
-    mkdir /opt/nbfs/y
-    mkdir /opt/nbfs/a
-    mkdir /opt/nbfs/b
-    mkdir /opt/nbfs/c
-    ./nbfs
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/biz_server
-    ./biz_server
-
-    cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
-    ./session
+[编译和安装](doc/build.md)
 
 ### 配套客户端
 #### 官方开源客户端修改适配版本
@@ -125,7 +54,8 @@ channels, Secret Chats, bots and payments这几大功能还未实现
 ### Introduce
 open source mtproto server implement by golang, which compatible telegram client.
 
-### Compile
+### Install
+[Build and install](doc/build.md)
 
 ## Feedback
 Please report bugs, concerns, suggestions by issues, or join telegram group [Telegramd](https://t.me/joinchat/D8b0DRJiuH8EcIHNZQmCxQ) to discuss problems around source code.
