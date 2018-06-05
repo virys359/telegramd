@@ -87,12 +87,21 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 	case mtproto.TLConstructor_CRC32_inputMediaContact:
 		// messageMediaContact#5e7d2f39 phone_number:string first_name:string last_name:string user_id:int = MessageMedia;
 		contact := media.To_InputMediaContact()
+
 		messageMedia := &mtproto.TLMessageMediaContact{Data2: &mtproto.MessageMedia_Data{
 			PhoneNumber: contact.GetPhoneNumber(),
 			FirstName:   contact.GetFirstName(),
 			LastName:    contact.GetLastName(),
-			UserId:      user.GetMyUserByPhoneNumber(contact.GetPhoneNumber()).GetId(),
+			// UserId:      user.GetMyUserByPhoneNumber(contact.GetPhoneNumber()).GetId(),
 		}}
+
+		phoneNumber, err := base.CheckAndGetPhoneNumber(contact.GetPhoneNumber())
+		if err == nil {
+			contactUser := user.GetMyUserByPhoneNumber(phoneNumber)
+			if contactUser != nil {
+				messageMedia.SetUserId(contactUser.GetId())
+			}
+		}
 
 		return messageMedia.To_MessageMedia()
 	case mtproto.TLConstructor_CRC32_inputMediaUploadedDocument:
