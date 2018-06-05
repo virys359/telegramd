@@ -16,3 +16,8 @@ echo "clone telegramd..."
 mkdir ${GOPATH}/src/github.com/nebulaim2/
 cd ${GOPATH}/src/github.com/nebulaim2/
 git clone https://github.com/nebulaim/telegramd.git
+
+echo "create db schema ..."
+docker exec -it mysql-docker sh -c 'exec mysql -u root -p -e"CREATE DATABASE nebulaim;"'
+docker exec -i mysql-docker mysql --user=root nebulaim < ${GOPATH}/src/github.com/nebulaim/telegramd/scripts/nebulaim.sql
+echo "OK"
