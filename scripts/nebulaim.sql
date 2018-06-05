@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-05-14 10:46:14
+-- Generation Time: 2018-06-05 10:24:02
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -31,12 +31,12 @@ SET time_zone = "+00:00";
 CREATE TABLE `apps` (
   `id` int(11) NOT NULL,
   `api_id` int(11) NOT NULL,
-  `api_hash` varchar(256) NOT NULL,
-  `title` varchar(128) NOT NULL,
-  `short_name` varchar(128) NOT NULL,
+  `api_hash` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `short_name` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='apps';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='apps';
 
 -- --------------------------------------------------------
 
@@ -51,7 +51,7 @@ CREATE TABLE `app_configs` (
   `status` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` int(11) NOT NULL,
   `updated_at` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -70,7 +70,7 @@ CREATE TABLE `app_ios_push_certs` (
   `status` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` int(11) NOT NULL,
   `updated_at` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -80,13 +80,13 @@ CREATE TABLE `app_ios_push_certs` (
 
 CREATE TABLE `app_keys` (
   `app_id` int(11) NOT NULL,
-  `app_key` varchar(256) NOT NULL,
-  `app_secret` varchar(256) NOT NULL,
+  `app_key` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `app_secret` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` int(11) NOT NULL,
   `refresher` int(11) NOT NULL,
   `refreshed_at` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -98,17 +98,17 @@ CREATE TABLE `auths` (
   `id` int(11) NOT NULL,
   `auth_id` bigint(20) NOT NULL,
   `api_id` int(11) NOT NULL,
-  `device_model` varchar(255) NOT NULL DEFAULT '',
-  `system_version` varchar(255) NOT NULL DEFAULT '',
-  `app_version` varchar(255) NOT NULL DEFAULT '',
-  `system_lang_code` varchar(255) NOT NULL DEFAULT '',
-  `lang_pack` varchar(255) NOT NULL DEFAULT '',
-  `lang_code` varchar(255) NOT NULL DEFAULT '',
+  `device_model` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `system_version` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `app_version` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `system_lang_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `lang_pack` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `lang_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `connection_hash` bigint(20) NOT NULL DEFAULT '0' COMMENT 'initConnection消息hash值',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -119,10 +119,10 @@ CREATE TABLE `auths` (
 CREATE TABLE `auth_keys` (
   `id` int(11) NOT NULL,
   `auth_id` bigint(20) NOT NULL COMMENT 'auth_id',
-  `body` varchar(512) NOT NULL COMMENT 'auth_key，原始数据为256的二进制数据，存储时转换成base64格式',
+  `body` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'auth_key，原始数据为256的二进制数据，存储时转换成base64格式',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -134,9 +134,9 @@ CREATE TABLE `auth_op_logs` (
   `id` bigint(20) NOT NULL,
   `phone` int(11) NOT NULL,
   `op_type` int(11) NOT NULL,
-  `log_text` varchar(512) NOT NULL,
+  `log_text` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -147,22 +147,22 @@ CREATE TABLE `auth_op_logs` (
 CREATE TABLE `auth_phone_transactions` (
   `id` bigint(20) NOT NULL,
   `auth_key_id` bigint(20) NOT NULL,
-  `phone_number` varchar(32) NOT NULL,
-  `code` varchar(8) NOT NULL,
+  `phone_number` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL,
   `code_expired` int(11) NOT NULL DEFAULT '0',
-  `transaction_hash` varchar(255) NOT NULL,
+  `transaction_hash` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
   `sent_code_type` tinyint(4) NOT NULL DEFAULT '0',
-  `flash_call_pattern` varchar(64) NOT NULL DEFAULT '',
+  `flash_call_pattern` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `next_code_type` tinyint(4) NOT NULL DEFAULT '0',
   `state` tinyint(4) NOT NULL DEFAULT '0',
   `api_id` int(11) NOT NULL,
-  `api_hash` varchar(255) NOT NULL,
+  `api_hash` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
   `attempts` int(11) NOT NULL DEFAULT '0',
   `created_time` bigint(20) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -178,7 +178,7 @@ CREATE TABLE `auth_salts` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -195,7 +195,7 @@ CREATE TABLE `auth_seq_updates` (
   `update_data` blob NOT NULL,
   `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -214,7 +214,7 @@ CREATE TABLE `auth_updates_state` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -227,21 +227,21 @@ CREATE TABLE `auth_users` (
   `auth_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL DEFAULT '0',
   `hash` bigint(20) NOT NULL DEFAULT '0',
-  `device_model` varchar(128) NOT NULL DEFAULT '',
-  `platform` varchar(64) NOT NULL DEFAULT '',
-  `system_version` varchar(64) NOT NULL DEFAULT '',
+  `device_model` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `platform` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `system_version` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `api_id` int(11) NOT NULL DEFAULT '0',
-  `app_name` varchar(64) NOT NULL DEFAULT '',
-  `app_version` varchar(64) NOT NULL DEFAULT '',
+  `app_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `app_version` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `date_created` int(11) NOT NULL DEFAULT '0',
   `date_active` int(11) NOT NULL DEFAULT '0',
-  `ip` varchar(64) NOT NULL DEFAULT '',
-  `country` varchar(64) NOT NULL DEFAULT '',
-  `region` varchar(64) NOT NULL DEFAULT '',
+  `ip` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `country` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `region` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `deleted_at` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -251,15 +251,15 @@ CREATE TABLE `auth_users` (
 
 CREATE TABLE `banned` (
   `id` int(11) NOT NULL,
-  `phone` varchar(32) NOT NULL,
+  `phone` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
   `banned_time` bigint(20) NOT NULL,
   `expires` bigint(20) NOT NULL,
-  `banned_reason` text NOT NULL,
-  `log` text NOT NULL,
+  `banned_reason` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `log` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `state` tinyint(4) NOT NULL,
   `created_at` int(11) NOT NULL,
   `updated_at` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -270,7 +270,7 @@ CREATE TABLE `banned` (
 CREATE TABLE `channels` (
   `id` int(11) NOT NULL,
   `access_hash` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -282,7 +282,7 @@ CREATE TABLE `channel_users` (
   `id` int(11) NOT NULL,
   `channel_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -296,7 +296,7 @@ CREATE TABLE `chats` (
   `access_hash` bigint(20) NOT NULL,
   `random_id` bigint(20) NOT NULL,
   `participant_count` int(11) NOT NULL,
-  `title` varchar(255) NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `photo_id` bigint(20) NOT NULL DEFAULT '0',
   `admins_enabled` tinyint(4) NOT NULL DEFAULT '0',
   `deactivated` tinyint(4) NOT NULL DEFAULT '0',
@@ -304,7 +304,7 @@ CREATE TABLE `chats` (
   `date` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -323,7 +323,7 @@ CREATE TABLE `chat_participants` (
   `state` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -336,11 +336,11 @@ CREATE TABLE `devices` (
   `auth_key_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
   `token_type` tinyint(4) NOT NULL,
-  `token` varchar(255) NOT NULL,
+  `token` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
   `state` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -353,17 +353,17 @@ CREATE TABLE `documents` (
   `document_id` bigint(20) NOT NULL,
   `access_hash` bigint(20) NOT NULL,
   `dc_id` int(11) NOT NULL,
-  `file_path` varchar(255) NOT NULL,
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `file_size` int(11) NOT NULL,
-  `uploaded_file_name` varchar(255) NOT NULL DEFAULT '',
-  `ext` varchar(32) NOT NULL DEFAULT '',
-  `mime_type` varchar(32) NOT NULL DEFAULT '',
+  `uploaded_file_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `ext` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `mime_type` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `thumb_id` bigint(20) NOT NULL DEFAULT '0',
   `version` int(11) NOT NULL DEFAULT '0',
-  `attributes` text CHARACTER SET utf8mb4 NOT NULL,
+  `attributes` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -380,13 +380,13 @@ CREATE TABLE `files` (
   `file_part_id` bigint(20) NOT NULL DEFAULT '0',
   `file_parts` int(11) NOT NULL DEFAULT '0',
   `file_size` bigint(20) NOT NULL,
-  `file_path` varchar(255) NOT NULL,
-  `ext` varchar(32) NOT NULL DEFAULT '',
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ext` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `is_big_file` tinyint(4) NOT NULL DEFAULT '0',
-  `md5_checksum` char(33) NOT NULL,
-  `upload_name` varchar(255) NOT NULL DEFAULT '',
+  `md5_checksum` char(33) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `upload_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -403,11 +403,11 @@ CREATE TABLE `file_parts` (
   `file_part` int(11) NOT NULL DEFAULT '0',
   `is_big_file` tinyint(4) NOT NULL DEFAULT '0',
   `file_total_parts` int(11) NOT NULL DEFAULT '0',
-  `file_path` varchar(255) NOT NULL,
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `file_size` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -426,12 +426,12 @@ CREATE TABLE `messages` (
   `peer_id` int(11) NOT NULL,
   `random_id` bigint(20) NOT NULL,
   `message_type` tinyint(4) NOT NULL DEFAULT '0',
-  `message_data` text CHARACTER SET utf8mb4 NOT NULL,
+  `message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `date2` int(11) NOT NULL DEFAULT '0',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -441,15 +441,15 @@ CREATE TABLE `messages` (
 
 CREATE TABLE `orgs` (
   `org_id` int(11) NOT NULL,
-  `account_name` varchar(64) NOT NULL,
-  `passwd` char(32) NOT NULL,
-  `org_name` varchar(256) NOT NULL,
-  `mail` varchar(64) NOT NULL,
-  `mobile` varchar(32) NOT NULL,
+  `account_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `passwd` char(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `org_name` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mail` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mobile` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -468,15 +468,15 @@ CREATE TABLE `phone_call_sessions` (
   `udp_reflector` tinyint(4) NOT NULL DEFAULT '0',
   `min_layer` int(11) NOT NULL,
   `max_layer` int(11) NOT NULL,
-  `g_a` varchar(512) NOT NULL DEFAULT '',
-  `g_b` varchar(512) NOT NULL DEFAULT '',
+  `g_a` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `g_b` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `state` int(11) NOT NULL DEFAULT '0',
   `date` int(11) NOT NULL,
-  `admin_debug_data` text NOT NULL,
-  `participant_debug_data` text NOT NULL,
+  `admin_debug_data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `participant_debug_data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -491,7 +491,7 @@ CREATE TABLE `photos` (
   `access_hash` int(11) NOT NULL,
   `date` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -510,10 +510,10 @@ CREATE TABLE `photo_datas` (
   `width` int(11) NOT NULL,
   `height` int(11) NOT NULL,
   `file_size` int(11) NOT NULL DEFAULT '0',
-  `file_path` varchar(255) NOT NULL,
-  `ext` varchar(32) NOT NULL DEFAULT '',
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ext` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -526,11 +526,11 @@ CREATE TABLE `push_credentials` (
   `auth_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
   `token_type` tinyint(4) NOT NULL,
-  `token` varchar(255) NOT NULL,
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `state` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -544,9 +544,9 @@ CREATE TABLE `reports` (
   `peer_type` int(11) NOT NULL,
   `peer_id` int(11) NOT NULL,
   `reason` tinyint(4) NOT NULL DEFAULT '0',
-  `content` varchar(10000) NOT NULL DEFAULT '',
+  `content` varchar(10000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -564,7 +564,7 @@ CREATE TABLE `secret_messages` (
   `message_content_header` int(11) NOT NULL,
   `message_content_data` blob NOT NULL,
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -575,7 +575,7 @@ CREATE TABLE `secret_messages` (
 CREATE TABLE `sticker_data` (
   `id` int(11) NOT NULL,
   `pack_id` int(11) NOT NULL,
-  `emoji` varchar(16) DEFAULT NULL,
+  `emoji` varchar(16) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `image_128_file_id` bigint(20) NOT NULL,
   `image_128_file_hash` bigint(20) NOT NULL,
   `image_128_file_size` bigint(20) NOT NULL,
@@ -591,7 +591,7 @@ CREATE TABLE `sticker_data` (
   `image_256_height` int(11) DEFAULT '256',
   `image_512_width` int(11) DEFAULT '512',
   `image_512_height` int(11) DEFAULT '512'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -602,10 +602,10 @@ CREATE TABLE `sticker_data` (
 CREATE TABLE `sticker_packs` (
   `id` int(11) NOT NULL,
   `sticker_set_id` bigint(20) NOT NULL,
-  `emoticon` varchar(64) CHARACTER SET utf8mb4 NOT NULL,
+  `emoticon` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `document_id` bigint(20) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -617,15 +617,15 @@ CREATE TABLE `sticker_sets` (
   `id` int(11) NOT NULL,
   `sticker_set_id` bigint(20) NOT NULL,
   `access_hash` bigint(20) NOT NULL,
-  `title` varchar(64) NOT NULL,
-  `short_name` varchar(64) NOT NULL,
+  `title` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `short_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `count` int(11) NOT NULL DEFAULT '0',
   `hash` int(11) NOT NULL DEFAULT '0',
   `official` tinyint(4) NOT NULL DEFAULT '0',
-  `masks` tinyint(4) NOT NULL DEFAULT '0',
+  `mask` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -637,12 +637,12 @@ CREATE TABLE `tmp_passwords` (
   `id` int(11) NOT NULL,
   `auth_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `password_hash` varchar(512) NOT NULL,
+  `password_hash` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `period` int(11) NOT NULL,
-  `tmp_password` varchar(512) NOT NULL,
+  `tmp_password` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `valid_until` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -653,26 +653,26 @@ CREATE TABLE `tmp_passwords` (
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `access_hash` bigint(20) NOT NULL,
-  `first_name` varchar(255) NOT NULL DEFAULT '',
-  `last_name` varchar(255) NOT NULL DEFAULT '',
-  `username` varchar(255) NOT NULL,
-  `phone` varchar(32) NOT NULL,
-  `country_code` varchar(3) NOT NULL,
-  `bio` varchar(255) NOT NULL,
-  `about` varchar(512) NOT NULL DEFAULT '',
+  `first_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `last_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `country_code` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `bio` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `about` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `state` int(11) NOT NULL DEFAULT '0',
   `is_bot` tinyint(1) NOT NULL DEFAULT '0',
   `banned` bigint(20) NOT NULL DEFAULT '0',
-  `banned_reason` varchar(128) NOT NULL DEFAULT '',
+  `banned_reason` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `account_days_ttl` int(11) NOT NULL DEFAULT '180',
-  `photos` varchar(1024) NOT NULL DEFAULT '',
+  `photos` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
-  `deleted_reason` varchar(500) NOT NULL DEFAULT '',
+  `deleted_reason` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `banned_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -684,16 +684,16 @@ CREATE TABLE `user_contacts` (
   `id` int(11) NOT NULL,
   `owner_user_id` int(11) NOT NULL,
   `contact_user_id` int(11) NOT NULL,
-  `contact_phone` varchar(32) NOT NULL DEFAULT '',
-  `contact_first_name` varchar(255) NOT NULL DEFAULT '',
-  `contact_last_name` varchar(255) NOT NULL DEFAULT '',
+  `contact_phone` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `contact_first_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `contact_last_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `mutual` tinyint(4) NOT NULL DEFAULT '0',
   `is_blocked` tinyint(1) NOT NULL DEFAULT '0',
   `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -715,16 +715,16 @@ CREATE TABLE `user_dialogs` (
   `show_previews` tinyint(4) NOT NULL DEFAULT '1',
   `silent` tinyint(4) NOT NULL DEFAULT '0',
   `mute_until` int(11) NOT NULL DEFAULT '0',
-  `sound` varchar(128) NOT NULL DEFAULT 'default',
+  `sound` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'default',
   `pts` int(11) NOT NULL DEFAULT '0',
   `draft_id` int(11) NOT NULL DEFAULT '0',
   `draft_type` tinyint(4) NOT NULL DEFAULT '0',
-  `draft_message_data` text CHARACTER SET utf8mb4 NOT NULL,
+  `draft_message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `date2` int(11) NOT NULL,
   `version` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -735,11 +735,11 @@ CREATE TABLE `user_dialogs` (
 CREATE TABLE `user_import_contacts` (
   `id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `contact_phone` varchar(32) NOT NULL,
-  `contact_first_name` varchar(64) NOT NULL DEFAULT '',
-  `contact_last_name` varchar(64) NOT NULL DEFAULT '',
+  `contact_phone` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_first_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `contact_last_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -755,11 +755,11 @@ CREATE TABLE `user_notify_settings` (
   `show_previews` tinyint(1) NOT NULL DEFAULT '0',
   `silent` tinyint(1) NOT NULL DEFAULT '0',
   `mute_until` int(11) NOT NULL DEFAULT '0',
-  `sound` varchar(255) NOT NULL DEFAULT 'default',
+  `sound` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'default',
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -770,19 +770,19 @@ CREATE TABLE `user_notify_settings` (
 CREATE TABLE `user_passwords` (
   `id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `server_salt` varchar(64) NOT NULL DEFAULT '',
-  `hash` varchar(128) NOT NULL DEFAULT '',
-  `salt` varchar(64) NOT NULL DEFAULT '',
-  `hint` varchar(64) NOT NULL DEFAULT '',
-  `email` varchar(64) NOT NULL DEFAULT '',
+  `server_salt` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `hash` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `salt` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `hint` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `email` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `has_recovery` tinyint(4) NOT NULL DEFAULT '0',
-  `code` varchar(32) NOT NULL DEFAULT '',
+  `code` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `code_expired` int(11) NOT NULL DEFAULT '0',
   `attempts` int(11) NOT NULL DEFAULT '0',
   `state` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -795,11 +795,11 @@ CREATE TABLE `user_presences` (
   `user_id` int(11) NOT NULL,
   `last_seen_at` bigint(20) NOT NULL,
   `last_seen_auth_key_id` bigint(20) NOT NULL,
-  `last_seen_ip` varchar(64) NOT NULL DEFAULT '',
+  `last_seen_ip` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `version` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -811,10 +811,10 @@ CREATE TABLE `user_privacys` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `key_type` tinyint(4) NOT NULL DEFAULT '0',
-  `rules` text NOT NULL,
+  `rules` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -827,7 +827,7 @@ CREATE TABLE `user_profile_photos` (
   `user_id` int(11) NOT NULL,
   `photo_id` bigint(20) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -841,10 +841,10 @@ CREATE TABLE `user_pts_updates` (
   `pts` int(11) NOT NULL,
   `pts_count` int(11) NOT NULL,
   `update_type` tinyint(4) NOT NULL DEFAULT '0',
-  `update_data` mediumtext CHARACTER SET utf8mb4 NOT NULL,
+  `update_data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -860,7 +860,7 @@ CREATE TABLE `user_qts_updates` (
   `update_data` blob NOT NULL,
   `date2` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -874,7 +874,7 @@ CREATE TABLE `user_sticker_sets` (
   `sticker_set_id` bigint(20) NOT NULL DEFAULT '0',
   `archived` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -885,13 +885,13 @@ CREATE TABLE `user_sticker_sets` (
 CREATE TABLE `wall_papers` (
   `id` int(11) NOT NULL,
   `type` tinyint(4) NOT NULL DEFAULT '0',
-  `title` varchar(128) NOT NULL DEFAULT '',
+  `title` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `color` int(11) NOT NULL DEFAULT '0',
   `bg_color` int(11) NOT NULL DEFAULT '0',
   `photo_id` bigint(20) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` bigint(20) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Indexes for dumped tables
