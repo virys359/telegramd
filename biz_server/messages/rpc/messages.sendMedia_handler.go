@@ -31,6 +31,19 @@ import (
 	"github.com/nebulaim/telegramd/biz/nbfs_client"
 )
 
+func makeGeoPointByInput(geoPoint *mtproto.InputGeoPoint) *mtproto.GeoPoint {
+	var geo = &mtproto.GeoPoint{Data2: &mtproto.GeoPoint_Data{}}
+	switch geoPoint.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_geoPointEmpty:
+		geo.Constructor = mtproto.TLConstructor_CRC32_geoPointEmpty
+	case mtproto.TLConstructor_CRC32_geoPoint:
+		geo.Data2.Lat = geoPoint.GetData2().Lat
+		geo.Data2.Long = geoPoint.GetData2().Long
+		geo.Constructor = mtproto.TLConstructor_CRC32_geoPoint
+	}
+	return geo
+}
+
 func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.MessageMedia {
 	var (
 		now = int32(time.Now().Unix())
@@ -59,15 +72,34 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 		}}
 
 		messageMedia := &mtproto.TLMessageMediaPhoto{Data2: &mtproto.MessageMedia_Data{
-			Photo_1: photo.To_Photo(),
-			Caption: uploadedPhoto.GetCaption(),
+			Photo_1:    photo.To_Photo(),
+			Caption:    uploadedPhoto.GetCaption(),
 			TtlSeconds: uploadedPhoto.GetTtlSeconds(),
 		}}
+		return messageMedia.To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaGeoPoint:
+		// messageMediaGeo#56e0d474 geo:GeoPoint = MessageMedia;
+		messageMedia := &mtproto.TLMessageMediaGeo{Data2: &mtproto.MessageMedia_Data{
+			Geo: makeGeoPointByInput(media.To_InputMediaGeoPoint().GetGeoPoint()),
+		}}
+
+		return messageMedia.To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaContact:
+		// messageMediaContact#5e7d2f39 phone_number:string first_name:string last_name:string user_id:int = MessageMedia;
+		contact := media.To_InputMediaContact()
+		messageMedia := &mtproto.TLMessageMediaContact{Data2: &mtproto.MessageMedia_Data{
+			PhoneNumber: contact.GetPhoneNumber(),
+			FirstName:   contact.GetFirstName(),
+			LastName:    contact.GetLastName(),
+			UserId:      user.GetMyUserByPhoneNumber(contact.GetPhoneNumber()).GetId(),
+		}}
+
 		return messageMedia.To_MessageMedia()
 	case mtproto.TLConstructor_CRC32_inputMediaUploadedDocument:
 		// inputMediaUploadedDocument#e39621fd flags:# file:InputFile thumb:flags.2?InputFile mime_type:string attributes:Vector<DocumentAttribute> caption:string stickers:flags.0?Vector<InputDocument> ttl_seconds:flags.1?int = InputMedia;
 		uploadedDocument := media.To_InputMediaUploadedDocument()
 		messageMedia, _ := nbfs_client.UploadedDocumentMedia(authKeyId, uploadedDocument)
+
 		return messageMedia.To_MessageMedia()
 		// id:InputDocument caption:string ttl_seconds:flags.0?int
 	case mtproto.TLConstructor_CRC32_inputMediaDocument:
@@ -78,9 +110,63 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 
 		// messageMediaDocument#7c4414d3 flags:# document:flags.0?Document caption:flags.1?string ttl_seconds:flags.2?int = MessageMedia;
 		messageMedia := &mtproto.TLMessageMediaDocument{Data2: &mtproto.MessageMedia_Data{
-			Document: document3,
-			Caption: media.To_InputMediaDocument().GetCaption(),
+			Document:   document3,
+			Caption:    media.To_InputMediaDocument().GetCaption(),
 			TtlSeconds: media.To_InputMediaDocument().GetTtlSeconds(),
+		}}
+
+		return messageMedia.To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaVenue:
+		// inputMediaVenue#c13d1c11 geo_point:InputGeoPoint title:string address:string provider:string venue_id:string venue_type:string = InputMedia;
+		venue := media.To_InputMediaVenue()
+
+		// messageMediaVenue#2ec0533f geo:GeoPoint title:string address:string provider:string venue_id:string venue_type:string = MessageMedia;
+		messageMedia := &mtproto.TLMessageMediaVenue{Data2: &mtproto.MessageMedia_Data{
+			Geo:       makeGeoPointByInput(venue.GetGeoPoint()),
+			Title:     venue.GetTitle(),
+			Address:   venue.GetAddress(),
+			Provider:  venue.GetProvider(),
+			VenueId:   venue.GetVenueId(),
+			VenueType: venue.GetVenueType(),
+		}}
+
+		return messageMedia.To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaGifExternal:
+		// inputMediaGifExternal#4843b0fd url:string q:string = InputMedia;
+
+		// TODO(@benqi): MessageMedia???
+		return mtproto.NewTLMessageMediaUnsupported().To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaDocumentExternal:
+		// inputMediaDocumentExternal#b6f74335 flags:# url:string caption:string ttl_seconds:flags.0?int = InputMedia;
+
+		// TODO(@benqi): MessageMedia???
+		return mtproto.NewTLMessageMediaUnsupported().To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaPhotoExternal:
+		// inputMediaPhotoExternal#922aec1 flags:# url:string caption:string ttl_seconds:flags.0?int = InputMedia;
+
+		// TODO(@benqi): MessageMedia???
+		return mtproto.NewTLMessageMediaUnsupported().To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaGame:
+		// inputMediaGame#d33f43f3 id:InputGame = InputMedia;
+		// game#bdf9653b flags:# id:long access_hash:long short_name:string title:string description:string photo:Photo document:flags.0?Document = Game;
+		//
+		// inputGameID#32c3e77 id:long access_hash:long = InputGame;
+		// inputGameShortName#c331e80a bot_id:InputUser short_name:string = InputGame;
+
+		// TODO(@benqi): Not impl inputMediaGame
+		return mtproto.NewTLMessageMediaUnsupported().To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaInvoice:
+		// inputMediaInvoice#f4e096c3 flags:# title:string description:string photo:flags.0?InputWebDocument invoice:Invoice payload:bytes provider:string provider_data:DataJSON start_param:string = InputMedia;
+
+		// TODO(@benqi): Not impl inputMediaGame
+		return mtproto.NewTLMessageMediaUnsupported().To_MessageMedia()
+	case mtproto.TLConstructor_CRC32_inputMediaGeoLive:
+		// inputMediaGeoLive#7b1a118f geo_point:InputGeoPoint period:int = InputMedia;
+
+		// inputMediaGeoLive#7b1a118f geo_point:InputGeoPoint period:int = InputMedia;
+		messageMedia := &mtproto.TLMessageMediaGeoLive{Data2: &mtproto.MessageMedia_Data{
+			Geo:    makeGeoPointByInput(media.To_InputMediaGeoLive().GetGeoPoint()),
+			Period: media.To_InputMediaGeoLive().GetPeriod(),
 		}}
 
 		return messageMedia.To_MessageMedia()
