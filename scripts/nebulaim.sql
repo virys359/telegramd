@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-06-05 10:24:02
+-- Generation Time: 2018-06-06 11:01:12
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -336,7 +336,7 @@ CREATE TABLE `devices` (
   `auth_key_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
   `token_type` tinyint(4) NOT NULL,
-  `token` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
   `state` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
