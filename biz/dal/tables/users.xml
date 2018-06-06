@@ -106,6 +106,12 @@
         </sql>
     </operation>
 
+    <operation name="SelectCountryCode">
+        <sql>
+            SELECT country_code FROM users WHERE id=:id
+        </sql>
+    </operation>
+
     <operation name="UpdateProfilePhotos">
         <sql>
             UPDATE users SET photos = :photos WHERE id=:id

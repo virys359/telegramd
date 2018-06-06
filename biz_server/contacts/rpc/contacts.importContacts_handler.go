@@ -55,7 +55,14 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		return nil, err
 	}
 
-	phone, err := base.CheckAndGetPhoneNumber(inputContact.GetPhone())
+	pnumber, err := base.MakePhoneNumberUtil(inputContact.GetPhone(), "")
+	if err != nil {
+		region := user.GetCountryCodeByUser(md.UserId)
+		pnumber, err = base.MakePhoneNumberUtil(inputContact.GetPhone(), region)
+	}
+
+	// var contactUser
+	// phone, err := base.CheckAndGetPhoneNumber(inputContact.GetPhone())
 	if err != nil {
 		glog.Error(err)
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_CODE_INVALID)
@@ -63,9 +70,10 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		return nil, err
 	}
 
-	contactUser := user.GetUserByPhoneNumber(md.UserId, phone)
+	phoneNumber := pnumber.GetNormalizeDigits()
+	contactUser := user.GetUserByPhoneNumber(md.UserId, phoneNumber)
 	if contactUser == nil {
-		// 这里该手机号未注册，我们认为手机号出错
+		// 该手机号未注册，我们认为手机号出错
 		//err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_CODE_INVALID)
 		//glog.Error(err, ": phone code invalid - ", inputContact.GetPhone())
 		//return nil, err
@@ -83,7 +91,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	// contactUser.SetContact(true)
 	// contactUser.SetMutualContact(true)
 	contactLogic := contact2.MakeContactLogic(md.UserId)
-	needUpdate := contactLogic.ImportContact(contactUser.GetId(), phone, inputContact.GetFirstName(), inputContact.GetLastName())
+	needUpdate := contactLogic.ImportContact(contactUser.GetId(), phoneNumber, inputContact.GetFirstName(), inputContact.GetLastName())
 	// _ = needUpdate
 
 	selfUpdates := updates2.NewUpdatesLogic(md.UserId)
