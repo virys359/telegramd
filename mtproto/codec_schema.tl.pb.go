@@ -120,6 +120,7 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_inputFileLocation):                                func() TLObject { return NewTLInputFileLocation() },
 	int32(TLConstructor_CRC32_inputEncryptedFileLocation):                       func() TLObject { return NewTLInputEncryptedFileLocation() },
 	int32(TLConstructor_CRC32_inputDocumentFileLocation):                        func() TLObject { return NewTLInputDocumentFileLocation() },
+	int32(TLConstructor_CRC32_inputDocumentFileLocationLayer11):  				 func() TLObject { return NewTLInputDocumentFileLocationLayer11() },
 	int32(TLConstructor_CRC32_inputAppEvent):                                    func() TLObject { return NewTLInputAppEvent() },
 	int32(TLConstructor_CRC32_peerUser):                                         func() TLObject { return NewTLPeerUser() },
 	int32(TLConstructor_CRC32_peerChat):                                         func() TLObject { return NewTLPeerChat() },
@@ -25206,6 +25207,9 @@ func (m *InputFileLocation) Encode() []byte {
 	case TLConstructor_CRC32_inputDocumentFileLocation:
 		t := m.To_InputDocumentFileLocation()
 		return t.Encode()
+	case TLConstructor_CRC32_inputDocumentFileLocationLayer11:
+		t := m.To_InputDocumentFileLocationLayer11()
+		return t.Encode()
 
 	default:
 		glog.Error("Constructor error: ", m.GetConstructor())
@@ -25226,6 +25230,10 @@ func (m *InputFileLocation) Decode(dbuf *DecodeBuf) error {
 		m.Data2 = m2.Data2
 	case TLConstructor_CRC32_inputDocumentFileLocation:
 		m2 := &TLInputDocumentFileLocation{&InputFileLocation_Data{}}
+		m2.Decode(dbuf)
+		m.Data2 = m2.Data2
+	case TLConstructor_CRC32_inputDocumentFileLocationLayer11:
+		m2 := &TLInputDocumentFileLocationLayer11{&InputFileLocation_Data{}}
 		m2.Decode(dbuf)
 		m.Data2 = m2.Data2
 
@@ -25252,6 +25260,13 @@ func (m *InputFileLocation) To_InputEncryptedFileLocation() *TLInputEncryptedFil
 // inputDocumentFileLocation#430f0724 id:long access_hash:long version:int = InputFileLocation;
 func (m *InputFileLocation) To_InputDocumentFileLocation() *TLInputDocumentFileLocation {
 	return &TLInputDocumentFileLocation{
+		Data2: m.Data2,
+	}
+}
+
+// inputDocumentFileLocation#430f0724 id:long access_hash:long version:int = InputFileLocation;
+func (m *InputFileLocation) To_InputDocumentFileLocationLayer11() *TLInputDocumentFileLocationLayer11 {
+	return &TLInputDocumentFileLocationLayer11{
 		Data2: m.Data2,
 	}
 }

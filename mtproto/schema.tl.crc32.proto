@@ -116,6 +116,7 @@ enum TLConstructor {
     CRC32_inputFileLocation = 342061462;
     CRC32_inputEncryptedFileLocation = -182231723;
     CRC32_inputDocumentFileLocation = 1125058340;
+    CRC32_inputDocumentFileLocationLayer11 = 1313188841;
     CRC32_inputAppEvent = 1996904104;
     CRC32_peerUser = -1649296275;
     CRC32_peerChat = -1160714821;
