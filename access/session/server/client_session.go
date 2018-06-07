@@ -24,6 +24,7 @@ import (
 	"container/list"
 	"math/rand"
 	"encoding/hex"
+	"github.com/nebulaim/telegramd/baselib/logger"
 )
 
 // PUSH ==> ConnectionTypePush
@@ -120,11 +121,12 @@ func (c *clientSession) onTimer() bool {
 		}
 	}
 
-	if date >= c.closeDate {
-		return false
-	} else {
-		return true
-	}
+	//if date >= c.closeDate {
+	//	return false
+	//} else {
+	//	return true
+	//}
+	return true
 }
 
 //func (c *clientSession) AddRef() {
@@ -527,7 +529,12 @@ func (c *clientSession) onClientMessage(msgId int64, seqNo int32, object mtproto
 		}
 
 	case *mtproto.TLInvokeWithoutUpdates:
-		glog.Error("android client not use invokeWithoutUpdates: ", object)
+		// TODO(@benqi): macOS client used.
+		// glog.Error("android client not use invokeWithoutUpdates: ", object)
+		invokeWithoutUpdates := object.(*mtproto.TLInvokeWithoutUpdates)
+		invokeWithoutUpdatesExt := NewInvokeWithoutUpdatesExt(invokeWithoutUpdates)
+		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: invokeWithoutUpdatesExt})
+
 
 	default:
 		glog.Info("processOthers - request data: ", object)
@@ -622,7 +629,7 @@ func (c *clientSession) onMessageData(connID ClientConnID, md *mtproto.ZProtoMet
 //============================================================================================
 func (c *clientSession) onPing(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, ping *mtproto.TLPing) {
 	// ping, _ := request.(*mtproto.TLPing)
-	glog.Info("processPing - request data: ", ping)
+	glog.Info("processPing - request data: ", logger.JsonDebugData(ping))
 	// c.setOnline()
 	pong := &mtproto.TLPong{Data2: &mtproto.Pong_Data{
 		MsgId:  msgId,
@@ -635,7 +642,7 @@ func (c *clientSession) onPing(connID ClientConnID, md *mtproto.ZProtoMetadata, 
 
 func (c *clientSession) onPingDelayDisconnect(connID ClientConnID, md *mtproto.ZProtoMetadata, msgId int64, seqNo int32, pingDelayDisconnect *mtproto.TLPingDelayDisconnect) {
 	// pingDelayDisconnect, _ := request.(*mtproto.TLPingDelayDisconnect)
-	glog.Info("onPingDelayDisconnect - request data: ", pingDelayDisconnect)
+	glog.Info("onPingDelayDisconnect - request data: ", logger.JsonDebugData(pingDelayDisconnect))
 	pong := &mtproto.TLPong{Data2: &mtproto.Pong_Data{
 		MsgId:  msgId,
 		PingId: pingDelayDisconnect.PingId,

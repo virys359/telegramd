@@ -52,11 +52,19 @@ func (s *AuthServiceImpl) AuthSignUp(ctx context.Context, request *mtproto.TLAut
 
 	// 1. check number
 	// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
-	phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
+	//phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//}
+
+	pnumber, err := base.MakePhoneNumberUtil(request.GetPhoneNumber(), "")
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
+
+	phoneNumber := pnumber.GetNormalizeDigits()
 
 	if request.GetPhoneCode() == "" {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EMPTY), "phone code empty")
@@ -100,7 +108,7 @@ func (s *AuthServiceImpl) AuthSignUp(ctx context.Context, request *mtproto.TLAut
 		return nil, err
 	}
 
-	user := user2.CreateNewUser(phoneNumber, request.FirstName, request.LastName)
+	user := user2.CreateNewUser(phoneNumber, pnumber.GetRegionCode(), request.FirstName, request.LastName)
 	auth.BindAuthKeyAndUser(md.AuthId, user.GetId())
 	// TODO(@benqi): check and set authKeyId state
 	// TODO(@benqi): 修改那些将我的phoneNumber加到他们的联系人列表里的联系人的状态

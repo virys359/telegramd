@@ -119,14 +119,14 @@ func GetUserById(selfId int32, userId int32) *userData {
 	return makeUserDataByDO(selfId, do)
 }
 
-func CreateNewUser(phoneNumber, firstName, lastName string) *mtproto.TLUser {
+func CreateNewUser(phoneNumber, countryCode, firstName, lastName string) *mtproto.TLUser {
 	// usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	do := &dataobject.UsersDO{
 		AccessHash:  base.NextSnowflakeId(),
 		Phone:       phoneNumber,
 		FirstName:   firstName,
 		LastName:    lastName,
-		CountryCode: "CN",
+		CountryCode: countryCode,
 	}
 	do.Id = int32(dao.GetUsersDAO(dao.DB_MASTER).Insert(do))
 	user := &mtproto.TLUser{ Data2: &mtproto.User_Data{
@@ -161,4 +161,13 @@ func CheckAccessHashByUserId(userId int32, accessHash int64) bool {
 		"access_hash": accessHash,
 	}
 	return dao.GetCommonDAO(dao.DB_SLAVE).CheckExists("users", params)
+}
+
+func GetCountryCodeByUser(userId int32) string {
+	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectCountryCode(userId)
+	if do == nil {
+		return ""
+	} else {
+		return do.CountryCode
+	}
 }

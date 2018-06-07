@@ -29,7 +29,11 @@ import (
 // upload.saveBigFilePart#de7b673d file_id:long file_part:int file_total_parts:int bytes:bytes = Bool;
 func (s *UploadServiceImpl) UploadSaveBigFilePart(ctx context.Context, request *mtproto.TLUploadSaveBigFilePart) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("upload.saveFilePart#b304a621 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("upload.saveBigFilePart#de7b673d - metadata: %s, request: {file_id: %d, file_part: %d, bytes_len: %d}",
+		logger.JsonDebugData(md),
+		request.FileId,
+		request.FilePart,
+		len(request.Bytes))
 
 	// TODO(@benqi): Check file_total_parts >= bigFileSize/kMaxFileSize, Check len(bytes) <= kMaxFilePartSize, Check file_part <= file_total_parts
 

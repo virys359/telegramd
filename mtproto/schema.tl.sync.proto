@@ -1193,6 +1193,11 @@ message TL_inputDocumentFileLocation {
     InputFileLocation_Data data2 = 2;
 }
 
+// Layer11
+// inputDocumentFileLocation#4e45abe9 id:long access_hash:long = InputFileLocation;
+message TL_inputDocumentFileLocationLayer11 {
+    InputFileLocation_Data data2 = 2;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // contacts_ImportedContacts <--

@@ -52,6 +52,13 @@ func (s *UploadServiceImpl) UploadGetFile(ctx context.Context, request *mtproto.
 			fileLocation.GetVersion(),
 			request.GetOffset(),
 			request.GetLimit())
+	case mtproto.TLConstructor_CRC32_inputDocumentFileLocationLayer11:
+		fileLocation := request.GetLocation().To_InputDocumentFileLocation()
+		uploadFile, err = document.GetDocumentFileData(fileLocation.GetId(),
+			fileLocation.GetAccessHash(),
+			fileLocation.GetVersion(),
+			request.GetOffset(),
+			request.GetLimit())
 	default:
 		err = fmt.Errorf("invalid InputFileLocation type: %d", request.GetLocation().GetConstructor())
 	}
@@ -61,6 +68,11 @@ func (s *UploadServiceImpl) UploadGetFile(ctx context.Context, request *mtproto.
 		return nil, err
 	}
 
-	glog.Infof("upload.getFile#e3a6cfb5 - reply: %s", logger.JsonDebugData(uploadFile))
+	// type:storage.FileType mtime:int bytes:bytes
+	glog.Infof("upload.getFile#e3a6cfb5 - reply: {type: %v, mime: %d, len_bytes: %d}",
+		uploadFile.GetData2().GetType(),
+		uploadFile.GetData2().GetMtime(),
+		len(uploadFile.GetData2().GetBytes()))
+
 	return uploadFile, err
 }

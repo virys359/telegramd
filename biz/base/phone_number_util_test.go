@@ -19,11 +19,14 @@ package base
 
 import (
 	"testing"
-	"github.com/ttacon/libphonenumber"
+	// "github.com/ttacon/libphonenumber"
 	"fmt"
 )
 
 func TestCheckPhoneNumber(t *testing.T) {
-	_, err := libphonenumber.Parse("+4085555270", "")
-	fmt.Println(err)
+	// _, err := libphonenumber.Parse("+4085555270", "")
+
+	// 9891651761xx
+	phone, err := CheckAndGetPhoneNumberByRegion("+86 136 0000 0000", "CN")
+	fmt.Println(phone, err)
 }

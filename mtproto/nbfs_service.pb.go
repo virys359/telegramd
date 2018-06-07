@@ -238,6 +238,7 @@ It has these top-level messages:
 	TLInputFileLocation
 	TLInputEncryptedFileLocation
 	TLInputDocumentFileLocation
+	TLInputDocumentFileLocationLayer11
 	Contacts_ImportedContacts_Data
 	Contacts_ImportedContacts
 	TLContactsImportedContacts

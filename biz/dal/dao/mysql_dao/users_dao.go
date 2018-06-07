@@ -503,6 +503,42 @@ func (dao *UsersDAO) SelectProfilePhotos(id int32) *dataobject.UsersDO {
 	return do
 }
 
+// select country_code from users where id = :id
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) SelectCountryCode(id int32) *dataobject.UsersDO {
+	var query = "select country_code from users where id = ?"
+	rows, err := dao.db.Queryx(query, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectCountryCode(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.UsersDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectCountryCode(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectCountryCode(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return do
+}
+
 // update users set photos = :photos where id = :id
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) UpdateProfilePhotos(photos string, id int32) int64 {
