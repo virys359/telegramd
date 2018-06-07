@@ -27,6 +27,7 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 [Mobile Protocol: Detailed Description (v.1.0, DEPRECATED)](doc/Mobile_Protocol-Detailed_Description_v.1.0_DEPRECATED.md)
 
+[Encrypted CDNs for Speed and Security](doc/cdn.md) [@steedfly](https://github.com/steedfly)翻译
 ### 编译和安装
 
 [编译和安装](doc/build.md)
