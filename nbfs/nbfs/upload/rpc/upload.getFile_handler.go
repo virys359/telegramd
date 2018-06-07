@@ -68,6 +68,11 @@ func (s *UploadServiceImpl) UploadGetFile(ctx context.Context, request *mtproto.
 		return nil, err
 	}
 
-	glog.Infof("upload.getFile#e3a6cfb5 - reply: %s", logger.JsonDebugData(uploadFile))
+	// type:storage.FileType mtime:int bytes:bytes
+	glog.Infof("upload.getFile#e3a6cfb5 - reply: {type: %v, mime: %d, len_bytes: %d}",
+		uploadFile.GetData2().GetType(),
+		uploadFile.GetData2().GetMtime(),
+		len(uploadFile.GetData2().GetBytes()))
+
 	return uploadFile, err
 }

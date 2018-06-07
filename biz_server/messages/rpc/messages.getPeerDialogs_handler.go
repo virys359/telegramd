@@ -35,13 +35,13 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.getPeerDialogs#2d9776b9 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): peers:Vector<InputPeer>
-	dialogs := user.GetPinnedDialogs(md.UserId)
 	peerDialogs := mtproto.NewTLMessagesPeerDialogs()
 
 	messageIdList := []int32{}
 	userIdList := []int32{md.UserId}
 	chatIdList := []int32{}
+
+	dialogs := user.GetPeersDialogs(md.UserId, request.GetPeers())
 
 	for _, dialog2 := range dialogs {
 		// dialog.Peer

@@ -120,6 +120,16 @@ func GetPinnedDialogs(userId int32) (dialogs []*mtproto.Dialog) {
 	return
 }
 
+func GetPeersDialogs(selfId int32, peers []*mtproto.InputPeer) (dialogs []*mtproto.Dialog) {
+	for _, peer := range peers {
+		peerUtil := base.FromInputPeer2(selfId, peer)
+		dialogDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(selfId, int8(peerUtil.PeerType), peerUtil.PeerId)
+		if dialogDO != nil {
+			dialogs = append(dialogs, dialogDOToDialog(dialogDO).To_Dialog())
+		}
+	}
+	return
+}
 
 // 发件箱
 func CreateOrUpdateByOutbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions, clearDraft bool) {
