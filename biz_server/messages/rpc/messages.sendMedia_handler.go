@@ -34,9 +34,9 @@ import (
 func makeGeoPointByInput(geoPoint *mtproto.InputGeoPoint) *mtproto.GeoPoint {
 	var geo = &mtproto.GeoPoint{Data2: &mtproto.GeoPoint_Data{}}
 	switch geoPoint.GetConstructor() {
-	case mtproto.TLConstructor_CRC32_geoPointEmpty:
+	case mtproto.TLConstructor_CRC32_inputGeoPointEmpty:
 		geo.Constructor = mtproto.TLConstructor_CRC32_geoPointEmpty
-	case mtproto.TLConstructor_CRC32_geoPoint:
+	case mtproto.TLConstructor_CRC32_inputGeoPoint:
 		geo.Data2.Lat = geoPoint.GetData2().Lat
 		geo.Data2.Long = geoPoint.GetData2().Long
 		geo.Constructor = mtproto.TLConstructor_CRC32_geoPoint
