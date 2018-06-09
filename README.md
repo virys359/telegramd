@@ -54,6 +54,9 @@ tdlib
 ### TODO
 channels, Secret Chats, bots and payments这几大功能还未实现
 
+### 技术交流群
+[Telegramd中文技术交流群](https://t.me/joinchat/D8b0DQ-CrvZXZv2dWn310g)
+
 ## English
 
 ### Introduce
