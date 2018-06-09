@@ -63,7 +63,7 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 		}
 
 		// fileData := mediaData.GetFile().GetData2()
-		photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+		photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 			Id:          result.PhotoId,
 			HasStickers: len(uploadedPhoto.GetStickers()) > 0,
 			AccessHash:  result.AccessHash, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),

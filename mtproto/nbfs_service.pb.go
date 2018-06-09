@@ -1416,6 +1416,7 @@ It has these top-level messages:
 	PushUpdatesData
 	RpcResultData
 	UpdatesRequest
+	NewUpdatesRequest
 */
 package mtproto
 

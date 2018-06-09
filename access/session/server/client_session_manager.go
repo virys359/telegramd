@@ -43,8 +43,9 @@ const (
 	kNetworkMessageStateNone 				= 0		// created
 	kNetworkMessageStateReceived 			= 1		// received from client
 	kNetworkMessageStateRunning 			= 2		// invoke api
-	kNetworkMessageStateWaitReplyTimeout 	= 5		// invoke timeout
+	kNetworkMessageStateWaitReplyTimeout 	= 3		// invoke timeout
 	kNetworkMessageStateInvoked 			= 4		// invoke ok, send to client
+	kNetworkMessageStatePushSync 			= 5		// invoke ok, send to client
 	kNetworkMessageStateAck  				= 6		// received client ack
 	kNetworkMessageStateWaitAckTimeout		= 7		// wait ack timeout
 	kNetworkMessageStateError				= 8		// invalid error
@@ -93,6 +94,7 @@ type clientSessionManager struct {
 	sessions        map[int64]*clientSession
 	bizRPCClient    *grpc_util.RPCClient
 	nbfsRPCClient   *grpc_util.RPCClient
+	syncRpcClient   mtproto.RPCSyncClient
 	closeChan       chan struct{}
 	sessionDataChan chan interface{}	// receive from client
 	rpcDataChan     chan interface{}	// rpc reply
@@ -104,6 +106,7 @@ type clientSessionManager struct {
 func newClientSessionManager(authKeyId int64, authKey []byte, userId int32) *clientSessionManager {
 	bizRPCClient, _ := getBizRPCClient()
 	nbfsRPCClient, _ := getNbfsRPCClient()
+	syncRpcClient, _ := getSyncRPCClient()
 
 	return &clientSessionManager{
 		authKeyId:       authKeyId,
@@ -112,6 +115,7 @@ func newClientSessionManager(authKeyId int64, authKey []byte, userId int32) *cli
 		sessions:        make(map[int64]*clientSession),
 		bizRPCClient:    bizRPCClient,
 		nbfsRPCClient:   nbfsRPCClient,
+		syncRpcClient:	 syncRpcClient,
 		closeChan:       make(chan struct{}),
 		sessionDataChan: make(chan interface{}),
 		rpcDataChan:     make(chan interface{}),
@@ -170,7 +174,17 @@ func (s *clientSessionManager) runLoop() {
 				// b, _ := sess.encodeMessage(s.authKeyId, s.authKey, false, result.rpcMessage.rpcResult)
 				// sendDataByConnID(result.connID.clientConnID, result.connID.frontendConnID, result.md, b)
 			} else {
-				// result.rpcMessage.state = kNetworkMessageStateAcked
+				if !sess.synced {
+					// result.rpcMessage.state = kNetworkMessageStateAcked
+					if r, ok := result.rpcMessage.rpcResult.(*mtproto.TLRpcResult); ok {
+						if _, ok = r.Result.(*mtproto.Updates_Difference); ok {
+							// TODO(@benqi): sess.onSynced.
+							glog.Infof("receive TLUpdatesGetDifference")
+							sess.synced = true
+						}
+					}
+				}
+
 				result.rpcMessage.rpcMsgId = mtproto.GenerateMessageId()
 				sess.sendToClient(result.connID, result.md, result.rpcMessage.rpcMsgId, true, result.rpcMessage.rpcResult)
 			}
@@ -229,7 +243,6 @@ type messageListWrapper struct {
 }
 
 func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
-	glog.Info("sessionDataChan: ", sessionMsg)
 	message := mtproto.NewEncryptedMessage2(s.authKeyId)
 	err := message.Decode(s.authKeyId, s.authKey, sessionMsg.buf[8:])
 	if err != nil {
@@ -238,6 +251,7 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 		return
 	}
 
+	glog.Infof("sessionDataChan: ", message)
 
 	if message.MessageId & 0xffffffff == 0 {
 		err = fmt.Errorf("the lower 32 bits of msg_id passed by the client must not be empty: %d", message.MessageId)
@@ -282,9 +296,12 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 			// glog.Error("salt invalid..")
 			return
 		}
-		// sess.salt = salt
+
 		s.sessions[message.SessionId] = sess
+		glog.Info("newClientSession: ", sess)
 		sess.onNewSessionCreated(sessionMsg.connID, sessionMsg.md, message.MessageId)
+		sess.clientConnID = sessionMsg.connID
+		sess.clientState = kStateOnline
 	} else {
 		if !sess.CheckBadServerSalt(sessionMsg.connID, sessionMsg.md, message.MessageId, message.SeqNo, message.Salt) {
 			// glog.Error("salt invalid..")
@@ -300,9 +317,12 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 		// No such notifications are generated for high msg_id values.
 		//
 		if message.MessageId < sess.firstMsgId {
+			glog.Info("message.MessageId < sess.firstMsgId: ", message.MessageId, ", ", sess.firstMsgId, ", sessionId: ", message.SessionId)
 			sess.firstMsgId = message.MessageId
 			sess.onNewSessionCreated(sessionMsg.connID, sessionMsg.md, message.MessageId)
 		}
+		sess.clientConnID = sessionMsg.connID
+		sess.onSessionClientConnected()
 	}
 
 	_, isContainer := message.Object.(*mtproto.TLMsgContainer)
@@ -311,16 +331,29 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 		return
 	}
 
-	sess.clientConnID = sessionMsg.connID
 	sess.onClientMessage(message.MessageId, message.SeqNo, message.Object, messages)
 	sess.onMessageData(sessionMsg.connID, sessionMsg.md, messages.messages)
 }
 
 func (s *clientSessionManager) onSyncData(syncMsg *syncData) {
-	sess, ok := s.sessions[syncMsg.sessionID]
-	if ok {
-		sess.onSyncData(sess.clientConnID, syncMsg.md, syncMsg.data.obj)
+	glog.Infof("onSyncData - sync_msg: {%v}", syncMsg)
+	// sess, ok := s.sessions[syncMsg.sessionID]
+
+	for _, sess := range s.sessions {
+		if (sess.connType == PUSH || sess.connType == GENERIC)  && sess.clientState == kStateOnline {
+			sess.onSyncData(sess.clientConnID, syncMsg.md, syncMsg.data.obj)
+		}
 	}
+
+	//if ok {
+	//	sess.onSyncData(sess.clientConnID, syncMsg.md, syncMsg.data.obj)
+	//} else {
+	//	for _, sess = range s.sessions {
+	//		if sess.connType == PUSH && sess.clientState == kStateOnline {
+	//			sess.onSyncData(sess.clientConnID, syncMsg.md, syncMsg.data.obj)
+	//		}
+	//	}
+	//}
 }
 
 
@@ -347,7 +380,7 @@ func (s *clientSessionManager) onRpcRequest(request *rpcApiMessage) {
 		}
 	} else {
 		// set online
-		setUserOnline(1, request.connID, s.authKeyId, request.sessionId, s.AuthUserId)
+		// setUserOnline(1, request.connID, s.authKeyId, request.sessionId, s.AuthUserId)
 	}
 
 	// 初始化metadata

@@ -242,3 +242,57 @@ func GetUpdateListByGtPts(userId, pts int32) []*mtproto.Update {
 	}
 	return updates
 }
+
+func CheckAndFixAuthUpdateSeq(authKeyId int64, userId int32) {
+	params := map[string]interface{}{
+		"auth_key_id": authKeyId,
+	}
+
+	if !dao.GetCommonDAO(dao.DB_SLAVE).CheckExists("auth_updates_state", params) {
+		do := &dataobject.AuthUpdatesStateDO{
+			AuthKeyId: authKeyId,
+			UserId:    userId,
+			Pts:       0,
+			Qts:       0,
+			Seq:       -1,
+			Date2:     int32(time.Now().Unix()),
+		}
+		dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).Insert(do)
+	}
+}
+
+func GetUpdatesState2(authKeyId int64, userId int32) *mtproto.TLUpdatesState {
+	// TODO(@benqi): insert auth_updates_state in auth.signUp
+	CheckAndFixAuthUpdateSeq(authKeyId, userId)
+
+	do := dao.GetAuthUpdatesStateDAO(dao.DB_SLAVE).SelectByAuthId(authKeyId)
+	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
+		Pts:  do.Pts,
+		Qts:  do.Qts,
+		Seq:  do.Seq,
+		Date: int32(time.Now().Unix()), // TODO(@benqi): do.Date2???
+	}}
+	return state
+}
+
+func GetServerUpdatesState(authKeyId int64, userId int32) *mtproto.TLUpdatesState {
+	// TODO(@benqi): insert auth_updates_state in auth.signUp
+	CheckAndFixAuthUpdateSeq(authKeyId, userId)
+
+	do := dao.GetAuthUpdatesStateDAO(dao.DB_SLAVE).SelectByAuthId(authKeyId)
+	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
+		Pts:  do.Pts2,
+		Qts:  do.Qts2,
+		Seq:  do.Seq2,
+		Date: int32(time.Now().Unix()), // TODO(@benqi): do.Date2???
+	}}
+	return state
+}
+
+func UpdateAuthStateSeq(authKeyId int64, pts, qts int32) {
+	dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).UpdatePtsAndQts(pts, qts, authKeyId)
+}
+
+func UpdateServerAuthStateSeq(authKeyId int64, pts, qts int32) {
+	dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).UpdatePts2AndQts2(pts, qts, authKeyId)
+}

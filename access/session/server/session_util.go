@@ -73,6 +73,16 @@ func getNbfsRPCClient() (*grpc_util.RPCClient, error) {
 	return sessionServer.nbfsRpcClient, nil
 }
 
+func getSyncRPCClient() (mtproto.RPCSyncClient, error) {
+	sessionServer, ok := app.GAppInstance.(*SessionServer)
+	if !ok {
+		err := fmt.Errorf("not use app instance framework")
+		glog.Error(err)
+		return nil, err
+	}
+	return sessionServer.syncRpcClient, nil
+}
+
 func deleteClientSessionManager(authKeyID int64) {
 	if sessionServer, ok := app.GAppInstance.(*SessionServer); !ok {
 		err := fmt.Errorf("not use app instance framework")

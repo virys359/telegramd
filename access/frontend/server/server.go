@@ -387,12 +387,16 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 		}
 		smsg.Decode(payload.Payload[4:])
 
-		glog.Infof("onClientDataArrived - session_data: peer(%s), auth_key_id: %d, len: %d",
-			client.GetConnection(),
+		glog.Infof("onClientDataArrived - send client to: peer(%s), auth_key_id: %d, len: %d",
+			conn,
 			smsg.MTPMessage.AuthKeyId,
 			len(payload.Payload))
 
-		return conn.Send(smsg.MTPMessage)
+		err := conn.Send(smsg.MTPMessage)
+		if err != nil {
+			glog.Info("onClientDataArrived: send data to client error: ", err)
+		}
+		return err
 	default:
 		err := fmt.Errorf("invalid zmsg: %v", zmsg)
 

@@ -228,6 +228,10 @@ func PickAllIDListByMessages(messageList []*mtproto.Message) (userIdList, chatId
 					userIdList = append(userIdList, p.GetData2().GetUserId())
 				case mtproto.TLConstructor_CRC32_peerChat:
 					chatIdList = append(chatIdList, p.GetData2().GetChatId())
+					if p.GetData2().GetChatId() == 0 {
+						glog.Info("chat_id = 0: ", m)
+						continue
+					}
 				case mtproto.TLConstructor_CRC32_peerChannel:
 					channelIdList = append(chatIdList, p.GetData2().GetChannelId())
 				}
@@ -240,6 +244,10 @@ func PickAllIDListByMessages(messageList []*mtproto.Message) (userIdList, chatId
 				case mtproto.TLConstructor_CRC32_peerUser:
 					userIdList = append(userIdList, p.GetData2().GetUserId())
 				case mtproto.TLConstructor_CRC32_peerChat:
+					if p.GetData2().GetChatId() == 0 {
+						glog.Info("chat_id = 0: ", m)
+						continue
+					}
 					chatIdList = append(chatIdList, p.GetData2().GetChatId())
 				case mtproto.TLConstructor_CRC32_peerChannel:
 					channelIdList = append(chatIdList, p.GetData2().GetChannelId())

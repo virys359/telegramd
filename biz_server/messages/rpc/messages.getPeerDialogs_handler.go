@@ -81,7 +81,10 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 		peerDialogs.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
-	state := update2.GetUpdatesState(md.AuthId, md.UserId)
+	state := update2.GetServerUpdatesState(md.AuthId, md.UserId)
+	update2.UpdateAuthStateSeq(md.AuthId, state.GetPts(), 0)
+
+	// state := update2.GetUpdatesState2(md.AuthId, md.UserId)
 	peerDialogs.SetState(state.To_Updates_State())
 
 	glog.Infof("messages.getPeerDialogs#2d9776b9 - reply: %s", logger.JsonDebugData(peerDialogs))

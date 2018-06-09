@@ -33,10 +33,10 @@ func NewAuthUpdatesStateDAO(db *sqlx.DB) *AuthUpdatesStateDAO {
 	return &AuthUpdatesStateDAO{db}
 }
 
-// insert into auth_updates_state(auth_key_id, user_id, pts, qts, seq, date2, created_at) values (:auth_key_id, :user_id, :pts, :qts, :seq, :date2, :created_at)
+// insert into auth_updates_state(auth_key_id, user_id, pts, pts2, qts, qts2, seq, seq2, `date`) values (:auth_key_id, :user_id, :pts, :pts2, :qts, :qts2, :seq, :seq2, :date)
 // TODO(@benqi): sqlmap
 func (dao *AuthUpdatesStateDAO) Insert(do *dataobject.AuthUpdatesStateDO) int64 {
-	var query = "insert into auth_updates_state(auth_key_id, user_id, pts, qts, seq, date2, created_at) values (:auth_key_id, :user_id, :pts, :qts, :seq, :date2, :created_at)"
+	var query = "insert into auth_updates_state(auth_key_id, user_id, pts, pts2, qts, qts2, seq, seq2, `date`) values (:auth_key_id, :user_id, :pts, :pts2, :qts, :qts2, :seq, :seq2, :date)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,11 +53,11 @@ func (dao *AuthUpdatesStateDAO) Insert(do *dataobject.AuthUpdatesStateDO) int64 
 	return id
 }
 
-// update auth_updates_state set pts = :pts, qts = :qts where auth_key_id = :auth_key_id
+// update auth_updates_state set pts = :pts, pts2 = :pts, qts = :qts, qts2 = :qts where auth_key_id = :auth_key_id
 // TODO(@benqi): sqlmap
 func (dao *AuthUpdatesStateDAO) UpdatePtsAndQts(pts int32, qts int32, auth_key_id int64) int64 {
-	var query = "update auth_updates_state set pts = ?, qts = ? where auth_key_id = ?"
-	r, err := dao.db.Exec(query, pts, qts, auth_key_id)
+	var query = "update auth_updates_state set pts = ?, pts2 = ?, qts = ?, qts2 = ? where auth_key_id = ?"
+	r, err := dao.db.Exec(query, pts, pts, qts, qts, auth_key_id)
 
 	if err != nil {
 		errDesc := fmt.Sprintf("Exec in UpdatePtsAndQts(_), error: %v", err)
@@ -75,10 +75,32 @@ func (dao *AuthUpdatesStateDAO) UpdatePtsAndQts(pts int32, qts int32, auth_key_i
 	return rows
 }
 
-// select pts, qts, seq, date2 from auth_updates_state where auth_key_id = :auth_key_id
+// update auth_updates_state set pts2 = :pts2, qts2 = :qts2 where auth_key_id = :auth_key_id
+// TODO(@benqi): sqlmap
+func (dao *AuthUpdatesStateDAO) UpdatePts2AndQts2(pts2 int32, qts2 int32, auth_key_id int64) int64 {
+	var query = "update auth_updates_state set pts2 = ?, qts2 = ? where auth_key_id = ?"
+	r, err := dao.db.Exec(query, pts2, qts2, auth_key_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdatePts2AndQts2(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdatePts2AndQts2(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// select pts, pts2, qts, qts2, seq, seq2, `date` from auth_updates_state where auth_key_id = :auth_key_id
 // TODO(@benqi): sqlmap
 func (dao *AuthUpdatesStateDAO) SelectByAuthId(auth_key_id int64) *dataobject.AuthUpdatesStateDO {
-	var query = "select pts, qts, seq, date2 from auth_updates_state where auth_key_id = ?"
+	var query = "select pts, pts2, qts, qts2, seq, seq2, `date` from auth_updates_state where auth_key_id = ?"
 	rows, err := dao.db.Queryx(query, auth_key_id)
 
 	if err != nil {

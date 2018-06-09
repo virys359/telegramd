@@ -30,9 +30,9 @@ import (
 // updates.getState#edd4882a = updates.State;
 func (s *UpdatesServiceImpl) UpdatesGetState(ctx context.Context, request *mtproto.TLUpdatesGetState) (*mtproto.Updates_State, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("UpdatesGetState - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("updates.getState#edd4882a  - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	state := update2.GetUpdatesState(md.AuthId, md.UserId)
-	glog.Infof("UpdatesGetState - reply: %s", logger.JsonDebugData(state))
+	state := update2.GetServerUpdatesState(md.AuthId, md.UserId)
+	glog.Infof("updates.getState#edd4882a  - reply: %s", logger.JsonDebugData(state))
 	return state.To_Updates_State(), nil
 }

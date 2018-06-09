@@ -96,6 +96,10 @@ func NewRPCClient(discovery *service_discovery.ServiceDiscoveryClientConfig) (c 
 	return
 }
 
+func (c* RPCClient) GetClientConn() *grpc.ClientConn {
+	return c.conn
+}
+
 // 通用grpc转发器
 func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (mtproto.TLObject, error) {
 	t := mtproto.FindRPCContextTuple(object)
