@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-06-06 14:54:12
+-- Generation Time: 2018-06-10 10:20:43
 -- 服务器版本： 5.6.37
 -- PHP Version: 5.6.30
 
@@ -208,8 +208,12 @@ CREATE TABLE `auth_updates_state` (
   `auth_key_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL,
   `pts` int(11) NOT NULL DEFAULT '0',
+  `pts2` int(11) NOT NULL DEFAULT '0',
   `qts` int(11) NOT NULL DEFAULT '0',
-  `seq` int(11) NOT NULL DEFAULT '0',
+  `qts2` int(11) NOT NULL DEFAULT '0',
+  `seq` int(11) NOT NULL DEFAULT '-1',
+  `seq2` int(11) NOT NULL DEFAULT '-1',
+  `date` int(11) NOT NULL,
   `date2` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
