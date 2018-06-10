@@ -2,7 +2,7 @@
 
 docker start mysql-docker redis-docker etcd-docker
 
-telegramd="$GOPATH/src/github.com/yumcoder-platform/telegramd/"
+telegramd="$GOPATH/src/github.com/nebulaim/telegramd"
 
 echo "build frontend ..."
 cd ${telegramd}/access/frontend
