@@ -90,6 +90,9 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 		State:        state.To_Updates_State(),
 	}}
 
+	// TODO(@benqi): remove to received ack handler.
+	update2.UpdateAuthStateSeq(md.AuthId, lastPts, 0)
+
 	glog.Infof("updates.getDifference#25939651 - reply: %s", logger.JsonDebugData(difference))
 	return difference.To_Updates_Difference(), nil
 }

@@ -80,7 +80,9 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 		peerDialogs.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
-	state := update2.GetUpdatesState(md.AuthId, md.UserId)
+	state := update2.GetServerUpdatesState(md.AuthId, md.UserId)
+	update2.UpdateAuthStateSeq(md.AuthId, state.GetPts(), 0)
+
 	peerDialogs.SetState(state.To_Updates_State())
 
 	glog.Infof("MessagesGetPinnedDialogs - reply: %s", logger.JsonDebugData(peerDialogs))

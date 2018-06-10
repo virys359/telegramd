@@ -25,6 +25,7 @@ import (
 	"math/rand"
 	"encoding/hex"
 	"github.com/nebulaim/telegramd/baselib/logger"
+	"context"
 )
 
 // PUSH ==> ConnectionTypePush
@@ -50,9 +51,11 @@ const (
 	kPingAddTimeout = 15
 )
 
-//const (
-//
-//)
+const (
+	kStateCreated = iota
+	kStateOnline
+	kStateOffline
+)
 
 type messageData struct {
 	confirmFlag  bool
@@ -61,31 +64,36 @@ type messageData struct {
 }
 
 type clientSession struct {
-	closeDate    int64
-	connType     int
-	clientConnID ClientConnID
-	salt         int64
-	nextSeqNo    uint32
-	sessionId    int64
-	manager      *clientSessionManager
-	apiMessages  *list.List // []*networkApiMessage
-	syncMessages *list.List // []*networkSyncMessage
-	firstMsgId   int64
-	uniqueId	 int64
-	// state        int
+	closeDate        int64
+	closeSessionDate int64
+	connType         int
+	clientConnID     ClientConnID
+	salt             int64
+	nextSeqNo        uint32
+	sessionId        int64
+	manager          *clientSessionManager
+	apiMessages      *list.List // []*networkApiMessage
+	syncMessages     *list.List // []*networkSyncMessage
+	firstMsgId       int64
+	uniqueId         int64
+	clientState      int
+	synced           bool
 }
 
 func NewClientSession(sessionId, salt, firstMsgId int64, m *clientSessionManager) *clientSession{
 	return &clientSession{
-		closeDate:    time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout,
-		connType:     UNKNOWN,
-		salt:         salt,
-		sessionId:    sessionId,
-		manager:      m,
-		apiMessages:  list.New(), // []*networkApiMessage{},
-		syncMessages: list.New(), // []*networkSyncMessage{},
-		firstMsgId:   firstMsgId,
-		uniqueId:     rand.Int63(),
+		closeDate:        time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout,
+		closeSessionDate: 0,
+		connType:         UNKNOWN,
+		salt:             salt,
+		sessionId:        sessionId,
+		manager:          m,
+		apiMessages:      list.New(), // []*networkApiMessage{},
+		syncMessages:     list.New(), // []*networkSyncMessage{},
+		firstMsgId:       firstMsgId,
+		uniqueId:         rand.Int63(),
+		clientState:      kStateCreated,
+		synced:           false,
 	}
 }
 
@@ -93,15 +101,14 @@ func NewClientSession(sessionId, salt, firstMsgId int64, m *clientSessionManager
 func getConnectionType2(messages []*mtproto.TLMessage2) int {
 	for _, m := range messages {
 		if m.Object != nil {
-			//connType := getConnectionType(m.Object)
-			//if connType != UNKNOWN {
-			//	c.connType = connType
-			//	break
-			//}
+			connType := getConnectionType(m.Object)
+			if connType != UNKNOWN {
+				return connType
+			}
 		}
 	}
 
-	return 0
+	return UNKNOWN
 }
 
 //============================================================================================
@@ -121,11 +128,26 @@ func (c *clientSession) onTimer() bool {
 		}
 	}
 
-	//if date >= c.closeDate {
-	//	return false
-	//} else {
-	//	return true
-	//}
+	if date >= c.closeDate {
+		glog.Infof("onClose: {date: %d, c: {%v}}", date, c)
+		c.onCloseSessionClient()
+	}
+
+	if c.clientState == kStateOnline {
+		for e := c.syncMessages.Front(); e != nil; e = e.Next() {
+			v, _ := e.Value.(*networkSyncMessage)
+			// resend
+			if v.state != kNetworkMessageStateAck {
+				c.sendToClient(c.clientConnID, &mtproto.ZProtoMetadata{}, v.update.MsgId, true, v.update.Object)
+			}
+		}
+	}
+
+	if c.closeSessionDate != 0 && date >= c.closeSessionDate{
+		return false
+	} else {
+		return true
+	}
 	return true
 }
 
@@ -178,13 +200,23 @@ func (c *clientSession) sendToClient(connID ClientConnID, md *mtproto.ZProtoMeta
 func (c *clientSession) onSyncData(connID ClientConnID, md *mtproto.ZProtoMetadata, obj mtproto.TLObject) {
 	// TODO(@benqi): confirm??
 
+	var msgId = mtproto.GenerateMessageId()
+
 	switch obj.(type) {
 	case *mtproto.Updates:
-		// updates service
+		syncMessage := &networkSyncMessage{
+			date:   time.Now().Unix(),
+			update: &mtproto.TLMessage2{
+				MsgId:  msgId,
+				Object: obj,
+			},
+			state:  kNetworkMessageStatePushSync,
+		}
+		c.syncMessages.PushBack(syncMessage)
 	default:
 		// rpc result message
 	}
-	c.sendToClient(connID, md, 0, true, obj)
+	c.sendToClient(connID, md, msgId, true, obj)
 }
 
 //// Check Server Salt
@@ -551,16 +583,18 @@ func (c *clientSession) onMessageData(connID ClientConnID, md *mtproto.ZProtoMet
 		}
 	}
 
-	//if c.connType == GENERIC || c.connType == PUSH {
-	//	if c.manager.AuthUserId != 0 {
-	//		for _, m := range messages {
-	//			if !checkWithoutLogin(m.Object) {
-	//				c.manager.AuthUserId = getCacheUserID(c.manager.authKeyId)
-	//			}
-	//		}
-	//	}
-	//}
-	//
+	if c.connType == GENERIC && c.manager.AuthUserId != 0 /* || c.connType == PUSH*/ {
+		setUserOnline(1, connID, c.manager.authKeyId, c.sessionId, c.manager.AuthUserId)
+
+		//if c.manager.AuthUserId != 0 {
+		//	for _, m := range messages {
+		//		if !checkWithoutLogin(m.Object) {
+		//			c.manager.AuthUserId = getCacheUserID(c.manager.authKeyId)
+		//		}
+		//	}
+		//}
+	}
+
 
 	for _, message := range messages{
 		glog.Info("onMessageData - ", message)
@@ -1017,3 +1051,39 @@ func (c *clientSession) onRpcRequest(connID ClientConnID, md *mtproto.ZProtoMeta
 	c.manager.rpcQueue.Push(&rpcApiMessage{connID: connID, sessionId: c.sessionId, rpcMessage: apiMessage})
 }
 
+// 客户端连接事件
+func (c *clientSession) onSessionClientConnected() {
+	//c.clientSession = &clientSession{conn, sessionID}
+	if c.clientState == kStateOffline {
+		glog.Infof("onSessionClientConnected: ", c)
+		c.clientState = kStateOnline
+		c.closeSessionDate = 0
+		c.closeDate = time.Now().Unix() + kDefaultPingTimeout + kPingAddTimeout
+		if c.synced && c.connType == GENERIC{
+			// TODO(@benqi): push sync data
+			syncReq := &mtproto.NewUpdatesRequest{
+				AuthKeyId: c.manager.authKeyId,
+				UserId:    c.manager.AuthUserId,
+			}
+
+			updates, err := c.manager.syncRpcClient.GetNewUpdatesData(context.Background(), syncReq)
+			if err != nil {
+				glog.Error(err)
+				// return nil, false
+			} else {
+				glog.Info("getNewUpdatesData: ", updates)
+				if len(updates.GetData2().Updates) > 0 {
+					c.onSyncData(c.clientConnID, &mtproto.ZProtoMetadata{}, updates)
+				}
+			}
+		}
+	}
+}
+
+func (c *clientSession) onCloseSessionClient() {
+	if c.clientState == kStateOnline {
+		glog.Infof("onCloseSessionClient: ", c)
+		c.clientState = kStateOffline
+		c.closeSessionDate = time.Now().Unix() + 3600
+	}
+}

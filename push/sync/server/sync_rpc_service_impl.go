@@ -137,7 +137,11 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 			switch updates.GetPushType() {
 			case mtproto.SyncType_SYNC_TYPE_USER_NOTME:
 				if updates.GetSessionId() != ss4.SessionId {
-					continue
+					// continue
+					// TODO(@benqi): move to received ack handler
+					if state.Pts != 0 {
+						update3.UpdateServerAuthStateSeq(ss4.AuthKeyId, state.Pts, state.Qts)
+					}
 					encodeUpdateData()
 				} else {
 					continue
@@ -150,6 +154,10 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 					continue
 				}
 			case mtproto.SyncType_SYNC_TYPE_USER:
+				// TODO(@benqi): move to received ack handler
+				if state.Pts != 0 {
+					update3.UpdateServerAuthStateSeq(ss4.AuthKeyId, state.Pts, state.Qts)
+				}
 				encodeUpdateData()
 			case mtproto.SyncType_SYNC_TYPE_RPC_RESULT:
 				if updates.GetSessionId() == ss4.SessionId {
@@ -317,6 +325,9 @@ func (s *SyncServiceImpl) SyncUpdatesData(ctx context.Context, request *mtproto.
 
 	reply, err = processUpdatesRequest(request)
 	if err == nil {
+		if reply.Pts != 0 {
+			update3.UpdateServerAuthStateSeq(request.AuthKeyId, reply.Pts, reply.Qts)
+		}
 		s.pushUpdatesToSession(reply, request)
 		glog.Infof("syncUpdatesData - reply: %s", logger.JsonDebugData(reply))
 	} else {
@@ -333,6 +344,9 @@ func (s *SyncServiceImpl) PushUpdatesData(ctx context.Context, request *mtproto.
 	var state *mtproto.ClientUpdatesState
 	state, err = processUpdatesRequest(request)
 	if err == nil {
+		if state.Pts != 0 {
+			update3.UpdateServerAuthStateSeq(request.AuthKeyId, state.Pts, state.Qts)
+		}
 		s.pushUpdatesToSession(state, request)
 		glog.Infof("syncUpdatesData - reply: %s", logger.JsonDebugData(state))
 		reply = &mtproto.VoidRsp{}
@@ -347,3 +361,27 @@ func (s *SyncServiceImpl) PushUpdatesData(ctx context.Context, request *mtproto.
 //func (s *SyncServiceImpl) PushUpdatesDataList(ctx context.Context, request *mtproto.UpdatesListRequest) (reply *mtproto.VoidRsp, err error) {
 //	return
 //}
+
+// rpc GetNewUpdatesData(NewUpdatesRequest) returns (Updates);
+func (s *SyncServiceImpl) GetNewUpdatesData(ctx context.Context, request *mtproto.NewUpdatesRequest) (reply *mtproto.Updates, err error) {
+	glog.Infof("getNewUpdatesData - request: {%v}", request)
+
+	state := update3.GetUpdatesState2(request.GetAuthKeyId(), request.GetUserId())
+	updateList := update3.GetUpdateListByGtPts(request.UserId, state.GetPts())
+	glog.Info("getNewUpdatesData - state: ", state, ", updates: ", updateList)
+	updatesData := []*mtproto.Update{}
+	for _, u := range updateList {
+		updatesData = append(updatesData, u)
+	}
+
+	reply = &mtproto.Updates{Constructor: mtproto.TLConstructor_CRC32_updates, Data2: &mtproto.Updates_Data{
+		Updates: updatesData,
+		Users:   []*mtproto.User{},
+		Chats:   []*mtproto.Chat{},
+		Date:    int32(time.Now().Unix()),
+		Seq:     0,
+	}}
+
+	glog.Infof("getNewUpdatesData - reply: %s", logger.JsonDebugData(reply))
+	return
+}

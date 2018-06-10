@@ -142,9 +142,18 @@ message UpdatesRequest {
 //    repeated UpdatesRequest updates_list = 1;
 //}
 
+///////////////////////////////////////////////////////////////////////
+message NewUpdatesRequest {
+    int64 auth_key_id = 1;
+    int32 user_id = 2;
+}
+
+// func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *mtproto.TLUpdatesGetDifference) (*mtproto.Updates_Difference, error) {
+
 // Interface exported by the server.
 service RPCSync {
     rpc SyncUpdatesData(UpdatesRequest) returns (ClientUpdatesState);
     rpc PushUpdatesData(UpdatesRequest) returns (VoidRsp);
-    // rpc PushUpdatesDataList(UpdatesListRequest) returns (VoidRsp);
+    // PushUpdatesDataList(UpdatesListRequest) returns (VoidRsp);
+    rpc GetNewUpdatesData(NewUpdatesRequest) returns (Updates);
 }

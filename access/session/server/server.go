@@ -63,6 +63,7 @@ type SessionConfig struct {
 	AuthKeyRpcClient service_discovery.ServiceDiscoveryClientConfig
 	BizRpcClient     service_discovery.ServiceDiscoveryClientConfig
 	NbfsRpcClient    service_discovery.ServiceDiscoveryClientConfig
+	SyncRpcClient    service_discovery.ServiceDiscoveryClientConfig
 	Server           ServerConfig
 	Discovery        service_discovery.ServiceDiscoveryServerConfig
 }
@@ -74,6 +75,7 @@ type SessionServer struct {
 	client         *net2.TcpClientGroupManager
 	bizRpcClient   *grpc_util.RPCClient
 	nbfsRpcClient  *grpc_util.RPCClient
+	syncRpcClient  mtproto.RPCSyncClient
 	sessionManager *sessionManager
 	syncHandler    *syncHandler
 	registry       *etcd3.EtcdReigistry
@@ -145,6 +147,10 @@ func (s *SessionServer) RunLoop() {
 
 	s.bizRpcClient, _ = grpc_util.NewRPCClient(&s.config.BizRpcClient)
 	s.nbfsRpcClient, _ = grpc_util.NewRPCClient(&s.config.NbfsRpcClient)
+	c, _ := grpc_util.NewRPCClient(&s.config.SyncRpcClient)
+	s.syncRpcClient = mtproto.NewRPCSyncClient(c.GetClientConn())
+	// client: mtproto.NewZRPCAuthKeyClient(conn),
+
 	go s.registry.Register()
 	go s.server.Serve()
 	// go s.client.Serve()
