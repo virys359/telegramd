@@ -36367,7 +36367,7 @@ func (m *PhotoSize) Encode() []byte {
 		return t.Encode()
 
 	default:
-		glog.Error("Constructor error: ", m.GetConstructor())
+		glog.Error("Constructor error: ", m.GetConstructor(), ", m: ", m)
 		return nil
 	}
 }

@@ -219,7 +219,7 @@ func updateShortChatMessageToMessage(shortMessage *mtproto.TLUpdateShortChatMess
 		Silent:       shortMessage.GetSilent(),
 		Id:           shortMessage.GetId(),
 		FromId:       shortMessage.GetFromId(),
-		ToId:         &mtproto.Peer{Constructor: mtproto.TLConstructor_CRC32_peerChat, Data2: &mtproto.Peer_Data{UserId: shortMessage.GetChatId()}},
+		ToId:         &mtproto.Peer{Constructor: mtproto.TLConstructor_CRC32_peerChat, Data2: &mtproto.Peer_Data{ChatId: shortMessage.GetChatId()}},
 		Message:      shortMessage.GetMessage(),
 		Date:         shortMessage.GetDate(),
 		FwdFrom:      shortMessage.GetFwdFrom(),
