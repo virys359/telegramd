@@ -129,7 +129,7 @@ func (c *clientSession) onTimer() bool {
 	}
 
 	if date >= c.closeDate {
-		glog.Infof("onClose: {date: %d, c: {%v}}", date, c)
+		// glog.Infof("onClose: {date: %d, c: {%v}}", date, c)
 		c.onCloseSessionClient()
 	}
 

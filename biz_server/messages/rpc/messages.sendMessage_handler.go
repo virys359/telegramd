@@ -104,12 +104,32 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
 	})
 
-	shortMessage := message2.MessageToUpdateShortMessage(outboxMessage.To_Message())
-	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
+
+	var state *mtproto.ClientUpdatesState
+
+	switch peer.PeerType {
+	case base.PEER_USER:
+		shortMessage := message2.MessageToUpdateShortMessage(outboxMessage.To_Message())
+		state, err = sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
+	case base.PEER_CHAT:
+		shortMessage := message2.MessageToUpdateShortChatMessage(outboxMessage.To_Message())
+		state, err = sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
+	case base.PEER_CHANNEL:
+		// TODO(@benqi): Impl channel
+	default:
+	}
+
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
+
+	//shortMessage := message2.MessageToUpdateShortMessage(outboxMessage.To_Message())
+	//state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//}
 
 	// 返回给客户端
 	sentMessage = message2.MessageToUpdateShortSentMessage(outboxMessage.To_Message())

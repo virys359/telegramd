@@ -253,9 +253,12 @@ func CheckAndFixAuthUpdateSeq(authKeyId int64, userId int32) {
 			AuthKeyId: authKeyId,
 			UserId:    userId,
 			Pts:       0,
+			Pts2:      0,
 			Qts:       0,
+			Qts2:      0,
 			Seq:       -1,
-			Date2:     int32(time.Now().Unix()),
+			Seq2:      -1,
+			Date:      int32(time.Now().Unix()),
 		}
 		dao.GetAuthUpdatesStateDAO(dao.DB_MASTER).Insert(do)
 	}
