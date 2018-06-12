@@ -171,10 +171,10 @@ func (m *TLGzipPacked) Decode(dbuf *DecodeBuf) error {
 	b := make([]byte, 4096)
 	for true {
 		n, _ := gz.Read(b)
-		m.PackedData = append(m.PackedData, b[0:n]...)
 		if n <= 0 {
 			break
 		}
+		m.PackedData = append(m.PackedData, b[0:n]...)
 	}
 
 	return dbuf.err

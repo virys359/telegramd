@@ -30,7 +30,7 @@ import (
 // messages.setTyping#a3825e50 peer:InputPeer action:SendMessageAction = Bool;
 func (s *MessagesServiceImpl) MessagesSetTyping(ctx context.Context, request *mtproto.TLMessagesSetTyping) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesSetTyping - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.setTyping#a3825e50 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	peer := base.FromInputPeer(request.GetPeer())
 	if peer.PeerType == base.PEER_SELF || peer.PeerType == base.PEER_USER {
@@ -43,6 +43,6 @@ func (s *MessagesServiceImpl) MessagesSetTyping(ctx context.Context, request *mt
 		// 其他的不需要推送
 	}
 
-	glog.Info("MessagesSetTyping - reply: {true}")
+	glog.Info("messages.setTyping#a3825e50 - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

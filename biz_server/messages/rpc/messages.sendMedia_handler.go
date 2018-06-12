@@ -77,6 +77,29 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 			TtlSeconds: uploadedPhoto.GetTtlSeconds(),
 		}}
 		return messageMedia.To_MessageMedia()
+
+	case mtproto.TLConstructor_CRC32_inputMediaPhoto:
+		//inputPhotoEmpty#1cd7bf0d = InputPhoto;
+		// inputPhoto#fb95c6c4 id:long access_hash:long = InputPhoto;
+		//inputMediaPhoto#81fa373a flags:# id:InputPhoto caption:string ttl_seconds:flags.0?int = InputMedia;
+		mediaPhoto := media.To_InputMediaPhoto()
+		sizeList, _ := nbfs_client.GetPhotoSizeList(mediaPhoto.GetId().GetData2().GetId())
+
+		photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
+			Id:          mediaPhoto.GetId().GetData2().GetId(),
+			HasStickers: false,
+			AccessHash:  mediaPhoto.GetId().GetData2().GetAccessHash(),
+			// result.AccessHash, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+			Date:        now,
+			Sizes:       sizeList,
+		}}
+
+		messageMedia := &mtproto.TLMessageMediaPhoto{Data2: &mtproto.MessageMedia_Data{
+			Photo_1:    photo.To_Photo(),
+			Caption:    mediaPhoto.GetCaption(),
+			TtlSeconds: mediaPhoto.GetTtlSeconds(),
+		}}
+		return messageMedia.To_MessageMedia()
 	case mtproto.TLConstructor_CRC32_inputMediaGeoPoint:
 		// messageMediaGeo#56e0d474 geo:GeoPoint = MessageMedia;
 		messageMedia := &mtproto.TLMessageMediaGeo{Data2: &mtproto.MessageMedia_Data{

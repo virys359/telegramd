@@ -44973,7 +44973,11 @@ func (m *TLInvokeAfterMsg) Decode(dbuf *DecodeBuf) error {
 	m.MsgId = dbuf.Long()
 	// TODO(@benqi): 暂时这么做，估计还是使用Any类型比较好
 	o2 := dbuf.Object()
-	m.Query = o2.Encode()
+	if z, ok := o2.(*TLGzipPacked); ok {
+		m.Query = z.PackedData
+	} else {
+		m.Query = o2.Encode()
+	}
 
 	return dbuf.err
 }
