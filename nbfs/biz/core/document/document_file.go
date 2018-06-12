@@ -102,6 +102,9 @@ func makeDocumentByDO(do *dataobject.DocumentsDO) *mtproto.Document {
 				thumb = sizeList[0]
 			}
 		}
+		if thumb == nil {
+			thumb = mtproto.NewTLPhotoSizeEmpty().To_PhotoSize()
+		}
 
 		attributes := &mtproto.DocumentAttributeList{}
 		err := json.Unmarshal([]byte(do.Attributes), attributes)
