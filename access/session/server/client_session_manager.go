@@ -117,8 +117,8 @@ func newClientSessionManager(authKeyId int64, authKey []byte, userId int32) *cli
 		nbfsRPCClient:   nbfsRPCClient,
 		syncRpcClient:	 syncRpcClient,
 		closeChan:       make(chan struct{}),
-		sessionDataChan: make(chan interface{}),
-		rpcDataChan:     make(chan interface{}),
+		sessionDataChan: make(chan interface{}, 1024),
+		rpcDataChan:     make(chan interface{}, 1024),
 		rpcQueue:        queue2.NewSyncQueue(),
 		finish:          sync.WaitGroup{},
 	}

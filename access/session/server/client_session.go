@@ -1046,6 +1046,7 @@ func (c *clientSession) onRpcRequest(connID ClientConnID, md *mtproto.ZProtoMeta
 		rpcRequest: requestMessage,
 		state:      kNetworkMessageStateReceived,
 	}
+	glog.Info("onRpcRequest - ", apiMessage)
 	// c.apiMessages = append(c.apiMessages, apiMessage)
 	c.apiMessages.PushBack(apiMessage)
 	c.manager.rpcQueue.Push(&rpcApiMessage{connID: connID, sessionId: c.sessionId, rpcMessage: apiMessage})
