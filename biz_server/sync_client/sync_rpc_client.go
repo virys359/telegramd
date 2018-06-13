@@ -69,6 +69,26 @@ func (c *syncClient) SyncOneUpdateData2(serverId int32, authKeyId, sessionId int
 	return
 }
 
+func (c *syncClient) SyncOneUpdateData3(serverId int32, authKeyId, sessionId int64, pushUserId int32, clientMsgId int64, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
+	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{update},
+	}}
+
+	m := &mtproto.UpdatesRequest{
+		PushType:    mtproto.SyncType_SYNC_TYPE_RPC_RESULT,
+		ServerId:    serverId,
+		AuthKeyId:   authKeyId,
+		SessionId:   sessionId,
+		PushUserId:  pushUserId,
+		ClientMsgId: clientMsgId,
+		Updates:     updates.To_Updates(),
+		RpcResult:   &mtproto.RpcResultData{
+			AffectedHistory: mtproto.NewTLMessagesAffectedHistory(),
+		},
+	}
+	reply, err = c.client.SyncUpdatesData(context.Background(), m)
+	return
+}
 
 func (c *syncClient) SyncOneUpdateData(authKeyId, sessionId int64, pushUserId int32, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
 	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{

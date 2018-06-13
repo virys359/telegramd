@@ -950,7 +950,11 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_help_getInviteTextLayer46):  func() TLObject { return NewTLHelpGetInviteTextLayer46() },
 
 	// Layer68
-	int32(TLConstructor_CRC32_messages_searchLayer68):  func() TLObject { return NewTLMessagesSearch() },
+	int32(TLConstructor_CRC32_messages_searchLayer68):  func() TLObject { return NewTLMessagesSearchLayer68() },
+
+	// Layer2
+	int32(TLConstructor_CRC32_messages_readHistoryLayer2):  func() TLObject { return NewTLMessagesReadHistoryLayer2() },
+
 }
 
 func NewTLObjectByClassID(classId int32) TLObject {

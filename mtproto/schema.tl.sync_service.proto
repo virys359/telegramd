@@ -582,6 +582,15 @@ message TL_messages_readHistory {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// messages.readHistory#b04f2510 peer:InputPeer max_id:int offset:int = messages.AffectedHistory;
+// Layer2
+message TL_messages_readHistoryLayer2 {
+    InputPeer peer = 1;
+    int32 max_id = 2;
+    int32 offset = 3;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // messages.deleteHistory#1c015b09 flags:# just_clear:flags.0?true peer:InputPeer max_id:int = messages.AffectedHistory;
 message TL_messages_deleteHistory {
     bool just_clear = 2;
@@ -2128,6 +2137,8 @@ service RPCMessages {
     rpc messages_searchLayer68(TL_messages_searchLayer68) returns (messages_Messages) {}
 // messages.readHistory#e306d3a peer:InputPeer max_id:int = messages.AffectedMessages;
     rpc messages_readHistory(TL_messages_readHistory) returns (messages_AffectedMessages) {}
+// messages.readHistory#b04f2510 peer:InputPeer max_id:int offset:int = messages.AffectedHistory;
+    rpc messages_readHistoryLayer2(TL_messages_readHistoryLayer2) returns (messages_AffectedHistory) {}
 // messages.deleteHistory#1c015b09 flags:# just_clear:flags.0?true peer:InputPeer max_id:int = messages.AffectedHistory;
     rpc messages_deleteHistory(TL_messages_deleteHistory) returns (messages_AffectedHistory) {}
 // messages.deleteMessages#e58e95d2 flags:# revoke:flags.0?true id:Vector<int> = messages.AffectedMessages;
