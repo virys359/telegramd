@@ -44,6 +44,6 @@ func (c *TestCodec) Close() error {
 }
 
 func (c *TestCodec) ClearSendChan(i <-chan interface{}){
-	fmt.Println(`______________________________ClearSendChan_________________`)
+	fmt.Println(`ـــClearSendChanـــ`)
 }
 
