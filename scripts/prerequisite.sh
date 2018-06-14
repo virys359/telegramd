@@ -13,6 +13,11 @@ docker run --name mysql-docker -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -d
 echo "run redis-docker..."
 docker run --name redis-docker -p 6379:6379 -d redis
 echo "clone telegramd..."
-mkdir ${GOPATH}/src/github.com/nebulaim2/
-cd ${GOPATH}/src/github.com/nebulaim2/
+mkdir ${GOPATH}/src/github.com/nebulaim/
+cd ${GOPATH}/src/github.com/nebulaim/
 git clone https://github.com/nebulaim/telegramd.git
+
+echo "create db schema ..."
+docker exec -it mysql-docker sh -c 'exec mysql -u root -p -e"CREATE DATABASE nebulaim;"'
+docker exec -i mysql-docker mysql --user=root nebulaim < ${GOPATH}/src/github.com/nebulaim/telegramd/scripts/nebulaim.sql
+echo "OK"

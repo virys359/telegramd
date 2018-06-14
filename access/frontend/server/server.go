@@ -61,7 +61,7 @@ func newTcpServer(config *ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tc
 		ProtoName:          config.ProtoName,
 		SendChanSize:       1024,
 		ConnectionCallback: cb,
-	}) // todo(omid): set max connection
+	}) // todo(yumcoder): set max connection
 	return server, nil
 }
 

@@ -18,32 +18,8 @@
 package base
 
 import (
-	"database/sql/driver"
 	"time"
 )
-
-// Time be used to MySql timestamp converting.
-type Time int64
-
-func (t *Time) Scan(src interface{}) (err error) {
-	switch sc := src.(type) {
-	case time.Time:
-		*t = Time(sc.Unix())
-	case string:
-		var i int64
-		i, err = StringToInt64(sc)
-		*t = Time(i)
-	}
-	return
-}
-
-func (t Time) Value() (driver.Value, error) {
-	return time.Unix(int64(t), 0), nil
-}
-
-func (t Time) Time() time.Time {
-	return time.Unix(int64(t), 0)
-}
 
 // Duration be used toml unmarshal string time, like 1s, 500ms.
 type Duration time.Duration
