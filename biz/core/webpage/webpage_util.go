@@ -23,26 +23,82 @@ import (
 	"net/http"
 	"io/ioutil"
 	"regexp"
+	"net/url"
+	"github.com/golang/glog"
+	"math/rand"
 )
 
 // webPage#5f07b4bc flags:# id:long url:string display_url:string hash:int type:flags.0?string site_name:flags.1?string title:flags.2?string description:flags.3?string photo:flags.4?Photo embed_url:flags.5?string embed_type:flags.5?string embed_width:flags.6?int embed_height:flags.6?int duration:flags.7?int author:flags.8?string document:flags.9?Document cached_page:flags.10?Page = WebPage;
-func GetWebPagePreview(url string) *mtproto.WebPage {
-	// var webpage = mtproto.NewTLWebPage()
-	// mediaWebPage = mtproto.NewTLMessageMediaWebPage()
-	// siteName, title, description, image
+func GetWebPagePreview(rawurl string) *mtproto.WebPage {
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		glog.Warning("getWebPagePreview error - ", err)
+		return mtproto.NewTLWebPageEmpty().To_WebPage()
+	}
 
-	// ogContentList := GetWebpageOgList("")
-	return nil
+	glog.Info(u)
+	// ogParams := []string{"image", "site_name", "title", "description", "url"}
+	ogContents := GetWebpageOgList(u.String(), []string{"image", "site_name", "title", "description", "url"})
+	glog.Info("ogContents - ", ogContents)
+
+	if len(ogContents) == 0 {
+		return mtproto.NewTLWebPageEmpty().To_WebPage()
+	} else {
+		var webPage = mtproto.NewTLWebPage()
+
+		// TODO(@benqi): save to db
+		webPage.SetId(rand.Int63())
+		webPage.SetUrl(rawurl)
+		webPage.SetDisplayUrl(u.String()[len(u.Scheme)+3:])
+		webPage.SetType("article")
+		webPage.Data2.Title, _ = ogContents["title"]
+		webPage.Data2.SiteName, _ = ogContents["site_name"]
+		webPage.Data2.Description, _ = ogContents["description"]
+
+		var imageBody = []byte{}
+
+		rawImageUrl, _ := ogContents["image"]
+		if rawImageUrl != "" {
+			// var  *http.Response
+			resp, err := http.Get(rawImageUrl)
+			if err != nil {
+				glog.Warning("get image body error - ", err)
+			} else {
+				imageBody, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					glog.Warning("read image body error - ", imageBody)
+				}
+			}
+		} else {
+			glog.Warning("image empty")
+		}
+
+		if len(imageBody) == 0 {
+			// webPage.SetPhoto(mtproto.NewTLPhotoEmpty().To_Photo())
+		} else {
+			// TODO(@benqi): gen photo
+			// 1. upload photo
+			// 2. getPhoto
+			// webPage.SetPhoto(mtproto.NewTLPhotoEmpty().To_Photo())
+		}
+
+		// webPage.SetPhoto(mtproto.NewTLPhotoEmpty().To_Photo())
+
+		// TODO(@benqi): image ==> photoSize
+		return webPage.To_WebPage()
+	}
 }
 
 // author @Will
 func GetWebpageOgList(url string, ogParams []string) map[string]string {
 	resp, err := http.Get(url)
 	if err != nil {
+		glog.Info("get url error - ", err)
 		return nil
 	}
 	contentBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		glog.Info("contentBytes error - ", err)
 		return nil
 	}
 	return GetWebpageOgListFromContent(string(contentBytes), ogParams)
@@ -59,16 +115,17 @@ func GetWebpageOgListFromContent(content string, ogParams []string) map[string]s
 		allParams[k] = v
 	}
 
-	if ogParams == nil {
-		return allParams
-	}
-	res := make(map[string]string)
-	for _, k := range ogParams {
-		if v, ok := allParams[k]; ok {
-			res[k] = v
-		} else {
-			res[k] = ""
-		}
-	}
-	return res
+	return allParams
+	//if ogParams == nil {
+	//	return allParams
+	//}
+	//res := make(map[string]string)
+	//for _, k := range ogParams {
+	//	if v, ok := allParams[k]; ok {
+	//		res[k] = v
+	//	} else {
+	//		res[k] = ""
+	//	}
+	//}
+	//return res
 }

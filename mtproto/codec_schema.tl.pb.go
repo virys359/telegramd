@@ -6516,7 +6516,11 @@ func (m *TLMessage) Encode() []byte {
 		x.Bytes(m.GetReplyMarkup().Encode())
 	}
 	if m.GetEntities() != nil {
-
+		x.Int(int32(TLConstructor_CRC32_vector))
+		x.Int(int32(len(m.GetEntities())))
+		for _, v := range m.GetEntities() {
+			x.buf = append(x.buf, (*v).Encode()...)
+		}
 	}
 	if m.GetViews() != 0 {
 		x.Int(m.GetViews())
@@ -6583,7 +6587,18 @@ func (m *TLMessage) Decode(dbuf *DecodeBuf) error {
 		m.SetReplyMarkup(m16)
 	}
 	if (flags & (1 << 7)) != 0 {
-
+		c1 := dbuf.Int()
+		if c1 != int32(TLConstructor_CRC32_vector) {
+			dbuf.err = fmt.Errorf("Invalid CRC32_vector, c%d: %d", 1, c1)
+			return dbuf.err
+		}
+		l1 := dbuf.Int()
+		v1 := make([]*MessageEntity, l1)
+		for i := int32(0); i < l1; i++ {
+			v1[i] = &MessageEntity{}
+			v1[i].Decode(dbuf)
+		}
+		m.SetEntities(v1)
 	}
 	if (flags & (1 << 10)) != 0 {
 		m.SetViews(dbuf.Int())
