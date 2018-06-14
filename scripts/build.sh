@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# todo(yumcoder) change dc ip
+# sed -i '/ipAddress = /c\ipAddress = 127.0.0.1' a.txt
+# todo(yumcoder) change folder path for nbfs
+
 docker start mysql-docker redis-docker etcd-docker
 
 telegramd="$GOPATH/src/github.com/nebulaim/telegramd"
