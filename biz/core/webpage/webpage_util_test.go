@@ -15,18 +15,28 @@
  * limitations under the License.
  */
 
-package base
+package webpage
 
 import (
 	"testing"
-	// "github.com/ttacon/libphonenumber"
-	// "fmt"
+	"fmt"
+	"net/url"
 )
 
-func TestCheckPhoneNumber(t *testing.T) {
-	// _, err := libphonenumber.Parse("+4085555270", "")
-
-	// 9891651761xx
-	// phone, err := CheckAndGetPhoneNumberByRegion("+86 136 0000 0000")
-	// fmt.Println(phone, err)
+func TestGetWebpageOgList(t *testing.T) {
+	ogContents := GetWebpageOgList("https://github.com/nebulaim/telegramd", []string{"image", "site_name", "title", "description"})
+	fmt.Println(ogContents)
 }
+
+func TestUrlParser(t *testing.T) {
+	var (
+		u *url.URL
+		err error
+	)
+
+	u, err = url.Parse("aaaa")
+	fmt.Println(u, err)
+	u, err = url.Parse("https://github.com/nebulaim/telegramd")
+	fmt.Println(u, err)
+}
+

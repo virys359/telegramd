@@ -32,6 +32,11 @@ serviceName = "nbfs"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
 
+[syncRpcClient]
+serviceName = "sync"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
 [[redis]]
 name = "cache"
 addr = "127.0.0.1:6379"

@@ -93,7 +93,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 			} else if rpcResultData.GetAffectedHistory() != nil {
 				rpcResultData.GetAffectedHistory().SetPts(state.Pts)
 				rpcResultData.GetAffectedHistory().SetPtsCount(state.PtsCount)
-				rpcResult.Result = rpcResultData.GetAffectedMessages()
+				rpcResult.Result = rpcResultData.GetAffectedHistory()
 			} else {
 				rpcResult.Result = rpcResultData.GetUpdates()
 			}

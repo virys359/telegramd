@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-package base
+package dataobject
 
-import (
-	"testing"
-	// "github.com/ttacon/libphonenumber"
-	// "fmt"
-)
-
-func TestCheckPhoneNumber(t *testing.T) {
-	// _, err := libphonenumber.Parse("+4085555270", "")
-
-	// 9891651761xx
-	// phone, err := CheckAndGetPhoneNumberByRegion("+86 136 0000 0000")
-	// fmt.Println(phone, err)
+type ChannelsDO struct {
+	Id               int32  `db:"id"`
+	CreatorUserId    int32  `db:"creator_user_id"`
+	AccessHash       int64  `db:"access_hash"`
+	RandomId         int64  `db:"random_id"`
+	ParticipantCount int32  `db:"participant_count"`
+	Title            string `db:"title"`
+	PhotoId          int64  `db:"photo_id"`
+	AdminsEnabled    int8   `db:"admins_enabled"`
+	Deactivated      int8   `db:"deactivated"`
+	Version          int32  `db:"version"`
+	Date             int32  `db:"date"`
+	CreatedAt        string `db:"created_at"`
+	UpdatedAt        string `db:"updated_at"`
 }

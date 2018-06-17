@@ -18,20 +18,24 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	webpage2 "github.com/nebulaim/telegramd/biz/core/webpage"
 )
 
 // messages.getWebPagePreview#25223e24 message:string = MessageMedia;
 func (s *MessagesServiceImpl) MessagesGetWebPagePreview(ctx context.Context, request *mtproto.TLMessagesGetWebPagePreview) (*mtproto.MessageMedia, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetWebPagePreview - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getWebPagePreview#25223e24 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetWebPagePreview logic
+	webpage := webpage2.GetWebPagePreview(request.Message)
+	media := &mtproto.TLMessageMediaWebPage{Data2: &mtproto.MessageMedia_Data{
+		Webpage: webpage,
+	}}
 
-	return nil, fmt.Errorf("Not impl MessagesGetWebPagePreview")
+	glog.Infof("messages.getWebPagePreview#25223e24 - reply: %s\n", logger.JsonDebugData(media))
+	return media.To_MessageMedia(), nil
 }

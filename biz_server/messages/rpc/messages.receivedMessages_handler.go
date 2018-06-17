@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
@@ -29,9 +28,8 @@ import (
 // messages.receivedMessages#5a954c0 max_id:int = Vector<ReceivedNotifyMessage>;
 func (s *MessagesServiceImpl) MessagesReceivedMessages(ctx context.Context, request *mtproto.TLMessagesReceivedMessages) (*mtproto.Vector_ReceivedNotifyMessage, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesReceivedMessages - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.receivedMessages#5a954c0 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesReceivedMessages logic
-
-	return nil, fmt.Errorf("Not impl MessagesReceivedMessages")
+	// @benai: android client and tdesktop 未使用
+	return &mtproto.Vector_ReceivedNotifyMessage{Datas: []*mtproto.ReceivedNotifyMessage{}}, nil
 }

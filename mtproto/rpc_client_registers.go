@@ -144,6 +144,7 @@ var rpcContextRegisters = map[string]RPCContextTuple{
 	"TLChannelsGetMessages":                RPCContextTuple{"/mtproto.RPCChannels/channels_getMessages", func() interface{} { return new(Messages_Messages) }},
 	"TLMessagesGetDialogs":                 RPCContextTuple{"/mtproto.RPCMessages/messages_getDialogs", func() interface{} { return new(Messages_Dialogs) }},
 	"TLMessagesReadHistory":                RPCContextTuple{"/mtproto.RPCMessages/messages_readHistory", func() interface{} { return new(Messages_AffectedMessages) }},
+	"TLMessagesReadHistoryLayer2":          RPCContextTuple{"/mtproto.RPCMessages/messages_readHistoryLayer2", func() interface{} { return new(Messages_AffectedMessages) }},
 	"TLMessagesDeleteMessages":             RPCContextTuple{"/mtproto.RPCMessages/messages_deleteMessages", func() interface{} { return new(Messages_AffectedMessages) }},
 	"TLMessagesReadMessageContents":        RPCContextTuple{"/mtproto.RPCMessages/messages_readMessageContents", func() interface{} { return new(Messages_AffectedMessages) }},
 	"TLChannelsDeleteMessages":             RPCContextTuple{"/mtproto.RPCChannels/channels_deleteMessages", func() interface{} { return new(Messages_AffectedMessages) }},

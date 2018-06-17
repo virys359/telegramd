@@ -119,12 +119,12 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 	 */
 
  	dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
-	glog.Infof("dialogs - {%v}", dialogs)
+	// glog.Infof("dialogs - {%v}", dialogs)
 
 	messageIdList, userIdList, chatIdList, _ := message.PickAllIDListByDialogs(dialogs)
 
 	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
-	glog.Info("messages.getDialogs#191ba9c5 - messages: %s", logger.JsonDebugData(messages))
+	// glog.Info("messages.getDialogs#191ba9c5 - messages: %s", logger.JsonDebugData(messages))
 
 	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
 	chats := chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)

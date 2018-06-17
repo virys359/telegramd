@@ -18,7 +18,7 @@
 package rpc
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
@@ -29,9 +29,13 @@ import (
 // messages.uploadMedia#519bc2b1 peer:InputPeer media:InputMedia = MessageMedia;
 func (s *MessagesServiceImpl) MessagesUploadMedia(ctx context.Context, request *mtproto.TLMessagesUploadMedia) (*mtproto.MessageMedia, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesUploadMedia - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.uploadMedia#519bc2b1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesUploadMedia logic
+	messageMedia := makeMediaByInputMedia(md.AuthId, request.GetMedia())
 
-	return nil, fmt.Errorf("Not impl MessagesUploadMedia")
+	//// TODO(@benqi): Impl MessagesUploadMedia logic
+	//return nil, fmt.Errorf("Not impl MessagesUploadMedia")
+
+	glog.Infof("messages.uploadMedia#519bc2b1 - reply: %s", logger.JsonDebugData(messageMedia))
+	return messageMedia, nil
 }

@@ -1164,6 +1164,7 @@ It has these top-level messages:
 	TLMessagesSearch
 	TLMessagesSearchLayer68
 	TLMessagesReadHistory
+	TLMessagesReadHistoryLayer2
 	TLMessagesDeleteHistory
 	TLMessagesDeleteMessages
 	TLMessagesReceivedMessages

@@ -950,7 +950,11 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_help_getInviteTextLayer46):  func() TLObject { return NewTLHelpGetInviteTextLayer46() },
 
 	// Layer68
-	int32(TLConstructor_CRC32_messages_searchLayer68):  func() TLObject { return NewTLMessagesSearch() },
+	int32(TLConstructor_CRC32_messages_searchLayer68):  func() TLObject { return NewTLMessagesSearchLayer68() },
+
+	// Layer2
+	int32(TLConstructor_CRC32_messages_readHistoryLayer2):  func() TLObject { return NewTLMessagesReadHistoryLayer2() },
+
 }
 
 func NewTLObjectByClassID(classId int32) TLObject {
@@ -6512,7 +6516,11 @@ func (m *TLMessage) Encode() []byte {
 		x.Bytes(m.GetReplyMarkup().Encode())
 	}
 	if m.GetEntities() != nil {
-
+		x.Int(int32(TLConstructor_CRC32_vector))
+		x.Int(int32(len(m.GetEntities())))
+		for _, v := range m.GetEntities() {
+			x.buf = append(x.buf, (*v).Encode()...)
+		}
 	}
 	if m.GetViews() != 0 {
 		x.Int(m.GetViews())
@@ -6579,7 +6587,18 @@ func (m *TLMessage) Decode(dbuf *DecodeBuf) error {
 		m.SetReplyMarkup(m16)
 	}
 	if (flags & (1 << 7)) != 0 {
-
+		c1 := dbuf.Int()
+		if c1 != int32(TLConstructor_CRC32_vector) {
+			dbuf.err = fmt.Errorf("Invalid CRC32_vector, c%d: %d", 1, c1)
+			return dbuf.err
+		}
+		l1 := dbuf.Int()
+		v1 := make([]*MessageEntity, l1)
+		for i := int32(0); i < l1; i++ {
+			v1[i] = &MessageEntity{}
+			v1[i].Decode(dbuf)
+		}
+		m.SetEntities(v1)
 	}
 	if (flags & (1 << 10)) != 0 {
 		m.SetViews(dbuf.Int())
@@ -44973,7 +44992,11 @@ func (m *TLInvokeAfterMsg) Decode(dbuf *DecodeBuf) error {
 	m.MsgId = dbuf.Long()
 	// TODO(@benqi): 暂时这么做，估计还是使用Any类型比较好
 	o2 := dbuf.Object()
-	m.Query = o2.Encode()
+	if z, ok := o2.(*TLGzipPacked); ok {
+		m.Query = z.PackedData
+	} else {
+		m.Query = o2.Encode()
+	}
 
 	return dbuf.err
 }

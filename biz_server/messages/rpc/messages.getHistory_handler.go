@@ -106,6 +106,8 @@ import (
 
  */
 
+// request: {"peer":{"constructor":2072935910,"data2":{"user_id":5,"access_hash":1006843769775067136}},"offset_id":1,"add_offset":-25,"limit":50}
+
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
 // messages.getHistory#dcbb8260 peer:InputPeer offset_id:int offset_date:int add_offset:int limit:int max_id:int min_id:int hash:int = messages.Messages;
@@ -145,6 +147,13 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 				// 降序
 				messages2 := message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
 				messages = append(messages, messages2...)
+
+				// @benqi: why??????
+				if addOffset == -limit / 2 {
+					for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+						messages[i], messages[j] = messages[j], messages[i]
+					}
+				}
 			}
 		} else {
 			// 降序
