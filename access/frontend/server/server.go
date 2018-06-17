@@ -132,15 +132,15 @@ func (ctx *connContext) encryptedMessageAble() bool {
 }
 
 type FrontendServer struct {
-	configPath           string
-	config               *FrontendConfig
-	server80             *net2.TcpServer
-	server443            *net2.TcpServer
-	server5222           *net2.TcpServer
-	client               *net2.TcpClientGroupManager
-	clientWatcher        *watcher2.ClientWatcher
-	ketama               *load_balancer.Ketama
-	authKeyClient        *net2.TcpClientGroupManager
+	configPath     string
+	config         *FrontendConfig
+	server80       *net2.TcpServer
+	server443      *net2.TcpServer
+	server5222     *net2.TcpServer
+	clientManager  *net2.TcpClientGroupManager
+	sessionWatcher *watcher2.ClientWatcher
+	ketama         *load_balancer.Ketama
+	//authKeyClient        *net2.TcpClientGroupManager
 	authKeyClientWatcher *watcher2.ClientWatcher
 }
 
@@ -192,20 +192,20 @@ func (s *FrontendServer) Initialize() error {
 		// "session": s.config.SessionClient.AddrList,
 		// s.config.SessionClient.Name: s.config.SessionClient.AddrList,
 	}
-	s.client = net2.NewTcpClientGroupManager(s.config.SessionClient.ProtoName, clients, s)
+	s.clientManager = net2.NewTcpClientGroupManager(s.config.SessionClient.ProtoName, clients, s)
 
 	// session service discovery
 	etcdConfg := clientv3.Config{
 		Endpoints: s.config.SessionClient.EtcdAddrs,
 	}
-	s.clientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "session", etcdConfg, s.client)
+	s.sessionWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "session", etcdConfg, s.clientManager)
 
 	///////////////////////////////////////
-	s.authKeyClient = net2.NewTcpClientGroupManager(s.config.AuthKeyClient.ProtoName, clients, s)
+	//s.authKeyClient = net2.NewTcpClientGroupManager(s.config.AuthKeyClient.ProtoName, clients, s)
 	etcdConfg2 := clientv3.Config{
 		Endpoints: s.config.AuthKeyClient.EtcdAddrs,
 	}
-	s.authKeyClientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "handshake", etcdConfg2, s.authKeyClient)
+	s.authKeyClientWatcher, _ = watcher2.NewClientWatcher("/nebulaim", "handshake", etcdConfg2, s.clientManager)
 
 	return nil
 }
@@ -215,9 +215,9 @@ func (s *FrontendServer) RunLoop() {
 	go s.server443.Serve()
 	go s.server5222.Serve()
 
-	// go s.client.Serve()
+	// go s.clientManager.Serve()
 	go s.authKeyClientWatcher.WatchClients(nil)
-	go s.clientWatcher.WatchClients(func(etype, addr string) {
+	go s.sessionWatcher.WatchClients(func(etype, addr string) {
 		switch etype {
 		case "add":
 			s.ketama.Add(addr)
@@ -231,8 +231,8 @@ func (s *FrontendServer) Destroy() {
 	s.server80.Stop()
 	s.server443.Stop()
 	s.server5222.Stop()
-	s.client.Stop()
-	s.authKeyClient.Stop()
+	s.clientManager.Stop()
+	// s.authKeyClient.Stop()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -387,14 +387,14 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 		}
 		smsg.Decode(payload.Payload[4:])
 
-		glog.Infof("onClientDataArrived - send client to: peer(%s), auth_key_id: %d, len: %d",
+		glog.Infof("onClientDataArrived - send clientManager to: peer(%s), auth_key_id: %d, len: %d",
 			conn,
 			smsg.MTPMessage.AuthKeyId,
 			len(payload.Payload))
 
 		err := conn.Send(smsg.MTPMessage)
 		if err != nil {
-			glog.Info("onClientDataArrived: send data to client error: ", err)
+			glog.Info("onClientDataArrived: send data to clientManager error: ", err)
 		}
 		return err
 	default:
@@ -450,7 +450,7 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 
 	ctx.seqNum++
 	// glog.Infof("sendToSessionClient: %v", zmsg)
-	return s.authKeyClient.SendData("handshake", zmsg)
+	return s.clientManager.SendData("handshake", zmsg)
 }
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
@@ -470,7 +470,7 @@ func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpC
 	ctx.seqNum++
 
 	if kaddr, ok := s.ketama.Get(base.Int64ToString(mmsg.AuthKeyId)); ok {
-		return s.client.SendDataToAddress("session", kaddr, zmsg)
+		return s.clientManager.SendDataToAddress("session", kaddr, zmsg)
 	} else {
 		return fmt.Errorf("kaddr not exists")
 	}

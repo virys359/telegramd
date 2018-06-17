@@ -33,25 +33,25 @@ type TcpClientCallBack interface {
 }
 
 type TcpClient struct {
-	remoteName string
-	conn *TcpConnection
+	remoteName    string
+	conn          *TcpConnection
 	autoReConnect bool
-	chanSize  int
-	callback TcpClientCallBack
+	chanSize      int
+	callback      TcpClientCallBack
 	remoteAddress string
-	protoName string
-	timeInterval time.Duration
+	protoName     string
+	timeInterval  time.Duration
 }
 
 func NewTcpClient(name string, chanSize int, protoName, address string, cb TcpClientCallBack) *TcpClient {
 	client := &TcpClient{
-		remoteName: name,
-		chanSize: chanSize,
+		remoteName:    name,
+		chanSize:      chanSize,
 		autoReConnect: true,
-		callback: cb,
+		callback:      cb,
 		remoteAddress: address,
-		protoName: protoName,
-		timeInterval: 30 * time.Second,
+		protoName:     protoName,
+		timeInterval:  30 * time.Second,
 	}
 
 	// log.Info("NewTcpClient complete ", client)
@@ -81,7 +81,7 @@ func (c *TcpClient) Serve() bool {
 	return true
 }
 
-func (c *TcpClient) establishTcpConnection(conn* TcpConnection) {
+func (c *TcpClient) establishTcpConnection(conn *TcpConnection) {
 	// glog.Info("establishTcpConnection...")
 	defer func() {
 		if err := recover(); err != nil {
@@ -123,7 +123,7 @@ func (c *TcpClient) GetConnection() *TcpConnection {
 	return c.conn
 }
 
-func (c *TcpClient)  Send(msg interface{}) error {
+func (c *TcpClient) Send(msg interface{}) error {
 	if c.conn != nil && !c.conn.IsClosed() {
 		return c.conn.Send(msg)
 	}
@@ -145,13 +145,13 @@ func (c *TcpClient) OnConnectionClosed(conn Connection) {
 	c.onConnectionClosed(conn.(*TcpConnection))
 }
 
-func (c *TcpClient) onNewConnection (conn *TcpConnection) {
+func (c *TcpClient) onNewConnection(conn *TcpConnection) {
 	if c.callback != nil {
 		c.callback.OnNewClient(c)
 	}
 }
 
-func (c *TcpClient) onConnectionClosed (conn *TcpConnection) {
+func (c *TcpClient) onConnectionClosed(conn *TcpConnection) {
 	if c.callback != nil {
 		c.callback.OnClientClosed(c)
 	}
@@ -159,6 +159,10 @@ func (c *TcpClient) onConnectionClosed (conn *TcpConnection) {
 
 func (c *TcpClient) GetTimer() time.Duration {
 	return c.timeInterval
+}
+
+func (c *TcpClient) SetTimer(d time.Duration)  {
+	c.timeInterval = d
 }
 
 func (c *TcpClient) StartTimer() {

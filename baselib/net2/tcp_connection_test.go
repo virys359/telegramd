@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-// TcpConnection full buffer #73
-// Author: @yumcoder-platform (https://github.com/yumcoder-platform)
-//
-
 package net2
 
 import (
@@ -68,6 +64,7 @@ func (c *TestConnCodec) Close() error {
 	return nil
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
 type TestConnSimulation struct {
 	name         string
 	receivedChan chan interface{}
@@ -108,6 +105,7 @@ func (tc *TestConnSimulation) simulateSend() (result []string, err error) {
 	return
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
 func TestSend(t *testing.T) {
 	sendChan := make(chan interface{})
 
