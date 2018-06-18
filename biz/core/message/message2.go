@@ -565,6 +565,15 @@ func sendChannelMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId
 	}, nil
 }
 
+/////////////////////////////////////
+func GetMessageIdListByDialog(userId int32, peer *base.PeerUtil) []int32 {
+	doList := dao.GetMessagesDAO(dao.DB_SLAVE).SelectDialogMessageIdList(userId, peer.PeerId, int8(peer.PeerType))
+	idList := make([]int32, 0, len(doList))
+	for i := 0; i < len(doList); i++ {
+		idList = append(idList, doList[i].UserMessageBoxId)
+	}
+	return idList
+}
 
 /////////////////////////////////////
 func GetPeerMessageId(userId, messageId, peerId int32) int32 {
@@ -581,6 +590,11 @@ func SaveMessage(message *mtproto.Message, userId, messageId int32) error {
 	messageData, err := json.Marshal(message)
 	dao.GetMessagesDAO(dao.DB_MASTER).UpdateMessagesData(string(messageData), userId, messageId)
 	return err
+}
+
+
+func DeleteByMessageIdList(userId int32, idList []int32) {
+	dao.GetMessagesDAO(dao.DB_MASTER).DeleteMessagesByMessageIdList(userId, idList)
 }
 
 /*

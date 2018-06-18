@@ -33,7 +33,7 @@ etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
 
 [syncRpcClient]
-serviceName = "sync"
+serviceName = "sync2"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
 

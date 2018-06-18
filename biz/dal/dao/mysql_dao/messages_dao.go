@@ -53,10 +53,10 @@ func (dao *MessagesDAO) Insert(do *dataobject.MessagesDO) int64 {
 	return id
 }
 
-// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and user_message_box_id in (:idList) order by user_message_box_id desc
+// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and deleted = 0 and user_message_box_id in (:idList) order by user_message_box_id desc
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectByMessageIdList(user_id int32, idList []int32) []dataobject.MessagesDO {
-	var q = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and user_message_box_id in (?) order by user_message_box_id desc"
+	var q = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and deleted = 0 and user_message_box_id in (?) order by user_message_box_id desc"
 	query, a, err := sqlx.In(q, user_id, idList)
 	rows, err := dao.db.Queryx(query, a...)
 
@@ -92,10 +92,10 @@ func (dao *MessagesDAO) SelectByMessageIdList(user_id int32, idList []int32) []d
 	return values
 }
 
-// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and user_message_box_id = :user_message_box_id limit 1
+// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = :user_id and user_message_box_id = :user_message_box_id and deleted = 0 limit 1
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectByMessageId(user_id int32, user_message_box_id int32) *dataobject.MessagesDO {
-	var query = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and user_message_box_id = ? limit 1"
+	var query = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id = ? and user_message_box_id = ? and deleted = 0 limit 1"
 	rows, err := dao.db.Queryx(query, user_id, user_message_box_id)
 
 	if err != nil {
@@ -280,10 +280,10 @@ func (dao *MessagesDAO) SelectForwardByPeerUserOffsetLimit(user_id int32, peer_i
 	return values
 }
 
-// select user_message_box_id, message_box_type from messages where user_id = :peerId and dialog_message_id = (select dialog_message_id from messages where user_id = :user_id and user_message_box_id = :user_message_box_id limit 1)
+// select user_message_box_id, message_box_type from messages where user_id = :peerId and dialog_message_id = (select dialog_message_id from messages where user_id = :user_id and user_message_box_id = :user_message_box_id and deleted = 0 limit 1)
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectPeerMessageId(peerId int32, user_id int32, user_message_box_id int32) *dataobject.MessagesDO {
-	var query = "select user_message_box_id, message_box_type from messages where user_id = ? and dialog_message_id = (select dialog_message_id from messages where user_id = ? and user_message_box_id = ? limit 1)"
+	var query = "select user_message_box_id, message_box_type from messages where user_id = ? and dialog_message_id = (select dialog_message_id from messages where user_id = ? and user_message_box_id = ? and deleted = 0 limit 1)"
 	rows, err := dao.db.Queryx(query, peerId, user_id, user_message_box_id)
 
 	if err != nil {
@@ -316,10 +316,10 @@ func (dao *MessagesDAO) SelectPeerMessageId(peerId int32, user_id int32, user_me
 	return do
 }
 
-// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id != :user_id and dialog_message_id in (select dialog_message_id from messages where user_id = :user_id and user_message_box_id in (:idList))
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id != :user_id and dialog_message_id in (select dialog_message_id from messages where user_id = :user_id and user_message_box_id in (:idList)) and deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectPeerDialogMessageIdList(user_id int32, idList []int32) []dataobject.MessagesDO {
-	var q = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id != ? and dialog_message_id in (select dialog_message_id from messages where user_id = ? and user_message_box_id in (?))"
+	var q = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id != ? and dialog_message_id in (select dialog_message_id from messages where user_id = ? and user_message_box_id in (?)) and deleted = 0"
 	query, a, err := sqlx.In(q, user_id, user_id, idList)
 	rows, err := dao.db.Queryx(query, a...)
 
@@ -355,10 +355,10 @@ func (dao *MessagesDAO) SelectPeerDialogMessageIdList(user_id int32, idList []in
 	return values
 }
 
-// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where dialog_message_id = (select dialog_message_id from messages where user_id = :user_id and user_message_box_id = :user_message_box_id)
+// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where dialog_message_id = (select dialog_message_id from messages where user_id = :user_id and user_message_box_id = :user_message_box_id) and deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectDialogMessageListByMessageId(user_id int32, user_message_box_id int32) []dataobject.MessagesDO {
-	var query = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where dialog_message_id = (select dialog_message_id from messages where user_id = ? and user_message_box_id = ?)"
+	var query = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where dialog_message_id = (select dialog_message_id from messages where user_id = ? and user_message_box_id = ?) and deleted = 0"
 	rows, err := dao.db.Queryx(query, user_id, user_message_box_id)
 
 	if err != nil {
@@ -393,10 +393,10 @@ func (dao *MessagesDAO) SelectDialogMessageListByMessageId(user_id int32, user_m
 	return values
 }
 
-// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id != :user_id and dialog_message_id = (select dialog_message_id from messages where user_id = :user_id and user_message_box_id = :user_message_box_id)
+// select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id != :user_id and dialog_message_id = (select dialog_message_id from messages where user_id = :user_id and user_message_box_id = :user_message_box_id) and deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectPeerDialogMessageListByMessageId(user_id int32, user_message_box_id int32) []dataobject.MessagesDO {
-	var query = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id != ? and dialog_message_id = (select dialog_message_id from messages where user_id = ? and user_message_box_id = ?)"
+	var query = "select user_id, user_message_box_id, dialog_message_id, sender_user_id, message_box_type, peer_type, peer_id, message_type, message_data, date2 from messages where user_id != ? and dialog_message_id = (select dialog_message_id from messages where user_id = ? and user_message_box_id = ?) and deleted = 0"
 	rows, err := dao.db.Queryx(query, user_id, user_id, user_message_box_id)
 
 	if err != nil {
@@ -467,10 +467,10 @@ func (dao *MessagesDAO) SelectLastTwoMessageId(user_id int32) *dataobject.Messag
 	return do
 }
 
-// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id = :user_id and user_message_box_id in (:idList)
+// select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id = :user_id and user_message_box_id in (:idList) and deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) SelectDialogsByMessageIdList(user_id int32, idList []int32) []dataobject.MessagesDO {
-	var q = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id = ? and user_message_box_id in (?)"
+	var q = "select user_id, user_message_box_id, sender_user_id, message_box_type, peer_type, peer_id, dialog_message_id, message_type from messages where user_id = ? and user_message_box_id in (?) and deleted = 0"
 	query, a, err := sqlx.In(q, user_id, idList)
 	rows, err := dao.db.Queryx(query, a...)
 
@@ -506,10 +506,10 @@ func (dao *MessagesDAO) SelectDialogsByMessageIdList(user_id int32, idList []int
 	return values
 }
 
-// update messages set deleted = 1 where user_id = :user_id and user_message_box_id in (:idList)
+// update messages set deleted = 1 where user_id = :user_id and user_message_box_id in (:idList) and deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) DeleteMessagesByMessageIdList(user_id int32, idList []int32) int64 {
-	var q = "update messages set deleted = 1 where user_id = ? and user_message_box_id in (?)"
+	var q = "update messages set deleted = 1 where user_id = ? and user_message_box_id in (?) and deleted = 0"
 	query, a, err := sqlx.In(q, user_id, idList)
 	r, err := dao.db.Exec(query, a...)
 
@@ -529,10 +529,10 @@ func (dao *MessagesDAO) DeleteMessagesByMessageIdList(user_id int32, idList []in
 	return rows
 }
 
-// update messages set message_data = :message_data where user_id = :user_id and user_message_box_id = :user_message_box_id
+// update messages set message_data = :message_data where user_id = :user_id and user_message_box_id = :user_message_box_id and deleted = 0
 // TODO(@benqi): sqlmap
 func (dao *MessagesDAO) UpdateMessagesData(message_data string, user_id int32, user_message_box_id int32) int64 {
-	var query = "update messages set message_data = ? where user_id = ? and user_message_box_id = ?"
+	var query = "update messages set message_data = ? where user_id = ? and user_message_box_id = ? and deleted = 0"
 	r, err := dao.db.Exec(query, message_data, user_id, user_message_box_id)
 
 	if err != nil {
@@ -549,4 +549,42 @@ func (dao *MessagesDAO) UpdateMessagesData(message_data string, user_id int32, u
 	}
 
 	return rows
+}
+
+// select user_message_box_id from messages where user_id = :user_id and ((sender_user_id = :user_id and peer_id = :peer_id) or (sender_user_id = :peer_id and peer_id = :user_id)) and peer_type = :peer_type and deleted = 0
+// TODO(@benqi): sqlmap
+func (dao *MessagesDAO) SelectDialogMessageIdList(user_id int32, peer_id int32, peer_type int8) []dataobject.MessagesDO {
+	var query = "select user_message_box_id from messages where user_id = ? and ((sender_user_id = ? and peer_id = ?) or (sender_user_id = ? and peer_id = ?)) and peer_type = ? and deleted = 0"
+	rows, err := dao.db.Queryx(query, user_id, user_id, peer_id, peer_id, user_id, peer_type)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectDialogMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.MessagesDO
+	for rows.Next() {
+		v := dataobject.MessagesDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectDialogMessageIdList(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectDialogMessageIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return values
 }

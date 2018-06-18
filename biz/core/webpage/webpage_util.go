@@ -19,7 +19,6 @@ package webpage
 
 import (
 	"github.com/nebulaim/telegramd/mtproto"
-	"fmt"
 	"net/http"
 	"io/ioutil"
 	"regexp"
@@ -73,9 +72,7 @@ func GetWebPagePreview(rawurl string) *mtproto.WebPage {
 			glog.Warning("image empty")
 		}
 
-		if len(imageBody) == 0 {
-			// webPage.SetPhoto(mtproto.NewTLPhotoEmpty().To_Photo())
-		} else {
+		if len(imageBody) > 0 {
 			// TODO(@benqi): gen photo
 			// 1. upload photo
 			// 2. getPhoto
@@ -109,7 +106,7 @@ func GetWebpageOgListFromContent(content string, ogParams []string) map[string]s
 	allMatches := pattern.FindAllStringSubmatch(content, -1)
 	allParams := make(map[string]string)
 	for _, val := range allMatches {
-		fmt.Printf("val: %v = %v\n", val[1], val[2])
+		glog.Infof("og val: %v = %v\n", val[1], val[2])
 		k := val[1]
 		v := val[2]
 		allParams[k] = v

@@ -283,7 +283,6 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 		for _, update := range updates2.GetUpdates() {
 			switch update.GetConstructor() {
 			case mtproto.TLConstructor_CRC32_updateNewMessage,
-				 mtproto.TLConstructor_CRC32_updateDeleteMessages,
 				 mtproto.TLConstructor_CRC32_updateReadHistoryOutbox,
 				 mtproto.TLConstructor_CRC32_updateReadHistoryInbox,
 				 mtproto.TLConstructor_CRC32_updateWebPage,
@@ -294,6 +293,20 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 				ptsCount = 1
 				totalPtsCount += 1
 
+				// @benqi: 以上都有Pts和PtsCount
+				update.Data2.Pts = pts
+				update.Data2.PtsCount = ptsCount
+				update3.AddToPtsQueue(pushUserId, pts, ptsCount, update)
+			case mtproto.TLConstructor_CRC32_updateDeleteMessages:
+				deleteMessages := update.To_UpdateDeleteMessages().GetMessages()
+
+				// TODO(@benqi): NextPtsCountId
+				for i := 0; i < len(deleteMessages); i++ {
+					pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
+				}
+
+				ptsCount = int32(len(deleteMessages))
+				totalPtsCount += ptsCount
 				// @benqi: 以上都有Pts和PtsCount
 				update.Data2.Pts = pts
 				update.Data2.PtsCount = ptsCount
