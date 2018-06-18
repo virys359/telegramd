@@ -18,17 +18,19 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/message"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
+	"time"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz_server/sync_client"
 )
 
-func makeForwardMessagesData(selfId int32, idList []int32, ridList []int64) ([]*message.MessageBox, []int64) {
+func makeForwardMessagesData(selfId int32, idList []int32, peer *base.PeerUtil, ridList []int64) ([]*mtproto.Message, []int64) {
 	findRandomIdById := func(id int32) int64 {
 		for i := 0; i < len(idList); i++ {
 			if id == idList[i] {
@@ -37,33 +39,106 @@ func makeForwardMessagesData(selfId int32, idList []int32, ridList []int64) ([]*
 		}
 		return 0
 	}
-	boxList := message.GetMessageBoxListByMessageIdList(selfId, idList)
-	randomIdList := make([]int64, 0, len(boxList))
-	for _, box := range boxList {
-		randomIdList = append(randomIdList, findRandomIdById(box.MessageId))
+
+	// TODO(@benqi): process channel
+
+	// 通过idList找到message
+	messages := message2.GetMessagesByPeerAndMessageIdList2(selfId, idList)
+	randomIdList := make([]int64, 0, len(messages))
+	for _, m := range messages {
+		// TODO(@benqi): rid is 0
+		randomIdList = append(randomIdList, findRandomIdById(m.GetData2().GetId()))
+
+		fwdFrom := &mtproto.TLMessageFwdHeader{Data2: &mtproto.MessageFwdHeader_Data{
+			Date:   int32(time.Now().Unix()),
+			FromId: m.GetData2().GetFromId(),
+		}}
+
+		// make message
+		m.Data2.ToId = peer.ToPeer()
+		m.Data2.FromId = selfId
+		m.Data2.FwdFrom = fwdFrom.To_MessageFwdHeader()
 	}
 
-	return boxList, randomIdList
+	return messages, randomIdList
 }
 
 // messages.forwardMessages#708e0195 flags:# silent:flags.5?true background:flags.6?true with_my_score:flags.8?true grouped:flags.9?true from_peer:InputPeer id:Vector<int> random_id:Vector<long> to_peer:InputPeer = Updates;
 func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, request *mtproto.TLMessagesForwardMessages) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesForwardMessages - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.forwardMessages#708e0195 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	//// peer
 	var (
 		// fromPeer = helper.FromInputPeer2(md.UserId, request.GetFromPeer())
-		toPeer = base.FromInputPeer2(md.UserId, request.GetToPeer())
-		// err error
+		peer = base.FromInputPeer2(md.UserId, request.GetToPeer())
+		messageOutboxList message2.MessageBoxList
 	)
 
-	boxList, ridList := makeForwardMessagesData(md.UserId, request.GetId(), request.GetRandomId())
-	for i := 0; i < len(boxList); i++ {
-		outboxId, dialogMessageId := message.SendMessageToOutbox(md.UserId, toPeer, ridList[i], boxList[i].Message)
-		_ = outboxId
-		_ = dialogMessageId
+	outboxMessages, ridList := makeForwardMessagesData(md.UserId, request.GetId(), peer, request.GetRandomId())
+	for i := 0; i < len(outboxMessages); i++ {
+		messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, ridList[i], outboxMessages[i], func(messageId int32) {
+			// 更新会话信息
+			user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetData2().GetMentioned(), false)
+		})
+		messageOutboxList = append(messageOutboxList, messageOutbox)
 	}
+
+	syncUpdates := makeUpdateNewMessageListUpdates(md.UserId, messageOutboxList)
+	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
+	if err != nil {
+		return nil, err
+	}
+
+	reply := SetupUpdatesState(state, syncUpdates)
+	updateList := []*mtproto.Update{}
+	for i := 0; i < len(messageOutboxList); i++ {
+		updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
+			Id_4:     messageOutboxList[i].MessageId,
+			RandomId: ridList[i],
+		}}
+		updateList = append(updateList, updateMessageID.To_Update())
+	}
+	updateList = append(updateList, reply.GetUpdates()...)
+
+	reply.SetUpdates(updateList)
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// 收件箱
+	if request.GetToPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
+		// var inBoxes message2.MessageBoxList
+		var inBoxeMap = map[int32][]*message2.MessageBox{}
+		for i := 0; i < len(outboxMessages); i++ {
+			inBoxes, _ := messageOutboxList[i].InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
+				// 更新会话信息
+				switch peer.PeerType {
+				case base.PEER_USER:
+					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessages[i].GetData2().GetMentioned())
+				case base.PEER_CHAT, base.PEER_CHANNEL:
+					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetData2().GetMentioned())
+				}
+			})
+
+			for j := 0; j < len(inBoxes); j++ {
+				if boxList, ok := inBoxeMap[inBoxes[j].UserId]; !ok {
+					inBoxeMap[inBoxes[j].UserId] = []*message2.MessageBox{inBoxes[j]}
+				} else {
+					boxList = append(boxList, inBoxes[j])
+					inBoxeMap[inBoxes[j].UserId] = boxList
+				}
+			}
+		}
+
+		for k, v := range  inBoxeMap {
+
+			syncUpdates = makeUpdateNewMessageListUpdates(k, v)
+			sync_client.GetSyncClient().PushToUserUpdatesData(k, syncUpdates.To_Updates())
+		}
+	}
+
+	glog.Infof("messages.forwardMessages#708e0195 - reply: %s", logger.JsonDebugData(reply))
+	return reply.To_Updates(), nil
+
 
 	//shortMessage := model.MessageToUpdateShortMessage(outbox.To_Message())
 	//state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
@@ -112,5 +187,5 @@ func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, reque
 	//	model.GetMessageModel().SaveMessage(editMessage, editUserId, editMessage.GetData2().GetId())
 	//}
 
-	return nil, fmt.Errorf("Not impl MessagesForwardMessages")
+	// return nil, fmt.Errorf("Not impl MessagesForwardMessages")
 }
