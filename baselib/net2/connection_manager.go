@@ -25,7 +25,7 @@ const connectionMapNum = 32
 
 type ConnectionManager struct {
 	connectionMaps [connectionMapNum]connectionMap
-	disposeFlag bool
+	disposeFlag    bool
 	disposeOnce    sync.Once
 	disposeWait    sync.WaitGroup
 }
@@ -59,12 +59,6 @@ func (manager *ConnectionManager) Dispose() {
 		manager.disposeWait.Wait()
 	})
 }
-
-//func (manager *ConnectionManager) NewConnection(codec Codec, sendChanSize int) *Connection {
-//	conn := newConnection(manager, codec, sendChanSize)
-//	manager.putConnection(conn)
-//	return conn
-//}
 
 func (manager *ConnectionManager) GetConnection(connID uint64) Connection {
 	conns := &manager.connectionMaps[connID%connectionMapNum]

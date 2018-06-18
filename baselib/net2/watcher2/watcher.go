@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"encoding/json"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 )
 
 // see: /baselib/grpc_util/service_discovery/registry.go
@@ -63,10 +64,18 @@ func NewClientWatcher(registryDir, serviceName string, cfg etcd3.Config, client 
 
 func (m *ClientWatcher) WatchClients(cb func(etype, addr string)) {
 	rootPath := fmt.Sprintf("%s/%s", m.registryDir, m.serviceName)
+
+	resp, err := m.etcCli.Get(context.Background(), rootPath, clientv3.WithPrefix())
+	if err != nil {
+		glog.Error(err)
+	}
+	for _, kv := range resp.Kvs {
+		m.addClient(kv, cb)
+	}
+
 	rch := m.etcCli.Watch(context.Background(), rootPath, clientv3.WithPrefix())
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
-			// fmt.Println(ev.Type, string(ev.Kv.Key), string(ev.Kv.Value))
 			if ev.Type.String() == "EXPIRE" {
 				// TODO(@benqi): 采用何种策略？？
 				// n, ok := m.nodes[string(ev.Kv.Key)]
@@ -77,30 +86,7 @@ func (m *ClientWatcher) WatchClients(cb func(etype, addr string)) {
 				// 	cb("EXPIRE", string(ev.Kv.Key), string(ev.Kv.Value))
 				//}
 			} else if ev.Type.String() == "PUT" {
-				node := &nodeData{}
-				err := json.Unmarshal(ev.Kv.Value, node)
-				if err != nil {
-					glog.Error(err)
-				}
-				if n, ok := m.nodes[string(ev.Kv.Key)]; ok {
-					if node.Addr != n.Addr {
-						m.client.RemoveClient(m.serviceName, n.Addr)
-						m.nodes[string(ev.Kv.Key)] = node
-						if cb != nil {
-							cb("delete", n.Addr)
-						}
-						if cb != nil {
-							cb("add", node.Addr)
-						}
-					}
-					m.client.AddClient(m.serviceName, node.Addr)
-				} else {
-					m.nodes[string(ev.Kv.Key)] = node
-					m.client.AddClient(m.serviceName, node.Addr)
-					if cb != nil {
-						cb("add", node.Addr)
-					}
-				}
+				m.addClient(ev.Kv, cb)
 			} else if ev.Type.String() == "DELETE" {
 				if n, ok := m.nodes[string(ev.Kv.Key)]; ok {
 					m.client.RemoveClient(m.serviceName, n.Addr)
@@ -110,6 +96,32 @@ func (m *ClientWatcher) WatchClients(cb func(etype, addr string)) {
 					delete(m.nodes, string(ev.Kv.Key))
 				}
 			}
+		}
+	}
+}
+func (m *ClientWatcher) addClient(kv *mvccpb.KeyValue, cb func(etype, addr string)) {
+	node := &nodeData{}
+	err := json.Unmarshal(kv.Value, node)
+	if err != nil {
+		glog.Error(err)
+	}
+	if n, ok := m.nodes[string(kv.Key)]; ok {
+		if node.Addr != n.Addr {
+			m.client.RemoveClient(m.serviceName, n.Addr)
+			m.nodes[string(kv.Key)] = node
+			if cb != nil {
+				cb("delete", n.Addr)
+			}
+			if cb != nil {
+				cb("add", node.Addr)
+			}
+		}
+		m.client.AddClient(m.serviceName, node.Addr)
+	} else {
+		m.nodes[string(kv.Key)] = node
+		m.client.AddClient(m.serviceName, node.Addr)
+		if cb != nil {
+			cb("add", node.Addr)
 		}
 	}
 }

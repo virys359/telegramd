@@ -26,17 +26,17 @@ import (
 )
 
 type TcpClientGroupManager struct {
-	protoName string
+	protoName     string
 	clientMapLock sync.RWMutex
-	clientMap map[string]map[string]*TcpClient
-	callback TcpClientCallBack
+	clientMap     map[string]map[string]*TcpClient
+	callback      TcpClientCallBack
 }
 
-func NewTcpClientGroupManager(protoName string, clients map[string][]string, cb TcpClientCallBack) *TcpClientGroupManager  {
+func NewTcpClientGroupManager(protoName string, clients map[string][]string, cb TcpClientCallBack) *TcpClientGroupManager {
 	group := &TcpClientGroupManager{
 		protoName: protoName,
 		clientMap: make(map[string]map[string]*TcpClient),
-		callback: cb,
+		callback:  cb,
 	}
 
 	for k, v := range clients {
@@ -58,11 +58,11 @@ func NewTcpClientGroupManager(protoName string, clients map[string][]string, cb 
 	return group
 }
 
-func (this *TcpClientGroupManager) Serve() bool {
-	this.clientMapLock.Lock()
-	defer this.clientMapLock.Unlock()
+func (cgm *TcpClientGroupManager) Serve() bool {
+	cgm.clientMapLock.Lock()
+	defer cgm.clientMapLock.Unlock()
 
-	for _, v := range this.clientMap {
+	for _, v := range cgm.clientMap {
 		for _, c := range v {
 			c.Serve()
 		}
@@ -71,11 +71,11 @@ func (this *TcpClientGroupManager) Serve() bool {
 	return true
 }
 
-func (this *TcpClientGroupManager) Stop() bool {
-	this.clientMapLock.Lock()
-	defer this.clientMapLock.Unlock()
+func (cgm *TcpClientGroupManager) Stop() bool {
+	cgm.clientMapLock.Lock()
+	defer cgm.clientMapLock.Unlock()
 
-	for _, v := range this.clientMap {
+	for _, v := range cgm.clientMap {
 		for _, c := range v {
 			c.Stop()
 		}
@@ -84,40 +84,40 @@ func (this *TcpClientGroupManager) Stop() bool {
 	return true
 }
 
-func (this *TcpClientGroupManager) GetConfig() interface{} {
+func (cgm *TcpClientGroupManager) GetConfig() interface{} {
 	return nil
 }
 
-func (this *TcpClientGroupManager) AddClient(name string, address string) {
+func (cgm *TcpClientGroupManager) AddClient(name string, address string) {
 	// glog.Info("TcpClientGroup AddClient name ", name, " address ", address)
-	this.clientMapLock.Lock()
-	defer this.clientMapLock.Unlock()
+	cgm.clientMapLock.Lock()
+	defer cgm.clientMapLock.Unlock()
 
-	m, ok := this.clientMap[name]
+	m, ok := cgm.clientMap[name]
 	if !ok {
 		m = make(map[string]*TcpClient)
-		this.clientMap[name] = m
+		cgm.clientMap[name] = m
 	} else {
 		if _, ok = m[address]; ok {
 			return
 		}
 	}
 
-	client := NewTcpClient(name, 10 * 1024, this.protoName, address, this.callback)
+	client := NewTcpClient(name, 10*1024, cgm.protoName, address, cgm.callback)
 	m[address] = client
 	client.Serve()
 }
 
-func (this *TcpClientGroupManager) RemoveClient(name string, address string) {
+func (cgm *TcpClientGroupManager) RemoveClient(name string, address string) {
 	// glog.Info("TcpClientGroup RemoveClient name ", name, " address ", address)
-	this.clientMapLock.Lock()
-	defer this.clientMapLock.Unlock()
+	cgm.clientMapLock.Lock()
+	defer cgm.clientMapLock.Unlock()
 
-	m, ok := this.clientMap[name]
+	m, ok := cgm.clientMap[name]
 	if !ok {
 		return
 	}
-	m, _ = this.clientMap[name]
+	m, _ = cgm.clientMap[name]
 
 	c, ok := m[address]
 	if !ok {
@@ -125,14 +125,14 @@ func (this *TcpClientGroupManager) RemoveClient(name string, address string) {
 	}
 
 	c.Stop()
-	delete(this.clientMap[name], address)
+	delete(cgm.clientMap[name], address)
 }
 
-func (this *TcpClientGroupManager) SendDataToAddress(name, address string, msg interface{}) error {
-	this.clientMapLock.RLock()
-	m, ok := this.clientMap[name]
+func (cgm *TcpClientGroupManager) SendDataToAddress(name, address string, msg interface{}) error {
+	cgm.clientMapLock.RLock()
+	m, ok := cgm.clientMap[name]
 	if !ok {
-		this.clientMapLock.RUnlock()
+		cgm.clientMapLock.RUnlock()
 		err := fmt.Errorf("sendDataToAddress - name not exists: %s", name)
 		// glog.Error(err)
 		return err
@@ -140,67 +140,67 @@ func (this *TcpClientGroupManager) SendDataToAddress(name, address string, msg i
 
 	c, ok := m[address]
 	if !ok {
-		this.clientMapLock.RUnlock()
+		cgm.clientMapLock.RUnlock()
 		err := fmt.Errorf("sendDataToAddress - address not exists: %s", address)
 		// glog.Error(err)
 		return err
 	}
 
-	this.clientMapLock.RUnlock()
+	cgm.clientMapLock.RUnlock()
 	return c.Send(msg)
 }
 
-func (this *TcpClientGroupManager) SendData(name string, msg interface{}) error {
-	tcpConn := this.getRotationSession(name)
+func (cgm *TcpClientGroupManager) SendData(name string, msg interface{}) error {
+	tcpConn := cgm.getRotationSession(name)
 	if tcpConn == nil {
 		return errors.New("can not get connection")
 	}
 	return tcpConn.Send(msg)
 }
 
-func (this *TcpClientGroupManager) getRotationSession(name string) *TcpConnection {
-	all_conns := this.getTcpClientsByName(name)
-	if all_conns == nil || len(all_conns) == 0 {
+func (cgm *TcpClientGroupManager) getRotationSession(name string) *TcpConnection {
+	allConns := cgm.getTcpClientsByName(name)
+	if allConns == nil || len(allConns) == 0 {
 		return nil
 	}
 
-	index := rand.Int() % len(all_conns)
-	return all_conns[index]
+	index := rand.Int() % len(allConns)
+	return allConns[index]
 }
 
-func (this *TcpClientGroupManager) BroadcastData (name string, msg interface{}) error {
-	all_conns := this.getTcpClientsByName(name)
+func (cgm *TcpClientGroupManager) BroadcastData(name string, msg interface{}) error {
+	allConns := cgm.getTcpClientsByName(name)
 
-	if all_conns == nil || len(all_conns) == 0 {
+	if allConns == nil || len(allConns) == 0 {
 		return nil
 	}
 
-	for _, conn := range all_conns {
+	for _, conn := range allConns {
 		conn.Send(msg)
 	}
 
 	return nil
 }
 
-func (this *TcpClientGroupManager) getTcpClientsByName(name string) []*TcpConnection {
-	var all_conns []*TcpConnection
+func (cgm *TcpClientGroupManager) getTcpClientsByName(name string) []*TcpConnection {
+	var allConns []*TcpConnection
 
-	this.clientMapLock.RLock()
+	cgm.clientMapLock.RLock()
 
-	serviceMap, ok := this.clientMap[name]
+	serviceMap, ok := cgm.clientMap[name]
 
 	if !ok {
-		this.clientMapLock.RUnlock()
+		cgm.clientMapLock.RUnlock()
 		return nil
 	}
 
 	for _, c := range serviceMap {
 		if c != nil && c.GetConnection() != nil && !c.GetConnection().IsClosed() {
-			all_conns = append(all_conns, c.GetConnection())
+			allConns = append(allConns, c.GetConnection())
 		}
 	}
 
-	this.clientMapLock.RUnlock()
+	cgm.clientMapLock.RUnlock()
 
-	return all_conns
+	return allConns
 }
