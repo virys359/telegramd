@@ -3,9 +3,9 @@
     <operation name="Insert">
         <sql>
             INSERT INTO phone_call_sessions
-                (call_session_id, admin_id, admin_access_hash, participant_id, participant_access_hash, udp_p2p, udp_reflector, min_layer, max_layer, g_a, date)
+                (call_session_id, admin_id, admin_access_hash, participant_id, participant_access_hash, udp_p2p, udp_reflector, min_layer, max_layer, g_a, admin_debug_data, participant_debug_data, date)
             VALUES
-                (:call_session_id, :admin_id, :admin_access_hash, :participant_id, :participant_access_hash, :udp_p2p, :udp_reflector, :min_layer, :max_layer, :g_a, :date)
+                (:call_session_id, :admin_id, :admin_access_hash, :participant_id, :participant_access_hash, :udp_p2p, :udp_reflector, :min_layer, :max_layer, :g_a, :admin_debug_data, :participant_debug_data, :date)
         </sql>
     </operation>
 

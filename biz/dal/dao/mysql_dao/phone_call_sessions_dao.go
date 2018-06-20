@@ -33,10 +33,10 @@ func NewPhoneCallSessionsDAO(db *sqlx.DB) *PhoneCallSessionsDAO {
 	return &PhoneCallSessionsDAO{db}
 }
 
-// insert into phone_call_sessions(call_session_id, admin_id, admin_access_hash, participant_id, participant_access_hash, udp_p2p, udp_reflector, min_layer, max_layer, g_a, `date`) values (:call_session_id, :admin_id, :admin_access_hash, :participant_id, :participant_access_hash, :udp_p2p, :udp_reflector, :min_layer, :max_layer, :g_a, :date)
+// insert into phone_call_sessions(call_session_id, admin_id, admin_access_hash, participant_id, participant_access_hash, udp_p2p, udp_reflector, min_layer, max_layer, g_a, admin_debug_data, participant_debug_data, `date`) values (:call_session_id, :admin_id, :admin_access_hash, :participant_id, :participant_access_hash, :udp_p2p, :udp_reflector, :min_layer, :max_layer, :g_a, :admin_debug_data, :participant_debug_data, :date)
 // TODO(@benqi): sqlmap
 func (dao *PhoneCallSessionsDAO) Insert(do *dataobject.PhoneCallSessionsDO) int64 {
-	var query = "insert into phone_call_sessions(call_session_id, admin_id, admin_access_hash, participant_id, participant_access_hash, udp_p2p, udp_reflector, min_layer, max_layer, g_a, `date`) values (:call_session_id, :admin_id, :admin_access_hash, :participant_id, :participant_access_hash, :udp_p2p, :udp_reflector, :min_layer, :max_layer, :g_a, :date)"
+	var query = "insert into phone_call_sessions(call_session_id, admin_id, admin_access_hash, participant_id, participant_access_hash, udp_p2p, udp_reflector, min_layer, max_layer, g_a, admin_debug_data, participant_debug_data, `date`) values (:call_session_id, :admin_id, :admin_access_hash, :participant_id, :participant_access_hash, :udp_p2p, :udp_reflector, :min_layer, :max_layer, :g_a, :admin_debug_data, :participant_debug_data, :date)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
