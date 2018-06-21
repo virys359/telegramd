@@ -341,7 +341,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 				switch peer.PeerType {
 				case base.PEER_USER:
 					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
-				case base.PEER_CHAT, base.PEER_CHANNEL:
+				case base.PEER_CHAT:
 					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
 				}
 			})
@@ -381,9 +381,11 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 		inboxMessage := proto.Clone(outboxMessage).(*mtproto.TLMessage)
 		for _, id := range idList {
 			if id != md.UserId {
-				pushUpdates := updates.NewUpdatesLogic(md.UserId)
+				user.CreateOrUpdateByInbox(id, peer.PeerType, peer.PeerId, inboxMessage.GetId(), outboxMessage.GetMentioned())
+
+				pushUpdates := updates.NewUpdatesLogic(id)
 				pushUpdates.AddUpdateNewChannelMessage(inboxMessage.To_Message())
-				pushUpdates.AddChat(channel.GetChannelBySelfID(md.UserId, peer.PeerId))
+				pushUpdates.AddChat(channel.GetChannelBySelfID(id, peer.PeerId))
 				sync_client.GetSyncClient().PushToUserUpdatesData(id, pushUpdates.ToUpdates())
 			}
 		}

@@ -220,9 +220,11 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 			inboxMessage := proto.Clone(outboxMessage).(*mtproto.TLMessage)
 			for _, id := range idList {
 				if id != md.UserId {
-					pushUpdates := update2.NewUpdatesLogic(md.UserId)
+					user.CreateOrUpdateByInbox(id, peer.PeerType, peer.PeerId, inboxMessage.GetId(), outboxMessage.GetMentioned())
+
+					pushUpdates := update2.NewUpdatesLogic(id)
 					pushUpdates.AddUpdateNewChannelMessage(inboxMessage.To_Message())
-					pushUpdates.AddChat(channel.GetChannelBySelfID(md.UserId, peer.PeerId))
+					pushUpdates.AddChat(channel.GetChannelBySelfID(id, peer.PeerId))
 					sync_client.GetSyncClient().PushToUserUpdatesData(id, pushUpdates.ToUpdates())
 				}
  			}
