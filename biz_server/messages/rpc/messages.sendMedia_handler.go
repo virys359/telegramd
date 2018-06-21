@@ -29,6 +29,9 @@ import (
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/nbfs_client"
+	"github.com/nebulaim/telegramd/biz/core/channel"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/gogo/protobuf/proto"
 )
 
 func makeGeoPointByInput(geoPoint *mtproto.InputGeoPoint) *mtproto.GeoPoint {
@@ -208,7 +211,7 @@ func makeMediaByInputMedia(authKeyId int64, media *mtproto.InputMedia) *mtproto.
 }
 
 func makeOutboxMessageBySendMedia(authKeyId int64, fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMedia) *mtproto.TLMessage {
-	return &mtproto.TLMessage{ Data2: &mtproto.Message_Data{
+	message := &mtproto.TLMessage{ Data2: &mtproto.Message_Data{
 		Out:          true,
 		Silent:       request.GetSilent(),
 		FromId:       fromId,
@@ -218,6 +221,13 @@ func makeOutboxMessageBySendMedia(authKeyId int64, fromId int32, peer *base.Peer
 		ReplyMarkup: request.GetReplyMarkup(),
 		Date:        int32(time.Now().Unix()),
 	}}
+
+	// TODO(@benqi): check channel or super chat
+	if peer.PeerType == base.PEER_CHANNEL {
+		message.SetPost(true)
+	}
+
+	return message
 }
 
 func makeUpdateNewMessageUpdates(selfUserId int32, message *mtproto.Message) *mtproto.TLUpdates {
@@ -299,45 +309,85 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	// 发件箱
 	// sendMessageToOutbox
 	outboxMessage := makeOutboxMessageBySendMedia(md.AuthId, md.UserId, peer, request)
-	messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
-		// 更新会话信息
-		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
-	})
 
-	syncUpdates := makeUpdateNewMessageUpdates(md.UserId, messageOutbox.Message)
-	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
-	if err != nil {
-		return nil, err
-	}
+	if peer.PeerType == base.PEER_USER || peer.PeerType == base.PEER_CHAT {
+		// TODO(@benqi): set media_unread.
 
-	reply := SetupUpdatesState(state, syncUpdates)
-	updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
-		Id_4:     messageOutbox.MessageId,
-		RandomId: request.GetRandomId(),
-	}}
-	updateList := []*mtproto.Update{updateMessageID.To_Update()}
-	updateList = append(updateList, reply.GetUpdates()...)
-	reply.SetUpdates(updateList)
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	// 收件箱
-	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
-		inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
+		messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
 			// 更新会话信息
-			switch peer.PeerType {
-			case base.PEER_USER:
-				user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
-			case base.PEER_CHAT, base.PEER_CHANNEL:
-				user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
-			}
+			user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
 		})
 
-		for i := 0; i < len(inBoxes); i++ {
-			syncUpdates = makeUpdateNewMessageUpdates(inBoxes[i].UserId, inBoxes[i].Message)
-			sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes[i].UserId, syncUpdates.To_Updates())
+		syncUpdates := makeUpdateNewMessageUpdates(md.UserId, messageOutbox.Message)
+		state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
+		if err != nil {
+			return nil, err
 		}
-	}
 
-	glog.Infof("messages.sendMedia#c8f16791 - reply: %s", logger.JsonDebugData(reply))
-	return reply.To_Updates(), nil
+		reply := SetupUpdatesState(state, syncUpdates)
+		updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
+			Id_4:     messageOutbox.MessageId,
+			RandomId: request.GetRandomId(),
+		}}
+		updateList := []*mtproto.Update{updateMessageID.To_Update()}
+		updateList = append(updateList, reply.GetUpdates()...)
+		reply.SetUpdates(updateList)
+
+		/////////////////////////////////////////////////////////////////////////////////////
+		// 收件箱
+		if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
+			inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
+				// 更新会话信息
+				switch peer.PeerType {
+				case base.PEER_USER:
+					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
+				case base.PEER_CHAT, base.PEER_CHANNEL:
+					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
+				}
+			})
+
+			for i := 0; i < len(inBoxes); i++ {
+				syncUpdates = makeUpdateNewMessageUpdates(inBoxes[i].UserId, inBoxes[i].Message)
+				sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes[i].UserId, syncUpdates.To_Updates())
+			}
+		}
+
+		glog.Infof("messages.sendMedia#c8f16791 - reply: %s", logger.JsonDebugData(reply))
+		return reply.To_Updates(), nil
+	} else {
+		channelBox := message2.CreateChannelMessageBoxByNew(md.UserId, peer.PeerId, request.RandomId, outboxMessage.To_Message(), func(messageId int32) {
+			user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
+		})
+
+		// updates.NewUpdatesLogic()
+		syncUpdates := updates.NewUpdatesLogic(md.UserId)
+		//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+		//	Participants: channel.GetChannelParticipants().To_Channels_ChannelParticipants(),
+		//}}
+		//syncUpdates.AddUpdate(updateChatParticipants.To_Update())
+		syncUpdates.AddUpdateNewChannelMessage(outboxMessage.To_Message())
+		// syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+		syncUpdates.AddChat(channel.GetChannelBySelfID(md.UserId, peer.PeerId))
+
+		state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
+		syncUpdates.PushTopUpdateMessageId(channelBox.ChannelMessageBoxId, request.RandomId)
+		//updateChannel := &mtproto.TLUpdateChannel{Data2: &mtproto.Update_Data{
+		//	ChannelId: peer.PeerId,
+		//}}
+		//syncUpdates.AddUpdate(updateChannel.To_Update())
+		syncUpdates.SetupState(state)
+
+		idList := channel.GetChannelParticipantIdList(peer.PeerId)
+		inboxMessage := proto.Clone(outboxMessage).(*mtproto.TLMessage)
+		for _, id := range idList {
+			if id != md.UserId {
+				pushUpdates := updates.NewUpdatesLogic(md.UserId)
+				pushUpdates.AddUpdateNewChannelMessage(inboxMessage.To_Message())
+				pushUpdates.AddChat(channel.GetChannelBySelfID(md.UserId, peer.PeerId))
+				sync_client.GetSyncClient().PushToUserUpdatesData(id, pushUpdates.ToUpdates())
+			}
+		}
+		glog.Infof("messages.sendMedia#c8f16791 - reply: %s", logger.JsonDebugData(syncUpdates.ToUpdates()))
+		return syncUpdates.ToUpdates(), nil
+	}
 }

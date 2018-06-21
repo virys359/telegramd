@@ -126,8 +126,8 @@ func (this *MessageBox) InsertMessageToInbox(fromId int32, peer *base.PeerUtil, 
 		return this.insertUserMessageToInbox(fromId, peer, cb)
 	case base.PEER_CHAT:
 		return this.insertChatMessageToInbox(fromId, peer, cb)
-	case base.PEER_CHANNEL:
-		return this.insertChannelMessageToInbox(fromId, peer, cb)
+	// case base.PEER_CHANNEL:
+	// 	return this.insertChannelMessageToInbox(fromId, peer, cb)
 	default:
 		//	panic("invalid peer")
 		return nil, fmt.Errorf("invalid peer")

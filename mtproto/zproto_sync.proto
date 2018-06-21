@@ -55,6 +55,7 @@ enum SyncType {
     SYNC_TYPE_USER_NOTME            = 2;        // 该用户除了某个设备
     SYNC_TYPE_USER_ME               = 3;        // 该用户指定某个设备
     SYNC_TYPE_RPC_RESULT            = 4;        // 通过push通道返回rpc
+    SYNC_TYPE_NONE                  = 5;        // 不同步
 
     // SYNC_TYPE_AUTH_KEY              = 3;        // 发送给指定设备
     // SYNC_TYPE_AUTH_KEY_USER         = 4;        // 该用户所有设备

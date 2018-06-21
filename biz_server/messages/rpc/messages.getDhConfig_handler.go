@@ -57,19 +57,19 @@ var (
 	dh2048_g = []byte{ 0x02,}
 )
 /*
-request:
-{ messages_getDhConfig
-  version: 0 [INT],
-  random_length: 256 [INT],
-}
+	request:
+	{ messages_getDhConfig
+	  version: 0 [INT],
+	  random_length: 256 [INT],
+	}
 
-reply:
-{ messages_dhConfig
-	g: 3 [INT],
-	p: C7 1C AE B9 C6 B1 C9 04 8E 6C 52 2F 70 F1 3F 73... [256 BYTES],
-	version: 3 [INT],
-	random: F1 2A FB 6B 97 B6 0A 17 B9 3E 2F 65 28 33 4D 03... [256 BYTES],
-}
+	reply:
+	{ messages_dhConfig
+		g: 3 [INT],
+		p: C7 1C AE B9 C6 B1 C9 04 8E 6C 52 2F 70 F1 3F 73... [256 BYTES],
+		version: 3 [INT],
+		random: F1 2A FB 6B 97 B6 0A 17 B9 3E 2F 65 28 33 4D 03... [256 BYTES],
+	}
  */
 // messages.getDhConfig#26cf8950 version:int random_length:int = messages.DhConfig;
 func (s *MessagesServiceImpl) MessagesGetDhConfig(ctx context.Context, request *mtproto.TLMessagesGetDhConfig) (*mtproto.Messages_DhConfig, error) {

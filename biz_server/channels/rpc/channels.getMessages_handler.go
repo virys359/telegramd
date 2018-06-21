@@ -29,7 +29,7 @@ import (
 // channels.getMessages#93d7b347 channel:InputChannel id:Vector<int> = messages.Messages;
 func (s *ChannelsServiceImpl) ChannelsGetMessages(ctx context.Context, request *mtproto.TLChannelsGetMessages) (*mtproto.Messages_Messages, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ChannelsGetMessages - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("channels.getMessages#93d7b347 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl ChannelsGetMessages logic
 

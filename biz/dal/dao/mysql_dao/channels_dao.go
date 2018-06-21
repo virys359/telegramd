@@ -33,10 +33,10 @@ func NewChannelsDAO(db *sqlx.DB) *ChannelsDAO {
 	return &ChannelsDAO{db}
 }
 
-// insert into channels(creator_user_id, access_hash, random_id, participant_count, title, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :date)
+// insert into channels(creator_user_id, access_hash, random_id, participant_count, title, about, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :date)
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) Insert(do *dataobject.ChannelsDO) int64 {
-	var query = "insert into channels(creator_user_id, access_hash, random_id, participant_count, title, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :date)"
+	var query = "insert into channels(creator_user_id, access_hash, random_id, participant_count, title, about, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :date)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,10 @@ func (dao *ChannelsDAO) Insert(do *dataobject.ChannelsDO) int64 {
 	return id
 }
 
-// select id, creator_user_id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from channels where id = :id
+// select id, creator_user_id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id = :id
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) Select(id int32) *dataobject.ChannelsDO {
-	var query = "select id, creator_user_id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from channels where id = ?"
+	var query = "select id, creator_user_id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id = ?"
 	rows, err := dao.db.Queryx(query, id)
 
 	if err != nil {
@@ -111,10 +111,54 @@ func (dao *ChannelsDAO) UpdateTitle(title string, date int32, id int32) int64 {
 	return rows
 }
 
-// select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from channels where id in (:idList)
+// update channels set about = :about, `date` = :date, version = version + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChannelsDAO) UpdateAbout(about string, date int32, id int32) int64 {
+	var query = "update channels set about = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, about, date, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateAbout(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateAbout(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update channels set link = :link, `date` = :date, version = version + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChannelsDAO) UpdateLink(link string, date int32, id int32) int64 {
+	var query = "update channels set link = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, link, date, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateLink(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateLink(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// select id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id in (:idList)
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) SelectByIdList(idList []int32) []dataobject.ChannelsDO {
-	var q = "select id, access_hash, participant_count, title, photo_id, admins_enabled, deactivated, version, `date` from channels where id in (?)"
+	var q = "select id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id in (?)"
 	query, a, err := sqlx.In(q, idList)
 	rows, err := dao.db.Queryx(query, a...)
 

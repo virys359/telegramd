@@ -29,13 +29,13 @@ import (
 // messages.reportSpam#cf1592db peer:InputPeer = Bool;
 func (s *MessagesServiceImpl) MessagesReportSpam(ctx context.Context, request *mtproto.TLMessagesReportSpam) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesReportSpam - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.reportSpam#cf1592db - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	peer := base.FromInputPeer(request.GetPeer())
 	if peer.PeerType == base.PEER_USER || peer.PeerType == base.PEER_CHAT {
 		// TODO(@benqi): 入库
 	}
 
-	glog.Info("MessagesReportSpam - reply: {true}")
+	glog.Info("messages.reportSpam#cf1592db - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

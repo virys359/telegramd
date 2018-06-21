@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table sqlname="message_datas">
+    <operation name="Insert">
+        <sql>
+            INSERT INTO message_datas
+                (dialog_id, message_id, sender_user_id, peer_type, peer_id, random_id, message_type, message_data, date)
+            VALUES
+                (:dialog_id, :message_id, :sender_user_id, :peer_type, :peer_id, :random_id, :message_type, :message_data, :date)
+        </sql>
+    </operation>
+
+    <operation name="SelectByMessageIdList" result_set="list">
+        <params>
+            <param name="idList" type="[]int64" />
+        </params>
+        <sql>
+            SELECT
+                dialog_id, message_id, sender_user_id, peer_type, peer_id, random_id, message_type, message_data, date
+            FROM
+                message_datas
+            WHERE
+                deleted = 0 AND message_id IN (:idList) ORDER BY id DESC
+        </sql>
+    </operation>
+
+    <operation name="SelectByMessageId">
+        <sql>
+            SELECT
+                dialog_id, message_id, sender_user_id, peer_type, peer_id, random_id, message_type, message_data, date
+            FROM
+                message_datas
+            WHERE
+                message_id = :message_id AND deleted = 0 LIMIT 1
+        </sql>
+    </operation>
+</table>

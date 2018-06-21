@@ -34,6 +34,8 @@ const (
 	ptsUpdatesNgenId = "pts_updates_ngen_"
 	qtsUpdatesNgenId = "qts_updates_ngen_"
 	boxUpdatesNgenId = "message_box_ngen_"
+	channelPtsUpdatesNgenId = "channel_pts_updates_ngen_"
+	channelBoxUpdatesNgenId = "channel_message_box_ngen_"
 )
 
 type SequenceDAO struct {
@@ -78,6 +80,22 @@ func (dao *SequenceDAO) NextMessageBoxId(key string) (seq int64, err error) {
 
 func (dao *SequenceDAO) CurrentMessageBoxId(key string) (seq int64, err error) {
 	return dao.GetCurrentSequence(boxUpdatesNgenId + key)
+}
+
+func (dao *SequenceDAO) NextChannelPtsId(key string) (seq int64, err error) {
+	return dao.FetchNextSequence(channelPtsUpdatesNgenId + key)
+}
+
+func (dao *SequenceDAO) CurrentChannelPtsId(key string) (seq int64, err error) {
+	return dao.GetCurrentSequence(channelPtsUpdatesNgenId + key)
+}
+
+func (dao *SequenceDAO) NextChannelMessageBoxId(key string) (seq int64, err error) {
+	return dao.FetchNextSequence(channelBoxUpdatesNgenId + key)
+}
+
+func (dao *SequenceDAO) CurrentChannelMessageBoxId(key string) (seq int64, err error) {
+	return dao.GetCurrentSequence(channelBoxUpdatesNgenId + key)
 }
 
 func (dao *SequenceDAO) FetchNextSequence(key string) (seq int64, err error) {

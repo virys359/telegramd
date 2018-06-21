@@ -29,13 +29,13 @@ import (
 // messages.hideReportSpam#a8f1709b peer:InputPeer = Bool;
 func (s *MessagesServiceImpl) MessagesHideReportSpam(ctx context.Context, request *mtproto.TLMessagesHideReportSpam) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesHideReportSpam - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.hideReportSpam#a8f1709b - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	peer := base.FromInputPeer(request.GetPeer())
 	if peer.PeerType == base.PEER_USER || peer.PeerType == base.PEER_CHAT {
 		// TODO(@benqi): 入库
 	}
 
-	glog.Info("MessagesHideReportSpam - reply: {true}")
+	glog.Info("messages.hideReportSpam#a8f1709b - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

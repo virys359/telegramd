@@ -276,63 +276,109 @@ type IDMessage struct {
 func  LoadBackwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
 
-	var (
-		doList []dataobject.MessagesDO
-	)
-
-	switch peerType {
-	case base.PEER_USER:
-		// doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
-		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
-	case base.PEER_CHAT:
-		// doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
-		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
-	case base.PEER_CHANNEL:
-	default:
-	}
-
-	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
-	if len(doList) == 0 {
-		messages = []*mtproto.Message{}
+	if peerType == base.PEER_CHANNEL {
+		boxDOList := dao.GetChannelMessageBoxesDAO(dao.DB_SLAVE).SelectBackwardByOffsetLimit(peerId, offset, limit)
+		if len(boxDOList) == 0 {
+			messages = []*mtproto.Message{}
+		} else {
+			messages = make([]*mtproto.Message, 0, len(boxDOList))
+			for i := 0; i < len(boxDOList); i++ {
+				// TODO(@benqi): check data
+				messageDO := dao.GetMessageDatasDAO(dao.DB_SLAVE).SelectByMessageId(boxDOList[i].MessageId)
+				if messageDO == nil {
+					continue
+				}
+				m, _ := doToChannelMessage(messageDO)
+				if m != nil {
+					messages = append(messages, m)
+				}
+			}
+		}
 	} else {
-		messages = make([]*mtproto.Message, 0, len(doList))
-		for _, do := range doList {
-			// TODO(@benqi): check data
-			m, _ := messageDOToMessage(&do)
-			messages = append(messages, m)
+		var (
+			doList []dataobject.MessagesDO
+		)
+
+		switch peerType {
+		case base.PEER_USER:
+			// doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+			doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+		case base.PEER_CHAT:
+			// doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+			doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectBackwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+		case base.PEER_CHANNEL:
+			// boxDOList := dao.GetChannelMessageBoxesDAO(dao.DB_SLAVE).SelectBackwardByOffsetLimit(peerId, offset, limit)
+			// _ = boxDOList
+		default:
+		}
+
+		glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
+		if len(doList) == 0 {
+			messages = []*mtproto.Message{}
+		} else {
+			messages = make([]*mtproto.Message, 0, len(doList))
+			for _, do := range doList {
+				// TODO(@benqi): check data
+				m, _ := messageDOToMessage(&do)
+				messages = append(messages, m)
+			}
 		}
 	}
+
 	return
 }
 
 func LoadForwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
 
-	var (
-		doList []dataobject.MessagesDO
-	)
-
-	switch peerType {
-	case base.PEER_USER:
-		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
-	case base.PEER_CHAT:
-		doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
-	case base.PEER_CHANNEL:
-	default:
-	}
-
-
-	glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
-	if len(doList) == 0 {
-		messages = []*mtproto.Message{}
+	if peerType == base.PEER_CHANNEL {
+		boxDOList := dao.GetChannelMessageBoxesDAO(dao.DB_SLAVE).SelectForwardByOffsetLimit(peerId, offset, limit)
+		if len(boxDOList) == 0 {
+			messages = []*mtproto.Message{}
+		} else {
+			messages = make([]*mtproto.Message, 0, len(boxDOList))
+			for i := 0; i < len(boxDOList); i++ {
+				// TODO(@benqi): check data
+				messageDO := dao.GetMessageDatasDAO(dao.DB_SLAVE).SelectByMessageId(boxDOList[i].MessageId)
+				if messageDO == nil {
+					continue
+				}
+				m, _ := doToChannelMessage(messageDO)
+				if m != nil {
+					messages = append(messages, m)
+				}
+			}
+		}
 	} else {
-		messages = make([]*mtproto.Message, 0, len(doList))
-		for _, do := range doList {
-			// TODO(@benqi): check data
-			m, _ := messageDOToMessage(&do)
-			messages = append(messages, m)
+		var (
+			doList []dataobject.MessagesDO
+		)
+
+		switch peerType {
+		case base.PEER_USER:
+			doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerUserOffsetLimit(userId, peerId, int8(peerType), offset, limit)
+		case base.PEER_CHAT:
+			doList = dao.GetMessagesDAO(dao.DB_SLAVE).SelectForwardByPeerOffsetLimit(userId, int8(peerType), peerId, offset, limit)
+		case base.PEER_CHANNEL:
+			//boxDOList := dao.GetChannelMessageBoxesDAO(dao.DB_SLAVE).SelectForwardByOffsetLimit(peerId, offset, limit)
+			//_ = boxDOList
+		default:
+		}
+
+
+		glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
+		if len(doList) == 0 {
+			messages = []*mtproto.Message{}
+		} else {
+			messages = make([]*mtproto.Message, 0, len(doList))
+			for _, do := range doList {
+				// TODO(@benqi): check data
+				m, _ := messageDOToMessage(&do)
+				messages = append(messages, m)
+			}
 		}
 	}
+
 	return
 }
 

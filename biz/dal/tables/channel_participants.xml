@@ -20,6 +20,31 @@
         </sql>
     </operation>
 
+    <operation name="SelectByUserIdList" result_set="list">
+        <params>
+            <param name="idList" type="[]int32" />
+        </params>
+        <sql>
+            SELECT
+                id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state
+            FROM
+                channel_participants
+            WHERE
+                channel_id = :channel_id AND user_id IN(:idList)
+        </sql>
+    </operation>
+
+    <operation name="SelectByUserId">
+        <sql>
+            SELECT
+                id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state
+            FROM
+                channel_participants
+            WHERE
+                channel_id = :channel_id AND user_id = :user_id
+        </sql>
+    </operation>
+
     <operation name="DeleteChannelUser">
         <sql>
             UPDATE

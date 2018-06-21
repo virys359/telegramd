@@ -107,7 +107,6 @@ import (
  */
 
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":5,"access_hash":1006843769775067136}},"offset_id":1,"add_offset":-25,"limit":50}
-
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
 // messages.getHistory#dcbb8260 peer:InputPeer offset_id:int offset_date:int add_offset:int limit:int max_id:int min_id:int hash:int = messages.Messages;
@@ -127,114 +126,227 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	offsetId := request.GetOffsetId()
 	addOffset := request.GetAddOffset()
 	limit := request.GetLimit()
-	messages := []*mtproto.Message{}
 
-	if limit == 1 {
-		// 1. Load dialog last messag
-		offsetId = math.MaxInt32
-		messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-	} else {
-		if addOffset < 0 {
-			if addOffset + limit <= 0 {
-				// LOAD_HISTORY_TYPE_FORWARD
-				// Forward是按升序排
-				messages = message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
-			} else {
-				// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
-				// 按升序排
-				messages1 := message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
-				messages = append(messages, messages1...)
-				// 降序
-				messages2 := message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
-				messages = append(messages, messages2...)
-
-				// @benqi: why??????
-				if addOffset == -limit / 2 {
-					for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
-						messages[i], messages[j] = messages[j], messages[i]
-					}
-				}
-			}
-		} else {
-			// 降序
-			messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
-		}
-		//// 2. getHistory
-		//loadType := calcLoadHistoryType(addOffset, limit)
-		//switch loadType {
-		//case LOAD_HISTORY_TYPE_BACKWARD:
-		//	messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-		//case LOAD_HISTORY_TYPE_FORWARD:
-		//	// TODO(@benqi): 可能有问题，可能要按limit以及addOffset全部取出然后排除掉多余的offset
-		//	// Forward是按升序排
-		//	messages = model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-		//
-		//case LOAD_HISTORY_TYPE_FIRST_UNREAD:
-		//	// TODO(@benqi): 暂不实现
-		//case LOAD_HISTORY_TYPE_AROUND_MESSAGE:
-		//	// 按升序排
-		//	messages1 := model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
-		//	messages = append(messages, messages1...)
-		//	// 降序
-		//	messages2 := model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
-		//	messages = append(messages, messages2...)
-		//case LOAD_HISTORY_TYPE_AROUND_DATE:
-		//	// TODO(@benqi): 暂不实现
-		//}
-	}
-
-	// TODO(@benqi): 查询出来超过limit条记录是否要处理？
-	// messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, request.GetOffsetId(), request.GetLimit())
-	//for _, message := range messages {
-	//	switch message.GetConstructor() {
-	//	case mtproto.TLConstructor_CRC32_message:
-	//		m := message.To_Message()
-	//		userIdList = append(userIdList, m.GetFromId())
-	//		p := helper.FromPeer(m.GetToId())
-	//		switch p.PeerType {
-	//		case helper.PEER_SELF, helper.PEER_USER:
-	//			userIdList = append(userIdList, p.PeerId)
-	//		case helper.PEER_CHAT:
-	//			chatIdList = append(chatIdList, p.PeerId)
-	//		case helper.PEER_CHANNEL:
-	//			// TODO(@benqi): add channel
-	//		}
-	//	case mtproto.TLConstructor_CRC32_messageService:
-	//		m := message.To_MessageService()
-	//		userIdList = append(userIdList, m.GetFromId())
-	//		chatIdList = append(chatIdList, m.GetToId().GetData2().GetChatId())
-	//	}
-	//}
 	var messagesMessages *mtproto.Messages_Messages
 
-	// messagesMessages := mtproto.NewTLMessagesMessages()
-	if len(messages) == int(request.GetLimit()) {
-		messaegesSlice := mtproto.NewTLMessagesMessagesSlice()
-		messaegesSlice.SetCount(request.GetLimit())
-		messaegesSlice.SetMessages(messages)
-		//request.GetLimit())
-		messagesMessages = messaegesSlice.To_Messages_Messages()
-	} else {
-		messages3 := mtproto.NewTLMessagesMessages()
-		messages3.SetMessages(messages)
-		messagesMessages = messages3.To_Messages_Messages()
-	}
-	// messagesMessages.SetMessages(messages)
-	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
-	if len(userIdList) > 0 {
-		users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-		messagesMessages.Data2.Users = users
-		//for _, u := range users {
-		//	if u.GetId() == md.UserId {
-		//		u.SetSelf(true)
-		//	}
-		//	u.SetContact(true)
-		//	messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
-		//}
-	}
+	if peer.PeerType == base.PEER_CHANNEL {
+		messages := []*mtproto.Message{}
 
-	if len(chatIdList) > 0 {
-		messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+		if limit == 1 {
+			// 1. Load dialog last messag
+			offsetId = math.MaxInt32
+			messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
+		} else {
+			if addOffset < 0 {
+				if addOffset + limit <= 0 {
+					// LOAD_HISTORY_TYPE_FORWARD
+					// Forward是按升序排
+					messages = message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+				} else {
+					// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
+					// 按升序排
+					messages1 := message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+					messages = append(messages, messages1...)
+					// 降序
+					messages2 := message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
+					messages = append(messages, messages2...)
+
+					// @benqi: why??????
+					if addOffset == -limit / 2 {
+						for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+							messages[i], messages[j] = messages[j], messages[i]
+						}
+					}
+				}
+			} else {
+				// 降序
+				messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
+			}
+			//// 2. getHistory
+			//loadType := calcLoadHistoryType(addOffset, limit)
+			//switch loadType {
+			//case LOAD_HISTORY_TYPE_BACKWARD:
+			//	messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
+			//case LOAD_HISTORY_TYPE_FORWARD:
+			//	// TODO(@benqi): 可能有问题，可能要按limit以及addOffset全部取出然后排除掉多余的offset
+			//	// Forward是按升序排
+			//	messages = model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
+			//
+			//case LOAD_HISTORY_TYPE_FIRST_UNREAD:
+			//	// TODO(@benqi): 暂不实现
+			//case LOAD_HISTORY_TYPE_AROUND_MESSAGE:
+			//	// 按升序排
+			//	messages1 := model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
+			//	messages = append(messages, messages1...)
+			//	// 降序
+			//	messages2 := model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
+			//	messages = append(messages, messages2...)
+			//case LOAD_HISTORY_TYPE_AROUND_DATE:
+			//	// TODO(@benqi): 暂不实现
+			//}
+		}
+
+		// TODO(@benqi): 查询出来超过limit条记录是否要处理？
+		// messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, request.GetOffsetId(), request.GetLimit())
+		//for _, message := range messages {
+		//	switch message.GetConstructor() {
+		//	case mtproto.TLConstructor_CRC32_message:
+		//		m := message.To_Message()
+		//		userIdList = append(userIdList, m.GetFromId())
+		//		p := helper.FromPeer(m.GetToId())
+		//		switch p.PeerType {
+		//		case helper.PEER_SELF, helper.PEER_USER:
+		//			userIdList = append(userIdList, p.PeerId)
+		//		case helper.PEER_CHAT:
+		//			chatIdList = append(chatIdList, p.PeerId)
+		//		case helper.PEER_CHANNEL:
+		//			// TODO(@benqi): add channel
+		//		}
+		//	case mtproto.TLConstructor_CRC32_messageService:
+		//		m := message.To_MessageService()
+		//		userIdList = append(userIdList, m.GetFromId())
+		//		chatIdList = append(chatIdList, m.GetToId().GetData2().GetChatId())
+		//	}
+		//}
+
+		// messagesMessages := mtproto.NewTLMessagesMessages()
+		if len(messages) == int(request.GetLimit()) {
+			messaegesSlice := mtproto.NewTLMessagesMessagesSlice()
+			messaegesSlice.SetCount(request.GetLimit())
+			messaegesSlice.SetMessages(messages)
+			//request.GetLimit())
+			messagesMessages = messaegesSlice.To_Messages_Messages()
+		} else {
+			messages3 := mtproto.NewTLMessagesMessages()
+			messages3.SetMessages(messages)
+			messagesMessages = messages3.To_Messages_Messages()
+		}
+		// messagesMessages.SetMessages(messages)
+		userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
+		if len(userIdList) > 0 {
+			users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+			messagesMessages.Data2.Users = users
+			//for _, u := range users {
+			//	if u.GetId() == md.UserId {
+			//		u.SetSelf(true)
+			//	}
+			//	u.SetContact(true)
+			//	messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
+			//}
+		}
+
+		if len(chatIdList) > 0 {
+			messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+		}
+	} else {
+		messages := []*mtproto.Message{}
+
+		if limit == 1 {
+			// 1. Load dialog last messag
+			offsetId = math.MaxInt32
+			messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
+		} else {
+			if addOffset < 0 {
+				if addOffset + limit <= 0 {
+					// LOAD_HISTORY_TYPE_FORWARD
+					// Forward是按升序排
+					messages = message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+				} else {
+					// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
+					// 按升序排
+					messages1 := message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+					messages = append(messages, messages1...)
+					// 降序
+					messages2 := message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
+					messages = append(messages, messages2...)
+
+					// @benqi: why??????
+					if addOffset == -limit / 2 {
+						for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+							messages[i], messages[j] = messages[j], messages[i]
+						}
+					}
+				}
+			} else {
+				// 降序
+				messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
+			}
+			//// 2. getHistory
+			//loadType := calcLoadHistoryType(addOffset, limit)
+			//switch loadType {
+			//case LOAD_HISTORY_TYPE_BACKWARD:
+			//	messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
+			//case LOAD_HISTORY_TYPE_FORWARD:
+			//	// TODO(@benqi): 可能有问题，可能要按limit以及addOffset全部取出然后排除掉多余的offset
+			//	// Forward是按升序排
+			//	messages = model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
+			//
+			//case LOAD_HISTORY_TYPE_FIRST_UNREAD:
+			//	// TODO(@benqi): 暂不实现
+			//case LOAD_HISTORY_TYPE_AROUND_MESSAGE:
+			//	// 按升序排
+			//	messages1 := model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
+			//	messages = append(messages, messages1...)
+			//	// 降序
+			//	messages2 := model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
+			//	messages = append(messages, messages2...)
+			//case LOAD_HISTORY_TYPE_AROUND_DATE:
+			//	// TODO(@benqi): 暂不实现
+			//}
+		}
+
+		// TODO(@benqi): 查询出来超过limit条记录是否要处理？
+		// messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, request.GetOffsetId(), request.GetLimit())
+		//for _, message := range messages {
+		//	switch message.GetConstructor() {
+		//	case mtproto.TLConstructor_CRC32_message:
+		//		m := message.To_Message()
+		//		userIdList = append(userIdList, m.GetFromId())
+		//		p := helper.FromPeer(m.GetToId())
+		//		switch p.PeerType {
+		//		case helper.PEER_SELF, helper.PEER_USER:
+		//			userIdList = append(userIdList, p.PeerId)
+		//		case helper.PEER_CHAT:
+		//			chatIdList = append(chatIdList, p.PeerId)
+		//		case helper.PEER_CHANNEL:
+		//			// TODO(@benqi): add channel
+		//		}
+		//	case mtproto.TLConstructor_CRC32_messageService:
+		//		m := message.To_MessageService()
+		//		userIdList = append(userIdList, m.GetFromId())
+		//		chatIdList = append(chatIdList, m.GetToId().GetData2().GetChatId())
+		//	}
+		//}
+
+		// messagesMessages := mtproto.NewTLMessagesMessages()
+		if len(messages) == int(request.GetLimit()) {
+			messaegesSlice := mtproto.NewTLMessagesMessagesSlice()
+			messaegesSlice.SetCount(request.GetLimit())
+			messaegesSlice.SetMessages(messages)
+			//request.GetLimit())
+			messagesMessages = messaegesSlice.To_Messages_Messages()
+		} else {
+			messages3 := mtproto.NewTLMessagesMessages()
+			messages3.SetMessages(messages)
+			messagesMessages = messages3.To_Messages_Messages()
+		}
+		// messagesMessages.SetMessages(messages)
+		userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
+		if len(userIdList) > 0 {
+			users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+			messagesMessages.Data2.Users = users
+			//for _, u := range users {
+			//	if u.GetId() == md.UserId {
+			//		u.SetSelf(true)
+			//	}
+			//	u.SetContact(true)
+			//	messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
+			//}
+		}
+
+		if len(chatIdList) > 0 {
+			messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+		}
 	}
 	glog.Infof("messages.getHistory#dcbb8260 - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages, nil

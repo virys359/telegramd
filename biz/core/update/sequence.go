@@ -115,3 +115,23 @@ func CurrentMessageBoxId(key string) (seq int64) {
 	seq, _ = dao.GetSequenceDAO(dao.CACHE).CurrentMessageBoxId(key)
 	return
 }
+
+func NextChannelPtsId(key string) (seq int64) {
+	seq, _ = dao.GetSequenceDAO(dao.CACHE).NextChannelPtsId(key)
+	return
+}
+
+func CurrentChannelPtsId(key string) (seq int64) {
+	seq, _ = dao.GetSequenceDAO(dao.CACHE).CurrentChannelPtsId(key)
+	return
+}
+
+func NextChannelMessageBoxId(key string) (seq int64) {
+	seq, _ = dao.GetSequenceDAO(dao.CACHE).NextChannelMessageBoxId(key)
+	return
+}
+
+func CurrentChannelMessageBoxId(key string) (seq int64) {
+	seq, _ = dao.GetSequenceDAO(dao.CACHE).CurrentChannelMessageBoxId(key)
+	return
+}

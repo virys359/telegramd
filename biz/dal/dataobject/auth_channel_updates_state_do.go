@@ -15,22 +15,17 @@
  * limitations under the License.
  */
 
-package main
+package dataobject
 
-import (
-	"flag"
-	"github.com/nebulaim/telegramd/access/session/server"
-	"github.com/nebulaim/telegramd/baselib/app"
-)
-
-func init() {
-	flag.Set("alsologtostderr", "true")
-	flag.Set("log_dir", "false")
-}
-
-func main() {
-	flag.Parse()
-
-	instance := server.NewSessionServer("/Users/benqi/go/src/github.com/nebulaim/telegramd/access/session/session.toml")
-	app.DoMainAppInstance(instance)
+type AuthChannelUpdatesStateDO struct {
+	Id        int32  `db:"id"`
+	AuthKeyId int64  `db:"auth_key_id"`
+	UserId    int32  `db:"user_id"`
+	ChannelId int32  `db:"channel_id"`
+	Pts       int32  `db:"pts"`
+	Pts2      int32  `db:"pts2"`
+	Date      int32  `db:"date"`
+	CreatedAt string `db:"created_at"`
+	UpdatedAt string `db:"updated_at"`
+	DeletedAt string `db:"deleted_at"`
 }

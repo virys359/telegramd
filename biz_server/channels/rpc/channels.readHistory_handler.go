@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
@@ -29,9 +28,10 @@ import (
 // channels.readHistory#cc104937 channel:InputChannel max_id:int = Bool;
 func (s *ChannelsServiceImpl) ChannelsReadHistory(ctx context.Context, request *mtproto.TLChannelsReadHistory) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ChannelsReadHistory - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("channels.readHistory#cc104937 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl ChannelsReadHistory logic
 
-	return nil, fmt.Errorf("Not impl ChannelsReadHistory")
+	glog.Infof("channels.readHistory#cc104937 - reply: {true}")
+	return mtproto.ToBool(true), nil
 }

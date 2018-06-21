@@ -27,6 +27,8 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/chat"
+	"github.com/nebulaim/telegramd/biz/core/channel"
+	"github.com/nebulaim/telegramd/biz/core/dialog"
 )
 
 // android client request source code
@@ -121,13 +123,21 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
  	dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
 	// glog.Infof("dialogs - {%v}", dialogs)
 
-	messageIdList, userIdList, chatIdList, _ := message.PickAllIDListByDialogs(dialogs)
+	// messageIdList, userIdList, chatIdList, channelIdList
+	dialogItems := dialog.PickAllIDListByDialogs2(dialogs)
 
-	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList)
-	// glog.Info("messages.getDialogs#191ba9c5 - messages: %s", logger.JsonDebugData(messages))
+	messages := message.GetMessagesByPeerAndMessageIdList2(md.UserId, dialogItems.MessageIdList)
+	for k, v := range dialogItems.ChannelMessageIdMap {
+		m := message.GetChannelMessage(k, v)
+		if m != nil {
+			messages = append(messages, m)
+		}
+	}
 
-	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-	chats := chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+	users := user.GetUsersBySelfAndIDList(md.UserId, dialogItems.UserIdList)
+	chats := chat.GetChatListBySelfAndIDList(md.UserId, dialogItems.ChatIdList)
+	chats = append(chats, channel.GetChannelListBySelfAndIDList(md.UserId, dialogItems.ChannelIdList)...)
+
 	messageDialogs := mtproto.TLMessagesDialogs{Data2: &mtproto.Messages_Dialogs_Data{
 		Dialogs:  dialogs,
 		Messages: messages,

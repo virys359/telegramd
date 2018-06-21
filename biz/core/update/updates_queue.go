@@ -28,6 +28,23 @@ import (
 	"github.com/golang/glog"
 )
 
+/*
+    private int getUpdateType(TLRPC.Update update) {
+        if (update instanceof TLRPC.TL_updateNewMessage || update instanceof TLRPC.TL_updateReadMessagesContents || update instanceof TLRPC.TL_updateReadHistoryInbox ||
+                update instanceof TLRPC.TL_updateReadHistoryOutbox || update instanceof TLRPC.TL_updateDeleteMessages || update instanceof TLRPC.TL_updateWebPage ||
+                update instanceof TLRPC.TL_updateEditMessage) {
+            return 0;
+        } else if (update instanceof TLRPC.TL_updateNewEncryptedMessage) {
+            return 1;
+        } else if (update instanceof TLRPC.TL_updateNewChannelMessage || update instanceof TLRPC.TL_updateDeleteChannelMessages || update instanceof TLRPC.TL_updateEditChannelMessage ||
+                update instanceof TLRPC.TL_updateChannelWebPage) {
+            return 2;
+        } else {
+            return 3;
+        }
+    }
+
+ */
 const (
 	PTS_UPDATE_TYPE_UNKNOWN = 0
 
@@ -40,9 +57,12 @@ const (
 	PTS_UPDATE_READ_MESSAGE_CONENTS = 6
 	PTS_UPDATE_EDIT_MESSAGE = 7
 
+	// qts
+	PTS_UPDATE_NEW_ENCRYPTED_MESSAGE = 8
+
 	// channel pts
 	PTS_UPDATE_NEW_CHANNEL_MESSAGE = 9
-	PTS_UPDATE_DELETE_CHANNEL_MESSAGE = 9
+	PTS_UPDATE_DELETE_CHANNEL_MESSAGES = 9
 	PTS_UPDATE_EDIT_CHANNEL_MESSAGE = 10
 	PTS_UPDATE_EDIT_CHANNEL_WEBPAGE = 11
 )
@@ -158,6 +178,18 @@ func getUpdateType(update *mtproto.Update) int8 {
 		return PTS_UPDATE_READ_MESSAGE_CONENTS
 	case mtproto.TLConstructor_CRC32_updateEditMessage:
 		return PTS_UPDATE_EDIT_MESSAGE
+
+	case mtproto.TLConstructor_CRC32_updateNewEncryptedMessage:
+		return PTS_UPDATE_NEW_ENCRYPTED_MESSAGE
+
+	case mtproto.TLConstructor_CRC32_updateNewChannelMessage:
+		return PTS_UPDATE_NEW_CHANNEL_MESSAGE
+	case mtproto.TLConstructor_CRC32_updateDeleteChannelMessages:
+		return PTS_UPDATE_DELETE_CHANNEL_MESSAGES
+	case mtproto.TLConstructor_CRC32_updateEditChannelMessage:
+		return PTS_UPDATE_EDIT_CHANNEL_MESSAGE
+	case mtproto.TLConstructor_CRC32_updateChannelWebPage:
+		return PTS_UPDATE_EDIT_CHANNEL_WEBPAGE
 	}
 	return PTS_UPDATE_TYPE_UNKNOWN
 }
@@ -176,6 +208,22 @@ func AddToPtsQueue(userId, pts, ptsCount int32, update *mtproto.Update) int32 {
 	}
 
 	return int32(dao.GetUserPtsUpdatesDAO(dao.DB_MASTER).Insert(do))
+}
+
+func AddToChannelPtsQueue(channelId, pts, ptsCount int32, update *mtproto.Update) int32 {
+	// TODO(@benqi): check error
+	updateData, _ := json.Marshal(update)
+
+	do := &dataobject.ChannelPtsUpdatesDO{
+		ChannelId:  channelId,
+		Pts:        pts,
+		PtsCount:   ptsCount,
+		UpdateType: getUpdateType(update),
+		UpdateData: string(updateData),
+		Date2:      int32(time.Now().Unix()),
+	}
+
+	return int32(dao.GetChannelPtsUpdatesDAO(dao.DB_MASTER).Insert(do))
 }
 
 /*
@@ -222,6 +270,29 @@ func GetUpdatesByGtPts(userId, pts int32) (otherUpdates []*mtproto.Update, boxID
 
 func GetUpdateListByGtPts(userId, pts int32) []*mtproto.Update {
 	doList := dao.GetUserPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(userId, pts)
+	if len(doList) == 0 {
+		return []*mtproto.Update{}
+	}
+
+	updates := make([]*mtproto.Update, 0, len(doList))
+	for _, do := range doList {
+		update := &mtproto.Update{Constructor: mtproto.TLConstructor_CRC32_UNKNOWN, Data2: &mtproto.Update_Data{}}
+		err := json.Unmarshal([]byte(do.UpdateData), update)
+		if err != nil {
+			glog.Errorf("unmarshal pts's update(%d)error: %v", do.Id, err)
+			continue
+		}
+		if getUpdateType(update) != do.UpdateType {
+			glog.Errorf("update data error.")
+			continue
+		}
+		updates = append(updates, update)
+	}
+	return updates
+}
+
+func GetChannelUpdateListByGtPts(channelId, pts int32) []*mtproto.Update {
+	doList := dao.GetChannelPtsUpdatesDAO(dao.DB_SLAVE).SelectByGtPts(channelId, pts)
 	if len(doList) == 0 {
 		return []*mtproto.Update{}
 	}

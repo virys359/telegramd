@@ -18,20 +18,35 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/channel"
 )
 
 // channels.exportInvite#c7560885 channel:InputChannel = ExportedChatInvite;
 func (s *ChannelsServiceImpl) ChannelsExportInvite(ctx context.Context, request *mtproto.TLChannelsExportInvite) (*mtproto.ExportedChatInvite, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ChannelsExportInvite - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("channels.exportInvite#c7560885 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ChannelsExportInvite logic
+	if request.Channel.Constructor == mtproto.TLConstructor_CRC32_inputChannelEmpty {
+		// TODO(@benqi): chatUser不能是inputUser和inputUserSelf
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error("channels.exportInvite#c7560885 - error: ", err, "; InputPeer invalid")
+		return nil, err
+	}
 
-	return nil, fmt.Errorf("Not impl ChannelsExportInvite")
+	channelLogic, err := channel.NewChannelLogicById(request.GetChannel().GetData2().GetChannelId())
+	if err != nil {
+
+	}
+
+	exportedChatInvite := &mtproto.TLChatInviteExported{Data2: &mtproto.ExportedChatInvite_Data{
+		Link: channelLogic.ExportedChatInvite(),
+	}}
+
+	glog.Infof("channels.exportInvite#c7560885 - reply: {%v}", exportedChatInvite)
+	return exportedChatInvite.To_ExportedChatInvite(), nil
 }

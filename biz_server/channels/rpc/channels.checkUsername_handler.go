@@ -18,20 +18,26 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/channel"
 )
 
 // channels.checkUsername#10e6bd2c channel:InputChannel username:string = Bool;
 func (s *ChannelsServiceImpl) ChannelsCheckUsername(ctx context.Context, request *mtproto.TLChannelsCheckUsername) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ChannelsCheckUsername - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("channels.checkUsername#10e6bd2c - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ChannelsCheckUsername logic
+	var checked bool
+	if request.GetChannel().GetConstructor() == mtproto.TLConstructor_CRC32_inputChannelEmpty {
+		checked = false
+	} else {
+		checked = channel.CheckChannelUserName(request.GetChannel().GetData2().GetChannelId(), request.GetUsername())
+	}
 
-	return nil, fmt.Errorf("Not impl ChannelsCheckUsername")
+	glog.Infof("channels.checkUsername#10e6bd2c - reply: {%v}", checked)
+	return mtproto.ToBool(checked), nil
 }

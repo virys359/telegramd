@@ -91,6 +91,81 @@ func (dao *ChannelParticipantsDAO) SelectByChannelId(channel_id int32) []dataobj
 	return values
 }
 
+// select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = :channel_id and user_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *ChannelParticipantsDAO) SelectByUserIdList(channel_id int32, idList []int32) []dataobject.ChannelParticipantsDO {
+	var q = "select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = ? and user_id in (?)"
+	query, a, err := sqlx.In(q, channel_id, idList)
+	rows, err := dao.db.Queryx(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByUserIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.ChannelParticipantsDO
+	for rows.Next() {
+		v := dataobject.ChannelParticipantsDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByUserIdList(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUserIdList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return values
+}
+
+// select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = :channel_id and user_id = :user_id
+// TODO(@benqi): sqlmap
+func (dao *ChannelParticipantsDAO) SelectByUserId(channel_id int32, user_id int32) *dataobject.ChannelParticipantsDO {
+	var query = "select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = ? and user_id = ?"
+	rows, err := dao.db.Queryx(query, channel_id, user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.ChannelParticipantsDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByUserId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return do
+}
+
 // update channel_participants set state = 1 where id = :id
 // TODO(@benqi): sqlmap
 func (dao *ChannelParticipantsDAO) DeleteChannelUser(id int32) int64 {

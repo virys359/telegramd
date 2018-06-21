@@ -190,6 +190,13 @@ func (this *UpdatesLogic) AddUpdateNewMessage(message *mtproto.Message) {
 	this.updates = append(this.updates, updateNewMessage.To_Update())
 }
 
+func (this *UpdatesLogic) AddUpdateNewChannelMessage(message *mtproto.Message) {
+	updateNewChannelMessage := &mtproto.TLUpdateNewChannelMessage{Data2: &mtproto.Update_Data{
+		Message_1: message,
+	}}
+	this.updates = append(this.updates, updateNewChannelMessage.To_Update())
+}
+
 //
 //func (this *UpdatesLogic) AddUpdateNewMessageAndMessageId(message *logic.MessageBox) {
 //	updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
@@ -221,6 +228,7 @@ func (this *UpdatesLogic) AddUpdateMessageId(messageId int32, randomId int64) {
 		Id_4:     messageId,
 		RandomId: randomId,
 	}}
+
 	this.updates = append(this.updates, updateMessageID.To_Update())
 }
 
@@ -232,8 +240,8 @@ func (this *UpdatesLogic) PushTopUpdateMessageId(messageId int32, randomId int64
 
 	updates2 := make([]*mtproto.Update, 0, 1 + len(this.updates))
 	updates2 = append(updates2, updateMessageID.To_Update())
-	updates2 = append(updates2, this.updates...)
-	this.updates = updates2
+	this.updates = append(updates2, this.updates...)
+	// this.updates = updates2
 	// this.updates = append(this.updates, updateMessageID.To_Update())
 }
 
@@ -276,12 +284,14 @@ func (this *UpdatesLogic) SetupState(state *mtproto.ClientUpdatesState) {
 			mtproto.TLConstructor_CRC32_updateReadHistoryInbox,
 			mtproto.TLConstructor_CRC32_updateWebPage,
 			mtproto.TLConstructor_CRC32_updateReadMessagesContents,
-			mtproto.TLConstructor_CRC32_updateEditMessage:
+			mtproto.TLConstructor_CRC32_updateEditMessage,
 
-			//if pts >= state.GetPtsCount() {
-			//	return false
-			//}
-			//
+			// channel
+			mtproto.TLConstructor_CRC32_updateNewChannelMessage,
+			mtproto.TLConstructor_CRC32_updateDeleteChannelMessages,
+			mtproto.TLConstructor_CRC32_updateEditChannelMessage,
+			mtproto.TLConstructor_CRC32_updateChannelWebPage:
+
 			update.Data2.Pts = pts
 			update.Data2.PtsCount = 1
 			pts += 1
