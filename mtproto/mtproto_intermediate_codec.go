@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
-	"net"
+	"github.com/nebulaim/telegramd/baselib/net2"
 )
 
 // https://core.telegram.org/mtproto#tcp-transport
@@ -35,10 +35,10 @@ import (
 // thus decreasing total packet size by 8 bytes.
 //
 type MTProtoIntermediateCodec struct {
-	conn *net.TCPConn
+	conn *net2.BufferedConn
 }
 
-func NewMTProtoIntermediateCodec(conn *net.TCPConn) *MTProtoIntermediateCodec {
+func NewMTProtoIntermediateCodec(conn *net2.BufferedConn) *MTProtoIntermediateCodec {
 	return &MTProtoIntermediateCodec{
 		conn: conn,
 	}

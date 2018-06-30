@@ -18,11 +18,11 @@
 package net2
 
 import (
-	"sync"
-	"github.com/golang/glog"
 	"errors"
-	"math/rand"
 	"fmt"
+	"github.com/golang/glog"
+	"math/rand"
+	"sync"
 )
 
 type TcpClientGroupManager struct {

@@ -24,7 +24,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"io"
-	"net"
+	"github.com/nebulaim/telegramd/baselib/net2"
 )
 
 type MTProtoAppCodec struct {
@@ -32,7 +32,7 @@ type MTProtoAppCodec struct {
 	stream *AesCTR128Stream
 }
 
-func NewMTProtoAppCodec(conn *net.TCPConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *MTProtoAppCodec {
+func NewMTProtoAppCodec(conn *net2.BufferedConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *MTProtoAppCodec {
 	return &MTProtoAppCodec{
 		// conn:   conn,
 		stream: NewAesCTR128Stream(conn, d, e),
@@ -154,12 +154,12 @@ func (c *MTProtoAppCodec) Close() error {
 }
 
 type AesCTR128Stream struct {
-	conn    *net.TCPConn
+	conn    *net2.BufferedConn
 	encrypt *crypto.AesCTR128Encrypt
 	decrypt *crypto.AesCTR128Encrypt
 }
 
-func NewAesCTR128Stream(conn *net.TCPConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *AesCTR128Stream {
+func NewAesCTR128Stream(conn *net2.BufferedConn, d *crypto.AesCTR128Encrypt, e *crypto.AesCTR128Encrypt) *AesCTR128Stream {
 	return &AesCTR128Stream{
 		conn:    conn,
 		decrypt: d,

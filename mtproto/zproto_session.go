@@ -52,9 +52,11 @@ const (
 )
 
 const (
-	SESSION_HANDSHAKE    = 0x01
-	SESSION_SESSION_DATA = 0x02
-	SYNC_DATA            = 0x03
+	SESSION_HANDSHAKE    			= 0x01
+	SESSION_SESSION_DATA 			= 0x02
+	SYNC_DATA            			= 0x03
+	SESSION_SESSION_CLIENT_NEW 		= 0x04
+	SESSION_SESSION_CLIENT_CLOSED 	= 0x05
 )
 
 //func isHandshake(state int) bool {
@@ -118,6 +120,42 @@ func (m *ZProtoSessionData) Encode() []byte {
 func (m *ZProtoSessionData) Decode(b []byte) error {
 	m.MTPMessage = &MTPRawMessage{}
 	return m.MTPMessage.Decode(b)
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+type ZProtoSessionClientNew struct {
+	proto int32
+	// MTPPayload    []byte
+	// MTPMessage *MTPRawMessage
+}
+
+func (m *ZProtoSessionClientNew) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.UInt(SESSION_SESSION_CLIENT_NEW)
+	x.Int(m.proto)
+	return x.GetBuf()
+}
+
+func (m *ZProtoSessionClientNew) Decode(b []byte) error {
+	dbuf := NewDecodeBuf(b)
+	m.proto = dbuf.Int()
+	return dbuf.GetError()
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+type ZProtoSessionClientClosed struct {
+	// MTPPayload    []byte
+	// MTPMessage *MTPRawMessage
+}
+
+func (m *ZProtoSessionClientClosed) Encode() []byte {
+	x := NewEncodeBuf(512)
+	x.UInt(SESSION_SESSION_CLIENT_CLOSED)
+	return x.GetBuf()
+}
+
+func (m *ZProtoSessionClientClosed) Decode(b []byte) error {
+	return nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

@@ -82,7 +82,7 @@ func dialogDOListToDialogList(dialogDOList []dataobject.UserDialogsDO) (dialogs 
 func GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int32) (dialogs []*mtproto.Dialog) {
 	dialogDOList := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPinnedAndOffset(
 		userId, base2.BoolToInt8(isPinned), offsetId, limit)
-	glog.Infof("GetDialogsByOffsetId - dialogDOList: {%v}, query: {userId: %d, isPinned: %d, offeetId: %d, limit: %d ", dialogDOList, userId, isPinned, offsetId, limit)
+	glog.Infof("GetDialogsByOffsetId - dialogDOList: {%v}, query: {userId: %d, isPinned: %v, offeetId: %d, limit: %d ", dialogDOList, userId, isPinned, offsetId, limit)
 
 	dialogs = dialogDOListToDialogList(dialogDOList)
 	return

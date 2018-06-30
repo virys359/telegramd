@@ -18,8 +18,8 @@
 package net2
 
 import (
-	"io"
 	"fmt"
+	"io"
 )
 
 type Protocol interface {
@@ -39,7 +39,7 @@ type Codec interface {
 }
 
 type MessageBase interface {
-	Encode() ([]byte)
+	Encode() []byte
 	Decode(b []byte) error
 }
 
@@ -67,5 +67,3 @@ func NewCodecByName(name string, rw io.ReadWriter) (Codec, error) {
 	}
 	return protocol.NewCodec(rw)
 }
-
-

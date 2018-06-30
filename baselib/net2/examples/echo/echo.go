@@ -93,6 +93,9 @@ func (c* EchoClient) OnClientDataArrived(client *net2.TcpClient, msg interface{}
 
 func (c* EchoClient) OnClientClosed(client *net2.TcpClient) {
 	glog.Infof("OnConnectionClosed" + client.GetRemoteName())
+	if client.AutoReconnect() {
+		client.Reconnect()
+	}
 }
 
 func (c* EchoClient) OnClientTimer(client *net2.TcpClient) {
@@ -105,13 +108,13 @@ type EchoInsance struct {
 }
 
 func (this *EchoInsance) Initialize() error {
-	listener, err := net.Listen("tcp", "0.0.0.0:22345")
-	if err != nil {
-		glog.Errorf("listen error: %v", err)
-		return err
-	}
-
-	this.server = NewEchoServer(listener, "echo")
+	//listener, err := net.Listen("tcp", "0.0.0.0:22345")
+	//if err != nil {
+	//	glog.Errorf("listen error: %v", err)
+	//	return err
+	//}
+	//
+	// this.server = NewEchoServer(listener, "echo")
 
 	clients := map[string][]string{
 		"echo1":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
@@ -123,13 +126,13 @@ func (this *EchoInsance) Initialize() error {
 }
 
 func (this *EchoInsance) RunLoop() {
-	go this.server.Serve()
+	// go this.server.Serve()
 	this.client.Serve()
 }
 
 func (this *EchoInsance) Destroy() {
 	this.client.client.Stop()
-	this.server.server.Stop()
+	// this.server.server.Stop()
 }
 
 func main() {

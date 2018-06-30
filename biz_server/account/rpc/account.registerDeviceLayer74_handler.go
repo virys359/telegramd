@@ -42,7 +42,7 @@ func (s *AccountServiceImpl) AccountRegisterDeviceLayer74(ctx context.Context, r
 	}
 
 	// TODO(@benqi): check toke_type invalid
-	if request.TokenType < core.TOKEN_TYPE_APNS || request.TokenType > core.TOKEN_TYPE_INTERNAL_PUSH {
+	if request.TokenType < core.TOKEN_TYPE_APNS || request.TokenType > core.TOKEN_TYPE_MAXSIZE {
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 		glog.Error(err)
 		return nil, err

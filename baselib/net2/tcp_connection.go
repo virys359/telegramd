@@ -18,11 +18,11 @@
 package net2
 
 import (
+	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
-	"errors"
-	"fmt"
 )
 
 var ConnectionClosedError = errors.New("Connection Closed")
@@ -32,7 +32,7 @@ var globalConnectionId uint64
 
 type TcpConnection struct {
 	name          string
-	conn          *net.TCPConn
+	conn          net.Conn
 	id            uint64
 	codec         Codec
 	sendChan      chan interface{}
@@ -45,7 +45,7 @@ type TcpConnection struct {
 	Context       interface{}
 }
 
-func NewTcpConnection(name string, conn *net.TCPConn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
+func NewTcpConnection(name string, conn net.Conn, sendChanSize int, codec Codec, cb closeCallback) *TcpConnection {
 	if globalConnectionId >= 0xfffffffffffffff {
 		atomic.StoreUint64(&globalConnectionId, 0)
 	}
@@ -84,6 +84,10 @@ func (c *TcpConnection) Name() string {
 
 func (c *TcpConnection) GetConnID() uint64 {
 	return c.id
+}
+
+func (c *TcpConnection) GetNetConn() net.Conn {
+	return c.conn
 }
 
 func (c *TcpConnection) IsClosed() bool {

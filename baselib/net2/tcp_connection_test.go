@@ -18,10 +18,10 @@
 package net2
 
 import (
-	"fmt"
-	"testing"
 	"errors"
+	"fmt"
 	"sync"
+	"testing"
 )
 
 type TestConnCodec struct {
@@ -35,7 +35,7 @@ func (c *TestConnCodec) Send(msg interface{}) error {
 	c.RLock()
 	defer c.RUnlock()
 
-	if c.isClosed{
+	if c.isClosed {
 		return errors.New(`codec is closed`)
 	}
 
@@ -69,7 +69,7 @@ type TestConnSimulation struct {
 	name         string
 	receivedChan chan interface{}
 	sendChan     chan interface{}
-	errChan     chan error
+	errChan      chan error
 	connChanSize int
 	numberOfMsg  int
 }
@@ -82,14 +82,14 @@ func (tc *TestConnSimulation) simulateSend() (result []string, err error) {
 
 	for i := 0; i < tc.numberOfMsg; i++ {
 		go func(n int) {
-			if err = conn.Send(fmt.Sprintf(`msg%d`, n)); err != nil{
+			if err = conn.Send(fmt.Sprintf(`msg%d`, n)); err != nil {
 				tc.errChan <- err
 			}
 		}(i)
 	}
 
 	cnt := tc.numberOfMsg
-	for{
+	for {
 		select {
 		case m, _ := <-tc.sendChan:
 			result = append(result, m.(string))
@@ -117,7 +117,7 @@ func TestSend(t *testing.T) {
 	}
 
 	result, err := simulation.simulateSend()
-	if err != nil{
+	if err != nil {
 		t.Error(err)
 	}
 
@@ -149,7 +149,7 @@ func TestConnectionError(t *testing.T) {
 
 	_, err := simulation.simulateSend()
 
-	if err != ConnectionClosedError &&  err != ConnectionBlockedError && err != nil {
+	if err != ConnectionClosedError && err != ConnectionBlockedError && err != nil {
 		t.Errorf(`expected ConnectionClosedError or ConnectionBlockedError but get --> %s`, err.Error())
 	}
 }

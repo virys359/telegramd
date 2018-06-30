@@ -31,7 +31,8 @@ func init() {
 func main() {
 	flag.Parse()
 
-	instance := server.NewFrontendServer("./frontend.toml")
+	instance := server.NewFrontendServer("/Users/benqi/go/src/github.com/nebulaim/telegramd/access/frontend/frontend.toml")
+	// instance := server.NewFrontendServer("./frontend.toml")
 	app.DoMainAppInstance(instance)
 }
 

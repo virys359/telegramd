@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
-	"net"
+	"github.com/nebulaim/telegramd/baselib/net2"
 )
 
 // https://core.telegram.org/mtproto#tcp-transport
@@ -36,10 +36,10 @@ import (
 // and 4 CRC32 bytes at the end (length, sequence number, and payload together).
 //
 type MTProtoFullCodec struct {
-	conn *net.TCPConn
+	conn *net2.BufferedConn
 }
 
-func NewMTProtoFullCodec(conn *net.TCPConn) *MTProtoFullCodec {
+func NewMTProtoFullCodec(conn *net2.BufferedConn) *MTProtoFullCodec {
 	return &MTProtoFullCodec{
 		conn: conn,
 	}

@@ -19,8 +19,6 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 ![架构图](doc/image/architecture-001.jpeg)
 
 ### 文档
-[RoadMap](doc/road-map.md)
-
 [Diffie–Hellman key exchange](doc/dh-key-exchange.md)
 
 [Creating an Authorization Key](doc/Creating_an_Authorization_Key.md)
@@ -44,9 +42,9 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 [iOS client for telegramd](https://github.com/nebulaim/TelegramiOS)
 
-Web客户端（敬请期待）
+[tdesktop for telegramd](https://github.com/nebulaim/tdesktop/tree/telegramd)
 
-桌面客户端（敬请期待）
+Web客户端（敬请期待）
 
 #### 开源客户端库修改适配版本
 tdlib

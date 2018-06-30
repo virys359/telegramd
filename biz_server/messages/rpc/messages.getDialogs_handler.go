@@ -120,7 +120,8 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 		}
 	 */
 
- 	dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
+	// dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
+	dialogs := user.GetDialogsByOffsetId(md.UserId, false, offsetId, request.GetLimit())
 	// glog.Infof("dialogs - {%v}", dialogs)
 
 	// messageIdList, userIdList, chatIdList, channelIdList

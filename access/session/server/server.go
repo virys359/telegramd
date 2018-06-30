@@ -186,9 +186,13 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 		payload, _ := zmsg.Message.(*mtproto.ZProtoRawPayload)
 		msgType := binary.LittleEndian.Uint32(payload.Payload[:4])
 		switch msgType {
+		case mtproto.SESSION_SESSION_CLIENT_NEW:
+			return nil
 		case mtproto.SESSION_SESSION_DATA:
 			return s.sessionManager.onSessionData2(conn.GetConnID(), zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
 			// return s.sessionManager.onSessionData(conn, zmsg.SessionId, zmsg.Metadata, payload.Payload[4:])
+		case mtproto.SESSION_SESSION_CLIENT_CLOSED:
+			return nil
 		case mtproto.SYNC_DATA:
 			sres, err := s.syncHandler.onSyncData(conn, payload.Payload[4:])
 			if err != nil {
@@ -202,6 +206,7 @@ func (s *SessionServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg in
 				Message:   sres,
 			}
 			return conn.Send(res)
+
 		default:
 			return fmt.Errorf("invalid payload type: %v", msg)
 		}

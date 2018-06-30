@@ -18,10 +18,10 @@
 package net2
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"net"
 	"testing"
-	"fmt"
 	"time"
 )
 
@@ -109,7 +109,7 @@ func (ts *TestTcpClientSimulation) simulate() (result []string, e error) {
 
 	// clients
 	var clients []*TestTcpPingClient
-	for i := 0; i < ts.clientNo; i ++ {
+	for i := 0; i < ts.clientNo; i++ {
 		client := NewTestClient(fmt.Sprintf(`client%d`, i), ts.protoName, listener.Addr().String(), ts.receivedChan, ts.clientChanSizeCnt)
 		clients = append(clients, client)
 		go client.Serve()
@@ -131,7 +131,7 @@ func (ts *TestTcpClientSimulation) simulate() (result []string, e error) {
 
 	result = make([]string, 0)
 
-	for cnt := 0; cnt < ts.clientNo*ts.clientMsgCnt; cnt ++ {
+	for cnt := 0; cnt < ts.clientNo*ts.clientMsgCnt; cnt++ {
 		select {
 		case msg, _ := <-ts.receivedChan:
 			result = append(result, msg.(string))

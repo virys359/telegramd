@@ -18,11 +18,11 @@
 package net2
 
 import (
+	"fmt"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/sync2"
 	"net"
 	"testing"
-	"fmt"
-	"github.com/nebulaim/telegramd/baselib/sync2"
 )
 
 type TestTcpPingClientGroup struct {
@@ -92,7 +92,7 @@ func (ts *TestClientGroupSimulation) simulate() (result []string, e error) {
 	servers := make([]string, 0)
 	ts.servers = make([]*TestPingPongServer, 0)
 
-	for i := 0; i < ts.serverCnt; i ++ {
+	for i := 0; i < ts.serverCnt; i++ {
 		listener, err := net.Listen("tcp", "0.0.0.0:0")
 		if err != nil {
 			glog.Errorf("listen error: %v", err)
@@ -131,7 +131,7 @@ func (ts *TestClientGroupSimulation) simulate() (result []string, e error) {
 
 	result = make([]string, 0)
 
-	for cnt := 0; cnt < ts.clientMsgCnt; cnt ++ {
+	for cnt := 0; cnt < ts.clientMsgCnt; cnt++ {
 		select {
 		case msg, _ := <-ts.receivedChan:
 			result = append(result, msg.(string))

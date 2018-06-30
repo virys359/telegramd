@@ -18,14 +18,14 @@
 package net2
 
 import (
-	"net"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
+	"net"
 )
 
 type TestPingPongServer struct {
-	server *TcpServer
-	serverName string
+	server      *TcpServer
+	serverName  string
 	workLoadCnt int
 }
 
@@ -53,7 +53,7 @@ func (s *TestPingPongServer) Stop() {
 	s.server.Stop()
 }
 
-func (s *TestPingPongServer) isReady() bool{
+func (s *TestPingPongServer) isReady() bool {
 	return s.server.running
 }
 

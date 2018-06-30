@@ -18,14 +18,14 @@
 package net2
 
 import (
+	"fmt"
 	"github.com/golang/glog"
+	"io"
 	"net"
 	"runtime/debug"
 	"strings"
-	"time"
-	"io"
-	"fmt"
 	"sync"
+	"time"
 )
 
 const maxConcurrentConnection = 100000
@@ -40,28 +40,25 @@ type TcpServer struct {
 	connectionManager *ConnectionManager
 	listener          net.Listener
 	serverName        string
-	// network           string
-	// address           string
 	protoName         string
 	sendChanSize      int
 	callback          TcpConnectionCallback
 	running           bool
-	sem 			  chan struct{}
-	releaseOnce 	  sync.Once
+	sem               chan struct{}
+	releaseOnce       sync.Once
 }
 
 type TcpServerArgs struct {
-	Listener net.Listener
-	ServerName string
-	ProtoName string
-	SendChanSize int
-	ConnectionCallback TcpConnectionCallback
+	Listener                net.Listener
+	ServerName              string
+	ProtoName               string
+	SendChanSize            int
+	ConnectionCallback      TcpConnectionCallback
 	MaxConcurrentConnection int
 }
 
-
 func NewTcpServer(args TcpServerArgs) *TcpServer {
-	if args.MaxConcurrentConnection < 1{
+	if args.MaxConcurrentConnection < 1 {
 		args.MaxConcurrentConnection = maxConcurrentConnection
 	}
 	return &TcpServer{
@@ -72,7 +69,7 @@ func NewTcpServer(args TcpServerArgs) *TcpServer {
 		sendChanSize:      args.SendChanSize,
 		callback:          args.ConnectionCallback,
 		running:           false,
-		sem:			   make(chan struct{}, args.MaxConcurrentConnection),
+		sem:               make(chan struct{}, args.MaxConcurrentConnection),
 	}
 }
 
@@ -81,9 +78,9 @@ func (s *TcpServer) Serve() {
 		return
 	}
 	s.running = true
+	s.acquire()
 
 	for {
-		s.acquire()
 		conn, err := Accept(s.listener)
 		if err != nil {
 			glog.Error(err)
@@ -97,7 +94,37 @@ func (s *TcpServer) Serve() {
 			return
 		}
 
-		tcpConn := NewTcpConnection(s.serverName, conn.(*net.TCPConn), s.sendChanSize, codec, s)
+		tcpConn := NewTcpConnection(s.serverName, conn, s.sendChanSize, codec, s)
+		go s.establishTcpConnection(tcpConn)
+	}
+
+	s.running = false
+}
+
+// TODO(@benqi): 讨巧的办法
+func (s *TcpServer) Serve2() {
+	if s.running {
+		return
+	}
+	s.running = true
+	s.acquire()
+
+	for {
+		conn, err := Accept(s.listener)
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+
+		conn2 := NewBufferedConn(conn)
+		codec, err := NewCodecByName(s.protoName, conn2)
+		if err != nil {
+			glog.Error(err)
+			conn.Close()
+			return
+		}
+
+		tcpConn := NewTcpConnection(s.serverName, conn2, s.sendChanSize, codec, s)
 		go s.establishTcpConnection(tcpConn)
 	}
 
@@ -178,7 +205,7 @@ func (s *TcpServer) establishTcpConnection(conn *TcpConnection) {
 	}
 }
 
-func (s *TcpServer) onNewConnection (conn *TcpConnection) {
+func (s *TcpServer) onNewConnection(conn *TcpConnection) {
 	if s.connectionManager != nil {
 		s.connectionManager.putConnection(conn)
 	}
@@ -188,7 +215,7 @@ func (s *TcpServer) onNewConnection (conn *TcpConnection) {
 	}
 }
 
-func (s *TcpServer) onConnectionClosed (conn *TcpConnection) {
+func (s *TcpServer) onConnectionClosed(conn *TcpConnection) {
 	if s.connectionManager != nil {
 		s.connectionManager.delConnection(conn)
 	}

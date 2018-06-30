@@ -18,8 +18,8 @@ package net2
 
 import (
 	"bufio"
-	"io"
 	"github.com/golang/glog"
+	"io"
 )
 
 type TestCodec struct {
@@ -51,7 +51,7 @@ func (c *TestCodec) Close() error {
 	return c.Closer.Close()
 }
 
-func (c *TestCodec) ClearSendChan(ic <-chan interface{}){
+func (c *TestCodec) ClearSendChan(ic <-chan interface{}) {
 	glog.Info(`TestCodec ClearSendChan, `, ic)
 }
 
@@ -67,4 +67,3 @@ func (b *TestProto) NewCodec(rw io.ReadWriter) (cc Codec, err error) {
 	}
 	return c, nil
 }
-

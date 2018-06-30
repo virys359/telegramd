@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
-	"net"
+	"github.com/nebulaim/telegramd/baselib/net2"
 )
 
 // https://core.telegram.org/mtproto#tcp-transport
@@ -36,10 +36,10 @@ import (
 // In this case, server responses look the same (the server does not send 0xefas the first byte).
 //
 type MTProtoAbridgedCodec struct {
-	conn *net.TCPConn
+	conn *net2.BufferedConn
 }
 
-func NewMTProtoAbridgedCodec(conn *net.TCPConn) *MTProtoAbridgedCodec {
+func NewMTProtoAbridgedCodec(conn *net2.BufferedConn) *MTProtoAbridgedCodec {
 	return &MTProtoAbridgedCodec{
 		conn: conn,
 	}

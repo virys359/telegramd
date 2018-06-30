@@ -18,11 +18,11 @@
 package net2
 
 import (
-	"net"
-	"github.com/golang/glog"
-	"time"
-	"runtime/debug"
 	"errors"
+	"github.com/golang/glog"
+	"net"
+	"runtime/debug"
+	"time"
 )
 
 type TcpClientCallBack interface {
@@ -161,7 +161,7 @@ func (c *TcpClient) GetTimer() time.Duration {
 	return c.timeInterval
 }
 
-func (c *TcpClient) SetTimer(d time.Duration)  {
+func (c *TcpClient) SetTimer(d time.Duration) {
 	c.timeInterval = d
 }
 

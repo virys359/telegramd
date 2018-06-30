@@ -58,7 +58,7 @@ func newTcpServer(config *ServerConfig, cb net2.TcpConnectionCallback) (*net2.Tc
 	server := net2.NewTcpServer(net2.TcpServerArgs{
 		Listener:           lsn,
 		ServerName:         config.Name,
-		ProtoName:          config.ProtoName,
+		ProtoName:          "mtproto",
 		SendChanSize:       1024,
 		ConnectionCallback: cb,
 	}) // todo(yumcoder): set max connection
@@ -97,6 +97,9 @@ type connContext struct {
 	md             *mtproto.ZProtoMetadata
 	handshakeState *mtproto.HandshakeState
 	seqNum         uint64
+
+	sessionAddr    string
+	authKeyId      int64
 }
 
 func (ctx *connContext) getState() int {
@@ -211,9 +214,9 @@ func (s *FrontendServer) Initialize() error {
 }
 
 func (s *FrontendServer) RunLoop() {
-	go s.server80.Serve()
-	go s.server443.Serve()
-	go s.server5222.Serve()
+	go s.server80.Serve2()
+	go s.server443.Serve2()
+	go s.server5222.Serve2()
 
 	// go s.clientManager.Serve()
 	go s.authKeyClientWatcher.WatchClients(nil)
@@ -253,6 +256,14 @@ func (s *FrontendServer) newMetadata(conn *net2.TcpConnection) *mtproto.ZProtoMe
 
 func (s *FrontendServer) OnNewConnection(conn *net2.TcpConnection) {
 	// glog.Infof("OnNewConnection - peer(%v)", conn.RemoteAddr())
+	// TODO(@benqi): peekCodec
+	err := conn.Codec().(*mtproto.MTProtoProxyCodec).PeekCodec()
+	if err != nil {
+		glog.Error(err)
+		conn.Close()
+		return
+	}
+
 	conn.Context = &connContext{
 		state: mtproto.STATE_CONNECTED2,
 		md: &mtproto.ZProtoMetadata{
@@ -267,7 +278,6 @@ func (s *FrontendServer) OnNewConnection(conn *net2.TcpConnection) {
 		},
 		seqNum: 1,
 	}
-
 	glog.Infof("onNewConnection - peer(%s), ctx: {%v}", conn, conn.Context)
 }
 
@@ -306,6 +316,8 @@ func (s *FrontendServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg i
 
 func (s *FrontendServer) OnConnectionClosed(conn *net2.TcpConnection) {
 	glog.Infof("onConnectionClosed - peer(%s)", conn)
+	// ctx, _ := conn.Context.(*connContext)
+	s.sendClientClosed(conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,11 +404,15 @@ func (s *FrontendServer) OnClientDataArrived(client *net2.TcpClient, msg interfa
 			smsg.MTPMessage.AuthKeyId,
 			len(payload.Payload))
 
-		err := conn.Send(smsg.MTPMessage)
-		if err != nil {
-			glog.Info("onClientDataArrived: send data to clientManager error: ", err)
+		conn = s.getConnBySessionID(zmsg.SessionId)
+		if conn != nil {
+			err := conn.Send(smsg.MTPMessage)
+			if err != nil {
+				glog.Info("onClientDataArrived: send data to clientManager error: ", err)
+			}
+			return err
 		}
-		return err
+		return nil
 	default:
 		err := fmt.Errorf("invalid zmsg: %v", zmsg)
 
@@ -455,23 +471,85 @@ func (s *FrontendServer) onUnencryptedRawMessage(ctx *connContext, conn *net2.Tc
 
 func (s *FrontendServer) onEncryptedRawMessage(ctx *connContext, conn *net2.TcpConnection, mmsg *mtproto.MTPRawMessage) error {
 	glog.Infof("onEncryptedRawMessage - peer(%s) recv data, len = %d, auth_key_id = %d", conn, len(mmsg.Payload), mmsg.AuthKeyId)
-	// sentToClient
-	hmsg := &mtproto.ZProtoSessionData{
-		MTPMessage: mmsg,
-	}
-	zmsg := &mtproto.ZProtoMessage{
-		SessionId: s.genSessionId(conn), // conn.GetConnID(),
-		SeqNum:    ctx.seqNum,
-		Metadata:  s.newMetadata(conn),
-		Message:   &mtproto.ZProtoRawPayload{
-			Payload: hmsg.Encode(),
-		},
-	}
-	ctx.seqNum++
 
 	if kaddr, ok := s.ketama.Get(base.Int64ToString(mmsg.AuthKeyId)); ok {
+		s.checkAndSendClientNew(ctx, conn, kaddr, mmsg.AuthKeyId)
+
+		// sentToClient
+		hmsg := &mtproto.ZProtoSessionData{
+			MTPMessage: mmsg,
+		}
+		zmsg := &mtproto.ZProtoMessage{
+			SessionId: s.genSessionId(conn), // conn.GetConnID(),
+			SeqNum:    ctx.seqNum,
+			Metadata:  s.newMetadata(conn),
+			Message:   &mtproto.ZProtoRawPayload{
+				Payload: hmsg.Encode(),
+			},
+		}
+		ctx.seqNum++
 		return s.clientManager.SendDataToAddress("session", kaddr, zmsg)
 	} else {
 		return fmt.Errorf("kaddr not exists")
+	}
+}
+
+func (s *FrontendServer) checkAndSendClientNew(ctx *connContext, conn *net2.TcpConnection, kaddr string, authKeyId int64) error {
+	var err error
+	if ctx.sessionAddr == "" {
+		hmsg := &mtproto.ZProtoSessionClientNew{
+			// MTPMessage: mmsg,
+		}
+		zmsg := &mtproto.ZProtoMessage{
+			SessionId: s.genSessionId(conn), // conn.GetConnID(),
+			SeqNum:    ctx.seqNum,
+			Metadata:  s.newMetadata(conn),
+			Message:   &mtproto.ZProtoRawPayload{
+				Payload: hmsg.Encode(),
+			},
+		}
+		ctx.seqNum++
+		err = s.clientManager.SendDataToAddress("session", kaddr, zmsg)
+		if err == nil {
+			ctx.sessionAddr = kaddr
+			ctx.authKeyId = authKeyId
+		} else {
+			glog.Error(err)
+		}
+	} else {
+		// TODO(@benqi): check ctx.sessionAddr == kaddr
+	}
+
+	return err
+}
+
+func (s *FrontendServer) sendClientClosed(conn *net2.TcpConnection) {
+	if conn.Context == nil {
+		return
+	}
+
+	ctx, _ := conn.Context.(*connContext)
+	if ctx.sessionAddr == "" || ctx.authKeyId == 0 {
+		return
+	}
+
+	var err error
+	if kaddr, ok := s.ketama.Get(base.Int64ToString(ctx.authKeyId)); ok && kaddr == ctx.sessionAddr {
+		hmsg := &mtproto.ZProtoSessionClientClosed{
+			// MTPMessage: mmsg,
+		}
+		zmsg := &mtproto.ZProtoMessage{
+			SessionId: s.genSessionId(conn), // conn.GetConnID(),
+			SeqNum:    ctx.seqNum,
+			Metadata:  s.newMetadata(conn),
+			Message:   &mtproto.ZProtoRawPayload{
+				Payload: hmsg.Encode(),
+			},
+		}
+		ctx.seqNum++
+		err = s.clientManager.SendDataToAddress("session", ctx.sessionAddr, zmsg)
+		if err != nil {
+			glog.Error(err)
+		}
 	}
 }
