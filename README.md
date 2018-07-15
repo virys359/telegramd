@@ -27,12 +27,82 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 [Encrypted CDNs for Speed and Security](doc/cdn.md) [@steedfly](https://github.com/steedfly)翻译
 ### 编译和安装
+#### 简单安装
+- 准备
+    ```
+    mkdir $GOPATH/src/github.com/nebulaim/
+    cd $GOPATH/src/github.com/nebulaim/
+    git clone https://github.com/nebulaim/telegramd.git
+    ```
 
-[编译和安装](doc/build.md)
+- 编译代码
+    ```
+    编译frontend
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/frontend
+        go get
+        go build
+    
+    编译session
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/session
+        go get
+        go build
+    
+    编译auth_key
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
+        go get
+        go build
+        
+    编译sync
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
+        go get
+        go build
+    
+    编译nbfs
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
+        go get
+        go build
+    
+    编译biz_server
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server
+        go get
+        go build
+    ```
 
-[编译和运行脚本](scripts/build.sh)
+- 运行
+    ```
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/frontend
+    ./frontend
 
-[依赖脚本](scripts/prerequisite.sh)
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
+    ./auth_key
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
+    ./sync
+    
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
+    mkdir /opt/nbfs/0
+    mkdir /opt/nbfs/s
+    mkdir /opt/nbfs/m
+    mkdir /opt/nbfs/x
+    mkdir /opt/nbfs/y
+    mkdir /opt/nbfs/a
+    mkdir /opt/nbfs/b
+    mkdir /opt/nbfs/c
+    ./nbfs
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server
+    ./biz_server
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/session
+    ./session
+    ```
+
+#### 更多文档
+[Build document](doc/build.md)
+
+[Build script](scripts/build.sh)
+
+[Prerequisite script](scripts/prerequisite.sh)
 
 ### 配套客户端
 #### 官方开源客户端修改适配版本
@@ -44,7 +114,7 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 [tdesktop for telegramd](https://github.com/nebulaim/tdesktop/tree/telegramd)
 
-Web客户端（敬请期待）
+[webogram for telegram](https://github.com/nebulaim/webogram)
 
 #### 开源客户端库修改适配版本
 tdlib

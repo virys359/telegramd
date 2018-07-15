@@ -86,10 +86,10 @@ note: ***my-secret-pw*** is the same as defined in run mysql container section
 ##### 2. set custom password in config files
 if password is empty ignore this section otherwise add password to the following files
 ```
-$ $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key/auth_key.toml
-$ $GOPATH/src/github.com/nebulaim/telegramd/push/sync/sync.toml
-$ $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs/nbfs.toml
-$ $GOPATH/src/github.com/nebulaim/telegramd/biz_server/biz_server.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key/auth_key.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/server/sync/sync.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs/nbfs.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server/biz_server.toml
 ```
 set ***my-secret-pw*** in mysql dsn as follow:
 ```
@@ -108,42 +108,42 @@ dsn = "root:my-secret-pw@/nebulaim?charset=utf8"
  
 ### build frontend
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/frontend
 $ go get
 $ go build
 ```
 
 ### build session
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/session
 $ go get
 $ go build
 ```
 
 ### build auth_key
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
 $ go get
 $ go build
 ```
 
 ### build sync
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
 $ go get
 $ go build
 ```
 
 ### build nbfs
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
 $ go get
 $ go build
 ```
 
 ### build biz_server
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/biz_server
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server
 $ go get
 $ go build
 ```
@@ -169,16 +169,16 @@ port = 12345
 
 ### run telegramd modules
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/frontend
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/frontend
 $ ./frontend
 
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/auth_key
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
 $ ./auth_key
 
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/push/sync
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
 $ ./sync
 
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/nbfs/nbfs
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
 $ mkdir /opt/nbfs/0
 $ mkdir /opt/nbfs/s
 $ mkdir /opt/nbfs/m
@@ -189,10 +189,10 @@ $ mkdir /opt/nbfs/b
 $ mkdir /opt/nbfs/c
 $ ./nbfs
 
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/biz_server
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server
 $ ./biz_server
 
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/access/session
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/session
 $ ./session
 ```
 
