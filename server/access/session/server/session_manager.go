@@ -34,6 +34,20 @@ func newSessionManager() *sessionManager {
 	return &sessionManager{}
 }
 
+func (s *sessionManager) onSessionClientNew(clientConnID uint64, md *zproto.ZProtoMetadata, sessData *zproto.ZProtoSessionClientNew) error {
+	var sessList *clientSessionManager
+
+	if vv, ok := s.sessions.Load(sessData.AuthKeyId); !ok {
+		err := fmt.Errorf("onSessionClientNew - not find sessionList by authKeyId: {%d}", sessData.AuthKeyId)
+		glog.Warning(err)
+		return err
+	} else {
+		sessList, _ = vv.(*clientSessionManager)
+	}
+
+	return sessList.onSessionClientNew(makeClientConnID(sessData.ConnType, clientConnID, sessData.SessionId))
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *sessionManager) onSessionData(clientConnID uint64, md *zproto.ZProtoMetadata, sessData *zproto.ZProtoSessionData) error {
 	glog.Infof("onSessionData: data: {client_conn_id: %d, frontendConnID: %d, connType: %d, md: %v, buf_len: %d, buf: %s}",
@@ -66,6 +80,21 @@ func (s *sessionManager) onSessionData(clientConnID uint64, md *zproto.ZProtoMet
 
 	return sessList.OnSessionDataArrived(makeClientConnID(sessData.ConnType, clientConnID, sessData.SessionId), md, sessData.MtpRawData)
 }
+
+func (s *sessionManager) onSessionClientClosed(clientConnID uint64, md *zproto.ZProtoMetadata, sessData *zproto.ZProtoSessionClientClosed) error {
+	var sessList *clientSessionManager
+
+	if vv, ok := s.sessions.Load(sessData.AuthKeyId); !ok {
+		err := fmt.Errorf("onSessionClientClosed - not find sessionList by authKeyId: {%d}", sessData.AuthKeyId)
+		glog.Warning(err)
+		return err
+	} else {
+		sessList, _ = vv.(*clientSessionManager)
+	}
+
+	return sessList.onSessionClientClosed(makeClientConnID(sessData.ConnType, clientConnID, sessData.SessionId))
+}
+
 
 func (s *sessionManager) onSyncData(authKeyId, sessionId int64, md *zproto.ZProtoMetadata, data *messageData) error {
 	var sessList *clientSessionManager

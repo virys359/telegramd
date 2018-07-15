@@ -111,6 +111,11 @@ type syncData struct {
 	data      *messageData
 }
 
+type connData struct {
+	isNew    bool
+	connID   ClientConnID
+}
+
 ////////////////////////////////////////
 const (
 	// inited --> work --> idle --> quit
@@ -189,6 +194,8 @@ func (s *clientSessionManager) runLoop() {
 				s.onSessionData(sessionMsg.(*sessionData))
 			case *syncData:
 				s.onSyncData(sessionMsg.(*syncData))
+			case *connData:
+
 			default:
 				panic("receive invalid type msg")
 			}
@@ -216,6 +223,14 @@ func (s *clientSessionManager) rpcRunLoop() {
 	}
 }
 
+func (s *clientSessionManager) onSessionClientNew(connID ClientConnID) error {
+	select {
+	case s.sessionDataChan <- &connData{true, connID}:
+		return nil
+	}
+	return nil
+}
+
 func (s *clientSessionManager) OnSessionDataArrived(connID ClientConnID, md *zproto.ZProtoMetadata, buf []byte) error {
 	select {
 	case s.sessionDataChan <- &sessionData{connID, md, buf}:
@@ -223,6 +238,15 @@ func (s *clientSessionManager) OnSessionDataArrived(connID ClientConnID, md *zpr
 	}
 	return nil
 }
+
+func (s *clientSessionManager) onSessionClientClosed(connID ClientConnID) error {
+	select {
+	case s.sessionDataChan <- &connData{false, connID}:
+		return nil
+	}
+	return nil
+}
+
 
 func (s *clientSessionManager) OnSyncDataArrived(sessionID int64, md *zproto.ZProtoMetadata, data *messageData) error {
 	select {
@@ -351,6 +375,14 @@ func (s *clientSessionManager) onTimer() {
 func (s *clientSessionManager) onSyncData(syncMsg *syncData) {
 	glog.Infof("onSyncData - sync_msg: {%v}", syncMsg)
 	s.updatesSession.onSyncData(syncMsg.md, syncMsg.data.obj)
+}
+
+func (s *clientSessionManager) onConnData(connMsg *connData) {
+	if connMsg.isNew {
+
+	} else {
+		s.updatesSession.UnSubscribeUpdates(connMsg.connID)
+	}
 }
 
 func (s *clientSessionManager) onRpcResult(rpcResults *rpcApiMessages) {

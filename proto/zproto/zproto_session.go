@@ -180,29 +180,45 @@ func (m *ZProtoSyncData) Decode(dbuf *bytes2.BufferInput) error {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 type ZProtoSessionClientNew struct {
-	proto int32
+	// proto int32
+	ConnType   int
+	SessionId  uint64
+	AuthKeyId  int64
 }
 
 func (m *ZProtoSessionClientNew) Encode(x *bytes2.BufferOutput) {
 	x.UInt32(SESSION_SESSION_CLIENT_NEW)
-	x.Int32(m.proto)
+	x.Int32(int32(m.ConnType))
+	x.UInt64(m.SessionId)
+	x.Int64(m.AuthKeyId)
 }
 
 func (m *ZProtoSessionClientNew) Decode(dbuf *bytes2.BufferInput) error {
-	m.proto = dbuf.Int32()
+	m.ConnType = int(dbuf.Int32())
+	m.SessionId = dbuf.UInt64()
+	m.AuthKeyId = dbuf.Int64()
 	return dbuf.Error()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 type ZProtoSessionClientClosed struct {
+	ConnType   int
+	SessionId  uint64
+	AuthKeyId  int64
 }
 
 func (m *ZProtoSessionClientClosed) Encode(x *bytes2.BufferOutput) {
 	x.UInt32(SESSION_SESSION_CLIENT_CLOSED)
+	x.Int32(int32(m.ConnType))
+	x.UInt64(m.SessionId)
+	x.Int64(m.AuthKeyId)
 }
 
 func (m *ZProtoSessionClientClosed) Decode(dbuf *bytes2.BufferInput) error {
-	return nil
+	m.ConnType = int(dbuf.Int32())
+	m.SessionId = dbuf.UInt64()
+	m.AuthKeyId = dbuf.Int64()
+	return dbuf.Error()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

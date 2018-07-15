@@ -101,10 +101,13 @@ func (s *SessionServer) OnServerNewConnection(conn *net2.TcpConnection) {
 func (s *SessionServer) OnServerMessageDataArrived(conn *net2.TcpConnection, md *zproto.ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, msg zproto.MessageBase) error {
 	switch msg.(type) {
 	case *zproto.ZProtoSessionClientNew:
-		glog.Info("onServerMessageDataArrived - sessionClientNew: ", conn)
-		return nil
+		glog.Info("onSessionClientNew - sessionClientNew: ", conn)
+		return s.sessionManager.onSessionClientNew(conn.GetConnID(), md, msg.(*zproto.ZProtoSessionClientNew))
 	case *zproto.ZProtoSessionData:
 		return s.sessionManager.onSessionData(conn.GetConnID(), md, msg.(*zproto.ZProtoSessionData))
+	case *zproto.ZProtoSessionClientClosed:
+		glog.Info("onSessionClientClosed - sessionClientClosed: ", conn)
+		return s.sessionManager.onSessionClientClosed(conn.GetConnID(), md, msg.(*zproto.ZProtoSessionClientClosed))
 	case *zproto.ZProtoSyncData:
 		sres, err := s.syncHandler.onSyncData(conn, msg.(*zproto.ZProtoSyncData))
 		if err != nil {
@@ -112,9 +115,6 @@ func (s *SessionServer) OnServerMessageDataArrived(conn *net2.TcpConnection, md 
 			return nil
 		}
 		return zproto.SendMessageByConn(conn, md, sres)
-	case *zproto.ZProtoSessionClientClosed:
-		glog.Info("onServerMessageDataArrived - sessionClientClosed: ", conn)
-		return nil
 	default:
 		err := fmt.Errorf("invalid payload type: %v", msg)
 		glog.Error(err)

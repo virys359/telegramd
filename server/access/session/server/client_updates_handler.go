@@ -97,19 +97,34 @@ func (c *clientUpdatesHandler) getUpdatesConnID() *ClientConnID {
 	return nil
 }
 
-func (c *clientUpdatesHandler) UnSubscribeUpdates() {
+func (c *clientUpdatesHandler) UnSubscribeUpdates(connID ClientConnID) {
 	// TODO(@benqi): clear
+
+	if connID.connType == mtproto.TRANSPORT_TCP {
+		c.tcpConnID = connID
+		c.connState = kConnUnknown
+	} else if connID.connType == mtproto.TRANSPORT_HTTP {
+		for e := c.httpWaitConnIDs.Front(); e != nil; e = e.Next() {
+			connID2, _ := e.Value.(ClientConnID)
+			if connID2.Equal(connID) {
+				c.httpWaitConnIDs.Remove(e)
+			}
+		}
+		if c.httpWaitConnIDs.Len() == 0 {
+			c.connState = kConnUnknown
+		}
+	}
 }
 
 func (c *clientUpdatesHandler) onSyncData(md *zproto.ZProtoMetadata, obj mtproto.TLObject) {
 	//switch obj.(type) {
 	//case *mtproto.Updates:
-		syncMessage := &pendingMessage{
-			messageId: mtproto.GenerateMessageId(),
-			confirm: true,
-			tl: obj,
-		}
-		c.syncMessages = append(c.syncMessages, syncMessage)
+	syncMessage := &pendingMessage{
+		messageId: mtproto.GenerateMessageId(),
+		confirm: true,
+		tl: obj,
+	}
+	c.syncMessages = append(c.syncMessages, syncMessage)
 	//default:
 	//	glog.Error("invalid upadtes type, c: ", c, ", obj: ", obj)
 	//	return

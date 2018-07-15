@@ -28,6 +28,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/net2"
 	// "strings"
 	"bytes"
+	"time"
 )
 
 type MTProtoHttpProxyCodec struct {
@@ -36,6 +37,9 @@ type MTProtoHttpProxyCodec struct {
 }
 
 func NewMTProtoHttpProxyCodec(conn net.Conn) *MTProtoHttpProxyCodec {
+	// return conn.tcpConn.SetReadDeadline(time.Now().Add(tcpHeartbeat * 2))
+	conn.SetReadDeadline(time.Now().Add(time.Second*60))
+	// .(*net2.BufferedConn).Conn.(*net.TCPConn).SetReadDeadline(time.Now().Add())
 	return &MTProtoHttpProxyCodec{
 		conn:  conn,
 	}
