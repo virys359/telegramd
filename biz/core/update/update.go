@@ -18,7 +18,7 @@
 package updates
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	// "github.com/nebulaim/telegramd/biz_model/logic/message"
 	"time"
 )

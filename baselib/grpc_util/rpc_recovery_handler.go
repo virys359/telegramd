@@ -22,7 +22,7 @@ import (
 	"context"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"runtime/debug"
 	"github.com/golang/glog"
 )

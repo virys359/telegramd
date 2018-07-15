@@ -18,7 +18,7 @@
 package sticker
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/golang/glog"

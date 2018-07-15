@@ -23,6 +23,8 @@ import (
 	"github.com/golang/glog"
 	"os"
 	"flag"
+	"time"
+	"math/rand"
 )
 
 var GAppInstance AppInstance
@@ -42,6 +44,8 @@ type AppInstance interface {
 var ch = make(chan os.Signal, 1)
 
 func DoMainAppInstance(instance AppInstance) {
+	rand.Seed(time.Now().UnixNano())
+
 	if instance == nil {
 		// panic("instance is nil!!!!")
 		glog.Errorf("instance is nil, will exit.")
@@ -64,7 +68,7 @@ func DoMainAppInstance(instance AppInstance) {
 	go instance.RunLoop()
 
 	// fmt.Printf("%d", os.Getpid())
-	glog.Info("Wait quit...")
+	glog.Info("wait quit...")
 
 	s2 := <-ch
 	if i, ok := s2.(syscall.Signal); ok {

@@ -19,53 +19,36 @@ package grpc_util
 
 import (
 	"net"
-	"time"
 	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/middleware/recovery2"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
-	"github.com/coreos/etcd/clientv3"
 	"os/signal"
 	"syscall"
 	"os"
+	"github.com/nebulaim/telegramd/baselib/etcd_util"
 )
 
 type RPCServer struct {
-	addr string
+	addr     string
 	registry *etcd3.EtcdReigistry
 	s        *grpc.Server
 }
 
 func NewRpcServer(addr string, discovery *service_discovery.ServiceDiscoveryServerConfig) *RPCServer {
-	etcdConfg := clientv3.Config{
-		Endpoints: discovery.EtcdAddrs,
+	s := &RPCServer{
+		addr:     addr,
 	}
 
-	registry, err := etcd3.NewRegistry(
-		etcd3.Option{
-			EtcdConfig:  etcdConfg,
-			RegistryDir: "/nebulaim",
-			ServiceName: discovery.ServiceName,
-			NodeID:      discovery.NodeID,
-			NData: etcd3.NodeData{
-				Addr: discovery.RPCAddr,
-				//Metadata: map[string]string{"weight": "1"},
-			},
-			Ttl: time.Duration(discovery.TTL), // * time.Second,
-		})
+	var err error
+	s.registry, err = etcd_util.NewEtcdRegistry(*discovery)
 	if err != nil {
 		glog.Fatal(err)
-		// return nil
 	}
+	s.s = grpc_recovery2.NewRecoveryServer2(BizUnaryRecoveryHandler, BizUnaryRecoveryHandler2, BizStreamRecoveryHandler)
 
-	s := grpc_recovery2.NewRecoveryServer2(BizUnaryRecoveryHandler, BizUnaryRecoveryHandler2, BizStreamRecoveryHandler)
-	rs := &RPCServer{
-		addr:     addr,
-		registry: registry,
-		s:        s,
-	}
-	return rs
+	return s
 }
 
 // type func RegisterRPCServerHandler(s *grpc.Server)

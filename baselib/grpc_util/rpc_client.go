@@ -20,7 +20,7 @@ package grpc_util
 import (
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"fmt"
 	"context"
 	"google.golang.org/grpc/metadata"

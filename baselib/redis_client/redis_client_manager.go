@@ -46,7 +46,7 @@ func  InstallRedisClientManager(configs []RedisConfig) {
 func  GetRedisClient(redisName string) (client *RedisPool) {
 	client, ok := redisClients.redisClients[redisName]
 	if !ok {
-		glog.Errorf("GetRedisClient - Not found client: %s", redisName)
+		glog.Errorf("getRedisClient - Not found client: %s", redisName)
 	}
 	return
 }

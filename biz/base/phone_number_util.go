@@ -20,7 +20,7 @@ package base
 import (
 	"github.com/ttacon/libphonenumber"
 	"fmt"
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 type phoneNumberUtil struct {

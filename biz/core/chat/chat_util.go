@@ -18,13 +18,13 @@
 package chat
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/golang/glog"
 	// photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	"time"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core/account"
-	"github.com/nebulaim/telegramd/biz/nbfs_client"
+	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
 //func CheckChatAccessHash(id int32, hash int64) bool {

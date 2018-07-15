@@ -19,7 +19,7 @@ package base
 
 import (
 	"fmt"
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 const (

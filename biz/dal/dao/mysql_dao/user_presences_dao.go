@@ -22,7 +22,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/jmoiron/sqlx"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 type UserPresencesDAO struct {

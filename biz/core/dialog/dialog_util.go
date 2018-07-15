@@ -17,7 +17,7 @@
 
 package dialog
 
-import "github.com/nebulaim/telegramd/mtproto"
+import "github.com/nebulaim/telegramd/proto/mtproto"
 
 type dialogItems struct {
 	MessageIdList        []int32

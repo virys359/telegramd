@@ -18,7 +18,7 @@
 package chat
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
@@ -27,7 +27,7 @@ import (
 	"fmt"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/biz/nbfs_client"
+	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
 const (

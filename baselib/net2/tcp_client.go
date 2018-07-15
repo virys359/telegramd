@@ -89,6 +89,7 @@ func (c *TcpClient) establishTcpConnection(conn *TcpConnection) {
 		}
 	}()
 
+	// c.conn = conn
 	c.onNewConnection(conn)
 
 	for {
@@ -168,11 +169,15 @@ func (c *TcpClient) SetTimer(d time.Duration) {
 func (c *TcpClient) StartTimer() {
 	if c.conn != nil && !c.conn.IsClosed() {
 		//
-		if c.callback != nil {
-			c.callback.OnClientTimer(c)
-		}
+		//if c.callback != nil {
+		//	c.callback.OnClientTimer(c)
+		//}
 		//next
 		time.AfterFunc(c.timeInterval, func() {
+			if c.callback != nil {
+				c.callback.OnClientTimer(c)
+			}
+
 			c.StartTimer()
 		})
 	}

@@ -33,3 +33,15 @@ mtproto/schemas/diff.73-74.tl
 tools/daeml/daeml
 access/auth_key/auth_key
 baselib/net2/examples/echo/echo
+service/status/status
+service/status/client/testing/testing
+service/idgen/idgen/idgen
+server/sync/sync
+server/nbfs/nbfs
+server/biz_server/biz_server
+server/access/session/session
+server/access/frontend/frontend
+server/access/auth_key/auth_key
+proto/zproto/examples/server/server
+proto/zproto/examples/client/client
+proto/mtproto/schemas/schema.tl.crc32_tool

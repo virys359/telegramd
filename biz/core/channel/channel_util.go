@@ -19,9 +19,9 @@ package channel
 
 import (
 	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/biz/nbfs_client"
+	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"github.com/nebulaim/telegramd/biz/core/account"
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/golang/glog"

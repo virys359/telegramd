@@ -18,7 +18,7 @@
 package webpage
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"net/http"
 	"io/ioutil"
 	"regexp"

@@ -18,7 +18,7 @@
 package message
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"encoding/json"
 	"time"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"

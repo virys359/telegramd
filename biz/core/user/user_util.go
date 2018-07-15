@@ -18,7 +18,7 @@
 package user
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"time"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
@@ -27,7 +27,7 @@ import (
 	"encoding/hex"
 	contact2 "github.com/nebulaim/telegramd/biz/core/contact"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
-	"github.com/nebulaim/telegramd/biz/nbfs_client"
+	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
 func CheckUserAccessHash(id int32, hash int64) bool {

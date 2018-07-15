@@ -56,7 +56,6 @@ var (
 )
 
 func RegisterProtocol(name string, protocol Protocol) {
-	// glog.Info("RegisterProtocol: ", name)
 	protocolRegisters[name] = protocol
 }
 

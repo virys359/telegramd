@@ -18,7 +18,7 @@
 package base
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"fmt"
 )
 
