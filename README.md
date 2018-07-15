@@ -114,7 +114,7 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
 
 [tdesktop for telegramd](https://github.com/nebulaim/tdesktop/tree/telegramd)
 
-[webogram for telegram](https://github.com/nebulaim/webogram)
+[webogram for telegramd](https://github.com/nebulaim/webogram)
 
 #### 开源客户端库修改适配版本
 tdlib
