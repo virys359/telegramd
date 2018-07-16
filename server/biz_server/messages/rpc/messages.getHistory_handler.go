@@ -30,39 +30,6 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
-//const (
-//	LOAD_HISTORY_TYPE_BACKWARD = 0
-//	LOAD_HISTORY_TYPE_FORWARD = 1
-//	LOAD_HISTORY_TYPE_FIRST_UNREAD = 2
-//	LOAD_HISTORY_TYPE_AROUND_MESSAGE = 3
-//	LOAD_HISTORY_TYPE_AROUND_DATE = 4
-//)
-//
-//func calcLoadHistoryType(addOffset, limit int32) int {
-//	if addOffset == 0 {
-//		return LOAD_HISTORY_TYPE_BACKWARD
-//	} else if addOffset == -limit + 5 {
-//		return LOAD_HISTORY_TYPE_AROUND_DATE
-//	} else if addOffset == -limit / 2 {
-//		return LOAD_HISTORY_TYPE_AROUND_MESSAGE
-//	} else if addOffset == -limit - 1 {
-//		return 	LOAD_HISTORY_TYPE_FORWARD
-//	} else if addOffset == -limit + 6 {
-//		// TODO(@benqi): 	} else if (load_type == 2 && max_id != 0) {
-//		return LOAD_HISTORY_TYPE_FIRST_UNREAD
-//	} else {
-//		// TODO(@benqi):
-//		//if (lower_part < 0 && max_id != 0) {
-//		//	TLRPC.Chat chat = getChat(-lower_part);
-//		//	if (ChatObject.isChannel(chat)) {
-//		//		req.add_offset = -1;
-//		//		req.limit += 1;
-//		//	}
-//		//}
-//	}
-//	return LOAD_HISTORY_TYPE_BACKWARD
-//}
-
 // From android client
 //
 // load_type == 0 ? backward loading
@@ -103,8 +70,264 @@ import (
 		return;
 	}
 	req.limit = 1;
-
  */
+
+// From tdesktop client
+/*
+  1. void MainWindow::sendServiceHistoryRequest() {
+	auto offsetId = 0;
+	auto offsetDate = 0;
+	auto addOffset = 0;
+	auto limit = 1;
+	auto maxId = 0;
+	auto minId = 0;
+	auto historyHash = 0;
+	_serviceHistoryRequest = MTP::send(
+
+  2. void MainWidget::checkPeerHistory(PeerData *peer) {
+	auto offsetId = 0;
+	auto offsetDate = 0;
+	auto addOffset = 0;
+	auto limit = 1;
+	auto maxId = 0;
+	auto minId = 0;
+	auto historyHash = 0;
+	MTP::send(
+		MTPmessages_GetHistory(
+
+  3. void ApiWrap::requestMessageAfterDate(
+	// API returns a message with date <= offset_date.
+	// So we request a message with offset_date = desired_date - 1 and add_offset = -1.
+	// This should give us the first message with date >= desired_date.
+	auto offsetId = 0;
+	auto offsetDate = static_cast<int>(QDateTime(date).toTime_t()) - 1;
+	auto addOffset = -1;
+	auto limit = 1;
+	auto maxId = 0;
+	auto minId = 0;
+	auto historyHash = 0;
+	request(MTPmessages_GetHistory(
+
+  4. void HistoryWidget::delayedShowAt(MsgId showAtMsgId) {
+	_delayedShowAtMsgId = showAtMsgId;
+
+	auto from = _peer;
+	auto offsetId = 0;
+	auto offset = 0;
+	auto loadCount = kMessagesPerPage;
+	if (_delayedShowAtMsgId == ShowAtUnreadMsgId) {
+		if (_migrated && _migrated->unreadCount()) {
+			from = _migrated->peer;
+			offset = -loadCount / 2;
+			offsetId = _migrated->inboxReadBefore;
+		} else if (_history->unreadCount()) {
+			offset = -loadCount / 2;
+			offsetId = _history->inboxReadBefore;
+		} else {
+			loadCount = kMessagesPerPageFirst;
+		}
+	} else if (_delayedShowAtMsgId == ShowAtTheEndMsgId) {
+		loadCount = kMessagesPerPageFirst;
+	} else if (_delayedShowAtMsgId > 0) {
+		offset = -loadCount / 2;
+		offsetId = _delayedShowAtMsgId;
+	} else if (_delayedShowAtMsgId < 0 && _history->isChannel()) {
+		if (_delayedShowAtMsgId < 0 && -_delayedShowAtMsgId < ServerMaxMsgId && _migrated) {
+			from = _migrated->peer;
+			offset = -loadCount / 2;
+			offsetId = -_delayedShowAtMsgId;
+		}
+	}
+	auto offsetDate = 0;
+	auto maxId = 0;
+	auto minId = 0;
+	auto historyHash = 0;
+
+	_delayedShowAtRequest = MTP::send(
+		MTPmessages_GetHistory(
+
+  5. void HistoryWidget::loadMessagesDown() {
+	if (!_history || _preloadDownRequest) return;
+
+	if (_history->isEmpty() && _migrated && _migrated->isEmpty()) {
+		return firstLoadMessages();
+	}
+
+	auto loadMigrated = _migrated && !(_migrated->isEmpty() || _migrated->loadedAtBottom() || (!_history->isEmpty() && !_history->loadedAtTop()));
+	auto from = loadMigrated ? _migrated : _history;
+	if (from->loadedAtBottom()) {
+		return;
+	}
+
+	auto loadCount = kMessagesPerPage;
+	auto addOffset = -loadCount;
+	auto offsetId = from->maxMsgId();
+	if (!offsetId) {
+		if (loadMigrated || !_migrated) return;
+		++offsetId;
+		++addOffset;
+	}
+	auto offsetDate = 0;
+	auto maxId = 0;
+	auto minId = 0;
+	auto historyHash = 0;
+
+	_debug_preloadDownOffsetId = offsetId + 1;
+	_debug_preloadDownAddOffset = addOffset;
+	_debug_preloadDownLoadCount = loadCount;
+	_debug_preloadDownPeer = from->peer->id;
+	_preloadDownRequest = MTP::send(
+		MTPmessages_GetHistory(
+
+  6. void HistoryWidget::loadMessages() {
+	if (!_history || _preloadRequest) return;
+
+	if (_history->isEmpty() && _migrated && _migrated->isEmpty()) {
+		return firstLoadMessages();
+	}
+
+	auto loadMigrated = _migrated && (_history->isEmpty() || _history->loadedAtTop() || (!_migrated->isEmpty() && !_migrated->loadedAtBottom()));
+	auto from = loadMigrated ? _migrated : _history;
+	if (from->loadedAtTop()) {
+		return;
+	}
+
+	auto offsetId = from->minMsgId();
+	auto addOffset = 0;
+	auto loadCount = offsetId
+		? kMessagesPerPage
+		: kMessagesPerPageFirst;
+	auto offsetDate = 0;
+	auto maxId = 0;
+	auto minId = 0;
+	auto historyHash = 0;
+
+	_debug_preloadOffsetId = offsetId + 1;
+	_debug_preloadAddOffset = addOffset;
+	_debug_preloadLoadCount = loadCount;
+	_debug_preloadPeer = from->peer->id;
+	_preloadRequest = MTP::send(
+		MTPmessages_GetHistory(
+
+  7. void HistoryWidget::firstLoadMessages() {
+	if (!_history || _firstLoadRequest) return;
+
+	auto from = _peer;
+	auto offsetId = 0;
+	auto offset = 0;
+	auto loadCount = kMessagesPerPage;
+	if (_showAtMsgId == ShowAtUnreadMsgId) {
+		if (_migrated && _migrated->unreadCount()) {
+			_history->getReadyFor(_showAtMsgId);
+			from = _migrated->peer;
+			offset = -loadCount / 2;
+			offsetId = _migrated->inboxReadBefore;
+		} else if (_history->unreadCount()) {
+			_history->getReadyFor(_showAtMsgId);
+			offset = -loadCount / 2;
+			offsetId = _history->inboxReadBefore;
+		} else {
+			_history->getReadyFor(ShowAtTheEndMsgId);
+		}
+	} else if (_showAtMsgId == ShowAtTheEndMsgId) {
+		_history->getReadyFor(_showAtMsgId);
+		loadCount = kMessagesPerPageFirst;
+	} else if (_showAtMsgId > 0) {
+		_history->getReadyFor(_showAtMsgId);
+		offset = -loadCount / 2;
+		offsetId = _showAtMsgId;
+	} else if (_showAtMsgId < 0 && _history->isChannel()) {
+		if (_showAtMsgId < 0 && -_showAtMsgId < ServerMaxMsgId && _migrated) {
+			_history->getReadyFor(_showAtMsgId);
+			from = _migrated->peer;
+			offset = -loadCount / 2;
+			offsetId = -_showAtMsgId;
+		} else if (_showAtMsgId == SwitchAtTopMsgId) {
+			_history->getReadyFor(_showAtMsgId);
+		}
+	}
+
+	auto offsetDate = 0;
+	auto maxId = 0;
+	auto minId = 0;
+	auto historyHash = 0;
+
+	_firstLoadRequest = MTP::send(
+		MTPmessages_GetHistory(
+ */
+
+const (
+	kLoadTypeBackward 			= 0
+	kLoadTypeForward 			= 1
+	kLoadTypeFirstUnread 		= 2
+	kLoadTypeFirstAroundMessage = 3
+	kLoadTypeFirstAroundDate 	= 4
+
+	kLoadTypeLimit1 			= 16
+)
+
+// TODO(@benqi): only android client
+// limit = count
+// offset_id = max_id
+func calcLoadHistoryType(isChannel bool, offsetId, offsetDate, addOffset, limit,  maxId, minId int32) int {
+	if limit == 1 {
+		return kLoadTypeLimit1
+	}
+
+	// check isChannel??
+	if isChannel && addOffset == -1 && maxId != 0 {
+		return kLoadTypeBackward
+	}
+
+	if addOffset == 0 {
+		return kLoadTypeBackward
+	} else if addOffset == -limit + 5 {
+		return kLoadTypeFirstAroundDate
+	} else if addOffset == -limit / 2 {
+		return kLoadTypeFirstAroundMessage
+	} else if addOffset == -limit - 1 {
+		return 	kLoadTypeForward
+	} else if addOffset == -limit + 6 {
+		if maxId !=0 {
+			return kLoadTypeFirstUnread
+		}
+	}
+	return kLoadTypeBackward
+}
+
+func loadHistoryMessage(loadType int, selfUserId int32, peer *base.PeerUtil, offsetId, offsetDate, addOffset, limit,  maxId, minId int32) []*mtproto.Message {
+	messages := []*mtproto.Message{}
+
+	switch loadType {
+	case kLoadTypeLimit1:
+		// 1. Load dialog last messag
+		offsetId = math.MaxInt32
+		messages = message.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, limit)
+	case kLoadTypeBackward:
+		messages = message.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
+	case kLoadTypeFirstAroundDate:
+	case kLoadTypeFirstAroundMessage:
+		// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
+		// 按升序排
+		messages1 := message.LoadForwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+		for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+			messages1[i], messages1[j] = messages1[j], messages1[i]
+		}
+		messages = append(messages, messages1...)
+		// 降序
+		messages2 := message.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
+		messages = append(messages, messages2...)
+	case kLoadTypeForward:
+		messages = message.LoadForwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
+		for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+			messages[i], messages[j] = messages[j], messages[i]
+		}
+	case kLoadTypeFirstUnread:
+		messages = message.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
+	}
+
+	return messages
+}
 
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":5,"access_hash":1006843769775067136}},"offset_id":1,"add_offset":-25,"limit":50}
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
@@ -127,227 +350,44 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	addOffset := request.GetAddOffset()
 	limit := request.GetLimit()
 
-	var messagesMessages *mtproto.Messages_Messages
+	var (
+		isChannel = peer.PeerType == base.PEER_CHANNEL
+		messagesMessages *mtproto.Messages_Messages
+	)
 
-	if peer.PeerType == base.PEER_CHANNEL {
-		messages := []*mtproto.Message{}
+	loadType := calcLoadHistoryType(isChannel, offsetId, request.GetOffsetDate(), addOffset, limit, request.GetMaxId(), request.GetMinId())
+	messages := loadHistoryMessage(loadType, md.UserId, peer, offsetId, request.GetOffsetDate(), addOffset, limit, request.GetMaxId(), request.GetMinId())
 
-		if limit == 1 {
-			// 1. Load dialog last messag
-			offsetId = math.MaxInt32
-			messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-		} else {
-			if addOffset < 0 {
-				if addOffset + limit <= 0 {
-					// LOAD_HISTORY_TYPE_FORWARD
-					// Forward是按升序排
-					messages = message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
-				} else {
-					// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
-					// 按升序排
-					messages1 := message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
-					messages = append(messages, messages1...)
-					// 降序
-					messages2 := message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
-					messages = append(messages, messages2...)
-
-					// @benqi: why??????
-					if addOffset == -limit / 2 {
-						for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
-							messages[i], messages[j] = messages[j], messages[i]
-						}
-					}
-				}
-			} else {
-				// 降序
-				messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
-			}
-			//// 2. getHistory
-			//loadType := calcLoadHistoryType(addOffset, limit)
-			//switch loadType {
-			//case LOAD_HISTORY_TYPE_BACKWARD:
-			//	messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-			//case LOAD_HISTORY_TYPE_FORWARD:
-			//	// TODO(@benqi): 可能有问题，可能要按limit以及addOffset全部取出然后排除掉多余的offset
-			//	// Forward是按升序排
-			//	messages = model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-			//
-			//case LOAD_HISTORY_TYPE_FIRST_UNREAD:
-			//	// TODO(@benqi): 暂不实现
-			//case LOAD_HISTORY_TYPE_AROUND_MESSAGE:
-			//	// 按升序排
-			//	messages1 := model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
-			//	messages = append(messages, messages1...)
-			//	// 降序
-			//	messages2 := model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
-			//	messages = append(messages, messages2...)
-			//case LOAD_HISTORY_TYPE_AROUND_DATE:
-			//	// TODO(@benqi): 暂不实现
-			//}
-		}
-
-		// TODO(@benqi): 查询出来超过limit条记录是否要处理？
-		// messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, request.GetOffsetId(), request.GetLimit())
-		//for _, message := range messages {
-		//	switch message.GetConstructor() {
-		//	case mtproto.TLConstructor_CRC32_message:
-		//		m := message.To_Message()
-		//		userIdList = append(userIdList, m.GetFromId())
-		//		p := helper.FromPeer(m.GetToId())
-		//		switch p.PeerType {
-		//		case helper.PEER_SELF, helper.PEER_USER:
-		//			userIdList = append(userIdList, p.PeerId)
-		//		case helper.PEER_CHAT:
-		//			chatIdList = append(chatIdList, p.PeerId)
-		//		case helper.PEER_CHANNEL:
-		//			// TODO(@benqi): add channel
-		//		}
-		//	case mtproto.TLConstructor_CRC32_messageService:
-		//		m := message.To_MessageService()
-		//		userIdList = append(userIdList, m.GetFromId())
-		//		chatIdList = append(chatIdList, m.GetToId().GetData2().GetChatId())
-		//	}
-		//}
-
-		// messagesMessages := mtproto.NewTLMessagesMessages()
-		if len(messages) == int(request.GetLimit()) {
-			messaegesSlice := mtproto.NewTLMessagesMessagesSlice()
-			messaegesSlice.SetCount(request.GetLimit())
-			messaegesSlice.SetMessages(messages)
-			//request.GetLimit())
-			messagesMessages = messaegesSlice.To_Messages_Messages()
-		} else {
-			messages3 := mtproto.NewTLMessagesMessages()
-			messages3.SetMessages(messages)
-			messagesMessages = messages3.To_Messages_Messages()
-		}
-		// messagesMessages.SetMessages(messages)
-		userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
-		if len(userIdList) > 0 {
-			users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-			messagesMessages.Data2.Users = users
-			//for _, u := range users {
-			//	if u.GetId() == md.UserId {
-			//		u.SetSelf(true)
-			//	}
-			//	u.SetContact(true)
-			//	messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
-			//}
-		}
-
-		if len(chatIdList) > 0 {
-			messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
-		}
+	// messagesMessages := mtproto.NewTLMessagesMessages()
+	if len(messages) == int(request.GetLimit()) {
+		messaegesSlice := mtproto.NewTLMessagesMessagesSlice()
+		messaegesSlice.SetCount(request.GetLimit())
+		messaegesSlice.SetMessages(messages)
+		//request.GetLimit())
+		messagesMessages = messaegesSlice.To_Messages_Messages()
 	} else {
-		messages := []*mtproto.Message{}
-
-		if limit == 1 {
-			// 1. Load dialog last messag
-			offsetId = math.MaxInt32
-			messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-		} else {
-			if addOffset < 0 {
-				if addOffset + limit <= 0 {
-					// LOAD_HISTORY_TYPE_FORWARD
-					// Forward是按升序排
-					messages = message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
-				} else {
-					// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
-					// 按升序排
-					messages1 := message.LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
-					messages = append(messages, messages1...)
-					// 降序
-					messages2 := message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
-					messages = append(messages, messages2...)
-
-					// @benqi: why??????
-					if addOffset == -limit / 2 {
-						for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
-							messages[i], messages[j] = messages[j], messages[i]
-						}
-					}
-				}
-			} else {
-				// 降序
-				messages = message.LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
-			}
-			//// 2. getHistory
-			//loadType := calcLoadHistoryType(addOffset, limit)
-			//switch loadType {
-			//case LOAD_HISTORY_TYPE_BACKWARD:
-			//	messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-			//case LOAD_HISTORY_TYPE_FORWARD:
-			//	// TODO(@benqi): 可能有问题，可能要按limit以及addOffset全部取出然后排除掉多余的offset
-			//	// Forward是按升序排
-			//	messages = model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit)
-			//
-			//case LOAD_HISTORY_TYPE_FIRST_UNREAD:
-			//	// TODO(@benqi): 暂不实现
-			//case LOAD_HISTORY_TYPE_AROUND_MESSAGE:
-			//	// 按升序排
-			//	messages1 := model.GetMessageModel().LoadForwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
-			//	messages = append(messages, messages1...)
-			//	// 降序
-			//	messages2 := model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, offsetId, limit/2)
-			//	messages = append(messages, messages2...)
-			//case LOAD_HISTORY_TYPE_AROUND_DATE:
-			//	// TODO(@benqi): 暂不实现
-			//}
-		}
-
-		// TODO(@benqi): 查询出来超过limit条记录是否要处理？
-		// messages = model.GetMessageModel().LoadBackwardHistoryMessages(md.UserId, peer.PeerType, peer.PeerId, request.GetOffsetId(), request.GetLimit())
-		//for _, message := range messages {
-		//	switch message.GetConstructor() {
-		//	case mtproto.TLConstructor_CRC32_message:
-		//		m := message.To_Message()
-		//		userIdList = append(userIdList, m.GetFromId())
-		//		p := helper.FromPeer(m.GetToId())
-		//		switch p.PeerType {
-		//		case helper.PEER_SELF, helper.PEER_USER:
-		//			userIdList = append(userIdList, p.PeerId)
-		//		case helper.PEER_CHAT:
-		//			chatIdList = append(chatIdList, p.PeerId)
-		//		case helper.PEER_CHANNEL:
-		//			// TODO(@benqi): add channel
-		//		}
-		//	case mtproto.TLConstructor_CRC32_messageService:
-		//		m := message.To_MessageService()
-		//		userIdList = append(userIdList, m.GetFromId())
-		//		chatIdList = append(chatIdList, m.GetToId().GetData2().GetChatId())
-		//	}
-		//}
-
-		// messagesMessages := mtproto.NewTLMessagesMessages()
-		if len(messages) == int(request.GetLimit()) {
-			messaegesSlice := mtproto.NewTLMessagesMessagesSlice()
-			messaegesSlice.SetCount(request.GetLimit())
-			messaegesSlice.SetMessages(messages)
-			//request.GetLimit())
-			messagesMessages = messaegesSlice.To_Messages_Messages()
-		} else {
-			messages3 := mtproto.NewTLMessagesMessages()
-			messages3.SetMessages(messages)
-			messagesMessages = messages3.To_Messages_Messages()
-		}
-		// messagesMessages.SetMessages(messages)
-		userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
-		if len(userIdList) > 0 {
-			users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-			messagesMessages.Data2.Users = users
-			//for _, u := range users {
-			//	if u.GetId() == md.UserId {
-			//		u.SetSelf(true)
-			//	}
-			//	u.SetContact(true)
-			//	messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
-			//}
-		}
-
-		if len(chatIdList) > 0 {
-			messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
-		}
+		messages3 := mtproto.NewTLMessagesMessages()
+		messages3.SetMessages(messages)
+		messagesMessages = messages3.To_Messages_Messages()
 	}
+	// messagesMessages.SetMessages(messages)
+	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
+	if len(userIdList) > 0 {
+		users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+		messagesMessages.Data2.Users = users
+		//for _, u := range users {
+		//	if u.GetId() == md.UserId {
+		//		u.SetSelf(true)
+		//	}
+		//	u.SetContact(true)
+		//	messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
+		//}
+	}
+
+	if len(chatIdList) > 0 {
+		messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+	}
+
 	glog.Infof("messages.getHistory#dcbb8260 - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages, nil
 }
