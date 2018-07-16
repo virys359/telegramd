@@ -99,6 +99,11 @@ func (s *AuthKeyServer) OnServerMessageDataArrived(conn *net2.TcpConnection, md 
 		return nil
 	}
 
+	// Fix onMsgAck return nil bug.
+	if hrsp == nil {
+		return nil
+	}
+
 	return zproto.SendMessageByConn(conn, md, hrsp)
 }
 
