@@ -57,12 +57,22 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 		var (
 			status *mtproto.UserStatus
 			photo *mtproto.UserProfilePhoto
+			phone string
+			contact, mutualContact bool
+			isSelf = selfId == do.Id
 		)
 
-		if selfId == do.Id {
+		if isSelf {
 			status = makeUserStatusOnline()
+			contact = true
+			mutualContact = true
+			phone = do.Phone
 		} else {
 			status = GetUserStatus(do.Id)
+			contact, mutualContact = contact2.CheckContactAndMutualByUserId(selfId, do.Id)
+			if contact {
+				phone = do.Phone
+			}
 		}
 
 		photoId := GetDefaultUserPhotoID(do.Id)
@@ -72,25 +82,20 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 			sizeList, _ := nbfs_client.GetPhotoSizeList(photoId)
 			photo = photo2.MakeUserProfilePhoto(photoId, sizeList)
 		}
-		// GetPhotoSizeList(photoId)
-		contact, mutalContact := contact2.CheckContactAndMutualByUserId(selfId, do.Id)
+
 		data := &userData{ TLUser: &mtproto.TLUser{ Data2: &mtproto.User_Data{
 			Id:            do.Id,
-			Self:          selfId == do.Id,
+			Self:          isSelf,
 			Contact:       contact,
-			MutualContact: mutalContact,
+			MutualContact: mutualContact,
 			AccessHash:    do.AccessHash,
 			FirstName:     do.FirstName,
 			LastName:      do.LastName,
 			Username:      do.Username,
-			Phone:         do.Phone,
-			// TODO(@benqi): Load from db
+			Phone:         phone,
 			Photo:         photo,
-			// mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto(),
 			Status:        status,
 		}}}
-
-		// user#2e13f4c3 flags:# self:flags.10?true contact:flags.11?true mutual_contact:flags.12?true deleted:flags.13?true bot:flags.14?true bot_chat_history:flags.15?true bot_nochats:flags.16?true verified:flags.17?true restricted:flags.18?true min:flags.20?true bot_inline_geo:flags.21?true id:int access_hash:flags.0?long first_name:flags.1?string last_name:flags.2?string username:flags.3?string phone:flags.4?string photo:flags.5?UserProfilePhoto status:flags.6?UserStatus bot_info_version:flags.14?int restriction_reason:flags.18?string bot_inline_placeholder:flags.19?string lang_code:flags.22?string = User;
 
 		return data
 	}

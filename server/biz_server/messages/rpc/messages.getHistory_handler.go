@@ -329,6 +329,53 @@ func loadHistoryMessage(loadType int, selfUserId int32, peer *base.PeerUtil, off
 	return messages
 }
 
+func getHistoryMessages(md *grpc_util.RpcMetadata, request *mtproto.TLMessagesGetHistory) (messagesMessages *mtproto.Messages_Messages) {
+	peer := base.FromInputPeer(request.GetPeer())
+	if peer.PeerType == base.PEER_SELF {
+		peer.PeerType = base.PEER_USER
+		peer.PeerId = md.UserId
+	}
+
+	offsetId := request.GetOffsetId()
+	addOffset := request.GetAddOffset()
+	limit := request.GetLimit()
+
+	var (
+		isChannel = peer.PeerType == base.PEER_CHANNEL
+		users []*mtproto.User
+		chats []*mtproto.Chat
+	)
+
+	loadType := calcLoadHistoryType(isChannel, offsetId, request.GetOffsetDate(), addOffset, limit, request.GetMaxId(), request.GetMinId())
+	messages := loadHistoryMessage(loadType, md.UserId, peer, offsetId, request.GetOffsetDate(), addOffset, limit, request.GetMaxId(), request.GetMinId())
+
+	// messagesMessages.SetMessages(messages)
+	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
+	if len(userIdList) > 0 {
+		users = user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+		// messagesMessages.Data2.Users = users
+	} else {
+		users = []*mtproto.User{}
+	}
+
+	if len(chatIdList) > 0 {
+		chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+	} else {
+		chats = []*mtproto.Chat{}
+	}
+
+	// TODO(@benqi): Add channel's pts
+	messagesSlice := &mtproto.TLMessagesMessagesSlice{Data2: &mtproto.Messages_Messages_Data{
+		Messages: messages,
+		Chats:    chats,
+		Users:    users,
+		Count:    request.GetLimit(),
+	}}
+	messagesMessages = messagesSlice.To_Messages_Messages()
+
+	return
+}
+
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":5,"access_hash":1006843769775067136}},"offset_id":1,"add_offset":-25,"limit":50}
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
 // request: {"peer":{"constructor":2072935910,"data2":{"user_id":4,"access_hash":405858233924775823}},"offset_id":2147483647,"offset_date":2147483647,"limit":1,"max_id":2147483647,"min_id":1}
@@ -337,56 +384,7 @@ func (s *MessagesServiceImpl) MessagesGetHistory(ctx context.Context, request *m
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.getHistory#dcbb8260 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	peer := base.FromInputPeer(request.GetPeer())
-	if peer.PeerType == base.PEER_SELF {
-		peer.PeerType = base.PEER_USER
-		peer.PeerId = md.UserId
-	}
-
-	// chatIdList := []int32{}
-	// userIdList := []int32{md.UserId}
-
-	offsetId := request.GetOffsetId()
-	addOffset := request.GetAddOffset()
-	limit := request.GetLimit()
-
-	var (
-		isChannel = peer.PeerType == base.PEER_CHANNEL
-		messagesMessages *mtproto.Messages_Messages
-	)
-
-	loadType := calcLoadHistoryType(isChannel, offsetId, request.GetOffsetDate(), addOffset, limit, request.GetMaxId(), request.GetMinId())
-	messages := loadHistoryMessage(loadType, md.UserId, peer, offsetId, request.GetOffsetDate(), addOffset, limit, request.GetMaxId(), request.GetMinId())
-
-	// messagesMessages := mtproto.NewTLMessagesMessages()
-	if len(messages) == int(request.GetLimit()) {
-		messaegesSlice := mtproto.NewTLMessagesMessagesSlice()
-		messaegesSlice.SetCount(request.GetLimit())
-		messaegesSlice.SetMessages(messages)
-		//request.GetLimit())
-		messagesMessages = messaegesSlice.To_Messages_Messages()
-	} else {
-		messages3 := mtproto.NewTLMessagesMessages()
-		messages3.SetMessages(messages)
-		messagesMessages = messages3.To_Messages_Messages()
-	}
-	// messagesMessages.SetMessages(messages)
-	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
-	if len(userIdList) > 0 {
-		users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-		messagesMessages.Data2.Users = users
-		//for _, u := range users {
-		//	if u.GetId() == md.UserId {
-		//		u.SetSelf(true)
-		//	}
-		//	u.SetContact(true)
-		//	messagesMessages.Data2.Users = append(messagesMessages.Data2.Users, u.To_User())
-		//}
-	}
-
-	if len(chatIdList) > 0 {
-		messagesMessages.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
-	}
+	messagesMessages := getHistoryMessages(md, request)
 
 	glog.Infof("messages.getHistory#dcbb8260 - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages, nil

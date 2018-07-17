@@ -36,16 +36,16 @@ import (
 )
 
 func makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMessage) (message *mtproto.TLMessage, isWebPageMessage bool) {
-	var (
-		out= true
-	)
-
-	if peer.PeerType == base.PEER_USER && peer.PeerId == fromId {
-		out = false
-	}
+	//var (
+	//	out= true
+	//)
+	//
+	//if peer.PeerType == base.PEER_USER && peer.PeerId == fromId {
+	//	out = false
+	//}
 
 	message = &mtproto.TLMessage{Data2: &mtproto.Message_Data{
-		Out:          out,
+		Out:          true,
 		Silent:       request.GetSilent(),
 		FromId:       fromId,
 		ToId:         peer.ToPeer(),
@@ -98,11 +98,6 @@ func makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *
 func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *mtproto.TLMessagesSendMessage) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.sendMessage#fa88427a - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
-
-	// TODO(@benqi): check request data invalid
-	if request.GetPeer().GetConstructor() ==  mtproto.TLConstructor_CRC32_inputPeerEmpty {
-		// retuurn
-	}
 
 	// TODO(@benqi): ???
 	// request.NoWebpage
