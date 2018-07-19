@@ -23,8 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	webpage2 "github.com/nebulaim/telegramd/biz/core/webpage"
-	"github.com/nebulaim/telegramd/biz/core/media"
+	// webpage2 "github.com/nebulaim/telegramd/biz/core/webpage"
+	// "github.com/nebulaim/telegramd/biz/core/media"
 )
 
 // messages.getWebPagePreview#25223e24 message:string = MessageMedia;
