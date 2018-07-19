@@ -28,8 +28,8 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"time"
-	"net/url"
-	"github.com/nebulaim/telegramd/biz/core/webpage"
+	// "net/url"
+	// "github.com/nebulaim/telegramd/biz/core/webpage"
 	"github.com/nebulaim/telegramd/biz/core/channel"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/gogo/protobuf/proto"
@@ -61,31 +61,41 @@ func makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *
 		message.SetPost(true)
 	}
 
-	u, err := url.Parse(request.Message)
-	if err == nil && (u.Scheme == "http" || u.Scheme == "https") {
-		isWebPageMessage = true
+	//// TODO(@benqi):
+	isWebPageMessage = false
 
-		media := &mtproto.TLMessageMediaWebPage{Data2: &mtproto.MessageMedia_Data{
-			Webpage: webpage.GetWebPagePreview(request.Message),
-		}}
-		message.SetMedia(media.To_MessageMedia())
-		entityUrl := &mtproto.MessageEntity{
-			Constructor: mtproto.TLConstructor_CRC32_messageEntityUrl,
-			Data2:       &mtproto.MessageEntity_Data{
-				Offset: 0,
-				Length: int32(len(request.Message)),
-			},
-		}
-		message.SetEntities([]*mtproto.MessageEntity{entityUrl})
-	} else {
-		isWebPageMessage = false
-
-		message.Data2.Media = &mtproto.MessageMedia{
-			Constructor: mtproto.TLConstructor_CRC32_messageMediaEmpty,
-			Data2:       &mtproto.MessageMedia_Data{},
-		}
-		message.SetEntities(request.GetEntities())
+	message.Data2.Media = &mtproto.MessageMedia{
+		Constructor: mtproto.TLConstructor_CRC32_messageMediaEmpty,
+		Data2:       &mtproto.MessageMedia_Data{},
 	}
+	message.SetEntities(request.GetEntities())
+
+	//u, err := url.Parse(request.Message)
+	//
+	//if err == nil && (u.Scheme == "http" || u.Scheme == "https") {
+	//	isWebPageMessage = true
+	//
+	//	media := &mtproto.TLMessageMediaWebPage{Data2: &mtproto.MessageMedia_Data{
+	//		Webpage: webpage.GetWebPagePreview(request.Message),
+	//	}}
+	//	message.SetMedia(media.To_MessageMedia())
+	//	entityUrl := &mtproto.MessageEntity{
+	//		Constructor: mtproto.TLConstructor_CRC32_messageEntityUrl,
+	//		Data2:       &mtproto.MessageEntity_Data{
+	//			Offset: 0,
+	//			Length: int32(len(request.Message)),
+	//		},
+	//	}
+	//	message.SetEntities([]*mtproto.MessageEntity{entityUrl})
+	//} else {
+	//	isWebPageMessage = false
+	//
+	//	message.Data2.Media = &mtproto.MessageMedia{
+	//		Constructor: mtproto.TLConstructor_CRC32_messageMediaEmpty,
+	//		Data2:       &mtproto.MessageMedia_Data{},
+	//	}
+	//	message.SetEntities(request.GetEntities())
+	//}
 
 	return
 }
