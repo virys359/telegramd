@@ -17,7 +17,10 @@
 
 package rpc
 
-import ()
+import (
+	// "github.com/nebulaim/telegramd/service/contact/contact"
+)
 
 type ContactsServiceImpl struct {
+	// contact *contact.ContactFacade
 }

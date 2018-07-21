@@ -30,6 +30,9 @@ import (
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
+// Android client有三种场景会调用importContacts:
+// 1. 导入通信录
+// 2. 导入单个联系人
 // contacts.importContacts#2c800be5 contacts:Vector<InputContact> = contacts.ImportedContacts;
 func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, request *mtproto.TLContactsImportContacts) (*mtproto.Contacts_ImportedContacts, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

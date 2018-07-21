@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
@@ -26,14 +25,39 @@ import (
 	"golang.org/x/net/context"
 )
 
-// 客户端未使用
+/**
 
+##contacts.exportCard
+
+Returns the current user's card that can be later used to contact a Telegram user without knowing his phone number.
+
+```
+	---functions---
+	contacts.exportCard#84e53737 = Vector<int>;
+```
+
+### Parameters
+This method does not require any parameters.
+
+### Result
+The method returns Vector<int>.
+
+We recommend showing this card as color-separated hex numbers,
+e.g: 000623bf:2fe34c70:23f70153:a8a63dc2:62fc8e8f or QR-code representation.
+
+*/
+
+// 客户端未使用
 // contacts.exportCard#84e53737 = Vector<int>;
 func (s *ContactsServiceImpl) ContactsExportCard(ctx context.Context, request *mtproto.TLContactsExportCard) (*mtproto.VectorInt, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsExportCard - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.exportCard#84e53737 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl ContactsExportCard logic
+	exports := &mtproto.VectorInt{
+		Datas: []int32{},
+	}
 
-	return nil, fmt.Errorf("Not impl ContactsExportCard")
+	glog.Info("contacts.exportCard#84e53737 - not impl ContactsExportCard, reply: {}")
+	return exports, nil
 }

@@ -18,7 +18,7 @@
 package rpc
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
@@ -26,14 +26,24 @@ import (
 	"golang.org/x/net/context"
 )
 
-// 客户端未使用
+/**
 
+## contacts.importCard
+Returns general information on a user using his previously exported card as input.
+The app may use it to open a conversation without knowing the user's phone number.
+
+*/
+
+// 客户端未使用
 // contacts.importCard#4fe196fe export_card:Vector<int> = User;
 func (s *ContactsServiceImpl) ContactsImportCard(ctx context.Context, request *mtproto.TLContactsImportCard) (*mtproto.User, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ContactsImportCard - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("contacts.importCard#4fe196fe - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl ContactsImportCard logic
+	user := mtproto.NewTLUserEmpty()
 
-	return nil, fmt.Errorf("Not impl ContactsImportCard")
+	// userEmpty#200250ba id:int = User;
+	glog.Info("contacts.importCard#4fe196fe - reply: not impl ContactsImportCard")
+	return user.To_User(), nil
 }
