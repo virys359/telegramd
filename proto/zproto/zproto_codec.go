@@ -109,7 +109,7 @@ func (c *ZProtoCodec) decodeMessage(b []byte) (*ZProtoMessage, error) {
 
 	// TODO(@benqi): check mdLen
 	mdLen := dbuf.UInt32() // binary.LittleEndian.Uint32(payload[16:20])
-	if mdLen > uint32(len(b) - 24) {
+	if mdLen > uint32(len(b) - 28) {
 		err := fmt.Errorf("metadata len invalid - mdLen: %d, bLen: %d", mdLen, len(b))
 		glog.Error(err)
 		return nil, err
