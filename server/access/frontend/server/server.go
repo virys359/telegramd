@@ -272,11 +272,11 @@ func (s *FrontendServer) onClientSessionData(client *net2.TcpClient, sessData *z
 func (s *FrontendServer) genSessionId(conn *net2.TcpConnection) uint64 {
 	var sid = conn.GetConnID()
 	if conn.Name() == "frontend443" {
-		// sid = sid | 0 << 56
+		// sid = sid | 0 << 60
 	} else if conn.Name() == "frontend80" {
-		sid = sid | 1 << 56
+		sid = sid | 1 << 60
 	} else if conn.Name() == "frontend5222" {
-		sid = sid | 2 << 56
+		sid = sid | 2 << 60
 	}
 
 	return sid
@@ -285,7 +285,7 @@ func (s *FrontendServer) genSessionId(conn *net2.TcpConnection) uint64 {
 func (s *FrontendServer) getConnBySessionID(id uint64) *net2.TcpConnection {
 	//
 	var server *mtproto.MTProtoServer
-	sid := id >> 56
+	sid := id >> 60
 	if sid == 0 {
 		server = s.server443
 	} else if sid == 1 {

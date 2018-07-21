@@ -18,9 +18,9 @@
 package core
 
 import (
-	"github.com/jmoiron/sqlx"
-	"sync"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
+	// "github.com/jmoiron/sqlx"
+	// "sync"
+	// "github.com/nebulaim/telegramd/baselib/redis_client"
 )
 
 const (
@@ -37,27 +37,27 @@ const (
 	TOKEN_TYPE_MAXSIZE = 10
 )
 
-type CoreModel interface {
-	InstallMysqlClients(dbClients sync.Map)
-	InstallRedisClients(map[string]*redis_client.RedisPool)
-}
-
-// type Instance func() Initializer
-
-var models = []CoreModel{}
-
-func RegisterCoreModel(model CoreModel) {
-	models = append(models, model)
-}
-
-func InstallMysqlClients(clients sync.Map) {
-	for _, m := range models {
-		m.InstallMysqlClients(clients)
-	}
-}
-
-func InstallRedisClients(clients map[string]*redis_client.RedisPool) {
-	for _, m := range models {
-		m.InstallRedisClients(clients)
-	}
-}
+//type CoreModel interface {
+//	InstallMysqlClients(dbClients sync.Map)
+//	InstallRedisClients(map[string]*redis_client.RedisPool)
+//}
+//
+//// type Instance func() Initializer
+//
+//var models = []CoreModel{}
+//
+//func RegisterCoreModel(model CoreModel) {
+//	models = append(models, model)
+//}
+//
+//func InstallMysqlClients(clients sync.Map) {
+//	for _, m := range models {
+//		m.InstallMysqlClients(clients)
+//	}
+//}
+//
+//func InstallRedisClients(clients map[string]*redis_client.RedisPool) {
+//	for _, m := range models {
+//		m.InstallRedisClients(clients)
+//	}
+//}
