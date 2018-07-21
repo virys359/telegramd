@@ -27,7 +27,6 @@ import (
 	"github.com/nebulaim/telegramd/service/idgen/client"
 	"github.com/golang/glog"
 	"fmt"
-	"github.com/nebulaim/telegramd/baselib/bytes2"
 )
 
 type handshakeState struct {
@@ -201,9 +200,9 @@ func (s *FrontendServer) OnClientMessageArrived(client *net2.TcpClient, md *zpro
 
 	switch msg.(type) {
 	case *zproto.ZProtoHandshakeMessage:
-		err = s.onClientHandshakeMessage(client, msg.(*zproto.ZProtoHandshakeMessage))
+		err = s.onClientHandshakeMessage(client, md, msg.(*zproto.ZProtoHandshakeMessage))
 	case *zproto.ZProtoSessionData:
-		err = s.onClientSessionData(client, msg.(*zproto.ZProtoSessionData))
+		err = s.onClientSessionData(client, md, msg.(*zproto.ZProtoSessionData))
 	default:
 		err = fmt.Errorf("invalid msg: %v", msg)
 		glog.Errorf("onClientMessageArrived - invalid msg: peer(%s), zmsg: {%v}",
@@ -224,7 +223,7 @@ func (s *FrontendServer) OnClientTimer(client *net2.TcpClient) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-func (s *FrontendServer) onClientHandshakeMessage(client *net2.TcpClient, handshake *zproto.ZProtoHandshakeMessage) error {
+func (s *FrontendServer) onClientHandshakeMessage(client *net2.TcpClient, md *zproto.ZProtoMetadata, handshake *zproto.ZProtoHandshakeMessage) error {
 	glog.Infof("onClientHandshakeMessage - handshake: peer(%s), state: {%v}",
 		client.GetConnection(),
 		handshake.State)
@@ -247,11 +246,17 @@ func (s *FrontendServer) onClientHandshakeMessage(client *net2.TcpClient, handsh
 		ctx.Lock()
 		ctx.handshakeState = handshake.State
 		ctx.Unlock()
+
+		glog.Infof("onClientHandshakeMessage - sendToClient to: {peer: %s, md: %s, handshake: %s}",
+			conn,
+			md,
+			handshake)
+
 		return conn.Send(&mtproto.MTPRawMessage{Payload: handshake.MTPRawData})
 	}
 }
 
-func (s *FrontendServer) onClientSessionData(client *net2.TcpClient, sessData *zproto.ZProtoSessionData) error {
+func (s *FrontendServer) onClientSessionData(client *net2.TcpClient, md *zproto.ZProtoMetadata, sessData *zproto.ZProtoSessionData) error {
 	///////////////////////////////////////////////////////////////////
 	conn := s.getConnBySessionID(sessData.SessionId)
 	// s.server443.GetConnection(zmsg.SessionId)
@@ -260,12 +265,10 @@ func (s *FrontendServer) onClientSessionData(client *net2.TcpClient, sessData *z
 		return nil
 	}
 
-	glog.Infof("onClientSessionData - send clientManager to: peer(%s), session_id: %d, bufLen: %d, buf: \n%s",
+	glog.Infof("onClientSessionData - sendToClient to: {peer: %s, md: %s, sessData: %s}",
 		conn,
-		sessData.SessionId,
-		len(sessData.MtpRawData),
-		bytes2.DumpSize(256, sessData.MtpRawData))
-
+		md,
+		sessData)
 	return conn.Send(&mtproto.MTPRawMessage{Payload: sessData.MtpRawData})
 }
 
