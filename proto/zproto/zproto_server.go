@@ -98,7 +98,7 @@ func (s *ZProtoServer) SendMessageByConnID(connID uint64, md *ZProtoMetadata, ms
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 func (s *ZProtoServer) OnNewConnection(conn *net2.TcpConnection) {
-	glog.Infof("OnNewConnection %v", conn.RemoteAddr())
+	glog.Info("onNewConnection - ", conn)
 
 	////////////////////////////////////////////////////////////////
 	// @benqi: hack
@@ -131,7 +131,7 @@ func (s *ZProtoServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg int
 	case *ZProtoRpcRequest:
 		s.onRpcRequest(conn, zmsg.Metadata, zmsg.sessionId, zmsg.messageId, zmsg.seqNo, zmsg.Message.(*ZProtoRpcRequest))
 	default:
-		err := fmt.Errorf("invalid message - {%v}", zmsg.Message)
+		err := fmt.Errorf("invalid message - {conn: %s, msg: {%v}}", conn, zmsg.Message)
 		glog.Error(err)
 		return err
 	}
@@ -140,7 +140,7 @@ func (s *ZProtoServer) OnConnectionDataArrived(conn *net2.TcpConnection, msg int
 }
 
 func (s *ZProtoServer) OnConnectionClosed(conn *net2.TcpConnection) {
-	glog.Infof("OnConnectionClosed - %v", conn.RemoteAddr())
+	glog.Info("onConnectionClosed - ", conn)
 
 	if s.callback != nil {
 		s.callback.OnServerConnectionClosed(conn)
@@ -149,7 +149,7 @@ func (s *ZProtoServer) OnConnectionClosed(conn *net2.TcpConnection) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 func (s *ZProtoServer) onRawPayload(conn *net2.TcpConnection, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, payload *ZProtoRawPayload) error {
-	// glog.Info("onRawPayload \n", bytes2.DumpSize(256, payload.Payload))
+	glog.Info("onRawPayload - conn: %s, md: %s, payload_len: %d", conn, md, len(payload.Payload))
 
 	var (
 		err error

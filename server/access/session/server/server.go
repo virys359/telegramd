@@ -99,14 +99,15 @@ func (s *SessionServer) OnServerNewConnection(conn *net2.TcpConnection) {
 }
 
 func (s *SessionServer) OnServerMessageDataArrived(conn *net2.TcpConnection, md *zproto.ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, msg zproto.MessageBase) error {
+	glog.Infof("OnServerMessageDataArrived - receive data: {peer: %s, md: %s, msg: %s}", conn, md, msg)
 	switch msg.(type) {
 	case *zproto.ZProtoSessionClientNew:
-		glog.Info("onSessionClientNew - sessionClientNew: ", conn)
+		// glog.Info("onSessionClientNew - sessionClientNew: ", conn)
 		return s.sessionManager.onSessionClientNew(conn.GetConnID(), md, msg.(*zproto.ZProtoSessionClientNew))
 	case *zproto.ZProtoSessionData:
 		return s.sessionManager.onSessionData(conn.GetConnID(), md, msg.(*zproto.ZProtoSessionData))
 	case *zproto.ZProtoSessionClientClosed:
-		glog.Info("onSessionClientClosed - sessionClientClosed: ", conn)
+		// glog.Info("onSessionClientClosed - sessionClientClosed: ", conn)
 		return s.sessionManager.onSessionClientClosed(conn.GetConnID(), md, msg.(*zproto.ZProtoSessionClientClosed))
 	case *zproto.ZProtoSyncData:
 		sres, err := s.syncHandler.onSyncData(conn, msg.(*zproto.ZProtoSyncData))

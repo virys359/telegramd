@@ -49,9 +49,17 @@ func newClientUpdatesHandler() *clientUpdatesHandler {
 	}
 }
 
+func (c *clientUpdatesHandler) String() string {
+	return fmt.Sprintf("{sess: %s, conn_state: %d, conn_type: %d, tcp_conn_id: %s}",
+		c.session, c.connState, c.connType, c.tcpConnID)
+}
+
 func (c *clientUpdatesHandler) SubscribeUpdates(sess *clientSessionHandler, connID ClientConnID) error {
 	// TODO(@benqi): clear
-	glog.Infof("subscribeUpdates -- {last_sess: {%v}, sess: {%v}, last_connID: {%v}, connID: {%v}}", c.session, sess, c.tcpConnID, connID)
+	glog.Infof("subscribeUpdates -- {last_connID: {%s}, last_sess: {%s}, connID: {%s}}, sess: {%s}",
+		c.tcpConnID, c.session, sess, connID)
+
+
 	if connID.connType == mtproto.TRANSPORT_TCP {
 		c.tcpConnID = connID
 		c.connState = kTcpConn
@@ -132,12 +140,13 @@ func (c *clientUpdatesHandler) onSyncData(md *zproto.ZProtoMetadata, obj mtproto
 	//}
 
 	connID := c.getUpdatesConnID()
-	glog.Infof("onSyncData -- {sess: {%v}, connID: {%v}}", c.session, connID)
 
-	if c.session == nil  || connID == nil{
+	if c.session == nil  || connID == nil {
 		glog.Error("session not inited.")
 		return
 	}
+
+	glog.Infof("onSyncData - sendPending {sess: {%v}, connID: {%v}}", c.session, connID)
 
 	c.session.sendPendingMessagesToClient(*connID, md, c.syncMessages)
 	c.syncMessages = []*pendingMessage{}

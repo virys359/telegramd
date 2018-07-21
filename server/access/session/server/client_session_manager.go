@@ -73,6 +73,10 @@ func makeClientConnID(connType int, clientConnID, frontendConnID uint64) ClientC
 	return connID
 }
 
+func (c ClientConnID) String() string {
+	return fmt.Sprintf("{conn_type: %d, client_conn_id: %d, frontend_conn_id: %d}", c.connType, c.clientConnID, c.frontendConnID)
+}
+
 func (c ClientConnID) Equal(id ClientConnID) bool {
 	return c.connType == id.connType && c.clientConnID == id.clientConnID && c.frontendConnID == id.frontendConnID
 }
@@ -160,6 +164,10 @@ func newClientSessionManager(authKeyId int64, authKey []byte, userId int32) *cli
 		rpcQueue:        queue2.NewSyncQueue(),
 		finish:          sync.WaitGroup{},
 	}
+}
+
+func (s *clientSessionManager) String() string {
+	return fmt.Sprintf("{auth_key_id: %d, user_id: %d}", s.authKeyId, s.AuthUserId)
 }
 
 func (s *clientSessionManager) Start() {
@@ -261,6 +269,7 @@ type messageListWrapper struct {
 }
 
 func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
+	glog.Infof("onSessionData - receive data: {sess: %s, conn_id: %s, md: %s}", s, sessionMsg.connID, sessionMsg.md)
 	message := mtproto.NewEncryptedMessage2(s.authKeyId)
 	err := message.Decode(s.authKeyId, s.authKey, sessionMsg.buf[8:])
 	if err != nil {
@@ -285,13 +294,15 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 	}
 
 	if !sess.CheckBadServerSalt(sessionMsg.connID, sessionMsg.md, message.MessageId, message.SeqNo, message.Salt) {
-		glog.Error("salt invalid..")
+		glog.Infof("salt invalid - {sess: %s, conn_id: %s, md: %s}", s, sessionMsg.connID, sessionMsg.md)
+		// glog.Error("salt invalid..")
 		return
 	}
 
 	_, isContainer := message.Object.(*mtproto.TLMsgContainer)
 	if !sess.CheckBadMsgNotification(sessionMsg.connID, sessionMsg.md, message.MessageId, message.SeqNo, isContainer) {
-		glog.Error("bad msg invalid..")
+		glog.Infof("bad msg invalid - {sess: %s, conn_id: %s, md: %s}", s, sessionMsg.connID, sessionMsg.md)
+		// glog.Error("bad msg invalid..")
 		return
 	}
 
@@ -373,7 +384,9 @@ func (s *clientSessionManager) onTimer() {
 }
 
 func (s *clientSessionManager) onSyncData(syncMsg *syncData) {
-	glog.Infof("onSyncData - sync_msg: {%v}", syncMsg)
+	glog.Infof("onSyncData - receive data: {sess: %s, session_id: %d, md: %s, data: {%v}}",
+		s, syncMsg.sessionID, syncMsg.md, syncMsg.data)
+
 	s.updatesSession.onSyncData(syncMsg.md, syncMsg.data.obj)
 }
 
@@ -403,7 +416,8 @@ func (s *clientSessionManager) PushApiRequest(apiRequest *mtproto.TLMessage2) {
 }
 
 func (s *clientSessionManager) onRpcRequest(requests *rpcApiMessages) {
-	glog.Infof("onRpcRequest - request: {%v}", requests)
+	glog.Infof("onRpcRequest - receive data: {sess: %s, session_id: %d, conn_id: %d, md: %s, data: {%v}}",
+		s, requests.sessionId, requests.connID, requests.md, requests.rpcMessages)
 
 	rpcMessageList := make([]*networkApiMessage, 0, len(requests.rpcMessages))
 
@@ -420,7 +434,7 @@ func (s *clientSessionManager) onRpcRequest(requests *rpcApiMessages) {
 		rpcMetadata.AuthId = s.authKeyId
 		rpcMetadata.SessionId = requests.sessionId
 		// rpcMetadata.ClientAddr = request.md.ClientAddr
-		// rpcMetadata.TraceId = request.md.TraceId
+		rpcMetadata.TraceId = requests.md.TraceId
 		rpcMetadata.SpanId = getUUID()
 		rpcMetadata.ReceiveTime = time.Now().Unix()
 		rpcMetadata.UserId = s.AuthUserId

@@ -89,3 +89,26 @@ func TestByteToString(t *testing.T) {
 		t.Errorf("String(\"\"): %q, want empty", s)
 	}
 }
+
+// Add benchmark
+func BenchmarkHack(b *testing.B) {
+	v1 := []byte("01234567890123456789")
+	b.ReportAllocs()
+
+	r := ""
+	for i := 0; i < b.N; i++ {
+		r = String(v1)
+	}
+	_ = r
+}
+
+func BenchmarkWithoutHack(b *testing.B) {
+	v1 := []byte("01234567890123456789")
+	b.ReportAllocs()
+
+	r := ""
+	for i := 0; i < b.N; i++ {
+		r = string(v1)
+	}
+	_ = r
+}

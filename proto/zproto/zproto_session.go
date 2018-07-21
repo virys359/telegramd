@@ -124,6 +124,14 @@ type ZProtoHandshakeMessage struct {
 	MTPRawData []byte
 }
 
+func (m *ZProtoHandshakeMessage) String() string {
+	return fmt.Sprintf("{session_id: %d, state: %s, mtp_raw_data_len: %d, mtp_raw_data: %s}",
+		m.SessionId,
+		m.State,
+		len(m.MTPRawData),
+		bytes2.HexDump(m.MTPRawData))
+}
+
 func (m *ZProtoHandshakeMessage) Encode(x *bytes2.BufferOutput) {
 	x.UInt32(SESSION_HANDSHAKE)
 	x.UInt64(m.SessionId)
@@ -149,6 +157,14 @@ type ZProtoSessionData struct {
 	MtpRawData []byte
 }
 
+func (m *ZProtoSessionData) String() string {
+	return fmt.Sprintf("{conn_type: %d, session_id: %d, mtp_raw_data_len: %d, mtp_raw_data: %s}",
+		m.ConnType,
+		m.SessionId,
+		len(m.MtpRawData),
+		bytes2.HexDump(m.MtpRawData))
+}
+
 func (m *ZProtoSessionData) Encode(x *bytes2.BufferOutput) {
 	x.UInt32(SESSION_SESSION_DATA)
 	x.Int32(int32(m.ConnType))
@@ -168,6 +184,12 @@ type ZProtoSyncData struct {
 	SyncRawData []byte
 }
 
+func (m *ZProtoSyncData) String() string {
+	return fmt.Sprintf("{sync_raw_data_len: %d, sync_raw_data: %s}",
+		len(m.SyncRawData),
+		bytes2.HexDump(m.SyncRawData))
+}
+
 func (m *ZProtoSyncData) Encode(x *bytes2.BufferOutput) {
 	x.UInt32(SYNC_DATA)
 	bytes2.WriteBytes(x, m.SyncRawData)
@@ -184,6 +206,10 @@ type ZProtoSessionClientNew struct {
 	ConnType   int
 	SessionId  uint64
 	AuthKeyId  int64
+}
+
+func (m *ZProtoSessionClientNew) String() string {
+	return fmt.Sprintf("{conn_type: %d, session_id: %d, auth_key_id: %d}", m.ConnType, m.SessionId, m.AuthKeyId)
 }
 
 func (m *ZProtoSessionClientNew) Encode(x *bytes2.BufferOutput) {
@@ -205,6 +231,10 @@ type ZProtoSessionClientClosed struct {
 	ConnType   int
 	SessionId  uint64
 	AuthKeyId  int64
+}
+
+func (m *ZProtoSessionClientClosed) String() string {
+	return fmt.Sprintf("{conn_type: %d, session_id: %d, auth_key_id: %d}", m.ConnType, m.SessionId, m.AuthKeyId)
 }
 
 func (m *ZProtoSessionClientClosed) Encode(x *bytes2.BufferOutput) {

@@ -25,7 +25,7 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"math/rand"
 	"time"
-	"github.com/nebulaim/telegramd/baselib/bytes2"
+	"fmt"
 )
 
 const (
@@ -86,6 +86,14 @@ func newClientSessionHandler(sessionId, salt, firstMsgId int64, m *clientSession
 		pendingMessages:  []*pendingMessage{},
 		isUpdates:        false,
 	}
+}
+
+func (c *clientSessionHandler) String() string {
+	return fmt.Sprintf("{sesses: %s, session_id: %d, client_state: %v, is_updates: %d}",
+		c.manager,
+		c.sessionId,
+		c.clientState,
+		c.isUpdates)
 }
 
 //============================================================================================
@@ -163,7 +171,7 @@ func (c *clientSessionHandler) sendToClient(connID ClientConnID, md *zproto.ZPro
 		MtpRawData: b,
 	}
 
-	glog.Infof("sendToClient - connID: %v, bufLen: %d, buf: \n%s", connID, len(b), bytes2.DumpSize(256, b))
+	glog.Infof("sendSessionDataByConnID - {sess: %s, connID: %s, md: %s, sessData: %s}", c, connID, md, sessData)
 	return sendSessionDataByConnID(connID.clientConnID, md, sessData)
 }
 
@@ -582,16 +590,21 @@ func (c *clientSessionHandler) onMessageData(connID ClientConnID, md *zproto.ZPr
 	_ = hasHttpWait
 
 	if len(c.rpcMessages) > 0 {
-		c.manager.rpcQueue.Push(&rpcApiMessages{connID: connID, sessionId: c.sessionId, rpcMessages: c.rpcMessages})
+		c.manager.rpcQueue.Push(&rpcApiMessages{connID: connID, md: md, sessionId: c.sessionId, rpcMessages: c.rpcMessages})
 		c.rpcMessages = []*networkApiMessage{}
 	}
 }
 
 //============================================================================================
 func (c *clientSessionHandler) onPing(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, ping *mtproto.TLPing) {
-	// ping, _ := request.(*mtproto.TLPing)
-	glog.Info("processPing - request data: ", logger.JsonDebugData(ping))
-	// c.setOnline()
+	glog.Infof("onPing - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		logger.JsonDebugData(ping))
+
 	pong := &mtproto.TLPong{Data2: &mtproto.Pong_Data{
 		MsgId:  msgId,
 		PingId: ping.PingId,
@@ -604,8 +617,14 @@ func (c *clientSessionHandler) onPing(connID ClientConnID, md *zproto.ZProtoMeta
 }
 
 func (c *clientSessionHandler) onPingDelayDisconnect(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, pingDelayDisconnect *mtproto.TLPingDelayDisconnect) {
-	// pingDelayDisconnect, _ := request.(*mtproto.TLPingDelayDisconnect)
-	glog.Info("onPingDelayDisconnect - request data: ", logger.JsonDebugData(pingDelayDisconnect))
+	glog.Infof("onPing - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		logger.JsonDebugData(pingDelayDisconnect))
+
 	pong := &mtproto.TLPong{Data2: &mtproto.Pong_Data{
 		MsgId:  msgId,
 		PingId: pingDelayDisconnect.PingId,
@@ -618,7 +637,13 @@ func (c *clientSessionHandler) onPingDelayDisconnect(connID ClientConnID, md *zp
 }
 
 func (c *clientSessionHandler) onMsgsAck(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLMsgsAck) {
-	glog.Infof("onMsgsAck - request: %s", request)
+	glog.Infof("onMsgsAck - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		logger.JsonDebugData(request))
 
 	for _, id := range request.GetMsgIds() {
 		// reqMsgId := msgId
@@ -642,14 +667,28 @@ func (c *clientSessionHandler) onMsgsAck(connID ClientConnID, md *zproto.ZProtoM
 }
 
 func (c *clientSessionHandler) onHttpWait(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Info("onHttpWait - request: ", request.String(), ", clientSession: ", c, ", connID: ", connID)
+	glog.Infof("onHttpWait - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		logger.JsonDebugData(request))
+
+
 	c.isUpdates = true
 	// c.manager.setUserOnline(c.sessionId, connID)
 	// c.manager.updatesSession.SubscribeHttpUpdates(c, connID)
 }
 
 func (c *clientSessionHandler) onMsgsStateReq(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Infof("onMsgsStateReq - request: %s", request.String())
+	glog.Infof("onMsgsStateReq - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		logger.JsonDebugData(request))
 
 	// Request for Message Status Information
 	//
@@ -688,12 +727,26 @@ func (c *clientSessionHandler) onMsgsStateReq(connID ClientConnID, md *zproto.ZP
 }
 
 func (c *clientSessionHandler) onInitConnectionEx(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *TLInitConnectionExt) bool {
-	glog.Infof("onInitConnection - request: %s", request.String())
+	glog.Infof("onInitConnection - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
+	// glog.Infof("onInitConnection - request: %s", request.String())
+
 	return c.onRpcRequest(connID, md, msgId, seqNo, request.Query)
 }
 
 func (c *clientSessionHandler) onMsgResendReq(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Infof("onMsgResendReq - request: %s", request.String())
+	glog.Infof("onMsgResendReq - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 
 	// Explicit Request to Re-Send Messages
 	//
@@ -709,11 +762,23 @@ func (c *clientSessionHandler) onMsgResendReq(connID ClientConnID, md *zproto.ZP
 }
 
 func (c *clientSessionHandler) onMsgsStateInfo(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Infof("onMsgResendReq - request: %s", request.String())
+	glog.Infof("onMsgsStateInfo - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 }
 
 func (c *clientSessionHandler) onMsgsAllInfo(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request mtproto.TLObject) {
-	glog.Infof("onMsgResendReq - request: %s", request.String())
+	glog.Infof("onMsgsAllInfo - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 
 	// Voluntary Communication of Status of Messages
 	//
@@ -730,7 +795,13 @@ func (c *clientSessionHandler) onMsgsAllInfo(connID ClientConnID, md *zproto.ZPr
 }
 
 func (c *clientSessionHandler) onDestroySession(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLDestroySession) {
-	glog.Info("onDestroySession - request data: ", request)
+	glog.Infof("onDestroySession - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 
 	// Request to Destroy Session
 	//
@@ -771,8 +842,13 @@ func (c *clientSessionHandler) onDestroySession(connID ClientConnID, md *zproto.
 }
 
 func (c *clientSessionHandler) onGetFutureSalts(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLGetFutureSalts) {
-	// getFutureSalts, _ := request.(*mtproto.TLGetFutureSalts)
-	glog.Info("onGetFutureSalts - request data: ", request)
+	glog.Infof("onGetFutureSalts - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 
 	salts, _ := GetOrInsertSaltList(c.manager.authKeyId, int(request.Num))
 	futureSalts := &mtproto.TLFutureSalts{Data2: &mtproto.FutureSalts_Data{
@@ -791,9 +867,13 @@ func (c *clientSessionHandler) onGetFutureSalts(connID ClientConnID, md *zproto.
 // 	rpc_answer_dropped_running#cd78e586 = RpcDropAnswer;
 // 	rpc_answer_dropped#a43ad8b7 msg_id:long seq_no:int bytes:int = RpcDropAnswer;
 func (c *clientSessionHandler) onRpcDropAnswer(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLRpcDropAnswer) {
-	glog.Info("processRpcDropAnswer - request data: ", request)
-	//
-	// reqMsgId := msgId
+	glog.Infof("onRpcDropAnswer - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 
 	rpcAnswer := &mtproto.RpcDropAnswer{Data2: &mtproto.RpcDropAnswer_Data{}}
 
@@ -838,7 +918,13 @@ func (c *clientSessionHandler) onRpcDropAnswer(connID ClientConnID, md *zproto.Z
 
 func (c *clientSessionHandler) onContestSaveDeveloperInfo(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *mtproto.TLContestSaveDeveloperInfo) {
 	// contestSaveDeveloperInfo, _ := request.(*mtproto.TLContestSaveDeveloperInfo)
-	glog.Info("processGetFutureSalts - request data: ", request)
+	glog.Infof("onContestSaveDeveloperInfo - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 
 	// TODO(@benqi): 实现scontestSaveDeveloperInfo处理逻辑
 	// r := &mtproto.TLTrue{}
@@ -848,7 +934,14 @@ func (c *clientSessionHandler) onContestSaveDeveloperInfo(connID ClientConnID, m
 }
 
 func (c *clientSessionHandler) onInvokeAfterMsgExt(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *TLInvokeAfterMsgExt) bool {
-	glog.Info("processInvokeAfterMsg - request data: ", request)
+	glog.Infof("onInvokeAfterMsgExt - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
+
 	//		if invokeAfterMsg.GetQuery() == nil {
 	//			glog.Errorf("invokeAfterMsg Query is nil, query: {%v}", invokeAfterMsg)
 	//			return
@@ -895,8 +988,13 @@ func (c *clientSessionHandler) onInvokeAfterMsgExt(connID ClientConnID, md *zpro
 }
 
 func (c *clientSessionHandler) onInvokeAfterMsgsExt(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *TLInvokeAfterMsgsExt) bool {
-	//		invokeAfterMsgs, _ := messages[i].Object.(*mtproto.TLInvokeAfterMsgs)
-	glog.Info("processInvokeAfterMsgs - request data: ", request)
+	glog.Infof("onInvokeAfterMsgsExt - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
 	//		if invokeAfterMsgs.GetQuery() == nil {
 	//			glog.Errorf("invokeAfterMsgs Query is nil, query: {%v}", invokeAfterMsgs)
 	//			return
@@ -956,11 +1054,26 @@ func (c *clientSessionHandler) onInvokeAfterMsgsExt(connID ClientConnID, md *zpr
 }
 
 func (c *clientSessionHandler) onInvokeWithoutUpdatesExt(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *TLInvokeWithoutUpdatesExt) bool {
-	//		glog.Error("android client not use invokeWithoutUpdates: ", messages[i])
+	glog.Infof("onInvokeWithoutUpdatesExt - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		request)
+
 	return c.onRpcRequest(connID, md, msgId, seqNo, request.Query)
 }
 
 func (c *clientSessionHandler) onRpcRequest(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, object mtproto.TLObject) bool {
+	glog.Infof("onInvokeWithoutUpdatesExt - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+		c,
+		connID,
+		md,
+		msgId,
+		seqNo,
+		object)
+
 	// TODO(@benqi): sync AuthUserId??
 	requestMessage := &mtproto.TLMessage2{
 		MsgId:  msgId,

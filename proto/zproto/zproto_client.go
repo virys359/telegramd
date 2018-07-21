@@ -118,7 +118,7 @@ func (c *ZProtoClient) selectKetama(name string) *load_balancer.Ketama {
 	return nil
 }
 
-func (c *ZProtoClient) SendKetamaMessage(name, key string, msg MessageBase, f func(addr string) ) error {
+func (c *ZProtoClient) SendKetamaMessage(name, key string, md *ZProtoMetadata, msg MessageBase, f func(addr string) ) error {
 	ketama := c.selectKetama(name)
 	if ketama == nil {
 		err := fmt.Errorf("not found ketama by name: %s", name)
@@ -130,7 +130,7 @@ func (c *ZProtoClient) SendKetamaMessage(name, key string, msg MessageBase, f fu
 		if f != nil {
 			f(kaddr)
 		}
-		return c.SendMessageToAddress(name, kaddr, msg)
+		return c.SendMessageToAddress(name, kaddr, md, msg)
 	} else {
 		err := fmt.Errorf("not found kaddr by key: %s", key)
 		glog.Error(err)
@@ -138,16 +138,18 @@ func (c *ZProtoClient) SendKetamaMessage(name, key string, msg MessageBase, f fu
 	}
 }
 
-func (c *ZProtoClient) SendMessage(name string, msg MessageBase) error {
+func (c *ZProtoClient) SendMessage(name string, md *ZProtoMetadata, msg MessageBase) error {
 	zmsg := &ZProtoMessage{
-		Message: &ZProtoRawPayload{Payload: EncodeMessage(msg)},
+		Metadata: md,
+		Message:  &ZProtoRawPayload{Payload: EncodeMessage(msg)},
 	}
 	return c.clients.SendData(name, zmsg)
 }
 
-func (c *ZProtoClient) SendMessageToAddress(name, addr string, msg MessageBase) error {
+func (c *ZProtoClient) SendMessageToAddress(name, addr string, md *ZProtoMetadata, msg MessageBase) error {
 	zmsg := &ZProtoMessage{
-		Message: &ZProtoRawPayload{Payload: EncodeMessage(msg)},
+		Metadata: md,
+		Message:  &ZProtoRawPayload{Payload: EncodeMessage(msg)},
 	}
 	return c.clients.SendDataToAddress(name, addr, zmsg)
 }

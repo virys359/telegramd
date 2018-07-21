@@ -147,6 +147,8 @@ func (cgm *TcpClientGroupManager) SendDataToAddress(name, address string, msg in
 	}
 
 	cgm.clientMapLock.RUnlock()
+
+	glog.Info("tcp_client_group_manager sendDataToAddress: {name: %s, conn: %s, msg: {%v}}", name, c, msg)
 	return c.Send(msg)
 }
 
@@ -155,6 +157,7 @@ func (cgm *TcpClientGroupManager) SendData(name string, msg interface{}) error {
 	if tcpConn == nil {
 		return errors.New("can not get connection")
 	}
+	glog.Info("tcp_client_group_manager SendData: {name: %s, conn: %s, msg: {%v}}", name, tcpConn, msg)
 	return tcpConn.Send(msg)
 }
 

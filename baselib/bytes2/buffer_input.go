@@ -71,7 +71,7 @@ func (m *BufferInput) Int16() int16 {
 		m.err = io.EOF
 		return 0
 	}
-	x := binary.LittleEndian.Uint16(m.buf[m.off : m.off+4])
+	x := binary.LittleEndian.Uint16(m.buf[m.off : m.off+2])
 	m.off += 2
 	return int16(x)
 }
@@ -85,7 +85,7 @@ func (m *BufferInput) UInt16() uint16 {
 		m.err = io.EOF
 		return 0
 	}
-	x := binary.LittleEndian.Uint16(m.buf[m.off : m.off+4])
+	x := binary.LittleEndian.Uint16(m.buf[m.off : m.off+2])
 	m.off += 2
 	return x
 }

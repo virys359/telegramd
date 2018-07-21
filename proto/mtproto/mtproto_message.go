@@ -51,6 +51,14 @@ type MTPRawMessage struct {
 	Payload []byte
 }
 
+func (m *MTPRawMessage) String() string {
+	return fmt.Sprintf("{conn_type: %d, auth_key_id: %d, quick_ack_id: %d, payload_len: %d}",
+		m.connType,
+		m.authKeyId,
+		m.quickAckId,
+		len(m.Payload))
+}
+
 func (m *MTPRawMessage) ConnType() int {
 	return m.connType
 }

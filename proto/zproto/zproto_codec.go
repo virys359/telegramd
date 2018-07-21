@@ -161,11 +161,12 @@ func (c *ZProtoCodec) Send(msg interface{}) error {
 		// encode ZProtoMessage
 		c.encodeMessage(x, message)
 
+		binary.LittleEndian.PutUint32(x.Buf()[4:8], uint32(x.Len()+4))
+
 		// write crc32
 		crc32 := crc32.ChecksumIEEE(x.Buf())
 		x.UInt32(crc32)
 
-		binary.LittleEndian.PutUint32(x.Buf()[4:8], uint32(x.Len()))
 		_, err := c.conn.Write(x.Buf())
 		return err
 	default:
@@ -204,71 +205,32 @@ func (c *ZProtoCodec) Receive() (interface{}, error) {
 	}
 	c.recvLastPackageIndex = packageIndex
 
-	//// 3. read reserved
-	//// skip reserved c.headBuf[14:16]
-	//_ = dbuf.UInt16()
-	//
-	//// 4. check version
-	//version := dbuf.UInt32() // binary.LittleEndian.Uint16(c.headBuf[14:16])
-	//if version != kVersion {
-	//	err = fmt.Errorf("invalid version: %d", version)
-	//	glog.Error(err)
-	//	return nil, err
-	//}
-
 	payload := make([]byte, packageLength-kFrameHeaderLen) // recv crc32
 	_, err = io.ReadFull(c.conn, payload)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
+	crcHash := crc32.NewIEEE()
+	crcHash.Write(c.headBuf)
+	crcHash.Write(payload[:len(payload)-4])
 
-	//sessionId := binary.LittleEndian.Uint64(payload[:8])
-	//seqNo := binary.LittleEndian.Uint64(payload[8:16])
-	//
-	//// TODO(@benqi): check mdLen
-	//mdLen := binary.LittleEndian.Uint32(payload[16:20])
-	//md := &ZProtoMetadata{}
-	//if mdLen != 0 {
-	//	err = md.Decode(payload[20 : mdLen+20])
-	//	if err != nil {
-	//		glog.Error(err)
-	//		return nil, err
-	//	}
-	//}
-	//
-	//// glog.Infof("mdLen: %d, md: {%v}, payload: %s%s", mdLen, md, hex.EncodeToString(c.headBuf), hex.EncodeToString(payload))
-	//packageType := binary.LittleEndian.Uint32(payload[mdLen+20 : mdLen+24])
-	//m2 := NewZProtoMessage(packageType)
-	//if m2 == nil {
-	//	err = fmt.Errorf("unregister packageType: %d, payload: %s", packageType, hex.EncodeToString(payload[mdLen+24:]))
-	//	glog.Error(err)
-	//	return nil, err
-	//}
-	//
-	//err = m2.Decode(payload[mdLen+24 : len(payload)-4])
-	//if err != nil {
-	//	glog.Error(err)
-	//	return nil, err
-	//}
 
-	glog.Info("onRawPayload \n", bytes2.DumpSize(256, payload))
+	// 3. check crc32
+	crc := binary.LittleEndian.Uint32(payload[len(payload)-4:])
+
+	if crc != crcHash.Sum32() {
+		err = fmt.Errorf("invalid crc32: %d", crc)
+		glog.Error(err)
+		return nil, err
+	}
+
+	// glog.Info("onRawPayload \n", bytes2.DumpSize(256, payload))
 	message, err := c.decodeMessage(payload)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
-
-	// TODO(@benqi): check crc32
-	crc32 := binary.LittleEndian.Uint32(payload[len(payload)-4:])
-	_ = crc32
-	//
-	//message := &ZProtoMessage{
-	//	SessionId: sessionId,
-	//	SeqNum:    seqNo,
-	//	Metadata:  md,
-	//	Message:   m2,
-	//}
 	return message, nil
 }
 

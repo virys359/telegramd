@@ -158,6 +158,11 @@ func NewEncryptedMessage2(authKeyId int64) *EncryptedMessage2 {
 	}
 }
 
+func (m *EncryptedMessage2) String() string {
+	return fmt.Sprintf("{auth_key_id: %d. salt: %d, session_id: %d, message_id: %d, seq_no: %d}",
+		m.authKeyId, m.Salt, m.SessionId, m.MessageId, m.SeqNo)
+}
+
 func (m *EncryptedMessage2) MessageType() int {
 	return ENCRYPTED_MESSAGE
 }

@@ -56,3 +56,14 @@ func DumpSize(size int, buf []byte) string {
 func Dump(buf []byte) string {
 	return DumpSize(128, buf)
 }
+
+func HexDumpSize(size int, buf []byte) string {
+	if size > len(buf) {
+		size = len(buf)
+	}
+	return hex.EncodeToString(buf[:size])
+}
+
+func HexDump(buf []byte) string {
+	return HexDumpSize(128, buf)
+}

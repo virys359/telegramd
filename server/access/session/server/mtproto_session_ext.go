@@ -19,6 +19,7 @@ package server
 
 import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"fmt"
 )
 
 // invokeAfterMsg#cb9f372d {X:Type} msg_id:long query:!X = X;
@@ -46,7 +47,7 @@ func (m *TLInvokeAfterMsgExt) Decode(dbuf *mtproto.DecodeBuf) error {
 }
 
 func (m *TLInvokeAfterMsgExt) String() string {
-	return ""
+	return fmt.Sprintf("{msg_id: %d, query: {%v}}", m.MsgId, m.Query)
 }
 
 // invokeAfterMsgs#3dc4b4f0 {X:Type} msg_ids:Vector<long> query:!X = X;
@@ -74,7 +75,7 @@ func (m *TLInvokeAfterMsgsExt) Decode(dbuf *mtproto.DecodeBuf) error {
 }
 
 func (m *TLInvokeAfterMsgsExt) String() string {
-	return ""
+	return fmt.Sprintf("{msg_ids: {%v}, query: {%v}}", m.MsgIds, m.Query)
 }
 
 // initConnection#c7481da6 {X:Type} api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string query:!X = X;
@@ -114,7 +115,8 @@ func (m *TLInitConnectionExt) Decode(dbuf *mtproto.DecodeBuf) error {
 }
 
 func (m *TLInitConnectionExt) String() string {
-	return ""
+	return fmt.Sprintf("{api_id: %d, device_mode: %s, system_version: %s, app_version: %s, system_lang_code: %s, lang_pack: %s, lang_code: %s, query: {%v}}",
+		m.ApiId, m.DeviceMode, m.SystemVersion, m.AppVersion, m.SystemLangCode, m.LangCode, m.LangPack, m.Query)
 }
 
 // invokeWithLayer#da9b0d0d {X:Type} layer:int query:!X = X;
@@ -167,5 +169,5 @@ func (m *TLInvokeWithoutUpdatesExt) Decode(dbuf *mtproto.DecodeBuf) error {
 }
 
 func (m *TLInvokeWithoutUpdatesExt) String() string {
-	return ""
+	return fmt.Sprintf("{query: %v}", m.Query)
 }

@@ -169,9 +169,24 @@ func (m *ZProtoMetadata) Decode(dbuf *bytes2.BufferInput) (err error) {
 	return dbuf.Error()
 }
 
+func (m *ZProtoMetadata) String() string {
+	return fmt.Sprintf("{server_id: %d, conn_id: %d, client_addr: %d, trace_id: %d, span_id: %d, recveive_time: %d, from: %s}",
+		m.ServerId,
+		m.ClientConnId,
+		m.ClientAddr,
+		m.TraceId,
+		m.SpanId,
+		m.ReceiveTime,
+		m.From)
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 type ZProtoRawPayload struct {
 	Payload []byte
+}
+
+func (m *ZProtoRawPayload) String() string {
+	return fmt.Sprintf("{payload_len: %d, payload: %s}", len(m.Payload), m.Payload)
 }
 
 func (m *ZProtoRawPayload) Encode(x *bytes2.BufferOutput) {

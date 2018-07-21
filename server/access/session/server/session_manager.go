@@ -23,7 +23,6 @@ import (
 	"encoding/binary"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/proto/zproto"
-	"github.com/nebulaim/telegramd/baselib/bytes2"
 )
 
 type sessionManager struct {
@@ -35,6 +34,8 @@ func newSessionManager() *sessionManager {
 }
 
 func (s *sessionManager) onSessionClientNew(clientConnID uint64, md *zproto.ZProtoMetadata, sessData *zproto.ZProtoSessionClientNew) error {
+	glog.Infof("onSessionClientNew - receive data: {client_conn_id: %s, md: %s, sess_data: %s}", clientConnID, md, sessData)
+
 	var sessList *clientSessionManager
 
 	if vv, ok := s.sessions.Load(sessData.AuthKeyId); !ok {
@@ -50,13 +51,11 @@ func (s *sessionManager) onSessionClientNew(clientConnID uint64, md *zproto.ZPro
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *sessionManager) onSessionData(clientConnID uint64, md *zproto.ZProtoMetadata, sessData *zproto.ZProtoSessionData) error {
-	glog.Infof("onSessionData: data: {client_conn_id: %d, frontendConnID: %d, connType: %d, md: %v, buf_len: %d, buf: %s}",
-		// conn.RemoteAddr(),
+	glog.Infof("onSessionData - receive data: {client_conn_id: %d, frontendConnID: %d, connType: %d, md: %s, sess_data: %s}",
 		clientConnID,
 		sessData.SessionId,
 		md,
-		len(sessData.MtpRawData),
-		bytes2.Dump(sessData.MtpRawData))
+		sessData)
 
 	////
 	authKeyId := int64(binary.LittleEndian.Uint64(sessData.MtpRawData))
@@ -82,6 +81,12 @@ func (s *sessionManager) onSessionData(clientConnID uint64, md *zproto.ZProtoMet
 }
 
 func (s *sessionManager) onSessionClientClosed(clientConnID uint64, md *zproto.ZProtoMetadata, sessData *zproto.ZProtoSessionClientClosed) error {
+	glog.Infof("onSessionClientClosed - receive data: {client_conn_id: %d, frontendConnID: %d, connType: %d, md: %s, sess_data: %s}",
+		clientConnID,
+		sessData.SessionId,
+		md,
+		sessData)
+
 	var sessList *clientSessionManager
 
 	if vv, ok := s.sessions.Load(sessData.AuthKeyId); !ok {
@@ -97,6 +102,12 @@ func (s *sessionManager) onSessionClientClosed(clientConnID uint64, md *zproto.Z
 
 
 func (s *sessionManager) onSyncData(authKeyId, sessionId int64, md *zproto.ZProtoMetadata, data *messageData) error {
+	glog.Infof("authKeyId - receive data: {auth_key_id: %d, session_id: %d, md: %s, data: %v}",
+		authKeyId,
+		sessionId,
+		md,
+		data)
+
 	var sessList *clientSessionManager
 
 	if vv, ok := s.sessions.Load(authKeyId); !ok {

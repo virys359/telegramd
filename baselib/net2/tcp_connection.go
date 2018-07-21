@@ -67,7 +67,7 @@ func NewTcpConnection(name string, conn net.Conn, sendChanSize int, codec Codec,
 }
 
 func (c *TcpConnection) String() string {
-	return fmt.Sprintf("{connID: %d, name: %s, lAddr: %s, rAddr: %s}", c.id, c.name, c.conn.LocalAddr(), c.conn.RemoteAddr())
+	return fmt.Sprintf("{connID: %d@%s-(%s->%s)}", c.id, c.name, c.conn.LocalAddr(), c.conn.RemoteAddr())
 }
 
 func (c *TcpConnection) LoadAddr() net.Addr {
