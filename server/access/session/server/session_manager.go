@@ -102,7 +102,7 @@ func (s *sessionManager) onSessionClientClosed(clientConnID uint64, md *zproto.Z
 
 
 func (s *sessionManager) onSyncData(authKeyId, sessionId int64, md *zproto.ZProtoMetadata, data *messageData) error {
-	glog.Infof("authKeyId - receive data: {auth_key_id: %d, session_id: %d, md: %s, data: %v}",
+	glog.Infof("onSyncData - receive data: {auth_key_id: %d, session_id: %d, md: %s, data: %s}",
 		authKeyId,
 		sessionId,
 		md,

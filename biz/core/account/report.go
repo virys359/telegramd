@@ -19,10 +19,9 @@ package account
 
 import (
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 )
 
-func InsertReportData(userId, peerType, peerId, reason int32, text string) bool {
+func (m *AccountModel) InsertReportData(userId, peerType, peerId, reason int32, text string) bool {
 	do := &dataobject.ReportsDO{
 		UserId: userId,
 		PeerType: peerType,
@@ -30,6 +29,6 @@ func InsertReportData(userId, peerType, peerId, reason int32, text string) bool 
 		Reason: int8(reason),
 		Content: text,
 	}
-	do.Id = dao.GetReportsDAO(dao.DB_MASTER).Insert(do)
+	do.Id = m.dao.ReportsDAO.Insert(do)
 	return do.Id > 0
 }

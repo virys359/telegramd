@@ -17,7 +17,20 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+)
 
 type StickersServiceImpl struct {
+}
+
+func NewStickersServiceImpl(models []core.CoreModel) *StickersServiceImpl {
+	impl := &StickersServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		}
+	}
+
+	return impl
 }

@@ -85,7 +85,7 @@ func (c *redisStatusClient) SetSessionOnline(userId int32, serverId int32, authK
 	conn := c.redis.Get()
 	defer conn.Close()
 
-	id := base.Int32ToString(userId)
+	id := fmt.Sprintf("%s_%d", onlineKeyPrefix, userId)
 	k := base.Int64ToString(authKeyId)
 	v := fmt.Sprintf("%d@%d", serverId, time.Now().Unix())
 	if _, err = conn.Do("HSET", id, k, v); err != nil {
@@ -94,7 +94,7 @@ func (c *redisStatusClient) SetSessionOnline(userId int32, serverId int32, authK
 	}
 
 	if _, err = conn.Do("EXPIRE", k, ONLINE_TIMEOUT); err != nil {
-		glog.Errorf("setOnline - EXPIRE {%v}, error: %s", status, err)
+		glog.Errorf("setOnline - EXPIRE {%s, %s, %s}, error: %s", id, k, v, err)
 		return
 	}
 	return
@@ -104,7 +104,7 @@ func (c *redisStatusClient) SetSessionOffline(userId int32, serverId int32, auth
 	conn := c.redis.Get()
 	defer conn.Close()
 
-	id := base.Int32ToString(userId)
+	id := fmt.Sprintf("%s_%d", onlineKeyPrefix, userId)
 	k := base.Int64ToString(authKeyId)
 
 	if _, err = conn.Do("HDEL", id, k); err != nil {
@@ -132,7 +132,7 @@ func (c *redisStatusClient) getOnlineSession(conn redis.Conn, userId int32) (ses
 
 		if time.Now().Unix() < sess.Expired + CHECK_ONLINE_TIMEOUT {
 			sessList = append(sessList, sess)
-			fmt.Println(status)
+			fmt.Println("getOnlineSession - ", sess)
 		}
 	}
 	return

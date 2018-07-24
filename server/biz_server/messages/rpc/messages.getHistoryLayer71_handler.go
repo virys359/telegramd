@@ -43,7 +43,7 @@ func (s *MessagesServiceImpl) MessagesGetHistoryLayer71(ctx context.Context, req
 		Hash:       0,
 	}
 
-	messagesMessages := getHistoryMessages(md, requestLayer71)
+	messagesMessages := s.getHistoryMessages(md, requestLayer71)
 
 	glog.Infof("messages.getHistoryLayer71#afa92846 - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages, nil

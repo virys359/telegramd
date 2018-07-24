@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
@@ -37,7 +36,7 @@ func (s *AccountServiceImpl) AccountGetWallPapers(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.getWallPapers#c04cfac2 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 	//
-	wallDataList := account.GetWallPaperList()
+	wallDataList := s.AccountModel.GetWallPaperList()
 
 	walls := &mtproto.Vector_WallPaper{
 		Datas: make([]*mtproto.WallPaper, 0, len(wallDataList)),

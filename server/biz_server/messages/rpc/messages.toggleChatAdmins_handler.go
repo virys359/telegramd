@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"github.com/nebulaim/telegramd/biz/core/chat"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
@@ -33,7 +32,7 @@ func (s *MessagesServiceImpl) MessagesToggleChatAdmins(ctx context.Context, requ
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.toggleChatAdmins#ec8bd9e1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	chatLogic, err := chat.NewChatLogicById(request.ChatId)
+	chatLogic, err := s.ChatModel.NewChatLogicById(request.ChatId)
 	if err != nil {
 		glog.Error("toggleChatAdmins#ec8bd9e1 - error: ", err)
 		return nil, err

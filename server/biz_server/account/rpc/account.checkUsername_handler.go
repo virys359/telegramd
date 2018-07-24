@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 const (
@@ -51,7 +50,7 @@ func (s *AccountServiceImpl) AccountCheckUsername(ctx context.Context, request *
 		return nil, err
 	} else {
 		// userId == 0 为username不存在
-		userId := account.GetUserIdByUserName(request.Username)
+		userId := s.AccountModel.GetUserIdByUserName(request.Username)
 		// username不存在或者不是自身
 		if userId > 0 && userId != md.UserId {
 			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_OCCUPIED)

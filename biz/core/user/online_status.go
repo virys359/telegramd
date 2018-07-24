@@ -18,14 +18,12 @@
 package user
 
 import (
-	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/golang/glog"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"strings"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"time"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 )
 
 // - 简单设计思路(@benqi)
@@ -73,19 +71,19 @@ type SessionStatus struct {
 	Now				int64		// 上报时间
 }
 
-func (status *SessionStatus) ToKey() string {
+func (status *SessionStatus) toKey() string {
 	return fmt.Sprintf("%s_%d", onlineKeyPrefix, status.UserId)
 }
 
-func (status *SessionStatus) ToField() string {
+func (status *SessionStatus) toField() string {
 	return fmt.Sprintf("%d@%d", status.AuthKeyId, status.SessionId)
 }
 
-func (status *SessionStatus) ToValue() string {
+func (status *SessionStatus) toValue() string {
 	return fmt.Sprintf("%d@%d@%d", status.ServerId, status.NetlibSessionId, status.Now)
 }
 
-func (status *SessionStatus) FromKeyValue(k, v string) (err error) {
+func (status *SessionStatus) fromKeyValue(k, v string) (err error) {
 	// TODO(@benqi): 检查数据合法性
 	ks := strings.Split(k, "@")
 	if len(ks) != 2 {
@@ -119,26 +117,24 @@ func (status *SessionStatus) FromKeyValue(k, v string) (err error) {
 	return
 }
 
-func SetOnline(status *SessionStatus) (err error) {
-	redis_client := redis_client.GetRedisClient(dao.CACHE)
-
-	conn := redis_client.Get()
+func (m *UserModel) SetOnline(status *SessionStatus) (err error) {
+	conn := m.dao.redisClient.Get()
 	defer conn.Close()
 
 	// 设置键盘
-	if _, err = conn.Do("HSET", status.ToKey(), status.ToField(), status.ToValue()); err != nil {
+	if _, err = conn.Do("HSET", status.toKey(), status.toField(), status.toValue()); err != nil {
 		glog.Errorf("SetOnline - HSET {%v}, error: %s", status, err)
 		return
 	}
 
-	if _, err = conn.Do("EXPIRE", status.ToKey(), ONLINE_TIMEOUT); err != nil {
+	if _, err = conn.Do("EXPIRE", status.toKey(), ONLINE_TIMEOUT); err != nil {
 		glog.Errorf("SetOnline - EXPIRE {%v}, error: %s", status, err)
 		return
 	}
 	return
 }
 
-func SetOffline(status *SessionStatus) (err error) {
+func (m *UserModel) SetOffline(status *SessionStatus) (err error) {
 	// 设置离线将Now减少CHECK_ONLINE_TIMEOUT
 	now := status.Now
 	status.Now -= CHECK_ONLINE_TIMEOUT
@@ -146,7 +142,7 @@ func SetOffline(status *SessionStatus) (err error) {
 		status.Now = now
 	}()
 
-	err = SetOnline(status)
+	err = m.SetOnline(status)
 	return
 }
 
@@ -163,7 +159,7 @@ func getOnline(conn redis.Conn, userId int32) (statusList []*SessionStatus, err 
 	for k, v := range m {
 		status := &SessionStatus{}
 		status.UserId = userId
-		if err2 := status.FromKeyValue(k, v); err2 != nil {
+		if err2 := status.fromKeyValue(k, v); err2 != nil {
 			glog.Errorf("GetOnlineByUserId - FromKeyValue {online_%d} error: {k: %s, v: %s}, error: %s", userId, k, v)
 			continue
 		}
@@ -176,10 +172,8 @@ func getOnline(conn redis.Conn, userId int32) (statusList []*SessionStatus, err 
 	return
 }
 
-func GetOnlineByUserId(userId int32) ([]*SessionStatus, error) {
-	redis_client := redis_client.GetRedisClient(dao.CACHE)
-
-	conn := redis_client.Get()
+func (m *UserModel) GetOnlineByUserId(userId int32) ([]*SessionStatus, error) {
+	conn := m.dao.redisClient.Get()
 	defer conn.Close()
 
 	return getOnline(conn, userId)
@@ -188,10 +182,8 @@ func GetOnlineByUserId(userId int32) ([]*SessionStatus, error) {
 // TODO(@benqi): 优化
 // 取多个用户的状态信息，可以使用lua脚本，避免多次请求
 // eval "local rst={}; for i,v in pairs(KEYS) do rst[i]=redis.call('hgetall', v) end; return rst" 2 user:1 user:2
-func GetOnlineByUserIdList(userIdList []int32) (statusList []*SessionStatus, err error) {
-	redis_client := redis_client.GetRedisClient(dao.CACHE)
-
-	conn := redis_client.Get()
+func (m *UserModel) GetOnlineByUserIdList(userIdList []int32) (statusList []*SessionStatus, err error) {
+	conn := m.dao.redisClient.Get()
 	defer conn.Close()
 
 	for _, userId := range userIdList {

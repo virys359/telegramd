@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
@@ -39,10 +38,10 @@ func (s *MessagesServiceImpl) MessagesDeleteHistory(ctx context.Context, request
 	if peer.PeerType == base.PEER_SELF {
 		peer.PeerType = base.PEER_USER
 	}
-	boxIdList := message.GetMessageIdListByDialog(md.UserId, peer)
+	boxIdList := s.MessageModel.GetMessageIdListByDialog(md.UserId, peer)
 	if len(boxIdList) > 0 {
 		// TOOD(@benqi): delete dialog message.
-		message.DeleteByMessageIdList(md.UserId, boxIdList)
+		s.MessageModel.DeleteByMessageIdList(md.UserId, boxIdList)
 
 		updateDeleteMessages := mtproto.NewTLUpdateDeleteMessages()
 		updateDeleteMessages.SetMessages(boxIdList)

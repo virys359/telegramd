@@ -186,7 +186,7 @@ type ZProtoRawPayload struct {
 }
 
 func (m *ZProtoRawPayload) String() string {
-	return fmt.Sprintf("{payload_len: %d, payload: %s}", len(m.Payload), m.Payload)
+	return fmt.Sprintf("{payload_len: %d, payload: %s}", len(m.Payload), bytes2.HexDump(m.Payload))
 }
 
 func (m *ZProtoRawPayload) Encode(x *bytes2.BufferOutput) {

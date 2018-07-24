@@ -23,9 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"github.com/nebulaim/telegramd/biz/core/contact"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
@@ -52,7 +50,7 @@ func (s *ContactsServiceImpl) ContactsDeleteContacts(ctx context.Context, reques
 		deleteId = md.UserId
 	case mtproto.TLConstructor_CRC32_inputUser:
 		// Check access hash
-		if ok := user2.CheckAccessHashByUserId(id.GetData2().GetUserId(), id.GetData2().GetAccessHash()); !ok {
+		if ok := s.UserModel.CheckAccessHashByUserId(id.GetData2().GetUserId(), id.GetData2().GetAccessHash()); !ok {
 			// TODO(@benqi): Add ACCESS_HASH_INVALID codes
 			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 			glog.Error(err, ": is access_hash error")
@@ -69,9 +67,9 @@ func (s *ContactsServiceImpl) ContactsDeleteContacts(ctx context.Context, reques
 	}
 
 	// selfUser := user2.GetUserById(md.UserId, md.UserId)
-	deleteUser := user2.GetUserById(md.UserId, deleteId)
+	deleteUser := s.UserModel.GetUserById(md.UserId, deleteId)
 
-	contactLogic := contact.MakeContactLogic(md.UserId)
+	contactLogic := s.ContactModel.MakeContactLogic(md.UserId)
 	needUpdate := contactLogic.DeleteContact(deleteId, deleteUser.GetMutualContact())
 
 	selfUpdates := updates2.NewUpdatesLogic(md.UserId)
@@ -96,7 +94,7 @@ func (s *ContactsServiceImpl) ContactsDeleteContacts(ctx context.Context, reques
 		}}
 		contactUpdates.AddUpdate(contactLink2.To_Update())
 
-		selfUser := user2.GetUserById(md.UserId, md.UserId)
+		selfUser := s.UserModel.GetUserById(md.UserId, md.UserId)
 		contactUpdates.AddUser(selfUser.To_User())
 		// TODO(@benqi): handle seq
 		sync_client.GetSyncClient().PushToUserUpdatesData(deleteId, contactUpdates.ToUpdates())

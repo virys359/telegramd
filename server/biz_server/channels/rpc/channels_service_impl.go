@@ -17,7 +17,32 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/channel"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/message"
+)
 
 type ChannelsServiceImpl struct {
+	*channel.ChannelModel
+	*user.UserModel
+	*message.MessageModel
+}
+
+func NewChannelsServiceImpl(models []core.CoreModel) *ChannelsServiceImpl {
+	impl := &ChannelsServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *channel.ChannelModel:
+			impl.ChannelModel = m.(*channel.ChannelModel)
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		case *message.MessageModel:
+			impl.MessageModel = m.(*message.MessageModel)
+		}
+	}
+
+	return impl
 }

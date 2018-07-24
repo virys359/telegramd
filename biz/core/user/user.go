@@ -18,7 +18,6 @@
 package user
 
 import (
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/baselib/base"
@@ -67,15 +66,15 @@ func (this *userData) ToUser() *mtproto.User {
 //	return
 //}
 
-func GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtproto.User) {
+func (m *UserModel) GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtproto.User) {
 	if len(userIdList) == 0 {
 		users = []*mtproto.User{}
 	} else {
 		// TODO(@benqi):  需要优化，makeUserDataByDO需要查询用户状态以及获取Mutual和Contact状态信息而导致多次查询
-		userDOList := dao.GetUsersDAO(dao.DB_SLAVE).SelectUsersByIdList(userIdList)
+		userDOList := m.dao.UsersDAO.SelectUsersByIdList(userIdList)
 		users = make([]*mtproto.User, 0, len(userDOList))
 		for i := 0; i < len(userDOList); i++ {
-			user := makeUserDataByDO(selfUserId, &userDOList[i])
+			user := m.makeUserDataByDO(selfUserId, &userDOList[i])
 			//
 			//// TODO(@benqi): fill bot, photo, about...
 			//user := &mtproto.TLUser{Data2: &mtproto.User_Data{
@@ -96,7 +95,7 @@ func GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtp
 }
 
 
-func GetUserFull(selfUserId int32, userId int32) (userFull *mtproto.TLUserFull) {
+func (m *UserModel) GetUserFull(selfUserId int32, userId int32) (userFull *mtproto.TLUserFull) {
 	//TODO(@benqi): 等Link和NotifySettings实现后再来完善
 	//fullUser := &mtproto.TLUserFull{}
 	//fullUser.PhoneCallsAvailable = true
@@ -159,10 +158,9 @@ func GetUserFull(selfUserId int32, userId int32) (userFull *mtproto.TLUserFull) 
 	return nil
 }
 
-func UpdateUserStatus(userId int32, lastSeenAt int64) {
-	presencesDAO := dao.GetUserPresencesDAO(dao.DB_MASTER)
+func (m *UserModel) UpdateUserStatus(userId int32, lastSeenAt int64) {
 	// now := time.Now().Unix()
-	rows := presencesDAO.UpdateLastSeen(lastSeenAt, 0, userId)
+	rows := m.dao.UserPresencesDAO.UpdateLastSeen(lastSeenAt, 0, userId)
 	if rows == 0 {
 		do := &dataobject.UserPresencesDO{
 			UserId: userId,
@@ -171,13 +169,13 @@ func UpdateUserStatus(userId int32, lastSeenAt int64) {
 			LastSeenIp: "",
 			CreatedAt: base.NowFormatYMDHMS(),
 		}
-		presencesDAO.Insert(do)
+		m.dao.UserPresencesDAO.Insert(do)
 	}
 }
 
-func GetUserStatus(userId int32) *mtproto.UserStatus {
+func (m *UserModel) GetUserStatus(userId int32) *mtproto.UserStatus {
 	now := time.Now().Unix()
-	do := dao.GetUserPresencesDAO(dao.DB_SLAVE).SelectByUserID(userId)
+	do := m.dao.UserPresencesDAO.SelectByUserID(userId)
 	if do == nil {
 		return mtproto.NewTLUserStatusEmpty().To_UserStatus()
 	}

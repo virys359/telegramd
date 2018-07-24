@@ -19,7 +19,6 @@ package user
 
 import (
 	"encoding/json"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 )
 
 // type profileData *ProfilePhotoIds
@@ -71,8 +70,8 @@ func (m *ProfilePhotoIds) ToJson() string {
 	return string(data)
 }
 
-func GetDefaultUserPhotoID(userId int32) int64 {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectProfilePhotos(userId)
+func (m *UserModel) GetDefaultUserPhotoID(userId int32) int64 {
+	do := m.dao.UsersDAO.SelectProfilePhotos(userId)
 	if do != nil {
 		photoIds := MakeProfilePhotoData(do.Photos)
 		return photoIds.Default
@@ -80,8 +79,8 @@ func GetDefaultUserPhotoID(userId int32) int64 {
 	return 0
 }
 
-func GetUserPhotoIDList(userId int32) []int64 {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectProfilePhotos(userId)
+func (m *UserModel) GetUserPhotoIDList(userId int32) []int64 {
+	do := m.dao.UsersDAO.SelectProfilePhotos(userId)
 	if do != nil {
 		photoIds := MakeProfilePhotoData(do.Photos)
 		return photoIds.IdList
@@ -89,20 +88,20 @@ func GetUserPhotoIDList(userId int32) []int64 {
 	return []int64{}
 }
 
-func SetUserPhotoID(userId int32, photoId int64) {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectProfilePhotos(userId)
+func (m *UserModel) SetUserPhotoID(userId int32, photoId int64) {
+	do := m.dao.UsersDAO.SelectProfilePhotos(userId)
 	if do != nil {
 		photoIds := MakeProfilePhotoData(do.Photos)
 		photoIds.AddPhotoId(photoId)
-		dao.GetUsersDAO(dao.DB_MASTER).UpdateProfilePhotos(photoIds.ToJson(), userId)
+		m.dao.UsersDAO.UpdateProfilePhotos(photoIds.ToJson(), userId)
 	}
 }
 
-func DeleteUserPhotoID(userId int32, photoId int64) {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectProfilePhotos(userId)
+func (m *UserModel) DeleteUserPhotoID(userId int32, photoId int64) {
+	do := m.dao.UsersDAO.SelectProfilePhotos(userId)
 	if do != nil {
 		photoIds := MakeProfilePhotoData(do.Photos)
 		photoIds.RemovePhotoId(photoId)
-		dao.GetUsersDAO(dao.DB_MASTER).UpdateProfilePhotos(photoIds.ToJson(), userId)
+		m.dao.UsersDAO.UpdateProfilePhotos(photoIds.ToJson(), userId)
 	}
 }

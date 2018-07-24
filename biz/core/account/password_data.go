@@ -18,7 +18,6 @@
 package account
 
 import (
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"encoding/hex"
 	"bytes"
@@ -81,6 +80,7 @@ type passwordData struct {
 	// hasRecovery bool
 	email       string
 	state       int
+	dao         *accountsDAO
 }
 
 func makeEMailPattern(email string) string {
@@ -90,13 +90,13 @@ func makeEMailPattern(email string) string {
 
 // hasRecovery
 
-func MakePasswordData(userId int32) (*passwordData, error) {
+func (m *AccountModel) MakePasswordData(userId int32) (*passwordData, error) {
 	var (
 		err error
 		serverSalt, salt, hash []byte
 	)
 
-	do := dao.GetUserPasswordsDAO(dao.DB_SLAVE).SelectByUserId(userId)
+	do := m.dao.UserPasswordsDAO.SelectByUserId(userId)
 	if do == nil {
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR)
 		glog.Error(err, ": not found user_password row, user_id: ", userId)
@@ -130,16 +130,45 @@ func MakePasswordData(userId int32) (*passwordData, error) {
 
 	// TODO(@benqi): check data.
 	data := &passwordData{
-		userId: userId,
+		userId:     userId,
 		serverSalt: serverSalt,
-		salt: salt,
-		hash: hash,
-		hint: do.Hint,
-		// hasRecovery: do.HasRecovery == 1,
-		email: do.Email,
-		state: int(do.State),
+		salt:       salt,
+		hash:       hash,
+		hint:       do.Hint,
+		email:      do.Email,
+		state:      int(do.State),
+		dao:        m.dao,
 	}
 	return data, nil
+}
+
+
+func (m *AccountModel) CheckRecoverCode(userId int32, code string) error {
+	do := m.dao.UserPasswordsDAO.SelectCode(userId)
+	if do == nil {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR)
+		glog.Error(err, ": not found user_password row, user_id - ", userId)
+		return err
+	}
+
+	// TODO(@benqi): FLOOD_WAIT, check attempts??
+
+	if do.Code != code {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CODE_INVALID)
+		glog.Errorf("%s: userId - %d, code - %s", err, userId, code)
+		return err
+	}
+	return nil
+}
+
+// SESSION_PASSWORD_NEEDED
+func (m *AccountModel) CheckSessionPasswordNeeded(userId int32) bool {
+	// TODO(@benqi):  仅仅从数据库里取state字段
+	do := m.dao.UserPasswordsDAO.SelectByUserId(userId)
+	if do == nil {
+		return false
+	}
+	return do.State == kStateNoRecoveryPassword || do.State == kStateConfirmedPassword
 }
 
 func (p *passwordData) saveToDB() {
@@ -153,7 +182,7 @@ func (p *passwordData) saveToDB() {
 		hash = hex.EncodeToString(p.hash)
 	}
 
-	dao.GetUserPasswordsDAO(dao.DB_MASTER).Update(salt, hash, p.hint, p.email, int8(p.state), p.userId)
+	p.dao.UserPasswordsDAO.Update(salt, hash, p.hint, p.email, int8(p.state), p.userId)
 }
 
 func (p *passwordData) getHasRecovery() *mtproto.Bool {
@@ -346,32 +375,4 @@ func (p *passwordData) RequestPasswordRecovery() (*mtproto.Auth_PasswordRecovery
 		EmailPattern: p.email,
 	}}
 	return passwordRecovery.To_Auth_PasswordRecovery(), nil
-}
-
-func CheckRecoverCode(userId int32, code string) error {
-	do := dao.GetUserPasswordsDAO(dao.DB_SLAVE).SelectCode(userId)
-	if do == nil {
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR)
-		glog.Error(err, ": not found user_password row, user_id - ", userId)
-		return err
-	}
-
-	// TODO(@benqi): FLOOD_WAIT, check attempts??
-
-	if do.Code != code {
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CODE_INVALID)
-		glog.Errorf("%s: userId - %d, code - %s", err, userId, code)
-		return err
-	}
-	return nil
-}
-
-// SESSION_PASSWORD_NEEDED
-func CheckSessionPasswordNeeded(userId int32) bool {
-	// TODO(@benqi):  仅仅从数据库里取state字段
-	do := dao.GetUserPasswordsDAO(dao.DB_SLAVE).SelectByUserId(userId)
-	if do == nil {
-		return false
-	}
-	return do.State == kStateNoRecoveryPassword || do.State == kStateConfirmedPassword
 }

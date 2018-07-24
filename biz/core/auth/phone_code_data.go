@@ -19,11 +19,10 @@ package auth
 
 import (
 	"fmt"
+	"time"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"time"
 	"github.com/nebulaim/telegramd/baselib/crypto"
 )
 
@@ -82,10 +81,10 @@ type phoneCodeData struct {
 	flashCallPattern string
 	nextCodeType     int
 	state            int
-	// dataType: kDBTypeCreate, kDBTypeLoad
-	dataType     	 int
+	dataType         int // dataType: kDBTypeCreate, kDBTypeLoad
 	tableId          int64
 	codeCallback     sendCodeCallback
+	dao              *authsDAO
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,46 +168,6 @@ func makeAuthSentCodeType(codeType, codeLength int, pattern string) (authSentCod
 	return
 }
 
-func MakeCodeData(authKeyId int64, phoneNumber string) *phoneCodeData {
-	// TODO(@benqi): 独立出统一消息推送系统
-	// 检查phpne是否存在，若存在是否在线决定是否通过短信发送或通过其他客户端发送
-	// 透传AuthId，UserId，终端类型等
-	// 检查满足条件的TransactionHash是否存在，可能的条件：
-	//  1. is_deleted !=0 and now - created_at < 15 分钟
-	//
-
-	// sentCodeType, nextCodeType := makeCodeType(phoneRegistered, allowFlashCall, currentNumber)
-	code := &phoneCodeData{
-		authKeyId:   authKeyId,
-		phoneNumber: phoneNumber,
-		state:       kCodeStateNone,
-		dataType:    kDBTypeCreate,
-	}
-	return code
-}
-
-func MakeCancelCodeData(authKeyId int64, phoneNumber, codeHash string) *phoneCodeData {
-	code := &phoneCodeData{
-		authKeyId:   authKeyId,
-		codeHash:    codeHash,
-		phoneNumber: phoneNumber,
-		state:       kCodeStateNone,
-		dataType:    kDBTypeDelete,
-	}
-	return code
-}
-
-func MakeCodeDataByHash(authKeyId int64, phoneNumber, codeHash string) *phoneCodeData {
-	code := &phoneCodeData{
-		authKeyId:   authKeyId,
-		codeHash:    codeHash,
-		phoneNumber: phoneNumber,
-		state:       kCodeStateNone,
-		dataType:    kDBTypeLoad,
-	}
-	return code
-}
-
 func (code *phoneCodeData) String() string {
 	return fmt.Sprintf("{authKeyId: %d, phoneNumber: %s, codeHash: %s, state: %d}", code.authKeyId, code.phoneNumber, code.codeHash, code.state)
 }
@@ -282,10 +241,10 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 		ApiHash:          apiHash,
 		CreatedTime:      time.Now().Unix(),
 	}
-	code.tableId = dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).Insert(do)
+	code.tableId = code.dao.AuthPhoneTransactionsDAO.Insert(do)
 	//// TODO(@benqi):
 	//lastCreatedAt := time.Unix(time.Now().Unix()-15*60, 0).Format("2006-01-02 15:04:05")
-	//do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneAndApiIdAndHash(code.phoneNumber, apiId, apiHash, lastCreatedAt)
+	//do := code.dao.AuthPhoneTransactionsDAO.SelectByPhoneAndApiIdAndHash(code.phoneNumber, apiId, apiHash, lastCreatedAt)
 	//if do == nil {
 	//} else {
 	//	// TODO(@benqi): FLOOD_WAIT_X, too many attempts, please try later.
@@ -298,7 +257,7 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 func (code *phoneCodeData) DoReSendCode() error {
 	code.checkDataType(kDBTypeLoad)
 
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
+	do := code.dao.AuthPhoneTransactionsDAO.SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
 	if do == nil {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "invalid phone number")
 		glog.Error(err)
@@ -329,7 +288,7 @@ func (code *phoneCodeData) DoReSendCode() error {
 	now := int32(time.Now().Unix())
 	if now > do.CodeExpired {
 		// TODO(@benqi): update timeout state?
-		// dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).UpdateState(kCodeStateTimeout, do.Id)
+		// code.dao.AuthPhoneTransactionsDAO.UpdateState(kCodeStateTimeout, do.Id)
 
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EXPIRED), "code expired")
 		glog.Error(err)
@@ -355,8 +314,7 @@ func (code *phoneCodeData) DoReSendCode() error {
 
 // auth.cancelCode
 func (code *phoneCodeData) DoCancelCode() bool {
-	master := dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER)
-	master.Delete(int8(kCodeStateDeleted), code.authKeyId, code.phoneNumber, code.codeHash)
+	code.dao.AuthPhoneTransactionsDAO.Delete(int8(kCodeStateDeleted), code.authKeyId, code.phoneNumber, code.codeHash)
 	return true
 }
 
@@ -364,13 +322,13 @@ func (code *phoneCodeData) DoSignIn(phoneCode string, phoneRegistered bool) erro
 	defer func() {
 		if code.tableId != 0 {
 			// Update attempts
-			dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).UpdateAttempts(code.tableId)
+			code.dao.AuthPhoneTransactionsDAO.UpdateAttempts(code.tableId)
 		}
 	}()
 
 	code.checkDataType(kDBTypeLoad)
 
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
+	do := code.dao.AuthPhoneTransactionsDAO.SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
 	if do == nil {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "invalid phone number")
 		glog.Error(code, ", error: ", err)
@@ -396,7 +354,7 @@ func (code *phoneCodeData) DoSignIn(phoneCode string, phoneRegistered bool) erro
 	now := int32(time.Now().Unix())
 	if now > do.CodeExpired {
 		// TODO(@benqi): update timeout state?
-		// dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).UpdateState(kCodeStateTimeout, do.Id)
+		// code.dao.AuthPhoneTransactionsDAO.UpdateState(kCodeStateTimeout, do.Id)
 
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EXPIRED), "code expired")
 		glog.Error(err)
@@ -425,7 +383,7 @@ func (code *phoneCodeData) DoSignIn(phoneCode string, phoneRegistered bool) erro
 	}
 
 	// update state
-	dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).UpdateState(int8(code.state), code.tableId)
+	code.dao.AuthPhoneTransactionsDAO.UpdateState(int8(code.state), code.tableId)
 	return nil
 }
 
@@ -434,13 +392,13 @@ func (code *phoneCodeData) DoSignUp(phoneCode string) error {
 	defer func() {
 		if code.tableId != 0 {
 			// Update attempts
-			dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).UpdateAttempts(code.tableId)
+			code.dao.AuthPhoneTransactionsDAO.UpdateAttempts(code.tableId)
 		}
 	}()
 
 	code.checkDataType(kDBTypeLoad)
 
-	do := dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
+	do := code.dao.AuthPhoneTransactionsDAO.SelectByPhoneCodeHash(code.authKeyId, code.phoneNumber, code.codeHash)
 	if do == nil {
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_INVALID), "invalid phone number")
 		glog.Error(err)
@@ -467,7 +425,7 @@ func (code *phoneCodeData) DoSignUp(phoneCode string) error {
 	now := int32(time.Now().Unix())
 	if now > do.CodeExpired {
 		// TODO(@benqi): update timeout state?
-		// dao.GetAuthPhoneTransactionsDAO(dao.DB_MASTER).UpdateState(kCodeStateTimeout, do.Id)
+		// code.dao.AuthPhoneTransactionsDAO.UpdateState(kCodeStateTimeout, do.Id)
 
 		err := mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_CODE_EXPIRED), "code expired")
 		glog.Error(err)
@@ -484,7 +442,7 @@ func (code *phoneCodeData) DoSignUp(phoneCode string) error {
 	code.state = kCodeStateOk
 
 	// update state
-	dao.GetAuthPhoneTransactionsDAO(dao.DB_SLAVE).UpdateState(int8(code.state), code.tableId)
+	code.dao.AuthPhoneTransactionsDAO.UpdateState(int8(code.state), code.tableId)
 	return nil
 }
 

@@ -23,13 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	// "time"
-	"github.com/nebulaim/telegramd/biz/core/chat"
-	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/base"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // messages.createChat#9cb126e users:Vector<InputUser> title:string = Updates;
@@ -55,7 +51,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 		}
 	}
 
-	chat := chat.NewChatLogicByCreateChat(md.UserId, chatUserIdList, request.GetTitle())
+	chat := s.ChatModel.NewChatLogicByCreateChat(md.UserId, chatUserIdList, request.GetTitle())
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
@@ -64,8 +60,8 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 
 	createChatMessage := chat.MakeCreateChatMessage(md.UserId)
 	randomId := base.NextSnowflakeId()
-	outbox := message.CreateMessageOutboxByNew(md.UserId, peer, randomId, createChatMessage, func(messageId int32) {
-		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
+	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, createChatMessage, func(messageId int32) {
+		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})
 
 	syncUpdates := update2.NewUpdatesLogic(md.UserId)
@@ -74,7 +70,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 	}}
 	syncUpdates.AddUpdate(updateChatParticipants.To_Update())
 	syncUpdates.AddUpdateNewMessage(createChatMessage)
-	syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+	syncUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
 	syncUpdates.AddChat(chat.ToChat(md.UserId))
 
 	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
@@ -83,7 +79,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 	reply := syncUpdates.ToUpdates()
 
 	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
-		user.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHAT, peer.PeerId, messageId, false)
+		s.UserModel.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHAT, peer.PeerId, messageId, false)
 	})
 	for _, inbox := range inboxList {
 		updates := update2.NewUpdatesLogic(md.UserId)
@@ -92,7 +88,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 		}}
 		updates.AddUpdate(updateChatParticipants.To_Update())
 		updates.AddUpdateNewMessage(inbox.Message)
-		updates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
 		updates.AddChat(chat.ToChat(inbox.UserId))
 		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
 	}

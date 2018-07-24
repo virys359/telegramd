@@ -23,13 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	// "time"
-	"github.com/nebulaim/telegramd/biz/core/channel"
-	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/base"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 /*
@@ -120,7 +116,7 @@ func (s *ChannelsServiceImpl) ChannelsCreateChannel(ctx context.Context, request
 	//randomId := md.ClientMsgId
 
 	channelUserIdList := []int32{md.UserId}
-	channel := channel.NewChannelLogicByCreateChannel(md.UserId, channelUserIdList, request.GetTitle(), request.GetAbout())
+	channel := s.ChannelModel.NewChannelLogicByCreateChannel(md.UserId, channelUserIdList, request.GetTitle(), request.GetAbout())
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHANNEL,
@@ -133,8 +129,8 @@ func (s *ChannelsServiceImpl) ChannelsCreateChannel(ctx context.Context, request
 	// 1. 创建channel
 	// 2. 创建channel createChannel message
 	
-	channelBox := message.CreateChannelMessageBoxByNew(md.UserId, channel.GetChannelId(), randomId, createChannelMessage, func(messageId int32) {
-		user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
+	channelBox := s.MessageModel.CreateChannelMessageBoxByNew(md.UserId, channel.GetChannelId(), randomId, createChannelMessage, func(messageId int32) {
+		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})
 
 

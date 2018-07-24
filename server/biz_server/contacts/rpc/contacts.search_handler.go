@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/contact"
-	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // contacts.search#11f812d8 q:string limit:int = contacts.Found;
@@ -39,7 +37,7 @@ func (s *ContactsServiceImpl) ContactsSearch(ctx context.Context, request *mtpro
 		return nil, err
 	}
 
-	contactLogic := contact.MakeContactLogic(md.UserId)
+	contactLogic := s.ContactModel.MakeContactLogic(md.UserId)
 	idList := contactLogic.SearchContacts(request.Q, request.Limit)
 
 	// results
@@ -52,7 +50,7 @@ func (s *ContactsServiceImpl) ContactsSearch(ctx context.Context, request *mtpro
 	}
 
 	// users
-	users := user.GetUsersBySelfAndIDList(md.UserId, idList)
+	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList)
 
 	found := &mtproto.TLContactsFound{Data2: &mtproto.Contacts_Found_Data{
 		Results: results,

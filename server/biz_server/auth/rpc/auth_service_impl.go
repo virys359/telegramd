@@ -17,7 +17,32 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core/auth"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/account"
+	"github.com/nebulaim/telegramd/biz/core"
+)
 
 type AuthServiceImpl struct {
+	*auth.AuthModel
+	*user.UserModel
+	*account.AccountModel
+}
+
+func NewAuthServiceImpl(models []core.CoreModel) *AuthServiceImpl {
+	impl := &AuthServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *auth.AuthModel:
+			impl.AuthModel = m.(*auth.AuthModel)
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		case *account.AccountModel:
+			impl.AccountModel = m.(*account.AccountModel)
+		}
+	}
+
+	return impl
 }

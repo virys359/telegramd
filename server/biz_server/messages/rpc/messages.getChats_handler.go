@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 // messages.getChats#3c6aa187 id:Vector<int> = messages.Chats;
@@ -33,7 +32,7 @@ func (s *MessagesServiceImpl) MessagesGetChats(ctx context.Context, request *mtp
 
 	// TODO(@benqi): messages.chatsSlice
 	chats := &mtproto.TLMessagesChats{Data2: &mtproto.Messages_Chats_Data{
-		Chats: chat.GetChatListBySelfAndIDList(md.UserId, request.GetId()),
+		Chats: s.ChatModel.GetChatListBySelfAndIDList(md.UserId, request.GetId()),
 	}}
 
 	glog.Infof("messages.getChats#3c6aa187 - reply: %s", chats)

@@ -17,7 +17,24 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/user"
+)
 
 type UsersServiceImpl struct {
+	*user.UserModel
+}
+
+func NewUsersServiceImpl(models []core.CoreModel) *UsersServiceImpl {
+	impl := &UsersServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		}
+	}
+
+	return impl
 }

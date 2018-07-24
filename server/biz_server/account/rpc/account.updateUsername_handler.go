@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
-	"github.com/nebulaim/telegramd/biz/core/account"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
@@ -51,7 +49,7 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 		return nil, err
 	} else {
 		// userId == 0 为username不存在
-		userId := account.GetUserIdByUserName(request.Username)
+		userId := s.AccountModel.GetUserIdByUserName(request.Username)
 		// username不存在或者不是自身
 		if userId > 0 && userId != md.UserId {
 			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_OCCUPIED)
@@ -61,9 +59,9 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 	}
 
 	// affected
-	account.ChangeUserNameByUserId(md.UserId, request.Username)
+	s.AccountModel.ChangeUserNameByUserId(md.UserId, request.Username)
 
-	user := user2.GetUserById(md.UserId, md.UserId)
+	user := s.UserModel.GetUserById(md.UserId, md.UserId)
 	// 要考虑到数据库主从同步问题
 	user.SetUsername(request.Username)
 

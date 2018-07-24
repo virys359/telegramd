@@ -25,8 +25,6 @@ import (
 	"golang.org/x/net/context"
 	"time"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/biz/core/user"
-	"github.com/nebulaim/telegramd/biz/core/phone_call"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
@@ -50,7 +48,7 @@ func (s *PhoneServiceImpl) PhoneRequestCall(ctx context.Context, request *mtprot
 		return nil, err
 	}
 
-	callSession := phone_call.NewPhoneCallLogic(md.UserId, participantId, request.GetGAHash(), request.GetProtocol().To_PhoneCallProtocol())
+	callSession := s.PhoneCallModel.NewPhoneCallLogic(md.UserId, participantId, request.GetGAHash(), request.GetProtocol().To_PhoneCallProtocol())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	updatesData := update2.NewUpdatesLogic(md.UserId)
@@ -71,14 +69,14 @@ func (s *PhoneServiceImpl) PhoneRequestCall(ctx context.Context, request *mtprot
 	}}
 	updatesData.AddUpdate(updatePhoneCall.To_Update())
 	// 3. add users
-	updatesData.AddUsers(user.GetUsersBySelfAndIDList(participantId, []int32{md.UserId, participantId}))
+	updatesData.AddUsers(s.UserModel.GetUsersBySelfAndIDList(participantId, []int32{md.UserId, participantId}))
 	sync_client.GetSyncClient().PushToUserUpdatesData(participantId, updatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	// 2. reply
 	phoneCall := &mtproto.TLPhonePhoneCall{Data2: &mtproto.Phone_PhoneCall_Data{
 		PhoneCall: callSession.ToPhoneCallWaiting(md.UserId, 0).To_PhoneCall(),
-		Users:   user.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId, participantId}),
+		Users:     s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId, participantId}),
 	}}
 
 	glog.Infof("phone.requestCall#5b95b3d4 - reply: {%v}", phoneCall)

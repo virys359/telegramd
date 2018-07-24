@@ -19,6 +19,10 @@ package rpc
 
 import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/phone_call"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/message"
 )
 
 // Before a voice call is ready, some preliminary actions have to be performed.
@@ -56,4 +60,24 @@ type phoneCallSession struct {
 var phoneCallSessionManager = make(map[int64]*phoneCallSession)
 
 type PhoneServiceImpl struct {
+	*user.UserModel
+	*phone_call.PhoneCallModel
+	*message.MessageModel
+}
+
+func NewPhoneServiceImpl(models []core.CoreModel) *PhoneServiceImpl {
+	impl := &PhoneServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *phone_call.PhoneCallModel:
+			impl.PhoneCallModel = m.(*phone_call.PhoneCallModel)
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		case *message.MessageModel:
+			impl.MessageModel = m.(*message.MessageModel)
+		}
+	}
+
+	return impl
 }

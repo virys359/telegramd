@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/user"
-	"github.com/nebulaim/telegramd/biz/core/contact"
 )
 
 // contacts.getContacts#c023849f hash:int = contacts.Contacts;
@@ -35,7 +33,7 @@ func (s *ContactsServiceImpl) ContactsGetContacts(ctx context.Context, request *
 	var (
 		contacts *mtproto.Contacts_Contacts
 	)
-	contactLogic := contact.MakeContactLogic(md.UserId)
+	contactLogic := s.ContactModel.MakeContactLogic(md.UserId)
 
 	contactList := contactLogic.GetContactList()
 	// 避免查询数据库时IN()条件为empty
@@ -56,7 +54,7 @@ func (s *ContactsServiceImpl) ContactsGetContacts(ctx context.Context, request *
 
 		glog.Infof("contactIdList - {%v}", idList)
 
-		users := user.GetUsersBySelfAndIDList(md.UserId, idList)
+		users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList)
 		contacts = &mtproto.Contacts_Contacts{
 			Constructor: mtproto.TLConstructor_CRC32_contacts_contacts,
 			Data2: &mtproto.Contacts_Contacts_Data{

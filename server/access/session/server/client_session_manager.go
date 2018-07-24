@@ -26,7 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"sync"
 	"time"
-	"github.com/nebulaim/telegramd/biz/core/user"
+	// "github.com/nebulaim/telegramd/biz/core/user"
 	"encoding/hex"
 	"github.com/nebulaim/telegramd/proto/zproto"
 )
@@ -491,16 +491,19 @@ func (s *clientSessionManager) setUserOnline(sessionId int64, connID ClientConnI
 		}
 	}()
 
-	status := &user.SessionStatus{
-		ServerId:        getServerID(),
-		UserId:          s.AuthUserId,
-		AuthKeyId:       s.authKeyId,
-		SessionId:       int64(sessionId),
-		NetlibSessionId: int64(connID.clientConnID),
-		Now:             time.Now().Unix(),
-	}
-
-	user.SetOnline(status)
+	setOnline(s.AuthUserId, getServerID(), s.authKeyId)
+	// userId int32, serverId int32, authKeyId int64)
+	//
+	//status := &user.SessionStatus{
+	//	ServerId:        getServerID(),
+	//	UserId:          s.AuthUserId,
+	//	AuthKeyId:       s.authKeyId,
+	//	SessionId:       int64(sessionId),
+	//	NetlibSessionId: int64(connID.clientConnID),
+	//	Now:             time.Now().Unix(),
+	//}
+	//
+	//user.SetOnline(status)
 }
 
 //==================================================================================================

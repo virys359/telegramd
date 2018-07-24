@@ -80,7 +80,7 @@ func GetStickerSet(stickerset *mtproto.InputStickerSet) *mtproto.StickerSet {
 	return set
 }
 
-func GetStickerPackList(setId int64) ([]*mtproto.StickerPack, []int64) {
+func (m *StickerModel) GetStickerPackList(setId int64) ([]*mtproto.StickerPack, []int64) {
 	doList := dao.GetStickerPacksDAO(dao.DB_SLAVE).SelectBySetID(setId)
 	packs := make([]*mtproto.StickerPack, len(doList))
 	idList := make([]int64, len(doList))

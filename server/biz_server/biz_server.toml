@@ -3,16 +3,19 @@
 ver = "0.0.1"
 #logPath = "/tmp/biz_server.log"
 
-[server]
+serverId = 1
+
+[rpcServer]
 addr = "0.0.0.0:10001"
 
-[discovery]
+[rpcServer.rpcDiscovery]
 serviceName = "biz"
 nodeID = "node1"
 rPCAddr = "127.0.0.1:10001"
 etcdAddrs = ["http://127.0.0.1:2379"]
 interval = "2s"
 tTL = "10s"
+
 
 #[rpcClient]
 #serviceName = "sync"

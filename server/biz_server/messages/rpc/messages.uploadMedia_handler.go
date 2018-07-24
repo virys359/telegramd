@@ -31,7 +31,7 @@ func (s *MessagesServiceImpl) MessagesUploadMedia(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.uploadMedia#519bc2b1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	messageMedia := makeMediaByInputMedia(md.AuthId, request.GetMedia())
+	messageMedia := s.makeMediaByInputMedia(md.AuthId, request.GetMedia())
 
 	//// TODO(@benqi): Impl MessagesUploadMedia logic
 	//return nil, fmt.Errorf("Not impl MessagesUploadMedia")

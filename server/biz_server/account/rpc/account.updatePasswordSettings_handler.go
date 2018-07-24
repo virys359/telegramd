@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.updatePasswordSettings#fa7c4b86 current_password_hash:bytes new_settings:account.PasswordInputSettings = Bool;
@@ -35,7 +34,7 @@ func (s *AccountServiceImpl) AccountUpdatePasswordSettings(ctx context.Context, 
 
 	// TODO(@benqi): check request invalid
 
-	passwordLogic, err := account.MakePasswordData(md.UserId)
+	passwordLogic, err := s.AccountModel.MakePasswordData(md.UserId)
 	if err == nil {
 		err = passwordLogic.UpdatePasswordSetting(request.CurrentPasswordHash,
 			passwordInputSetting.GetNewSalt(),

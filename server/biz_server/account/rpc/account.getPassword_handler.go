@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 /*
@@ -36,7 +35,7 @@ func (s *AccountServiceImpl) AccountGetPassword(ctx context.Context, request *mt
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.getPassword#548a30f5 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	passwordLogic, err := account.MakePasswordData(md.UserId)
+	passwordLogic, err := s.AccountModel.MakePasswordData(md.UserId)
 	if err != nil {
 		glog.Error("account.getPassword#548a30f5 - error: ", err)
 		return nil, err

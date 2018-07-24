@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/auth"
 )
 
 /*
@@ -72,14 +71,14 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 	//
 
 	// PHONE_NUMBER_BANNED: Banned phone number
-	banned := auth.CheckBannedByPhoneNumber(phoneNumber)
+	banned := s.AuthModel.CheckBannedByPhoneNumber(phoneNumber)
 	if banned {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
 		glog.Error(err)
 		return nil, err
 	}
 
-	code := auth.MakeCodeDataByHash(md.AuthId, phoneNumber, request.GetPhoneCodeHash())
+	code := s.AuthModel.MakeCodeDataByHash(md.AuthId, phoneNumber, request.GetPhoneCodeHash())
 	err = code.DoReSendCode()
 	if err != nil {
 		glog.Error(err)
@@ -87,7 +86,7 @@ func (s *AuthServiceImpl) AuthResendCode(ctx context.Context, request *mtproto.T
 	}
 
 	// 使用app类型，code统一为123456
-	phoneRegistered := auth.CheckPhoneNumberExist(phoneNumber)
+	phoneRegistered := s.AuthModel.CheckPhoneNumberExist(phoneNumber)
 	authSentCode := code.ToAuthSentCode(phoneRegistered)
 
 	glog.Infof("auth.resendCode#3ef1a9bf - reply: %s", logger.JsonDebugData(authSentCode))

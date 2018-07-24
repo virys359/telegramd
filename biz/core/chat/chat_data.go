@@ -18,16 +18,14 @@
 package chat
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
+	"fmt"
 	"time"
+	"math/rand"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"math/rand"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"fmt"
-	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/biz/core"
 )
 
 const (
@@ -39,6 +37,8 @@ const (
 type chatLogicData struct {
 	chat         *dataobject.ChatsDO
 	participants []dataobject.ChatParticipantsDO
+	dao          *chatsDAO
+	cb           core.PhotoCallback
 }
 
 func makeChatParticipantByDO(do *dataobject.ChatParticipantsDO) (participant *mtproto.ChatParticipant) {
@@ -62,19 +62,21 @@ func makeChatParticipantByDO(do *dataobject.ChatParticipantsDO) (participant *mt
 	return
 }
 
-func NewChatLogicById(chatId int32) (chatData *chatLogicData, err error) {
-	chatDO := dao.GetChatsDAO(dao.DB_SLAVE).Select(chatId)
+func (m *ChatModel) NewChatLogicById(chatId int32) (chatData *chatLogicData, err error) {
+	chatDO := m.dao.ChatsDAO.Select(chatId)
 	if chatDO == nil {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_ID_INVALID)
 	} else {
 		chatData = &chatLogicData{
 			chat: chatDO,
+			dao:  m.dao,
+			cb:   m.photoCallback,
 		}
 	}
 	return
 }
 
-func NewChatLogicByCreateChat(creatorId int32, userIds []int32, title string) (chatData *chatLogicData) {
+func (m *ChatModel) NewChatLogicByCreateChat(creatorId int32, userIds []int32, title string) (chatData *chatLogicData) {
 	// TODO(@benqi): 事务
 	chatData = &chatLogicData{
 		chat: &dataobject.ChatsDO{
@@ -89,14 +91,16 @@ func NewChatLogicByCreateChat(creatorId int32, userIds []int32, title string) (c
 			Date:             int32(time.Now().Unix()),
 		},
 		participants: make([]dataobject.ChatParticipantsDO, 1+len(userIds)),
+		dao:          m.dao,
+		cb:           m.photoCallback,
 	}
-	chatData.chat.Id = int32(dao.GetChatsDAO(dao.DB_MASTER).Insert(chatData.chat))
+	chatData.chat.Id = int32(m.dao.ChatsDAO.Insert(chatData.chat))
 
 	chatData.participants = make([]dataobject.ChatParticipantsDO, 1 + len(userIds))
 	chatData.participants[0].ChatId = chatData.chat.Id
 	chatData.participants[0].UserId = creatorId
 	chatData.participants[0].ParticipantType = kChatParticipantCreator
-	dao.GetChatParticipantsDAO(dao.DB_MASTER).Insert(&chatData.participants[0])
+	m.dao.ChatParticipantsDAO.Insert(&chatData.participants[0])
 
 	for i := 0; i < len(userIds); i++ {
 		chatData.participants[i+1].ChatId = chatData.chat.Id
@@ -105,7 +109,7 @@ func NewChatLogicByCreateChat(creatorId int32, userIds []int32, title string) (c
 		chatData.participants[i+1].InviterUserId = creatorId
 		chatData.participants[i+1].InvitedAt = chatData.chat.Date
 		chatData.participants[i+1].JoinedAt = chatData.chat.Date
-		dao.GetChatParticipantsDAO(dao.DB_MASTER).Insert(&chatData.participants[i+1])
+		m.dao.ChatParticipantsDAO.Insert(&chatData.participants[i+1])
 	}
 	return
 }
@@ -124,7 +128,7 @@ func (this *chatLogicData) GetVersion() int32 {
 
 func (this *chatLogicData) checkOrLoadChatParticipantList() {
 	if len(this.participants) == 0 {
-		this.participants = dao.GetChatParticipantsDAO(dao.DB_SLAVE).SelectByChatId(this.chat.Id)
+		this.participants = this.dao.ChatParticipantsDAO.SelectByChatId(this.chat.Id)
 	}
 }
 
@@ -236,7 +240,7 @@ func (this *chatLogicData) AddChatUser(inviterId, userId int32) error {
 
 	if founded != -1 {
 		this.participants[founded].State = 0
-		dao.GetChatParticipantsDAO(dao.DB_MASTER).Update(inviterId, now, now, this.participants[founded].Id)
+		this.dao.ChatParticipantsDAO.Update(inviterId, now, now, this.participants[founded].Id)
 	} else {
 		chatParticipant := &dataobject.ChatParticipantsDO{
 			ChatId:          this.chat.Id,
@@ -246,7 +250,7 @@ func (this *chatLogicData) AddChatUser(inviterId, userId int32) error {
 			InvitedAt:       now,
 			JoinedAt:        now,
 		}
-		chatParticipant.Id = int32(dao.GetChatParticipantsDAO(dao.DB_MASTER).Insert(chatParticipant))
+		chatParticipant.Id = int32(this.dao.ChatParticipantsDAO.Insert(chatParticipant))
 		this.participants = append(this.participants, *chatParticipant)
 	}
 
@@ -254,7 +258,7 @@ func (this *chatLogicData) AddChatUser(inviterId, userId int32) error {
 	this.chat.ParticipantCount += 1
 	this.chat.Version += 1
 	this.chat.Date = now
-	dao.GetChatsDAO(dao.DB_MASTER).UpdateParticipantCount(this.chat.ParticipantCount, now, this.chat.Id)
+	this.dao.ChatsDAO.UpdateParticipantCount(this.chat.ParticipantCount, now, this.chat.Id)
 
 	return nil
 }
@@ -300,8 +304,8 @@ func (this *chatLogicData) ToChat(selfUserId int32) *mtproto.Chat {
 		if this.chat.PhotoId == 0 {
 			chat.SetPhoto(mtproto.NewTLChatPhotoEmpty().To_ChatPhoto())
 		} else {
-			sizeList, _ := nbfs_client.GetPhotoSizeList(this.chat.PhotoId)
-			chat.SetPhoto(photo2.MakeChatPhoto(sizeList))
+			// sizeList, _ := nbfs_client.GetPhotoSizeList(this.chat.PhotoId)
+			chat.SetPhoto(this.cb.GetChatPhoto(this.chat.PhotoId))
 		}
 		return chat.To_Chat()
 	}
@@ -355,7 +359,7 @@ func (this *chatLogicData) DeleteChatUser(operatorId, deleteUserId int32) error 
 	}
 
 	this.participants[found].State = 1
-	dao.GetChatParticipantsDAO(dao.DB_MASTER).DeleteChatUser(this.participants[found].Id)
+	this.dao.ChatParticipantsDAO.DeleteChatUser(this.participants[found].Id)
 
 	// delete found.
 	// this.participants = append(this.participants[:found], this.participants[found+1:]...)
@@ -364,7 +368,7 @@ func (this *chatLogicData) DeleteChatUser(operatorId, deleteUserId int32) error 
 	this.chat.ParticipantCount = int32(len(this.participants)-1)
 	this.chat.Version += 1
 	this.chat.Date = now
-	dao.GetChatsDAO(dao.DB_MASTER).UpdateParticipantCount(this.chat.ParticipantCount, now, this.chat.Id)
+	this.dao.ChatsDAO.UpdateParticipantCount(this.chat.ParticipantCount, now, this.chat.Id)
 
 	return nil
 }
@@ -391,7 +395,7 @@ func (this *chatLogicData) EditChatTitle(editUserId int32, title string) error {
 	this.chat.Date = int32(time.Now().Unix())
 	this.chat.Version += 1
 
-	dao.GetChatsDAO(dao.DB_MASTER).UpdateTitle(title, this.chat.Date, this.chat.Id)
+	this.dao.ChatsDAO.UpdateTitle(title, this.chat.Date, this.chat.Id)
 	return nil
 }
 
@@ -417,7 +421,7 @@ func (this *chatLogicData) EditChatPhoto(editUserId int32, photoId int64) error 
 	this.chat.Date = int32(time.Now().Unix())
 	this.chat.Version += 1
 
-	dao.GetChatsDAO(dao.DB_MASTER).UpdatePhotoId(photoId, this.chat.Date, this.chat.Id)
+	this.dao.ChatsDAO.UpdatePhotoId(photoId, this.chat.Date, this.chat.Id)
 	return nil
 }
 
@@ -449,12 +453,12 @@ func (this *chatLogicData) EditChatAdmin(operatorId, editChatAdminId int32, isAd
 	} else {
 		participant.ParticipantType = kChatParticipant
 	}
-	dao.GetChatParticipantsDAO(dao.DB_MASTER).UpdateParticipantType(participant.ParticipantType, participant.Id)
+	this.dao.ChatParticipantsDAO.UpdateParticipantType(participant.ParticipantType, participant.Id)
 
 	// update version
 	this.chat.Date = int32(time.Now().Unix())
 	this.chat.Version += 1
-	dao.GetChatsDAO(dao.DB_MASTER).UpdateVersion(this.chat.Date, this.chat.Id)
+	this.dao.ChatsDAO.UpdateVersion(this.chat.Date, this.chat.Id)
 
 	return nil
 }
@@ -478,7 +482,7 @@ func (this *chatLogicData) ToggleChatAdmins(userId int32, adminsEnabled bool) er
 	this.chat.Date = int32(time.Now().Unix())
 	this.chat.Version += 1
 
-	dao.GetChatsDAO(dao.DB_MASTER).UpdateAdminsEnabled(this.chat.AdminsEnabled, this.chat.Date, this.chat.Id)
+	this.dao.ChatsDAO.UpdateAdminsEnabled(this.chat.AdminsEnabled, this.chat.Date, this.chat.Id)
 
 	return nil
 }

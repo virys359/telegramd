@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/service/contact/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/service/contact/proto"
 )
 
 // var modelInstance *contactModel
@@ -53,64 +54,48 @@ func InitContactModel(dbName string) (*ContactModel, error) {
 	return m, nil
 }
 
-type inputContactData struct {
-	userId    int32
-	phone     string
-	firstName string
-	lastName  string
+func (m *ContactModel) makeContactLogic(userId int32) *contactLogic {
+	return &contactLogic{selfUserID: userId, dao: m.dao}
 }
 
-type importedContactData struct {
-	userId        int32
-	importers     int32
-	mutualUpdated bool
-}
-
-func (m *ContactModel) ImportContacts(selfUserId int32, contacts []*inputContactData) []*importedContactData {
+func (m *ContactModel) ImportContacts(selfUserId int32, contacts []*contact.InputContactData) []*contact.ImportedContactData {
 	if len(contacts) == 0 {
 		glog.Errorf("phoneContacts not empty.")
-		return []*importedContactData{}
+		return []*contact.ImportedContactData{}
 		// return
 	}
 
-
-	logic := MakeContactLogic(selfUserId)
+	logic := m.makeContactLogic(selfUserId)
 	if len(contacts) == 1 {
-		return []*importedContactData{logic.importContact(contacts[0])}
+		return []*contact.ImportedContactData{logic.importContact(contacts[0])}
 	} else {
 		// sync phone book
 		return logic.importContacts(contacts)
 	}
 }
 
-//func (m *ContactModel) GetPopularContacts(selfUserId int32, phones []string) {
-//	logic := MakeContactLogic(selfUserId)
-//	logic.getPopularContacts(phones)
-//}
-//
-
-type deleteResult struct {
-	userId int32
-	state  int32
-}
-
-func (m *ContactModel) DeleteContact(selfUserId, contactUserId int32) *deleteResult {
-	logic := MakeContactLogic(selfUserId)
+func (m *ContactModel) DeleteContact(selfUserId, contactUserId int32) *contact.DeleteResult {
+	logic := m.makeContactLogic(selfUserId)
 	return logic.deleteContact(contactUserId)
 }
 
-func (m *ContactModel) DeleteContacts(selfUserId int32, contactUserIdList []int32) []*deleteResult {
-	logic := MakeContactLogic(selfUserId)
+func (m *ContactModel) DeleteContacts(selfUserId int32, contactUserIdList []int32) []*contact.DeleteResult {
+	logic := m.makeContactLogic(selfUserId)
 	return logic.deleteContacts(contactUserIdList)
 }
 
 
 func (m *ContactModel) BlockUser(selfUserId, id int32) bool {
-	logic := MakeContactLogic(selfUserId)
-	return logic.BlockUser(id)
+	logic := m.makeContactLogic(selfUserId)
+	return logic.blockUser(id)
 }
 
 func (m *ContactModel) UnBlockUser(selfUserId, id int32) bool {
-	logic := MakeContactLogic(selfUserId)
-	return logic.UnBlockUser(id)
+	logic := m.makeContactLogic(selfUserId)
+	return logic.unBlockUser(id)
+}
+
+func (m *ContactModel) CheckContactAndMutual(selfUserId, id int32) (bool, bool) {
+	logic := m.makeContactLogic(selfUserId)
+	return logic.checkContactAndMutual(id)
 }

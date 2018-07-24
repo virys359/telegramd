@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/auth"
 )
 
 /*
@@ -116,7 +115,7 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 
 	// glog.Info("phoneNumber: ", phoneNumber)
 	// PHONE_NUMBER_BANNED: Banned phone number
-	banned := auth.CheckBannedByPhoneNumber(phoneNumber)
+	banned := s.AuthModel.CheckBannedByPhoneNumber(phoneNumber)
 	if banned {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_BANNED), "auth.sendCode#86aef0ec: phone number banned.")
 		glog.Error(err)
@@ -150,13 +149,13 @@ func (s *AuthServiceImpl) AuthSendCode(ctx context.Context, request *mtproto.TLA
 	//	// TODO(@benqi): 由userId优选
 	//}
 
-	code := auth.MakeCodeData(md.AuthId, phoneNumber)
+	code := s.AuthModel.MakeCodeData(md.AuthId, phoneNumber)
 
 	// 检查phoneNumber是否异常
 	// TODO(@benqi): 定义sendCode限制规则
 	// PhoneNumberFlood
 	// FLOOD_WAIT
-	phoneRegistered := auth.CheckPhoneNumberExist(phoneNumber)
+	phoneRegistered := s.AuthModel.CheckPhoneNumberExist(phoneNumber)
 	err = code.DoSendCode(phoneRegistered, request.AllowFlashcall, currentNumber, request.ApiId, request.ApiHash)
 	if err != nil {
 		glog.Error(err)

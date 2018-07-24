@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.resetAuthorization#df77f3bc hash:long = Bool;
@@ -31,7 +30,7 @@ func (s *AccountServiceImpl) AccountResetAuthorization(ctx context.Context, requ
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.resetAuthorization#df77f3bc - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	authKeyId := account.GetAuthKeyIdByHash(md.UserId, request.GetHash())
+	authKeyId := s.AccountModel.GetAuthKeyIdByHash(md.UserId, request.GetHash())
 	if authKeyId == 0 {
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 		glog.Error("account.resetAuthorization#df77f3bc - not found hash ", err)
@@ -39,7 +38,7 @@ func (s *AccountServiceImpl) AccountResetAuthorization(ctx context.Context, requ
 	}
 
 	// TODO(@benqi): found session, kick off.
-	account.DeleteAuthorization(authKeyId)
+	s.AccountModel.DeleteAuthorization(authKeyId)
 
 	glog.Infof("account.checkUsername#2714d86c - reply: {true}")
 	return mtproto.ToBool(true), nil

@@ -24,8 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	contact2 "github.com/nebulaim/telegramd/biz/core/contact"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
@@ -60,7 +58,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 
 	pnumber, err := base.MakePhoneNumberUtil(inputContact.GetPhone(), "")
 	if err != nil {
-		region := user.GetCountryCodeByUser(md.UserId)
+		region := s.UserModel.GetCountryCodeByUser(md.UserId)
 		pnumber, err = base.MakePhoneNumberUtil(inputContact.GetPhone(), region)
 	}
 
@@ -74,7 +72,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	}
 
 	phoneNumber := pnumber.GetNormalizeDigits()
-	contactUser := user.GetUserByPhoneNumber(md.UserId, phoneNumber)
+	contactUser := s.UserModel.GetUserByPhoneNumber(md.UserId, phoneNumber)
 	if contactUser == nil {
 		// 该手机号未注册，我们认为手机号出错
 		//err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PHONE_CODE_INVALID)
@@ -93,7 +91,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	}
 	// contactUser.SetContact(true)
 	// contactUser.SetMutualContact(true)
-	contactLogic := contact2.MakeContactLogic(md.UserId)
+	contactLogic := s.ContactModel.MakeContactLogic(md.UserId)
 	needUpdate := contactLogic.ImportContact(contactUser.GetId(), phoneNumber, inputContact.GetFirstName(), inputContact.GetLastName())
 	// _ = needUpdate
 
@@ -122,7 +120,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		}}
 		contactUpdates.AddUpdate(contactLink2.To_Update())
 
-		myUser := user.GetUserById(contactUser.GetId(), md.UserId)
+		myUser := s.UserModel.GetUserById(contactUser.GetId(), md.UserId)
 		contactUpdates.AddUser(myUser.To_User())
 		// TODO(@benqi): handle seq
 		sync_client.GetSyncClient().PushToUserUpdatesData(contactUser.GetId(), contactUpdates.ToUpdates())

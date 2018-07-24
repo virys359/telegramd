@@ -46,86 +46,116 @@ import (
 	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/biz/core"
 )
 
-func init() {
-	flag.Set("alsologtostderr", "true")
-	flag.Set("log_dir", "false")
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Conf.go
+var (
+	confPath string
+	Conf     *messengerConfig
+)
 
-type RpcServerConfig struct {
-	Addr string
-}
-
-//type RpcClientConfig struct {
-//	ServiceName string
-//	Addr string
-//}
-
-type BizServerConfig struct{
-	Server 		*RpcServerConfig
-	Discovery service_discovery.ServiceDiscoveryServerConfig
-
-	// RpcClient	*RpcClientConfig
-	Mysql		[]mysql_client.MySQLConfig
-	Redis 		[]redis_client.RedisConfig
+type messengerConfig struct {
+	ServerId       int32 // 服务器ID
+	RpcServer      *grpc_util.RPCServerConfig
+	Mysql          []mysql_client.MySQLConfig
+	Redis          []redis_client.RedisConfig
 	NbfsRpcClient  *service_discovery.ServiceDiscoveryClientConfig
 	SyncRpcClient1 *service_discovery.ServiceDiscoveryClientConfig
 	SyncRpcClient2 *service_discovery.ServiceDiscoveryClientConfig
 }
 
-// 整合各服务，方便开发调试
+func init() {
+	flag.Set("alsologtostderr", "true")
+	flag.Set("log_dir", "false")
+	flag.StringVar(&confPath, "conf", "./biz_server.toml", "config path")
+}
+
+func InitializeConfig() (err error) {
+	_, err = toml.DecodeFile(confPath, &Conf)
+	if err != nil {
+		err = fmt.Errorf("decode file %s error: %v", confPath, err)
+	}
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// messenger_server.go
+type messengerServer struct {
+	rpcServer *grpc_util.RPCServer
+	models    []core.CoreModel
+}
+
+func newMessengerServer() *messengerServer {
+	return &messengerServer{}
+}
+
+// AppInstance interface
+func (s *messengerServer) Initialize() error {
+	glog.Infof("messengerServer - initialize...")
+
+	err := InitializeConfig()
+	if err != nil {
+		glog.Fatal(err)
+		return err
+	}
+	glog.Info("messengerServer - load conf: ", Conf)
+
+	s.models = core.InstallCoreModels(func() {
+		// 初始化mysql_client、redis_client
+		redis_client.InstallRedisClientManager(Conf.Redis)
+		mysql_client.InstallMysqlClientManager(Conf.Mysql)
+
+		// 初始化redis_dao、mysql_dao
+		dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
+		dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
+
+		nbfs_client.InstallNbfsClient(Conf.NbfsRpcClient)
+		sync_client.InstallSyncClient(Conf.SyncRpcClient2)
+	})
+
+	s.rpcServer = grpc_util.NewRpcServer(Conf.RpcServer.Addr, &Conf.RpcServer.RpcDiscovery)
+
+	return nil
+}
+
+func (s *messengerServer) RunLoop() {
+	glog.Infof("messengerServer - runLoop...")
+
+	// TODO(@benqi): check error
+	s.rpcServer.Serve(func(s2 *grpc.Server) {
+		mtproto.RegisterRPCAccountServer(s2, account.NewAccountServiceImpl(s.models))
+		mtproto.RegisterRPCAuthServer(s2, auth.NewAuthServiceImpl(s.models))
+		mtproto.RegisterRPCBotsServer(s2, bots.NewBotsServiceImpl(s.models))
+		mtproto.RegisterRPCChannelsServer(s2, channels.NewChannelsServiceImpl(s.models))
+		mtproto.RegisterRPCContactsServer(s2, contacts.NewContactsServiceImpl(s.models))
+		mtproto.RegisterRPCHelpServer(s2, help.NewHelpServiceImpl(s.models))
+		mtproto.RegisterRPCLangpackServer(s2, langpack.NewLangpackServiceImpl(s.models))
+		mtproto.RegisterRPCMessagesServer(s2, messages.NewMessagesServiceImpl(s.models))
+		mtproto.RegisterRPCPaymentsServer(s2, payments.NewPaymentsServiceImpl(s.models))
+		mtproto.RegisterRPCPhoneServer(s2, phone.NewPhoneServiceImpl(s.models))
+		mtproto.RegisterRPCPhotosServer(s2, photos.NewPhotosServiceImpl(s.models))
+		mtproto.RegisterRPCStickersServer(s2, stickers.NewStickersServiceImpl(s.models))
+		mtproto.RegisterRPCUpdatesServer(s2, updates.NewUpdatesServiceImpl(s.models))
+		mtproto.RegisterRPCUsersServer(s2, users.NewUsersServiceImpl(s.models))
+	})
+}
+
+func (s *messengerServer) Destroy() {
+	glog.Infof("messengerServer - destroy...")
+	//s.server.Stop()
+	//s.rpcServer.Stop()
+	//time.Sleep(1*time.Second)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// main
 func main() {
 	flag.Parse()
 
-	bizServerConfig := &BizServerConfig{}
-	if _, err := toml.DecodeFile("./biz_server.toml", bizServerConfig); err != nil {
-		fmt.Errorf("%s\n", err)
-		return
-	}
-
-	glog.Info(bizServerConfig)
-
-	// 初始化mysql_client、redis_client
-	redis_client.InstallRedisClientManager(bizServerConfig.Redis)
-	mysql_client.InstallMysqlClientManager(bizServerConfig.Mysql)
-
-	// 初始化redis_dao、mysql_dao
-	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
-	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
-
-	nbfs_client.InstallNbfsClient(bizServerConfig.NbfsRpcClient)
-	sync_client.InstallSyncClient(bizServerConfig.SyncRpcClient2)
-
-	// InstallNbfsClient
-
-	// Start server
-	grpcServer := grpc_util.NewRpcServer(bizServerConfig.Server.Addr, &bizServerConfig.Discovery)
-	grpcServer.Serve(func(s *grpc.Server) {
-		// AccountServiceImpl
-		mtproto.RegisterRPCAccountServer(s, &account.AccountServiceImpl{})
-
-		// AuthServiceImpl
-		mtproto.RegisterRPCAuthServer(s, &auth.AuthServiceImpl{})
-
-		mtproto.RegisterRPCBotsServer(s, &bots.BotsServiceImpl{})
-		mtproto.RegisterRPCChannelsServer(s, &channels.ChannelsServiceImpl{})
-
-		// ContactsServiceImpl
-		mtproto.RegisterRPCContactsServer(s, &contacts.ContactsServiceImpl{})
-
-		mtproto.RegisterRPCHelpServer(s, &help.HelpServiceImpl{})
-		mtproto.RegisterRPCLangpackServer(s, &langpack.LangpackServiceImpl{})
-
-		// MessagesServiceImpl
-		mtproto.RegisterRPCMessagesServer(s, &messages.MessagesServiceImpl{})
-
-		mtproto.RegisterRPCPaymentsServer(s, &payments.PaymentsServiceImpl{})
-		mtproto.RegisterRPCPhoneServer(s, &phone.PhoneServiceImpl{})
-		mtproto.RegisterRPCPhotosServer(s, &photos.PhotosServiceImpl{})
-		mtproto.RegisterRPCStickersServer(s, &stickers.StickersServiceImpl{})
-		mtproto.RegisterRPCUpdatesServer(s, &updates.UpdatesServiceImpl{})
-
-		mtproto.RegisterRPCUsersServer(s, &users.UsersServiceImpl{})
-	})
+	instance := newMessengerServer()
+	app.DoMainAppInstance(instance)
 }
+

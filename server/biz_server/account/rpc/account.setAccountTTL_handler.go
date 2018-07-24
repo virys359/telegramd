@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.setAccountTTL#2442485e ttl:AccountDaysTTL = Bool;
@@ -38,7 +37,7 @@ func (s *AccountServiceImpl) AccountSetAccountTTL(ctx context.Context, request *
 		glog.Error("ttl_days error: ", err)
 		return nil, err
 	}
-	account.SetAccountDaysTTL(md.UserId, ttl)
+	s.AccountModel.SetAccountDaysTTL(md.UserId, ttl)
 
 	glog.Infof("account.setAccountTTL#2442485e - reply: {true}")
 	return mtproto.ToBool(true), nil

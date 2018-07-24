@@ -20,7 +20,6 @@ package user
 import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
@@ -79,8 +78,8 @@ func dialogDOListToDialogList(dialogDOList []dataobject.UserDialogsDO) (dialogs 
 	return
 }
 
-func GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int32) (dialogs []*mtproto.Dialog) {
-	dialogDOList := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPinnedAndOffset(
+func (m *UserModel) GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int32) (dialogs []*mtproto.Dialog) {
+	dialogDOList :=m. dao.UserDialogsDAO.SelectByPinnedAndOffset(
 		userId, base2.BoolToInt8(isPinned), offsetId, limit)
 	glog.Infof("GetDialogsByOffsetId - dialogDOList: {%v}, query: {userId: %d, isPinned: %v, offeetId: %d, limit: %d ", dialogDOList, userId, isPinned, offsetId, limit)
 
@@ -89,7 +88,7 @@ func GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int
 }
 
 //func (m *dialogModel) GetDialogsByOffsetDate(userId int32, excludePinned bool, offsetData int32, limit int32) (dialogs []*mtproto.TLDialog) {
-//	dialogDOList := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectDialogsByPinnedAndOffsetDate(
+//	dialogDOList := m.dao.UserDialogsDAO.SelectDialogsByPinnedAndOffsetDate(
 //		userId, base2.BoolToInt8(!excludePinned), offsetData, limit)
 //	for _, dialogDO := range dialogDOList {
 //		dialogs = append(dialogs, dialogDOToDialog(&dialogDO))
@@ -97,15 +96,13 @@ func GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int
 //	return
 //}
 
-func GetDialogsByUserIDAndType(userId, peerType int32) (dialogs []*mtproto.Dialog) {
-	dialogsDAO := dao.GetUserDialogsDAO(dao.DB_SLAVE)
-
+func (m *UserModel) GetDialogsByUserIDAndType(userId, peerType int32) (dialogs []*mtproto.Dialog) {
 	var dialogDOList []dataobject.UserDialogsDO
 	if peerType == base.PEER_UNKNOWN || peerType == base.PEER_EMPTY {
-		dialogDOList = dialogsDAO.SelectDialogsByUserID(userId)
+		dialogDOList = m.dao.UserDialogsDAO.SelectDialogsByUserID(userId)
 		glog.Infof("SelectDialogsByUserID(%d) - {%v}", userId, dialogDOList)
 	} else {
-		dialogDOList = dialogsDAO.SelectDialogsByPeerType(userId, int8(peerType))
+		dialogDOList = m.dao.UserDialogsDAO.SelectDialogsByPeerType(userId, int8(peerType))
 		glog.Infof("SelectDialogsByPeerType(%d, %d) - {%v}", userId, int32(peerType), dialogDOList)
 	}
 
@@ -114,16 +111,16 @@ func GetDialogsByUserIDAndType(userId, peerType int32) (dialogs []*mtproto.Dialo
 	return
 }
 
-func GetPinnedDialogs(userId int32) (dialogs []*mtproto.Dialog) {
-	dialogDOList := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectPinnedDialogs(userId)
+func (m *UserModel) GetPinnedDialogs(userId int32) (dialogs []*mtproto.Dialog) {
+	dialogDOList := m.dao.UserDialogsDAO.SelectPinnedDialogs(userId)
 	dialogs = dialogDOListToDialogList(dialogDOList)
 	return
 }
 
-func GetPeersDialogs(selfId int32, peers []*mtproto.InputPeer) (dialogs []*mtproto.Dialog) {
+func (m *UserModel) GetPeersDialogs(selfId int32, peers []*mtproto.InputPeer) (dialogs []*mtproto.Dialog) {
 	for _, peer := range peers {
 		peerUtil := base.FromInputPeer2(selfId, peer)
-		dialogDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(selfId, int8(peerUtil.PeerType), peerUtil.PeerId)
+		dialogDO := m.dao.UserDialogsDAO.SelectByPeer(selfId, int8(peerUtil.PeerType), peerUtil.PeerId)
 		if dialogDO != nil {
 			dialogs = append(dialogs, dialogDOToDialog(dialogDO).To_Dialog())
 		}
@@ -132,21 +129,20 @@ func GetPeersDialogs(selfId int32, peers []*mtproto.InputPeer) (dialogs []*mtpro
 }
 
 // 发件箱
-func CreateOrUpdateByOutbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions, clearDraft bool) {
+func (m *UserModel) CreateOrUpdateByOutbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions, clearDraft bool) {
 	var (
-		master = dao.GetUserDialogsDAO(dao.DB_MASTER)
 		affectedRows = int64(0)
 		date = int32(time.Now().Unix())
 	)
 
 	if clearDraft && unreadMentions {
-		affectedRows = master.UpdateTopMessageAndMentionsAndClearDraft(topMessage, date, userId, int8(peerType), peerId)
+		affectedRows = m.dao.UserDialogsDAO.UpdateTopMessageAndMentionsAndClearDraft(topMessage, date, userId, int8(peerType), peerId)
 	} else if clearDraft && !unreadMentions {
-		affectedRows = master.UpdateTopMessageAndClearDraft(topMessage, date, userId, int8(peerType), peerId)
+		affectedRows = m.dao.UserDialogsDAO.UpdateTopMessageAndClearDraft(topMessage, date, userId, int8(peerType), peerId)
 	} else if !clearDraft && unreadMentions {
-		affectedRows = master.UpdateTopMessageAndMentions(topMessage, date, userId, int8(peerType), peerId)
+		affectedRows = m.dao.UserDialogsDAO.UpdateTopMessageAndMentions(topMessage, date, userId, int8(peerType), peerId)
 	} else {
-		affectedRows = master.UpdateTopMessage(topMessage, date, userId, int8(peerType), peerId)
+		affectedRows = m.dao.UserDialogsDAO.UpdateTopMessage(topMessage, date, userId, int8(peerType), peerId)
 	}
 
 	if affectedRows == 0 {
@@ -164,23 +160,22 @@ func CreateOrUpdateByOutbox(userId, peerType int32, peerId int32, topMessage int
 		dialog.TopMessage = topMessage
 		dialog.CreatedAt = base2.NowFormatYMDHMS()
 		dialog.Date2 = date
-		master.Insert(dialog)
+		m.dao.UserDialogsDAO.Insert(dialog)
 	}
 	return
 }
 
 // 收件箱
-func CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions bool) {
+func (m *UserModel) CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions bool) {
 	var (
-		master = dao.GetUserDialogsDAO(dao.DB_MASTER)
 		affectedRows = int64(0)
 		date = int32(time.Now().Unix())
 	)
 
 	if unreadMentions {
-		affectedRows = master.UpdateTopMessageAndUnreadAndMentions(topMessage, date, userId, int8(peerType), peerId)
+		affectedRows = m.dao.UserDialogsDAO.UpdateTopMessageAndUnreadAndMentions(topMessage, date, userId, int8(peerType), peerId)
 	} else {
-		affectedRows = master.UpdateTopMessageAndUnread(topMessage, date, userId, int8(peerType), peerId)
+		affectedRows = m.dao.UserDialogsDAO.UpdateTopMessageAndUnread(topMessage, date, userId, int8(peerType), peerId)
 	}
 
 	glog.Info("createOrUpdateByInbox - ", affectedRows)
@@ -200,18 +195,14 @@ func CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int3
 		dialog.CreatedAt = base2.NowFormatYMDHMS()
 		dialog.DraftMessageData = ""
 		dialog.Date2 = date
-		master.Insert(dialog)
+		m.dao.UserDialogsDAO.Insert(dialog)
 	} else {
 
 	}
 	return
 }
 
-func SaveDraftMessage(userId int32, peerType int32, peerId int32, message *mtproto.DraftMessage) {
-	var (
-		master = dao.GetUserDialogsDAO(dao.DB_MASTER)
-	)
-
+func (m *UserModel) SaveDraftMessage(userId int32, peerType int32, peerId int32, message *mtproto.DraftMessage) {
 	draft, _ := json.Marshal(message)
-	master.SaveDraft(string(draft), userId, int8(peerType), peerId)
+	m.dao.UserDialogsDAO.SaveDraft(string(draft), userId, int8(peerType), peerId)
 }

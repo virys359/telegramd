@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	chat2 "github.com/nebulaim/telegramd/biz/core/chat"
-	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // messages.getFullChat#3b831c66 chat_id:int = messages.ChatFull;
@@ -34,7 +32,7 @@ func (s *MessagesServiceImpl) MessagesGetFullChat(ctx context.Context, request *
 
 	// TODO(@benqi): chat_id is channel
 
-	chatLogic, err := chat2.NewChatLogicById(request.GetChatId())
+	chatLogic, err := s.ChatModel.NewChatLogicById(request.GetChatId())
 	if err != nil {
 		glog.Error("messages.getFullChat#3b831c66 - error: ", err)
 		return nil, err
@@ -42,9 +40,9 @@ func (s *MessagesServiceImpl) MessagesGetFullChat(ctx context.Context, request *
 
 	idList := chatLogic.GetChatParticipantIdList()
 	messagesChatFull := &mtproto.TLMessagesChatFull{Data2: &mtproto.Messages_ChatFull_Data{
-		FullChat: 	chat2.GetChatFullBySelfId(md.UserId, chatLogic).To_ChatFull(),
-		Chats:      []*mtproto.Chat{chatLogic.ToChat(md.UserId)},
-		Users: user.GetUsersBySelfAndIDList(md.UserId, idList),
+		FullChat: s.ChatModel.GetChatFullBySelfId(md.UserId, chatLogic).To_ChatFull(),
+		Chats:    []*mtproto.Chat{chatLogic.ToChat(md.UserId)},
+		Users:    s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList),
 	}}
 
 	glog.Infof("messages.getFullChat#3b831c66 - reply: %s", logger.JsonDebugData(messagesChatFull))

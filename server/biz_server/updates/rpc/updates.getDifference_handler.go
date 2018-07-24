@@ -26,9 +26,7 @@ import (
 	"time"
 	// base2 "github.com/nebulaim/telegramd/baselib/helper"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 // updates.getDifference#25939651 flags:# pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
@@ -72,8 +70,8 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	//otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
 	//messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
 	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
-	userList = user.GetUsersBySelfAndIDList(md.UserId, userIdList)
-	chatList = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+	userList = s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
+	chatList = s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 
 	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
 		Pts:         lastPts,

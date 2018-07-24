@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/channel"
 )
 
 // channels.exportInvite#c7560885 channel:InputChannel = ExportedChatInvite;
@@ -38,7 +37,7 @@ func (s *ChannelsServiceImpl) ChannelsExportInvite(ctx context.Context, request 
 		return nil, err
 	}
 
-	channelLogic, err := channel.NewChannelLogicById(request.GetChannel().GetData2().GetChannelId())
+	channelLogic, err := s.ChannelModel.NewChannelLogicById(request.GetChannel().GetData2().GetChannelId())
 	if err != nil {
 
 	}

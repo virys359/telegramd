@@ -18,7 +18,7 @@
 package mysql_dao
 
 import(
-	"github.com/nebulaim/telegramd/mtproto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/jmoiron/sqlx"
 	"github.com/golang/glog"

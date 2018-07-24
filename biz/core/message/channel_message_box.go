@@ -25,7 +25,6 @@ import (
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/golang/glog"
 	"fmt"
 )
@@ -41,7 +40,7 @@ type ChannelMessageBox struct {
 
 type ChannelBoxCreated func(int32)
 
-func CreateChannelMessageBoxByNew(fromId, channelId int32, clientRandomId int64, message2 *mtproto.Message, cb ChannelBoxCreated) (box *ChannelMessageBox) {
+func (m *MessageModel) CreateChannelMessageBoxByNew(fromId, channelId int32, clientRandomId int64, message2 *mtproto.Message, cb ChannelBoxCreated) (box *ChannelMessageBox) {
 	now := int32(time.Now().Unix())
 	boxId := int32(update2.NextChannelMessageBoxId(base2.Int32ToString(channelId)))
 	messageDatasDO := &dataobject.MessageDatasDO{
@@ -84,8 +83,8 @@ func CreateChannelMessageBoxByNew(fromId, channelId int32, clientRandomId int64,
 	messageDatasDO.MessageData = string(messageData)
 
 	//// TODO(@benqi): pocess clientRandomId dup
-	dao.GetMessageDatasDAO(dao.DB_MASTER).Insert(messageDatasDO)
-	dao.GetChannelMessageBoxesDAO(dao.DB_MASTER).Insert(channelMessageBoxesDO)
+	m.dao.MessageDatasDAO.Insert(messageDatasDO)
+	m.dao.ChannelMessageBoxesDAO.Insert(channelMessageBoxesDO)
 
 	box = &ChannelMessageBox{
 		SenderUserId:          fromId,
@@ -138,26 +137,26 @@ func doToChannelMessage(do *dataobject.MessageDatasDO) (*mtproto.Message, error)
 	return message, nil
 }
 
-func GetChannelMessage(channelId int32, id int32) (message *mtproto.Message) {
-	do := dao.GetChannelMessageBoxesDAO(dao.DB_SLAVE).SelectByMessageId(channelId, id)
+func (m *MessageModel) GetChannelMessage(channelId int32, id int32) (message *mtproto.Message) {
+	do := m.dao.ChannelMessageBoxesDAO.SelectByMessageId(channelId, id)
 	if do == nil {
 		return
 	}
 
-	messageDO := dao.GetMessageDatasDAO(dao.DB_SLAVE).SelectByMessageId(do.MessageId)
+	messageDO := m.dao.MessageDatasDAO.SelectByMessageId(do.MessageId)
 	message, _ = doToChannelMessage(messageDO)
 	return
 }
 
-func GetChannelMessageList(channelId int32, idList []int32) (messages []*mtproto.Message) {
+func (m *MessageModel) GetChannelMessageList(channelId int32, idList []int32) (messages []*mtproto.Message) {
 	if len(idList) == 0 {
 		messages = []*mtproto.Message{}
 	} else {
-		doList := dao.GetChannelMessageBoxesDAO(dao.DB_SLAVE).SelectByMessageIdList(channelId, idList)
+		doList := m.dao.ChannelMessageBoxesDAO.SelectByMessageIdList(channelId, idList)
 		messages = make([]*mtproto.Message, 0, len(doList))
 		for i := 0; i < len(doList); i++ {
 			// TODO(@benqi): check data
-			messageDO := dao.GetMessageDatasDAO(dao.DB_SLAVE).SelectByMessageId(doList[i].MessageId)
+			messageDO := m.dao.MessageDatasDAO.SelectByMessageId(doList[i].MessageId)
 			if messageDO == nil {
 				continue
 			}

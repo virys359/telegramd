@@ -21,7 +21,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"encoding/json"
 )
 
@@ -132,14 +131,20 @@ func (x PrivacyKeyType) ToPrivacyKey() (key *mtproto.PrivacyKey) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-type privacyLogic int32
+type privacyLogic struct {
+	selfUserId int32
+	dao    *accountsDAO
+}
 
-func MakePrivacyLogic(userId int32) privacyLogic {
-	return privacyLogic(userId)
+func (m *AccountModel) MakePrivacyLogic(userId int32) *privacyLogic {
+	return &privacyLogic{
+		selfUserId: userId,
+		dao:        m.dao,
+	}
 }
 
 func (m privacyLogic) GetPrivacy(key PrivacyKeyType) (rulesData *PrivacyRulesData) {
-	do := dao.GetUserPrivacysDAO(dao.DB_SLAVE).SelectPrivacy(int32(m), int8(key))
+	do := m.dao.UserPrivacysDAO.SelectPrivacy(m.selfUserId, int8(key))
 	if do == nil {
 		return
 	}
@@ -160,28 +165,28 @@ func (m privacyLogic) SetPrivacy(key PrivacyKeyType, rules []*mtproto.InputPriva
 		Rules: make([]*PrivacyRuleData, 0, len(rules)),
 	}
 	for _, r := range rules {
-		rulesData.Rules = append(rulesData.Rules, FromInputPrivacyRule(r))
+		rulesData.Rules = append(rulesData.Rules, fromInputPrivacyRule(r))
 	}
 
 	// var err error
 	rulesJson, _ := json.Marshal(rulesData)
 
-	do := dao.GetUserPrivacysDAO(dao.DB_SLAVE).SelectPrivacy(int32(m), int8(key))
+	do := m.dao.UserPrivacysDAO.SelectPrivacy(m.selfUserId, int8(key))
 	if do == nil {
 		do := &dataobject.UserPrivacysDO{
-			UserId: int32(m),
+			UserId: m.selfUserId,
 			KeyType: int8(key),
 			Rules: string(rulesJson),
 		}
-		dao.GetUserPrivacysDAO(dao.DB_MASTER).Insert(do)
+		m.dao.UserPrivacysDAO.Insert(do)
 	} else {
-		dao.GetUserPrivacysDAO(dao.DB_MASTER).UpdatePrivacy(string(rulesJson), int32(m), int8(key))
+		m.dao.UserPrivacysDAO.UpdatePrivacy(string(rulesJson), m.selfUserId, int8(key))
 	}
 	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-func FromInputPrivacyRule(rule *mtproto.InputPrivacyRule) (ruleData *PrivacyRuleData) {
+func fromInputPrivacyRule(rule *mtproto.InputPrivacyRule) (ruleData *PrivacyRuleData) {
 	switch rule.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputPrivacyValueAllowAll:
 		ruleData = &PrivacyRuleData{

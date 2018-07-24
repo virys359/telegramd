@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 	// "github.com/nebulaim/telegramd/biz_server/sync_client"
 	// peer2 "github.com/nebulaim/telegramd/biz/core/peer"
 )
@@ -33,7 +32,7 @@ func (s *AccountServiceImpl) AccountResetNotifySettings(ctx context.Context, req
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.resetNotifySettings#db7e1747 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	account.ResetNotifySettings(md.UserId)
+	s.AccountModel.ResetNotifySettings(md.UserId)
 
 	// TODO(@benqi): update notify setting
 	/*

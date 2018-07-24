@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/base"
 )
 
@@ -40,7 +39,7 @@ func (s *AuthServiceImpl) AuthCheckPhone(ctx context.Context, request *mtproto.T
 		return nil, err
 	}
 
-	registered := user.CheckPhoneNumberExist(phoneNumber)
+	registered := s.UserModel.CheckPhoneNumberExist(phoneNumber)
 	checkedPhone := mtproto.TLAuthCheckedPhone{Data2: &mtproto.Auth_CheckedPhone_Data{
 		PhoneRegistered: mtproto.ToBool(registered),
 	}}

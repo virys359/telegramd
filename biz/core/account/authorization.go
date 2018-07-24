@@ -18,13 +18,12 @@
 package account
 
 import (
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
 )
 
-func GetAuthorizationList(selfAuthKeyId int64, userId int32) []*mtproto.Authorization {
-	doList := dao.GetAuthUsersDAO(dao.DB_SLAVE).SelectListByUserId(userId)
+func (m *AccountModel) GetAuthorizationList(selfAuthKeyId int64, userId int32) []*mtproto.Authorization {
+	doList := m.dao.AuthUsersDAO.SelectListByUserId(userId)
 	sessList := make([]*mtproto.Authorization, 0, len(doList))
 	var (
 		hash int64
@@ -59,14 +58,14 @@ func GetAuthorizationList(selfAuthKeyId int64, userId int32) []*mtproto.Authoriz
 	return sessList
 }
 
-func GetAuthKeyIdByHash(userId int32, hash int64) int64 {
-	do := dao.GetAuthUsersDAO(dao.DB_SLAVE).SelectByHash(userId, hash)
+func (m *AccountModel) GetAuthKeyIdByHash(userId int32, hash int64) int64 {
+	do := m.dao.AuthUsersDAO.SelectByHash(userId, hash)
 	if do == nil {
 		return 0
 	}
 	return do.AuthId
 }
 
-func DeleteAuthorization(authKeyId int64) {
-	dao.GetAuthUsersDAO(dao.DB_MASTER).Delete(time.Now().Unix(), authKeyId)
+func (m *AccountModel) DeleteAuthorization(authKeyId int64) {
+	m.dao.AuthUsersDAO.Delete(time.Now().Unix(), authKeyId)
 }

@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 /*
@@ -58,7 +57,7 @@ func (s *AccountServiceImpl) AccountReportPeer(ctx context.Context, request *mtp
 		text = request.GetReason().GetData2().GetText()
 	}
 
-	account.InsertReportData(md.UserId, base.PEER_CHANNEL, peer.GetData2().GetChannelId(), int32(reason), text)
+	s.AccountModel.InsertReportData(md.UserId, base.PEER_CHANNEL, peer.GetData2().GetChannelId(), int32(reason), text)
 
 	glog.Infof("account.reportPeer#ae189d5f - reply: {true}",)
 	return mtproto.ToBool(true), nil

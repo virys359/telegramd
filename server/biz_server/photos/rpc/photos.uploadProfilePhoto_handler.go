@@ -26,7 +26,6 @@ import (
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	"time"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
@@ -48,7 +47,7 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 		return nil, err
 	}
 
-	user.SetUserPhotoID(md.UserId, result.PhotoId)
+	s.UserModel.SetUserPhotoID(md.UserId, result.PhotoId)
 
 	// TODO(@benqi): sync update userProfilePhoto
 

@@ -18,14 +18,13 @@
 package rpc
 
 import (
+	"time"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
-	"time"
 )
 
 // users.getFullUser#ca30a5b1 id:InputUser = UserFull;
@@ -54,7 +53,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 			//AccessHash: userDO.AccessHash,
 			//Phone:      userDO.Phone,
 		//}}
-		user = user2.GetUserById(md.UserId, md.UserId).To_User()
+		user = s.UserModel.GetUserById(md.UserId, md.UserId).To_User()
 	    fullUser.SetUser(user)
 	    //GetUser()user.To_User())
 
@@ -81,7 +80,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 			//Phone:      userDO.Phone,
 		//}}
 
-		user = user2.GetUserById(md.UserId, inputUser.GetUserId()).To_User()
+		user = s.UserModel.GetUserById(md.UserId, inputUser.GetUserId()).To_User()
 		fullUser.SetUser(user)
 
 	    // Link

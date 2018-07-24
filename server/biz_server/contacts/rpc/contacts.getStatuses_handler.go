@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/contact"
-	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // contacts.getStatuses#c4a353ee = Vector<ContactStatus>;
@@ -32,7 +30,7 @@ func (s *ContactsServiceImpl) ContactsGetStatuses(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("contacts.getStatuses#c4a353ee - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	contactLogic := contact.MakeContactLogic(md.UserId)
+	contactLogic := s.ContactModel.MakeContactLogic(md.UserId)
 	cList := contactLogic.GetContactList()
 
 	statusList := &mtproto.Vector_ContactStatus{
@@ -42,7 +40,7 @@ func (s *ContactsServiceImpl) ContactsGetStatuses(ctx context.Context, request *
 	for _, c := range cList {
 		contactStatus := &mtproto.TLContactStatus{Data2: &mtproto.ContactStatus_Data{
 			UserId: c.ContactUserId,
-			Status: user.GetUserStatus(c.ContactUserId),
+			Status: s.UserModel.GetUserStatus(c.ContactUserId),
 		}}
 		statusList.Datas = append(statusList.Datas, contactStatus.To_ContactStatus())
 	}

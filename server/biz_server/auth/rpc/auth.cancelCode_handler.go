@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/auth"
 )
 
 // 客户端不处理错误码
@@ -48,7 +47,7 @@ func (s *AuthServiceImpl) AuthCancelCode(ctx context.Context, request *mtproto.T
 		return nil, err
 	}
 
-	code := auth.MakeCancelCodeData(md.AuthId, phoneNumber, request.PhoneCodeHash)
+	code := s.AuthModel.MakeCancelCodeData(md.AuthId, phoneNumber, request.PhoneCodeHash)
 	canceled := mtproto.ToBool(code.DoCancelCode())
 
 	glog.Infof("auth.cancelCode#1f040578 -  - reply: %s", logger.JsonDebugData(canceled))

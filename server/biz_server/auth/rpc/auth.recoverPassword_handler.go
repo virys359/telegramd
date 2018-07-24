@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // auth.recoverPassword#4ea56e92 code:string = auth.Authorization;
@@ -41,14 +39,14 @@ func (s *AuthServiceImpl) AuthRecoverPassword(ctx context.Context, request *mtpr
 		glog.Error(err)
 		return nil, err
 	} else {
-		err = account.CheckRecoverCode(md.UserId, request.Code)
+		err = s.AccountModel.CheckRecoverCode(md.UserId, request.Code)
 		if err != nil {
 			glog.Error(err)
 			return nil, err
 		}
 	}
 
-	user := user2.GetUserById(md.UserId, md.UserId)
+	user := s.UserModel.GetUserById(md.UserId, md.UserId)
 	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
 		User: user.To_User(),
 	}}

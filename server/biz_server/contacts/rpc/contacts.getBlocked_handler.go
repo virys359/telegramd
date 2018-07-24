@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/user"
-	"github.com/nebulaim/telegramd/biz/core/contact"
 )
 
 // contacts.blocked#1c138d15 blocked:Vector<ContactBlocked> users:Vector<User> = contacts.Blocked;
@@ -35,7 +33,7 @@ func (s *ContactsServiceImpl) ContactsGetBlocked(ctx context.Context, request *m
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("contacts.getBlocked#f57c350f - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	contactLogic := contact.MakeContactLogic(md.UserId)
+	contactLogic := s.ContactModel.MakeContactLogic(md.UserId)
 	blockedList := contactLogic.GetBlockedList(request.Offset, request.Limit)
 
 	// TODO(@benqi): impl blockedSlice
@@ -51,7 +49,7 @@ func (s *ContactsServiceImpl) ContactsGetBlocked(ctx context.Context, request *m
 			userIdList = append(userIdList, c.GetData2().GetUserId())
 		}
 
-		users := user.GetUsersBySelfAndIDList(md.UserId, blockedIdList)
+		users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, blockedIdList)
 		contactsBlocked.SetUsers(users)
 	}
 

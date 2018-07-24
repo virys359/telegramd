@@ -17,7 +17,20 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+)
 
 type BotsServiceImpl struct {
+}
+
+func NewBotsServiceImpl(models []core.CoreModel) *BotsServiceImpl {
+	impl := &BotsServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		}
+	}
+
+	return impl
 }

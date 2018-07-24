@@ -21,6 +21,7 @@ import (
 	"github.com/nebulaim/telegramd/service/contact/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
+	"github.com/nebulaim/telegramd/service/contact/proto"
 )
 
 // exclude
@@ -31,12 +32,8 @@ type contactLogic struct {
 	dao        *contactsDAO
 }
 
-func MakeContactLogic(userId int32) contactLogic {
-	return contactLogic(userId)
-}
-
 // include deleted
-func (c *contactLogic) GetContactList() []contactData {
+func (c *contactLogic) getContactList() []contactData {
 	doList := c.dao.UserContactsDAO.SelectAllUserContacts(c.selfUserID)
 	contactList := make([]contactData, 0, len(doList))
 	for i := 0; i < len(doList); i++ {
@@ -47,7 +44,7 @@ func (c *contactLogic) GetContactList() []contactData {
 }
 
 // exclude deleted
-func (c *contactLogic) GetNotDeletedContactList() []contactData {
+func (c *contactLogic) getNotDeletedContactList() []contactData {
 	doList := c.dao.UserContactsDAO.SelectUserContacts(c.selfUserID)
 	contactList := make([]contactData, 0, len(doList))
 	for i := 0; i < len(doList); i++ {
@@ -103,7 +100,7 @@ func (c *contactLogic) GetContactListByIDList(idList []int32) []contactData {
 //}
 //
 
-func (c *contactLogic) importContact(contact *inputContactData) (imported *importedContactData) {
+func (c *contactLogic) importContact(contact *contact.InputContactData) (imported *contact.ImportedContactData) {
 	var (
 		mutualUpdated = false
 		importers int32
@@ -120,9 +117,9 @@ func (c *contactLogic) importContact(contact *inputContactData) (imported *impor
 	//		-
 	// 		- 则AB和BA肯定都是mutual，仅仅需要
 
-	selfDO := c.dao.UserContactsDAO.SelectUserContact(c.selfUserID, contact.userId)
+	selfDO := c.dao.UserContactsDAO.SelectUserContact(c.selfUserID, contact.UserId)
 	// contact -> self
-	contactDO := c.dao.UserContactsDAO.SelectUserContact(contact.userId, c.selfUserID)
+	contactDO := c.dao.UserContactsDAO.SelectUserContact(contact.UserId, c.selfUserID)
 	now := int32(time.Now().Unix())
 	if contactDO == nil || contactDO.IsDeleted == 1 {
 		// self -> contact
@@ -130,16 +127,16 @@ func (c *contactLogic) importContact(contact *inputContactData) (imported *impor
 			// input不是我的联系人
 			do := &dataobject.UserContactsDO{
 				OwnerUserId:      c.selfUserID,
-				ContactUserId:    contact.userId,
-				ContactPhone:     contact.phone,
-				ContactFirstName: contact.firstName,
-				ContactLastName:  contact.lastName,
+				ContactUserId:    contact.UserId,
+				ContactPhone:     contact.Phone,
+				ContactFirstName: contact.FirstName,
+				ContactLastName:  contact.LastName,
 				Mutual:           0,
 				Date2:            now,
 			}
 			do.Id = c.dao.UserContactsDAO.Insert(do)
 		} else {
-			c.dao.UserContactsDAO.UpdateContactNameByID(contact.firstName, contact.lastName, selfDO.Id)
+			c.dao.UserContactsDAO.UpdateContactNameByID(contact.FirstName, contact.LastName, selfDO.Id)
 		}
 	} else {
 		// 我不是input的联系人
@@ -147,10 +144,10 @@ func (c *contactLogic) importContact(contact *inputContactData) (imported *impor
 			// input不是我的联系人
 			do := &dataobject.UserContactsDO{
 				OwnerUserId:      c.selfUserID,
-				ContactUserId:    contact.userId,
-				ContactPhone:     contact.phone,
-				ContactFirstName: contact.firstName,
-				ContactLastName:  contact.lastName,
+				ContactUserId:    contact.UserId,
+				ContactPhone:     contact.Phone,
+				ContactFirstName: contact.FirstName,
+				ContactLastName:  contact.LastName,
 				Mutual:           1,
 				Date2:            now,
 			}
@@ -159,7 +156,7 @@ func (c *contactLogic) importContact(contact *inputContactData) (imported *impor
 			mutualUpdated = true
 		} else {
 			// selfDeleted := selfDO.IsDeleted
-			c.dao.UserContactsDAO.UpdateContactNameByID(contact.firstName, contact.lastName, selfDO.Id)
+			c.dao.UserContactsDAO.UpdateContactNameByID(contact.FirstName, contact.LastName, selfDO.Id)
 
 			// update不影响selfDO里的值，直接拿来用
 			if selfDO.IsDeleted == 1 {
@@ -171,16 +168,16 @@ func (c *contactLogic) importContact(contact *inputContactData) (imported *impor
 	}
 
 	// increase importers
-	importers = c.increasePopularContact(contact.phone)
+	importers = c.increasePopularContact(contact.Phone)
 
-	return &importedContactData{
-		userId:        contact.userId,
-		importers:     importers,
-		mutualUpdated: mutualUpdated,
+	return &contact.ImportedContactData{
+		UserId:        contact.UserId,
+		Importers:     importers,
+		MutualUpdated: mutualUpdated,
 	}
 }
 
-func (c *contactLogic) importContacts(contacts []*inputContactData) []*importedContactData {
+func (c *contactLogic) importContacts(contacts []*contact.InputContactData) []*contact.ImportedContactData {
 	// TODO(@benqi): 优化, 减少数据库操作：
 	// ## importContacts优化方法
 	// - user_contacts表添加relation_id字段
@@ -193,7 +190,7 @@ func (c *contactLogic) importContacts(contacts []*inputContactData) []*importedC
 	//  - 方法2，存储在redis里：
 	//		- 批量执行redis的increase
 	//
-	importeds := make([]*importedContactData, 0, len(contacts))
+	importeds := make([]*contact.ImportedContactData, 0, len(contacts))
 	for _, contact := range contacts {
 		importeds = append(importeds, c.importContact(contact))
 	}
@@ -201,7 +198,7 @@ func (c *contactLogic) importContacts(contacts []*inputContactData) []*importedC
 	return importeds
 }
 
-func (c *contactLogic) deleteContact(deleteId int32) *deleteResult {
+func (c *contactLogic) deleteContact(deleteId int32) *contact.DeleteResult {
 	// A 删除 B
 	// 如果AB is mutual，则BA设置为非mutual
 
@@ -216,7 +213,7 @@ func (c *contactLogic) deleteContact(deleteId int32) *deleteResult {
 	return nil
 }
 
-func (c *contactLogic) deleteContacts(deleteId []int32) []*deleteResult {
+func (c *contactLogic) deleteContacts(deleteId []int32) []*contact.DeleteResult {
 	// A 删除 B
 	// 如果AB is mutual，则BA设置为非mutual
 
@@ -232,17 +229,17 @@ func (c *contactLogic) deleteContacts(deleteId []int32) []*deleteResult {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-func (c *contactLogic) BlockUser(blockId int32) bool {
+func (c *contactLogic) blockUser(blockId int32) bool {
 	c.dao.UserContactsDAO.UpdateBlock(1, c.selfUserID, blockId)
 	return true
 }
 
-func (c *contactLogic) UnBlockUser(blockedId int32) bool {
+func (c *contactLogic) unBlockUser(blockedId int32) bool {
 	c.dao.UserContactsDAO.UpdateBlock(0, c.selfUserID, blockedId)
 	return true
 }
 
-func (c *contactLogic) GetBlockedList(offset, limit int32) []*mtproto.ContactBlocked {
+func (c *contactLogic) getBlockedList(offset, limit int32) []*mtproto.ContactBlocked {
 	// TODO(@benqi): enable offset
 	doList := c.dao.UserContactsDAO.SelectBlockedList(c.selfUserID, limit)
 	bockedList := make([]*mtproto.ContactBlocked, 0, len(doList))
@@ -281,4 +278,17 @@ func (c *contactLogic) increasePopularContact(phone string) int32 {
 		c.dao.PopularContactsDAO.IncreaseImporters(phone)
 	}
 	return do.Importers
+}
+
+func (c *contactLogic) checkContactAndMutual(contactId int32) (bool, bool) {
+	do := c.dao.UserContactsDAO.SelectUserContact(c.selfUserID, contactId)
+	if do == nil {
+		return false, false
+	} else {
+		if do.IsDeleted == 1 {
+			return false, false
+		} else {
+			return true, do.Mutual == 1
+		}
+	}
 }

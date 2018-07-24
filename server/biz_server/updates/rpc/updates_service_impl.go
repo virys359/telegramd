@@ -17,7 +17,28 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/chat"
+)
 
 type UpdatesServiceImpl struct {
+	*user.UserModel
+	*chat.ChatModel
+}
+
+func NewUpdatesServiceImpl(models []core.CoreModel) *UpdatesServiceImpl {
+	impl := &UpdatesServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		case *chat.ChatModel:
+			impl.ChatModel = m.(*chat.ChatModel)
+		}
+	}
+
+	return impl
 }

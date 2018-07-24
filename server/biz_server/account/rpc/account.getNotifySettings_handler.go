@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.getNotifySettings#12b3ad31 peer:InputNotifyPeer = PeerNotifySettings;
@@ -39,7 +38,7 @@ func (s *AccountServiceImpl) AccountGetNotifySettings(ctx context.Context, reque
 	switch request.GetPeer().GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputNotifyPeer:
 		peer := base.FromInputNotifyPeer(request.GetPeer())
-		settings = account.GetNotifySettings(md.UserId, peer)
+		settings = s.AccountModel.GetNotifySettings(md.UserId, peer)
 	case mtproto.TLConstructor_CRC32_inputNotifyUsers,
 		mtproto.TLConstructor_CRC32_inputNotifyChats,
 		mtproto.TLConstructor_CRC32_inputNotifyAll:

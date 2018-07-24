@@ -18,12 +18,11 @@
 package user
 
 import (
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
-func GetContactUserIDList(userId int32) []int32 {
-	contactsDOList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(userId)
+func (m *UserModel) GetContactUserIDList(userId int32) []int32 {
+	contactsDOList := m.dao.UserContactsDAO.SelectUserContacts(userId)
 	idList := make([]int32, 0, len(contactsDOList))
 
 	for _, do := range contactsDOList {
@@ -32,7 +31,7 @@ func GetContactUserIDList(userId int32) []int32 {
 	return idList
 }
 
-func GetStatuseList(selfId int32) []*mtproto.ContactStatus {
+func (m *UserModel) GetStatuseList(selfId int32) []*mtproto.ContactStatus {
 	//doList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(selfId)
 	//
 	//contactIdList := make([]int32, 0, len(doList))

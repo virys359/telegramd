@@ -33,6 +33,7 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/service/idgen/client"
 	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/service/status/client"
 )
 
 func init() {
@@ -69,6 +70,7 @@ type connContext struct {
 
 type syncServer struct {
 	idgen      idgen.UUIDGen
+	status     status_client.StatusClient
 	client     *zproto.ZProtoClient
 	server     *grpc_util.RPCServer
 	impl       *SyncServiceImpl
@@ -102,8 +104,9 @@ func (s *syncServer) Initialize() error {
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-	s.server = grpc_util.NewRpcServer(Conf.Server.Addr, &Conf.Server.RpcDiscovery)
+	s.status, _ = status_client.NewStatusClient("redis", "cache")
 
+	s.server = grpc_util.NewRpcServer(Conf.Server.Addr, &Conf.Server.RpcDiscovery)
 	s.client = zproto.NewZProtoClient("zproto", Conf.SessionClient, s)
 
 	return nil

@@ -24,8 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/auth"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
 
 /*
@@ -92,7 +90,7 @@ func (s *AuthServiceImpl) AuthSignUp(ctx context.Context, request *mtproto.TLAut
 	//    Please wait for a few days before signing up again.</string>
 	//
 
-	phoneRegistered := auth.CheckPhoneNumberExist(phoneNumber)
+	phoneRegistered := s.AuthModel.CheckPhoneNumberExist(phoneNumber)
 	if phoneRegistered {
 		err = mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_PHONE_NUMBER_OCCUPIED), "phone number occuiped.")
 		glog.Error(err)
@@ -100,7 +98,7 @@ func (s *AuthServiceImpl) AuthSignUp(ctx context.Context, request *mtproto.TLAut
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	code := auth.MakeCodeDataByHash(md.AuthId, phoneNumber, request.PhoneCodeHash)
+	code := s.AuthModel.MakeCodeDataByHash(md.AuthId, phoneNumber, request.PhoneCodeHash)
 	// phoneRegistered := auth.CheckPhoneNumberExist(phoneNumber)
 	err = code.DoSignUp(request.PhoneCode)
 	if err != nil {
@@ -108,13 +106,13 @@ func (s *AuthServiceImpl) AuthSignUp(ctx context.Context, request *mtproto.TLAut
 		return nil, err
 	}
 
-	user := user2.CreateNewUser(phoneNumber, pnumber.GetRegionCode(), request.FirstName, request.LastName)
-	auth.BindAuthKeyAndUser(md.AuthId, user.GetId())
+	user := s.UserModel.CreateNewUser(phoneNumber, pnumber.GetRegionCode(), request.FirstName, request.LastName)
+	s.AuthModel.BindAuthKeyAndUser(md.AuthId, user.GetId())
 	// TODO(@benqi): check and set authKeyId state
 	// TODO(@benqi): 修改那些将我的phoneNumber加到他们的联系人列表里的联系人的状态
 
 	// TODO(@benqi): 创建新帐号后执行的事件
-	user2.CreateNewUserPassword(user.GetId())
+	s.UserModel.CreateNewUserPassword(user.GetId())
 
 	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
 		User: user.To_User(),

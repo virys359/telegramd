@@ -19,11 +19,10 @@ package account
 
 import (
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 )
 
 type wallPaperDataList []dataobject.WallPapersDO
 
-func GetWallPaperList() wallPaperDataList {
-	return dao.GetWallPapersDAO(dao.DB_SLAVE).SelectAll()
+func (m *AccountModel) GetWallPaperList() wallPaperDataList {
+	return m.dao.WallPapersDAO.SelectAll()
 }

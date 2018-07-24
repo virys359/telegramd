@@ -18,7 +18,7 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/biz/core/user"
+	// "github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"sync"
@@ -28,6 +28,7 @@ import (
 	"time"
 	"fmt"
 	update3 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/service/status/proto"
 )
 
 /*
@@ -127,13 +128,14 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 		}
 	}
 
-	statusList, _ := user.GetOnlineByUserId(updates.GetPushUserId())
-	ss := make(map[int32][]*user.SessionStatus)
-	for _, status := range statusList {
-		if _, ok := ss[status.ServerId]; !ok {
-			ss[status.ServerId] = []*user.SessionStatus{}
+	statusList, _ := s.s.status.GetUserOnlineSessions(updates.GetPushUserId())
+	// statusList, _ := user.GetOnlineByUserId(updates.GetPushUserId())
+	ss := make(map[int32][]*status.SessionEntry)
+	for _, status2 := range statusList.Sessions {
+		if _, ok := ss[status2.ServerId]; !ok {
+			ss[status2.ServerId] = []*status.SessionEntry{}
 		}
-		ss[status.ServerId] = append(ss[status.ServerId], status)
+		ss[status2.ServerId] = append(ss[status2.ServerId], status2)
 	}
 
 	// TODO(@benqi): 预先计算是否需要同步？
@@ -153,7 +155,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 		for _, ss4 := range ss3 {
 			switch updates.GetPushType() {
 			case mtproto.SyncType_SYNC_TYPE_USER_NOTME:
-				if updates.GetSessionId() != ss4.SessionId {
+				if updates.GetAuthKeyId() != ss4.AuthKeyId {
 					// continue
 					// TODO(@benqi): move to received ack handler
 					if state.Pts != 0 {
@@ -164,7 +166,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 					continue
 				}
 			case mtproto.SyncType_SYNC_TYPE_USER_ME:
-				if updates.GetSessionId() == ss4.SessionId {
+				if updates.GetAuthKeyId() == ss4.AuthKeyId {
 					continue
 					encodeUpdateData()
 				} else {
@@ -177,7 +179,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 				}
 				encodeUpdateData()
 			case mtproto.SyncType_SYNC_TYPE_RPC_RESULT:
-				if updates.GetSessionId() == ss4.SessionId {
+				if updates.GetAuthKeyId() == ss4.AuthKeyId {
 					continue
 				} else {
 					continue
@@ -189,7 +191,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 			// push
 			pushData := &mtproto.PushUpdatesData{
 				AuthKeyId:   ss4.AuthKeyId,
-				SessionId:   ss4.SessionId,
+				// SessionId:   ss4.SessionId,
 				State:       state,
 				UpdatesData: updatesData,
 			}

@@ -18,6 +18,7 @@
 package rpc
 
 import (
+	"time"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
@@ -25,12 +26,7 @@ import (
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"time"
-	// "net/url"
-	// "github.com/nebulaim/telegramd/biz/core/webpage"
-	"github.com/nebulaim/telegramd/biz/core/channel"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/gogo/protobuf/proto"
 )
@@ -143,9 +139,9 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 			sentMessage *mtproto.TLUpdateShortSentMessage
 		)
 		if peer.PeerType == base.PEER_USER || peer.PeerType == base.PEER_CHAT {
-			messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
+			messageOutbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
 				// 更新会话信息
-				user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
+				s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
 			})
 
 			switch peer.PeerType {
@@ -175,9 +171,9 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 				inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
 					switch peer.PeerType {
 					case base.PEER_USER:
-						user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
+						s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
 					case base.PEER_CHAT, base.PEER_CHANNEL:
-						user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
+						s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
 					}
 				})
 
@@ -199,8 +195,8 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 			return sentMessage.To_Updates(), nil
 		} else {
 
-			channelBox := message2.CreateChannelMessageBoxByNew(md.UserId, peer.PeerId, request.RandomId, outboxMessage.To_Message(), func(messageId int32) {
-				user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
+			channelBox := s.MessageModel.CreateChannelMessageBoxByNew(md.UserId, peer.PeerId, request.RandomId, outboxMessage.To_Message(), func(messageId int32) {
+				s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 			})
 
 			// updates.NewUpdatesLogic()
@@ -211,7 +207,7 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 			//syncUpdates.AddUpdate(updateChatParticipants.To_Update())
 			syncUpdates.AddUpdateNewChannelMessage(outboxMessage.To_Message())
 			// syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
-			syncUpdates.AddChat(channel.GetChannelBySelfID(md.UserId, peer.PeerId))
+			syncUpdates.AddChat(s.ChannelModel.GetChannelBySelfID(md.UserId, peer.PeerId))
 
 			state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
 			syncUpdates.PushTopUpdateMessageId(channelBox.ChannelMessageBoxId, request.RandomId)
@@ -221,15 +217,15 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 			//syncUpdates.AddUpdate(updateChannel.To_Update())
 			syncUpdates.SetupState(state)
 
-			idList := channel.GetChannelParticipantIdList(peer.PeerId)
+			idList := s.ChannelModel.GetChannelParticipantIdList(peer.PeerId)
 			inboxMessage := proto.Clone(outboxMessage).(*mtproto.TLMessage)
 			for _, id := range idList {
 				if id != md.UserId {
-					user.CreateOrUpdateByInbox(id, peer.PeerType, peer.PeerId, inboxMessage.GetId(), outboxMessage.GetMentioned())
+					s.UserModel.CreateOrUpdateByInbox(id, peer.PeerType, peer.PeerId, inboxMessage.GetId(), outboxMessage.GetMentioned())
 
 					pushUpdates := update2.NewUpdatesLogic(id)
 					pushUpdates.AddUpdateNewChannelMessage(inboxMessage.To_Message())
-					pushUpdates.AddChat(channel.GetChannelBySelfID(id, peer.PeerId))
+					pushUpdates.AddChat(s.ChannelModel.GetChannelBySelfID(id, peer.PeerId))
 					sync_client.GetSyncClient().PushToUserUpdatesData(id, pushUpdates.ToUpdates())
 				}
  			}
@@ -239,12 +235,12 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	} else {
 		// TODO(@benqi): 如下代码与sendMedia重复
 
-		messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
+		messageOutbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
 			// 更新会话信息
-			user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
+			s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
 		})
 
-		syncUpdates := makeUpdateNewMessageUpdates(md.UserId, messageOutbox.Message)
+		syncUpdates := s.makeUpdateNewMessageUpdates(md.UserId, messageOutbox.Message)
 		state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
 		if err != nil {
 			return nil, err
@@ -266,14 +262,14 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 				// 更新会话信息
 				switch peer.PeerType {
 				case base.PEER_USER:
-					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
+					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
 				case base.PEER_CHAT, base.PEER_CHANNEL:
-					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
+					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
 				}
 			})
 
 			for i := 0; i < len(inBoxes); i++ {
-				syncUpdates = makeUpdateNewMessageUpdates(inBoxes[i].UserId, inBoxes[i].Message)
+				syncUpdates = s.makeUpdateNewMessageUpdates(inBoxes[i].UserId, inBoxes[i].Message)
 				sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes[i].UserId, syncUpdates.To_Updates())
 			}
 		}

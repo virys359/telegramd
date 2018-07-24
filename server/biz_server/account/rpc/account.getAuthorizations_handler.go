@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 /*
@@ -36,7 +35,7 @@ func (s *AccountServiceImpl) AccountGetAuthorizations(ctx context.Context, reque
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.getAuthorizations#e320c158 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	sessionList := account.GetAuthorizationList(md.AuthId, md.UserId)
+	sessionList := s.AccountModel.GetAuthorizationList(md.AuthId, md.UserId)
 	authorizations := &mtproto.TLAccountAuthorizations{Data2: &mtproto.Account_Authorizations_Data{
 		Authorizations: sessionList,
 	}}

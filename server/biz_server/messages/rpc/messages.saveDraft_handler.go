@@ -25,7 +25,6 @@ import (
 	"golang.org/x/net/context"
 	"time"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 func makeDraftMessageBySaveDraft(request *mtproto.TLMessagesSaveDraft) *mtproto.TLDraftMessage {
@@ -56,7 +55,7 @@ func (s *MessagesServiceImpl) MessagesSaveDraft(ctx context.Context, request *mt
 	draft := makeDraftMessageBySaveDraft(request)
 
 	// TODO(@benqi): 会话未存在如何处理？
-	user.SaveDraftMessage(md.UserId, peer.PeerType, peer.PeerId, draft.To_DraftMessage())
+	s.UserModel.SaveDraftMessage(md.UserId, peer.PeerType, peer.PeerId, draft.To_DraftMessage())
 
 	// TODO(@benqi): sync other client
 

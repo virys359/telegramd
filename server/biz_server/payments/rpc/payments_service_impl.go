@@ -17,7 +17,20 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+)
 
 type PaymentsServiceImpl struct {
+}
+
+func NewPaymentsServiceImpl(models []core.CoreModel) *PaymentsServiceImpl {
+	impl := &PaymentsServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		}
+	}
+
+	return impl
 }

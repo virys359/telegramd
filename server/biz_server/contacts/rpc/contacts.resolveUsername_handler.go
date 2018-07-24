@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 // contacts.resolveUsername#f93ccba3 username:string = contacts.ResolvedPeer;
@@ -46,7 +45,7 @@ func (s *ContactsServiceImpl) ContactsResolveUsername(ctx context.Context, reque
 	resolvedPeer := &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
 		Peer:  peer.To_Peer(),
 		Chats: []*mtproto.Chat{},
-		Users: []*mtproto.User{user.GetUserById(md.UserId, do.Id).To_User()},
+		Users: []*mtproto.User{s.UserModel.GetUserById(md.UserId, do.Id).To_User()},
 	}}
 
 	glog.Infof("contacts.resolveUsername#f93ccba3 - reply: {%v}", resolvedPeer)

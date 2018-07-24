@@ -24,9 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/user"
-	"github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/biz/core/chat"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
@@ -35,7 +32,7 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesGetPinnedDialogs - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	dialogs := user.GetPinnedDialogs(md.UserId)
+	dialogs := s.UserModel.GetPinnedDialogs(md.UserId)
 	peerDialogs := mtproto.NewTLMessagesPeerDialogs()
 
 	messageIdList := []int32{}
@@ -60,10 +57,10 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 
 	glog.Infof("messageIdList - %v", messageIdList)
 	if len(messageIdList) > 0 {
-		peerDialogs.SetMessages(message.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
+		peerDialogs.SetMessages(s.MessageModel.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
 	}
 
-	users := user.GetUsersBySelfAndIDList(md.UserId, userIdList)
+	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
 	peerDialogs.SetUsers(users)
 	//for _, user := range users {
 	//	if user.GetId() == md.UserId {
@@ -77,7 +74,7 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 	//}
 
 	if len(chatIdList) > 0 {
-		peerDialogs.Data2.Chats = chat.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+		peerDialogs.Data2.Chats = s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
 	state := update2.GetServerUpdatesState(md.AuthId, md.UserId)

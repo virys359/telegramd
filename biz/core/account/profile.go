@@ -17,27 +17,23 @@
 
 package account
 
-import (
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-)
-
 // not found, return 0
-func GetUserIdByUserName(name string) int32 {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByUsername(name)
+func (m *AccountModel) GetUserIdByUserName(name string) int32 {
+	do := m.dao.UsersDAO.SelectByUsername(name)
 	if do == nil {
 		return 0
 	}
 	return do.Id
 }
 
-func ChangeUserNameByUserId(id int32, name string) int64 {
-	return dao.GetUsersDAO(dao.DB_MASTER).UpdateUsername(name, id)
+func (m *AccountModel) ChangeUserNameByUserId(id int32, name string) int64 {
+	return m.dao.UsersDAO.UpdateUsername(name, id)
 }
 
-func UpdateFirstAndLastName(id int32, firstName, lastName string) int64 {
-	return dao.GetUsersDAO(dao.DB_MASTER).UpdateFirstAndLastName(firstName, lastName, id)
+func (m *AccountModel) UpdateFirstAndLastName(id int32, firstName, lastName string) int64 {
+	return m.dao.UsersDAO.UpdateFirstAndLastName(firstName, lastName, id)
 }
 
-func UpdateAbout(id int32, about string) int64 {
-	return dao.GetUsersDAO(dao.DB_MASTER).UpdateAbout(about, id)
+func (m *AccountModel) UpdateAbout(id int32, about string) int64 {
+	return m.dao.UsersDAO.UpdateAbout(about, id)
 }

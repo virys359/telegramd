@@ -19,14 +19,17 @@ package contact
 
 import (
 	"fmt"
+	"github.com/nebulaim/telegramd/service/contact/proto"
 )
 
 type ContactFacade interface {
 	Initialize(config string) error
-	//GetUserByID(selfId, id int32) (*mtproto.User, error)
-	//GetUserListByIDList(selfId int32, idList []int32) ([]*mtproto.User, error)
-	//GetUserByPhoneNumber(selfId int32, phone string) (*mtproto.User, error)
-	//GetSelfUserByPhoneNumber(phone string) (*mtproto.User, error)
+	ImportContacts(selfUserId int32, contacts []*contact.InputContactData) []*contact.ImportedContactData
+	DeleteContact(selfUserId, contactUserId int32) *contact.DeleteResult
+	DeleteContacts(selfUserId int32, contactUserIdList []int32) []*contact.DeleteResult
+	BlockUser(selfUserId, id int32) bool
+	UnBlockUser(selfUserId, id int32) bool
+	CheckContactAndMutual(selfUserId, id int32) (bool, bool)
 }
 
 type Instance func() ContactFacade

@@ -25,16 +25,13 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/hex"
-	contact2 "github.com/nebulaim/telegramd/biz/core/contact"
-	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
 func CheckUserAccessHash(id int32, hash int64) bool {
 	return true
 }
 
-func CheckPhoneNumberExist(phoneNumber string) bool {
+func (m *UserModel) CheckPhoneNumberExist(phoneNumber string) bool {
 	return nil != dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
 }
 
@@ -50,7 +47,7 @@ func makeUserStatusOnline() *mtproto.UserStatus {
 	return status
 }
 
-func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
+func (m *UserModel) makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 	if do == nil {
 		return nil
 	} else {
@@ -68,19 +65,20 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 			mutualContact = true
 			phone = do.Phone
 		} else {
-			status = GetUserStatus(do.Id)
-			contact, mutualContact = contact2.CheckContactAndMutualByUserId(selfId, do.Id)
+			status = m.GetUserStatus(do.Id)
+			contact, mutualContact = m.contactCallback.GetContactAndMutual(selfId, do.Id)
 			if contact {
 				phone = do.Phone
 			}
 		}
 
-		photoId := GetDefaultUserPhotoID(do.Id)
+		photoId := m.GetDefaultUserPhotoID(do.Id)
 		if photoId == 0 {
-			photo =  mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
+			photo = mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
 		} else {
-			sizeList, _ := nbfs_client.GetPhotoSizeList(photoId)
-			photo = photo2.MakeUserProfilePhoto(photoId, sizeList)
+			photo = m.photoCallback.GetUserProfilePhoto(photoId)
+			//sizeList, _ := nbfs_client.GetPhotoSizeList(photoId)
+			//photo = photo2.MakeUserProfilePhoto(photoId, sizeList)
 		}
 
 		data := &userData{ TLUser: &mtproto.TLUser{ Data2: &mtproto.User_Data{
@@ -101,30 +99,30 @@ func makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *userData {
 	}
 }
 
-func GetUserByPhoneNumber(selfId int32, phoneNumber string) *userData {
+func (m *UserModel) GetUserByPhoneNumber(selfId int32, phoneNumber string) *userData {
 	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
 	if do == nil {
 		return nil
 	}
 	do.Phone = phoneNumber
-	return makeUserDataByDO(selfId, do)
+	return m.makeUserDataByDO(selfId, do)
 }
 
-func GetMyUserByPhoneNumber(phoneNumber string) *userData {
+func (m *UserModel) GetMyUserByPhoneNumber(phoneNumber string) *userData {
 	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
 	if do == nil {
 		return nil
 	}
 	do.Phone = phoneNumber
-	return makeUserDataByDO(do.Id, do)
+	return m.makeUserDataByDO(do.Id, do)
 }
 
-func GetUserById(selfId int32, userId int32) *userData {
+func (m *UserModel) GetUserById(selfId int32, userId int32) *userData {
 	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(userId)
-	return makeUserDataByDO(selfId, do)
+	return m.makeUserDataByDO(selfId, do)
 }
 
-func CreateNewUser(phoneNumber, countryCode, firstName, lastName string) *mtproto.TLUser {
+func (m *UserModel) CreateNewUser(phoneNumber, countryCode, firstName, lastName string) *mtproto.TLUser {
 	// usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	do := &dataobject.UsersDO{
 		AccessHash:  base.NextSnowflakeId(),
@@ -151,7 +149,7 @@ func CreateNewUser(phoneNumber, countryCode, firstName, lastName string) *mtprot
 	return user
 }
 
-func CreateNewUserPassword(userId int32) {
+func (m *UserModel) CreateNewUserPassword(userId int32) {
 	// gen server_nonce
 	do := &dataobject.UserPasswordsDO{
 		UserId:     userId,
@@ -160,7 +158,7 @@ func CreateNewUserPassword(userId int32) {
 	dao.GetUserPasswordsDAO(dao.DB_MASTER).Insert(do)
 }
 
-func CheckAccessHashByUserId(userId int32, accessHash int64) bool {
+func (m *UserModel) CheckAccessHashByUserId(userId int32, accessHash int64) bool {
 	params := map[string]interface{}{
 		"id":          userId,
 		"access_hash": accessHash,
@@ -168,7 +166,7 @@ func CheckAccessHashByUserId(userId int32, accessHash int64) bool {
 	return dao.GetCommonDAO(dao.DB_SLAVE).CheckExists("users", params)
 }
 
-func GetCountryCodeByUser(userId int32) string {
+func (m *UserModel) GetCountryCodeByUser(userId int32) string {
 	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectCountryCode(userId)
 	if do == nil {
 		return ""

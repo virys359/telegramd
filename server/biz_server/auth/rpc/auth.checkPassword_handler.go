@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
 )
 
 /*
@@ -61,7 +59,7 @@ func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtprot
 		return nil, err
 	}
 
-	passwordLogic, err := account.MakePasswordData(md.UserId)
+	passwordLogic, err := s.AccountModel.MakePasswordData(md.UserId)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -74,7 +72,7 @@ func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtprot
 		return nil, err
 	}
 
-	user := user2.GetUserById(md.UserId, md.UserId)
+	user := s.UserModel.GetUserById(md.UserId, md.UserId)
 	authAuthorization := &mtproto.TLAuthAuthorization{Data2: &mtproto.Auth_Authorization_Data{
 		User: user.To_User(),
 	}}

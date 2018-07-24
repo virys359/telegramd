@@ -23,10 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/biz/core/phone_call"
-	//"fmt"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
@@ -38,7 +35,7 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 	//// TODO(@benqi): check peer
 	peer := request.GetPeer().To_InputPhoneCall()
 
-	callSession, err := phone_call.MakePhoneCallLogcByLoad(peer.GetId())
+	callSession, err := s.PhoneCallModel.MakePhoneCallLogcByLoad(peer.GetId())
 	if err != nil {
 		glog.Errorf("invalid peer: {%v}, err: %v", peer, err)
 		return nil, err
@@ -60,7 +57,7 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 	}}
 	updatesData.AddUpdate(updatePhoneCall.To_Update())
 	// 2. add users
-	updatesData.AddUsers(user.GetUsersBySelfAndIDList(callSession.ParticipantId, []int32{md.UserId, callSession.ParticipantId}))
+	updatesData.AddUsers(s.UserModel.GetUsersBySelfAndIDList(callSession.ParticipantId, []int32{md.UserId, callSession.ParticipantId}))
 	// 3. sync
 	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.ParticipantId, updatesData.ToUpdates())
 
@@ -68,7 +65,7 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 	// 2. reply
 	phoneCall := &mtproto.TLPhonePhoneCall{Data2: &mtproto.Phone_PhoneCall_Data{
 		PhoneCall: callSession.ToPhoneCall(md.UserId, request.GetKeyFingerprint()).To_PhoneCall(),
-		Users:   user.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId, callSession.ParticipantId}),
+		Users:     s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId, callSession.ParticipantId}),
 	}}
 
 	glog.Infof("phone.confirmCall#2efe1722 - reply: {%v}", phoneCall)

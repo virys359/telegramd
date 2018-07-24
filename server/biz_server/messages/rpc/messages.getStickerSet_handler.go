@@ -34,7 +34,7 @@ func (s *MessagesServiceImpl) MessagesGetStickerSet(ctx context.Context, request
 
 	// TODO(@benqi): check inputStickerSetEmpty
 	set := sticker.GetStickerSet(request.GetStickerset())
-	packs, idList := sticker.GetStickerPackList(set.GetData2().GetId())
+	packs, idList := s.StickerModel.GetStickerPackList(set.GetData2().GetId())
 	var (
 		documents []*mtproto.Document
 		err error

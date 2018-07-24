@@ -18,7 +18,7 @@
 package dataobject
 
 type UserContactsDO struct {
-	Id               int32  `db:"id"`
+	Id               int64  `db:"id"`
 	OwnerUserId      int32  `db:"owner_user_id"`
 	ContactUserId    int32  `db:"contact_user_id"`
 	ContactPhone     string `db:"contact_phone"`

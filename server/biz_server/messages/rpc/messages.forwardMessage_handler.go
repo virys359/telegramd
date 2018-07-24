@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/base"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
@@ -44,16 +43,16 @@ func (s *MessagesServiceImpl) MessagesForwardMessage(ctx context.Context, reques
 	)
 
 	// TODO(@benqi):
-	outboxMessages, ridList := makeForwardMessagesData(md.UserId, []int32{request.GetId()}, peer, []int64{request.GetRandomId()})
+	outboxMessages, ridList := s.makeForwardMessagesData(md.UserId, []int32{request.GetId()}, peer, []int64{request.GetRandomId()})
 	for i := 0; i < len(outboxMessages); i++ {
-		messageOutbox := message2.CreateMessageOutboxByNew(md.UserId, peer, ridList[i], outboxMessages[i], func(messageId int32) {
+		messageOutbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, ridList[i], outboxMessages[i], func(messageId int32) {
 			// 更新会话信息
-			user.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetData2().GetMentioned(), false)
+			s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetData2().GetMentioned(), false)
 		})
 		messageOutboxList = append(messageOutboxList, messageOutbox)
 	}
 
-	syncUpdates := makeUpdateNewMessageListUpdates(md.UserId, messageOutboxList)
+	syncUpdates := s.makeUpdateNewMessageListUpdates(md.UserId, messageOutboxList)
 	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
 	if err != nil {
 		return nil, err
@@ -82,9 +81,9 @@ func (s *MessagesServiceImpl) MessagesForwardMessage(ctx context.Context, reques
 				// 更新会话信息
 				switch peer.PeerType {
 				case base.PEER_USER:
-					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessages[i].GetData2().GetMentioned())
+					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessages[i].GetData2().GetMentioned())
 				case base.PEER_CHAT, base.PEER_CHANNEL:
-					user.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetData2().GetMentioned())
+					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetData2().GetMentioned())
 				}
 			})
 
@@ -100,7 +99,7 @@ func (s *MessagesServiceImpl) MessagesForwardMessage(ctx context.Context, reques
 
 		for k, v := range  inBoxeMap {
 
-			syncUpdates = makeUpdateNewMessageListUpdates(k, v)
+			syncUpdates = s.makeUpdateNewMessageListUpdates(k, v)
 			sync_client.GetSyncClient().PushToUserUpdatesData(k, syncUpdates.To_Updates())
 		}
 	}

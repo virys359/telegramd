@@ -17,7 +17,40 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/chat"
+	"github.com/nebulaim/telegramd/biz/core/channel"
+	"github.com/nebulaim/telegramd/biz/core/sticker"
+)
 
 type MessagesServiceImpl struct {
+	*user.UserModel
+	*message.MessageModel
+	*chat.ChatModel
+	*channel.ChannelModel
+	*sticker.StickerModel
+}
+
+func NewMessagesServiceImpl(models []core.CoreModel) *MessagesServiceImpl {
+	impl := &MessagesServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		case *message.MessageModel:
+			impl.MessageModel = m.(*message.MessageModel)
+		case *chat.ChatModel:
+			impl.ChatModel = m.(*chat.ChatModel)
+		case *channel.ChannelModel:
+			impl.ChannelModel = m.(*channel.ChannelModel)
+		case *sticker.StickerModel:
+			impl.StickerModel = m.(*sticker.StickerModel)
+		}
+	}
+
+	return impl
 }

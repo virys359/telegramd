@@ -23,13 +23,14 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"math/rand"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"fmt"
-	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/base64"
+	// photo2 "github.com/nebulaim/telegramd/biz/core/photo"
+	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/biz/core"
 )
 
 const (
@@ -49,6 +50,8 @@ const (
 type channelLogicData struct {
 	channel      *dataobject.ChannelsDO
 	participants []dataobject.ChannelParticipantsDO
+	dao          *channelsDAO
+	cb           core.PhotoCallback
 }
 
 func makeChannelParticipantByDO(do *dataobject.ChannelParticipantsDO) (participant *mtproto.ChannelParticipant) {
@@ -99,19 +102,21 @@ func MakeChannelParticipant2ByDO(selfId int32, do *dataobject.ChannelParticipant
 	return
 }
 
-func NewChannelLogicById(channelId int32) (channelData *channelLogicData, err error) {
-	channelDO := dao.GetChannelsDAO(dao.DB_SLAVE).Select(channelId)
+func (m *ChannelModel) NewChannelLogicById(channelId int32) (channelData *channelLogicData, err error) {
+	channelDO := m.dao.ChannelsDAO.Select(channelId)
 	if channelDO == nil {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_ID_INVALID)
 	} else {
 		channelData = &channelLogicData{
 			channel: channelDO,
+			dao:     m.dao,
+			cb:      m.photoCallback,
 		}
 	}
 	return
 }
 
-func NewChannelLogicByCreateChannel(creatorId int32, userIds []int32, title, about string) (channelData *channelLogicData) {
+func (m *ChannelModel) NewChannelLogicByCreateChannel(creatorId int32, userIds []int32, title, about string) (channelData *channelLogicData) {
 	// TODO(@benqi): 事务
 	channelData = &channelLogicData{
 		channel: &dataobject.ChannelsDO{
@@ -127,14 +132,16 @@ func NewChannelLogicByCreateChannel(creatorId int32, userIds []int32, title, abo
 			Date:             int32(time.Now().Unix()),
 		},
 		participants: make([]dataobject.ChannelParticipantsDO, 1+len(userIds)),
+		dao:          m.dao,
+		cb:           m.photoCallback,
 	}
-	channelData.channel.Id = int32(dao.GetChannelsDAO(dao.DB_MASTER).Insert(channelData.channel))
+	channelData.channel.Id = int32(m.dao.ChannelsDAO.Insert(channelData.channel))
 
 	channelData.participants = make([]dataobject.ChannelParticipantsDO, 1 + len(userIds))
 	channelData.participants[0].ChannelId = channelData.channel.Id
 	channelData.participants[0].UserId = creatorId
 	channelData.participants[0].ParticipantType = kChannelParticipantCreator
-	dao.GetChannelParticipantsDAO(dao.DB_MASTER).Insert(&channelData.participants[0])
+	m.dao.ChannelParticipantsDAO.Insert(&channelData.participants[0])
 
 	for i := 0; i < len(userIds); i++ {
 		channelData.participants[i+1].ChannelId = channelData.channel.Id
@@ -143,7 +150,7 @@ func NewChannelLogicByCreateChannel(creatorId int32, userIds []int32, title, abo
 		channelData.participants[i+1].InviterUserId = creatorId
 		channelData.participants[i+1].InvitedAt = channelData.channel.Date
 		channelData.participants[i+1].JoinedAt = channelData.channel.Date
-		dao.GetChannelParticipantsDAO(dao.DB_MASTER).Insert(&channelData.participants[i+1])
+		m.dao.ChannelParticipantsDAO.Insert(&channelData.participants[i+1])
 	}
 	return
 }
@@ -164,7 +171,7 @@ func (this *channelLogicData) ExportedChatInvite() string {
 	if this.channel.Link == "" {
 		// TODO(@benqi): 检查唯一性
 		this.channel.Link = "https://nebula.im/joinchat/" + base64.StdEncoding.EncodeToString(crypto.GenerateNonce(16))
-		dao.GetChannelsDAO(dao.DB_MASTER).UpdateLink(this.channel.Link, int32(time.Now().Unix()), this.channel.Id)
+		this.dao.ChannelsDAO.UpdateLink(this.channel.Link, int32(time.Now().Unix()), this.channel.Id)
 	}
 	return this.channel.Link
 }
@@ -183,7 +190,7 @@ func (this *channelLogicData) checkUserIsAdministrator(userId int32) bool {
 
 func (this *channelLogicData) checkOrLoadChannelParticipantList() {
 	if len(this.participants) == 0 {
-		this.participants = dao.GetChannelParticipantsDAO(dao.DB_SLAVE).SelectByChannelId(this.channel.Id)
+		this.participants = this.dao.ChannelParticipantsDAO.SelectByChannelId(this.channel.Id)
 	}
 }
 
@@ -290,7 +297,7 @@ func (this *channelLogicData) AddChannelUser(inviterId, userId int32) error {
 
 	if founded != -1 {
 		this.participants[founded].State = 0
-		dao.GetChannelParticipantsDAO(dao.DB_MASTER).Update(inviterId, now, now, this.participants[founded].Id)
+		this.dao.ChannelParticipantsDAO.Update(inviterId, now, now, this.participants[founded].Id)
 	} else {
 		channelParticipant := &dataobject.ChannelParticipantsDO{
 			ChannelId:       this.channel.Id,
@@ -300,7 +307,7 @@ func (this *channelLogicData) AddChannelUser(inviterId, userId int32) error {
 			InvitedAt:       now,
 			JoinedAt:        now,
 		}
-		channelParticipant.Id = int32(dao.GetChannelParticipantsDAO(dao.DB_MASTER).Insert(channelParticipant))
+		channelParticipant.Id = int32(this.dao.ChannelParticipantsDAO.Insert(channelParticipant))
 		this.participants = append(this.participants, *channelParticipant)
 	}
 
@@ -308,7 +315,7 @@ func (this *channelLogicData) AddChannelUser(inviterId, userId int32) error {
 	this.channel.ParticipantCount += 1
 	this.channel.Version += 1
 	this.channel.Date = now
-	dao.GetChannelsDAO(dao.DB_MASTER).UpdateParticipantCount(this.channel.ParticipantCount, now, this.channel.Id)
+	this.dao.ChannelsDAO.UpdateParticipantCount(this.channel.ParticipantCount, now, this.channel.Id)
 
 	return nil
 }
@@ -354,8 +361,8 @@ func (this *channelLogicData) ToChannel(selfUserId int32) *mtproto.Chat {
 		if this.channel.PhotoId == 0 {
 			channel.SetPhoto(mtproto.NewTLChatPhotoEmpty().To_ChatPhoto())
 		} else {
-			sizeList, _ := nbfs_client.GetPhotoSizeList(this.channel.PhotoId)
-			channel.SetPhoto(photo2.MakeChatPhoto(sizeList))
+			// sizeList, _ := nbfs_client.GetPhotoSizeList(this.channel.PhotoId)
+			channel.SetPhoto(this.cb.GetChatPhoto(this.channel.PhotoId))
 		}
 		return channel.To_Chat()
 	}
@@ -409,7 +416,7 @@ func (this *channelLogicData) DeleteChannelUser(operatorId, deleteUserId int32) 
 	}
 
 	this.participants[found].State = 1
-	dao.GetChannelParticipantsDAO(dao.DB_MASTER).DeleteChannelUser(this.participants[found].Id)
+	this.dao.ChannelParticipantsDAO.DeleteChannelUser(this.participants[found].Id)
 
 	// delete found.
 	// this.participants = append(this.participants[:found], this.participants[found+1:]...)
@@ -418,7 +425,7 @@ func (this *channelLogicData) DeleteChannelUser(operatorId, deleteUserId int32) 
 	this.channel.ParticipantCount = int32(len(this.participants)-1)
 	this.channel.Version += 1
 	this.channel.Date = now
-	dao.GetChannelsDAO(dao.DB_MASTER).UpdateParticipantCount(this.channel.ParticipantCount, now, this.channel.Id)
+	this.dao.ChannelsDAO.UpdateParticipantCount(this.channel.ParticipantCount, now, this.channel.Id)
 
 	return nil
 }
@@ -445,7 +452,7 @@ func (this *channelLogicData) EditChannelTitle(editUserId int32, title string) e
 	this.channel.Date = int32(time.Now().Unix())
 	this.channel.Version += 1
 
-	dao.GetChannelsDAO(dao.DB_MASTER).UpdateTitle(title, this.channel.Date, this.channel.Id)
+	this.dao.ChannelsDAO.UpdateTitle(title, this.channel.Date, this.channel.Id)
 	return nil
 }
 
@@ -471,7 +478,7 @@ func (this *channelLogicData) EditChannelPhoto(editUserId int32, photoId int64) 
 	this.channel.Date = int32(time.Now().Unix())
 	this.channel.Version += 1
 
-	dao.GetChannelsDAO(dao.DB_MASTER).UpdatePhotoId(photoId, this.channel.Date, this.channel.Id)
+	this.dao.ChannelsDAO.UpdatePhotoId(photoId, this.channel.Date, this.channel.Id)
 	return nil
 }
 
@@ -503,12 +510,12 @@ func (this *channelLogicData) EditChannelAdmin(operatorId, editChannelAdminId in
 	} else {
 		participant.ParticipantType = kChannelParticipant
 	}
-	dao.GetChannelParticipantsDAO(dao.DB_MASTER).UpdateParticipantType(participant.ParticipantType, participant.Id)
+	this.dao.ChannelParticipantsDAO.UpdateParticipantType(participant.ParticipantType, participant.Id)
 
 	// update version
 	this.channel.Date = int32(time.Now().Unix())
 	this.channel.Version += 1
-	dao.GetChannelsDAO(dao.DB_MASTER).UpdateVersion(this.channel.Date, this.channel.Id)
+	this.dao.ChannelsDAO.UpdateVersion(this.channel.Date, this.channel.Id)
 
 	return nil
 }
@@ -532,7 +539,7 @@ func (this *channelLogicData) ToggleChannelAdmins(userId int32, adminsEnabled bo
 	this.channel.Date = int32(time.Now().Unix())
 	this.channel.Version += 1
 
-	dao.GetChannelsDAO(dao.DB_MASTER).UpdateAdminsEnabled(this.channel.AdminsEnabled, this.channel.Date, this.channel.Id)
+	this.dao.ChannelsDAO.UpdateAdminsEnabled(this.channel.AdminsEnabled, this.channel.Date, this.channel.Id)
 
 	return nil
 }

@@ -29,10 +29,12 @@ import (
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/proto/zproto"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/service/status/client"
 )
 
 type SessionServer struct {
 	idgen      	   idgen.UUIDGen
+	status         status_client.StatusClient
 	server         *zproto.ZProtoServer
 	bizRpcClient   *grpc_util.RPCClient
 	nbfsRpcClient  *grpc_util.RPCClient
@@ -57,9 +59,10 @@ func (s *SessionServer) Initialize() error {
 
 	// idgen
 	s.idgen, _ = idgen.NewUUIDGen("snowflake", base.Int32ToString(Conf.ServerId))
-
 	// 初始化mysql_client、redis_client
 	redis_client.InstallRedisClientManager(Conf.Redis)
+
+	s.status, _ = status_client.NewStatusClient("redis", "cache")
 
 	// 初始化redis_dao、mysql_dao
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())

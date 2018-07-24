@@ -45,6 +45,10 @@ type messageData struct {
 	obj          mtproto.TLObject
 }
 
+func (m *messageData) String() string {
+	return fmt.Sprintf("{confirmFlag: %v, compressFlag: %v, obj: {%s}}", m.confirmFlag, m.compressFlag, m.obj)
+}
+
 type pendingMessage struct {
 	messageId int64
 	confirm   bool

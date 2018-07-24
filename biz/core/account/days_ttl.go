@@ -17,15 +17,11 @@
 
 package account
 
-import (
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-)
-
-func SetAccountDaysTTL(userId int32, ttl int32) {
-	dao.GetUsersDAO(dao.DB_MASTER).UpdateAccountDaysTTL(ttl, userId)
+func (m *AccountModel) SetAccountDaysTTL(userId int32, ttl int32) {
+	m.dao.UsersDAO.UpdateAccountDaysTTL(ttl, userId)
 }
 
-func GetAccountDaysTTL(userId int32) int32 {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectAccountDaysTTL(userId)
+func (m *AccountModel) GetAccountDaysTTL(userId int32) int32 {
+	do := m.dao.UsersDAO.SelectAccountDaysTTL(userId)
 	return do.AccountDaysTtl
 }

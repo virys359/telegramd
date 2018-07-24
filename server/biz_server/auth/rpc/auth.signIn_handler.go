@@ -24,9 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core/auth"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 /*
@@ -69,8 +66,8 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 	}
 	// TODO(@benqi): check phoneCode rule: number, length etc ...
 
-	code := auth.MakeCodeDataByHash(md.AuthId, phoneNumber, request.PhoneCodeHash)
-	phoneRegistered := auth.CheckPhoneNumberExist(phoneNumber)
+	code := s.AuthModel.MakeCodeDataByHash(md.AuthId, phoneNumber, request.PhoneCodeHash)
+	phoneRegistered := s.AuthModel.CheckPhoneNumberExist(phoneNumber)
 	err = code.DoSignIn(request.PhoneCode, phoneRegistered)
 	if err != nil {
 		glog.Error(err)
@@ -86,13 +83,13 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 	}
 
 	// do signIn...
-	user := user2.GetMyUserByPhoneNumber(phoneNumber)
+	user := s.UserModel.GetMyUserByPhoneNumber(phoneNumber)
 	// Bind authKeyId and userId
-	auth.BindAuthKeyAndUser(md.AuthId, user.GetId())
+	s.AuthModel.BindAuthKeyAndUser(md.AuthId, user.GetId())
 	// TODO(@benqi): check and set authKeyId state
 
 	// Check SESSION_PASSWORD_NEEDED
-	sessionPasswordNeeded := account.CheckSessionPasswordNeeded(user.GetId())
+	sessionPasswordNeeded := s.AccountModel.CheckSessionPasswordNeeded(user.GetId())
 	if sessionPasswordNeeded {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_SESSION_PASSWORD_NEEDED)
 		glog.Info("auth.signIn#bcd51581 - registered, next step auth.checkPassword, ", err)

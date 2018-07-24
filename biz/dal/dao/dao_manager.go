@@ -71,6 +71,10 @@ type MysqlDAOList struct {
 	ChannelMessageBoxesDAO	 *mysql_dao.ChannelMessageBoxesDAO
 	ChannelPtsUpdatesDAO	 *mysql_dao.ChannelPtsUpdatesDAO
 	MessageDatasDAO 		 *mysql_dao.MessageDatasDAO
+
+	UnregisteredContactsDAO  *mysql_dao.UnregisteredContactsDAO
+	PopularContactsDAO		 *mysql_dao.PopularContactsDAO
+
 }
 
 // TODO(@benqi): 一主多从
@@ -124,6 +128,9 @@ func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
 		daoList.ChannelMessageBoxesDAO = mysql_dao.NewChannelMessageBoxesDAO(v)
 		daoList.ChannelPtsUpdatesDAO = mysql_dao.NewChannelPtsUpdatesDAO(v)
 		daoList.MessageDatasDAO = mysql_dao.NewMessageDatasDAO(v)
+
+		daoList.UnregisteredContactsDAO = mysql_dao.NewUnregisteredContactsDAO(v)
+		daoList.PopularContactsDAO = mysql_dao.NewPopularContactsDAO(v)
 
 		mysqlDAOManager.daoListMap[k] = daoList
 		return true
@@ -417,6 +424,24 @@ func GetMessageDatasDAO(dbName string) (dao *mysql_dao.MessageDatasDAO) {
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.MessageDatasDAO
+	}
+	return
+}
+
+func GetUnregisteredContactsDAO(dbName string) (dao *mysql_dao.UnregisteredContactsDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.UnregisteredContactsDAO
+	}
+	return
+}
+
+func GetPopularContactsDAO(dbName string) (dao *mysql_dao.PopularContactsDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.PopularContactsDAO
 	}
 	return
 }

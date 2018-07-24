@@ -23,9 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/chat"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
@@ -50,7 +48,7 @@ func (s *MessagesServiceImpl) MessagesEditChatAdmin(ctx context.Context, request
 		return nil, err
 	}
 
-	chatLogic, err := chat.NewChatLogicById(request.ChatId)
+	chatLogic, err := s.ChatModel.NewChatLogicById(request.ChatId)
 	if err != nil {
 		glog.Error("messages.editChatAdmin#a9e69f2e - error: ", err)
 		return nil, err
@@ -70,7 +68,7 @@ func (s *MessagesServiceImpl) MessagesEditChatAdmin(ctx context.Context, request
 	for _, id := range idList {
 		updates := update2.NewUpdatesLogic(md.UserId)
 		updates.AddUpdate(updateChatParticipants.To_Update())
-		updates.AddUsers(user.GetUsersBySelfAndIDList(id, idList))
+		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(id, idList))
 		updates.AddChat(chatLogic.ToChat(md.UserId))
 		sync_client.GetSyncClient().PushToUserUpdatesData(id, updates.ToUpdates())
 	}

@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/channel"
 )
 
 // channels.checkUsername#10e6bd2c channel:InputChannel username:string = Bool;
@@ -35,7 +34,7 @@ func (s *ChannelsServiceImpl) ChannelsCheckUsername(ctx context.Context, request
 	if request.GetChannel().GetConstructor() == mtproto.TLConstructor_CRC32_inputChannelEmpty {
 		checked = false
 	} else {
-		checked = channel.CheckChannelUserName(request.GetChannel().GetData2().GetChannelId(), request.GetUsername())
+		checked = s.ChannelModel.CheckChannelUserName(request.GetChannel().GetData2().GetChannelId(), request.GetUsername())
 	}
 
 	glog.Infof("channels.checkUsername#10e6bd2c - reply: {%v}", checked)

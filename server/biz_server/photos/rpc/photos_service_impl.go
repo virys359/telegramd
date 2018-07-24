@@ -17,7 +17,24 @@
 
 package rpc
 
-import ()
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/user"
+)
 
 type PhotosServiceImpl struct {
+	*user.UserModel
+}
+
+func NewPhotosServiceImpl(models []core.CoreModel) *PhotosServiceImpl {
+	impl := &PhotosServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		}
+	}
+
+	return impl
 }

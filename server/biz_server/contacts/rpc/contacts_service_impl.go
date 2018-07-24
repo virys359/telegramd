@@ -19,8 +19,27 @@ package rpc
 
 import (
 	// "github.com/nebulaim/telegramd/service/contact/contact"
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/contact"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 type ContactsServiceImpl struct {
-	// contact *contact.ContactFacade
+	*contact.ContactModel
+	*user.UserModel
+}
+
+func NewContactsServiceImpl(models []core.CoreModel) *ContactsServiceImpl {
+	impl := &ContactsServiceImpl{}
+
+	for _, m := range models {
+		switch m.(type) {
+		case *contact.ContactModel:
+			impl.ContactModel = m.(*contact.ContactModel)
+		case *user.UserModel:
+			impl.UserModel = m.(*user.UserModel)
+		}
+	}
+
+	return impl
 }

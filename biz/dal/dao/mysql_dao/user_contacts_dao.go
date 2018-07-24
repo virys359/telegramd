@@ -205,7 +205,7 @@ func (dao *UserContactsDAO) SelectBlockedList(owner_user_id int32, limit int32) 
 
 // update user_contacts set contact_first_name = :contact_first_name, contact_last_name = :contact_last_name, is_deleted = 0 where id = :id
 // TODO(@benqi): sqlmap
-func (dao *UserContactsDAO) UpdateContactNameById(contact_first_name string, contact_last_name string, id int32) int64 {
+func (dao *UserContactsDAO) UpdateContactNameById(contact_first_name string, contact_last_name string, id int64) int64 {
 	var query = "update user_contacts set contact_first_name = ?, contact_last_name = ?, is_deleted = 0 where id = ?"
 	r, err := dao.db.Exec(query, contact_first_name, contact_last_name, id)
 

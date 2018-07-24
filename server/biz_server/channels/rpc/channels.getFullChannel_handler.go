@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/channel"
 )
 
 // channels.getFullChannel#8736a09 channel:InputChannel = messages.ChatFull;
@@ -40,7 +39,7 @@ func (s *ChannelsServiceImpl) ChannelsGetFullChannel(ctx context.Context, reques
 
 	inputChannel := request.GetChannel().To_InputChannel()
 
-	channelLogic, err := channel.NewChannelLogicById(inputChannel.GetChannelId())
+	channelLogic, err := s.ChannelModel.NewChannelLogicById(inputChannel.GetChannelId())
 	if err != nil {
 		glog.Error("channels.getFullChannel#8736a09 - error: ", err)
 		return nil, err
@@ -48,7 +47,7 @@ func (s *ChannelsServiceImpl) ChannelsGetFullChannel(ctx context.Context, reques
 
 	// idList := channelLogic.GetChannelParticipantIdList()
 	messagesChatFull := &mtproto.TLMessagesChatFull{Data2: &mtproto.Messages_ChatFull_Data{
-		FullChat: 	channel.GetChannelFullBySelfId(md.UserId, channelLogic).To_ChatFull(),
+		FullChat: 	s.ChannelModel.GetChannelFullBySelfId(md.UserId, channelLogic).To_ChatFull(),
 		Chats:      []*mtproto.Chat{channelLogic.ToChannel(md.UserId)},
 		Users: 		[]*mtproto.User{},
 	}}

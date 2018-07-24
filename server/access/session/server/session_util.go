@@ -93,3 +93,7 @@ func getUUID() int64 {
 	uuid, _ := app.GAppInstance.(*SessionServer).idgen.GetUUID()
 	return uuid
 }
+
+func setOnline(userId int32, serverId int32, authKeyId int64) {
+	app.GAppInstance.(*SessionServer).status.SetSessionOnline(userId, serverId, authKeyId)
+}

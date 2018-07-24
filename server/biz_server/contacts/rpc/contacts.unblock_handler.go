@@ -23,8 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/contact"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
@@ -44,7 +42,7 @@ func (s *ContactsServiceImpl) ContactsUnblock(ctx context.Context, request *mtpr
 		blockedId = md.UserId
 	case mtproto.TLConstructor_CRC32_inputUser:
 		// Check access hash
-		if ok := user2.CheckAccessHashByUserId(id.GetData2().GetUserId(), id.GetData2().GetAccessHash()); !ok {
+		if ok := s.UserModel.CheckAccessHashByUserId(id.GetData2().GetUserId(), id.GetData2().GetAccessHash()); !ok {
 			// TODO(@benqi): Add ACCESS_HASH_INVALID codes
 			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 			glog.Error(err, ": is access_hash error")
@@ -60,7 +58,7 @@ func (s *ContactsServiceImpl) ContactsUnblock(ctx context.Context, request *mtpr
 		return nil, err
 	}
 
-	contactLogic :=contact.MakeContactLogic(md.UserId)
+	contactLogic :=s.ContactModel.MakeContactLogic(md.UserId)
 	unBlocked := contactLogic.UnBlockUser(blockedId)
 
 	if unBlocked {
@@ -72,7 +70,7 @@ func (s *ContactsServiceImpl) ContactsUnblock(ctx context.Context, request *mtpr
 
 		unBlockedUpdates := updates2.NewUpdatesLogic(md.UserId)
 		unBlockedUpdates.AddUpdate(updateUserUnBlocked.To_Update())
-		unBlockedUpdates.AddUser(user2.GetUserById(md.UserId, blockedId).To_User())
+		unBlockedUpdates.AddUser(s.UserModel.GetUserById(md.UserId, blockedId).To_User())
 
 		// TODO(@benqi): handle seq
 		sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, blockedId, unBlockedUpdates.ToUpdates())

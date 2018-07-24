@@ -24,7 +24,6 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/core/account"
-	user2 "github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 )
@@ -38,7 +37,7 @@ func (s *AccountServiceImpl) AccountSetPrivacy(ctx context.Context, request *mtp
 
 	key := account.FromInputPrivacyKey(request.GetKey())
 
-	privacyLogic := account.MakePrivacyLogic(md.UserId)
+	privacyLogic := s.AccountModel.MakePrivacyLogic(md.UserId)
 	rulesData := privacyLogic.SetPrivacy(key, request.GetRules())
 
 	var rules *mtproto.TLAccountPrivacyRules
@@ -60,7 +59,7 @@ func (s *AccountServiceImpl) AccountSetPrivacy(ctx context.Context, request *mtp
 			Rules: ruleList,
 		}}
 	} else {
-		users := user2.GetUsersBySelfAndIDList(md.UserId, idList)
+		users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList)
 		rules = &mtproto.TLAccountPrivacyRules{ Data2: &mtproto.Account_PrivacyRules_Data{
 			Rules: ruleList,
 			Users: users,
