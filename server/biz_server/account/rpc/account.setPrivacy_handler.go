@@ -19,13 +19,13 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/core/account"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // account.setPrivacy#c9f81ce8 key:InputPrivacyKey rules:Vector<InputPrivacyRule> = account.PrivacyRules;
@@ -47,7 +47,7 @@ func (s *AccountServiceImpl) AccountSetPrivacy(ctx context.Context, request *mtp
 	/////////////////////////////////////////////////////////////////////////////////
 	// Sync unblocked: updateUserBlocked
 	updatePrivacy := &mtproto.TLUpdatePrivacy{Data2: &mtproto.Update_Data{
-		Key: key.ToPrivacyKey(),
+		Key:   key.ToPrivacyKey(),
 		Rules: ruleList,
 	}}
 
@@ -55,12 +55,12 @@ func (s *AccountServiceImpl) AccountSetPrivacy(ctx context.Context, request *mtp
 	unBlockedUpdates.AddUpdate(updatePrivacy.To_Update())
 
 	if len(idList) == 0 {
-		rules = &mtproto.TLAccountPrivacyRules{ Data2: &mtproto.Account_PrivacyRules_Data{
+		rules = &mtproto.TLAccountPrivacyRules{Data2: &mtproto.Account_PrivacyRules_Data{
 			Rules: ruleList,
 		}}
 	} else {
 		users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList)
-		rules = &mtproto.TLAccountPrivacyRules{ Data2: &mtproto.Account_PrivacyRules_Data{
+		rules = &mtproto.TLAccountPrivacyRules{Data2: &mtproto.Account_PrivacyRules_Data{
 			Rules: ruleList,
 			Users: users,
 		}}

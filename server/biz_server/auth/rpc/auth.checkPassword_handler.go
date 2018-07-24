@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 )
@@ -40,7 +40,7 @@ import (
 	} else {
 		needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
 	}
- */
+*/
 
 // 客户端调用auth.signIn时返回SESSION_PASSWORD_NEEDED时会触发
 

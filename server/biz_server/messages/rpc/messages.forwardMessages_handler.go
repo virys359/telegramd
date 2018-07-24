@@ -19,14 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
-	"time"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
+	"time"
 )
 
 func (s *MessagesServiceImpl) makeForwardMessagesData(selfId int32, idList []int32, peer *base.PeerUtil, ridList []int64) ([]*mtproto.Message, []int64) {
@@ -70,7 +70,7 @@ func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, reque
 	//// peer
 	var (
 		// fromPeer = helper.FromInputPeer2(md.UserId, request.GetFromPeer())
-		peer = base.FromInputPeer2(md.UserId, request.GetToPeer())
+		peer              = base.FromInputPeer2(md.UserId, request.GetToPeer())
 		messageOutboxList message2.MessageBoxList
 	)
 
@@ -128,7 +128,7 @@ func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, reque
 			}
 		}
 
-		for k, v := range  inBoxeMap {
+		for k, v := range inBoxeMap {
 
 			syncUpdates = s.makeUpdateNewMessageListUpdates(k, v)
 			sync_client.GetSyncClient().PushToUserUpdatesData(k, syncUpdates.To_Updates())
@@ -137,7 +137,6 @@ func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, reque
 
 	glog.Infof("messages.forwardMessages#708e0195 - reply: %s", logger.JsonDebugData(reply))
 	return reply.To_Updates(), nil
-
 
 	//shortMessage := model.MessageToUpdateShortMessage(outbox.To_Message())
 	//state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, shortMessage.To_Updates())
@@ -152,7 +151,6 @@ func (s *MessagesServiceImpl) MessagesForwardMessages(ctx context.Context, reque
 	//sentMessage = model.MessageToUpdateShortSentMessage(outbox.To_Message())
 	//sentMessage.SetPts(state.Pts)
 	//sentMessage.SetPtsCount(state.PtsCount)
-
 
 	//
 	//if request.GetPeer().GetConstructor() ==  mtproto.TLConstructor_CRC32_inputPeerSelf {

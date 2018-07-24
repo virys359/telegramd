@@ -18,10 +18,10 @@
 package main
 
 import (
-	"github.com/nebulaim/telegramd/mtproto"
 	"fmt"
-	"strconv"
+	"github.com/nebulaim/telegramd/mtproto"
 	"os"
+	"strconv"
 )
 
 func main() {

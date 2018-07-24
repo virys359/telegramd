@@ -18,12 +18,12 @@
 package watcher2
 
 import (
-	"testing"
-	"github.com/coreos/etcd/clientv3"
 	"context"
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"github.com/coreos/etcd/clientv3"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"testing"
 	"time"
 )
 
@@ -39,7 +39,7 @@ func AddService(namespace string, serviceName string, nodeID string, addr string
 	}
 	defer cli.Close()
 
-	nodeData := &nodeData{Addr:addr}
+	nodeData := &nodeData{Addr: addr}
 	val, err := json.Marshal(nodeData)
 	if err != nil {
 		return err
@@ -61,8 +61,8 @@ func TestRegisterBeforeWatcher(t *testing.T) {
 	client := net2.NewTcpClientGroupManager("TestProto", services, nil)
 	w, _ := NewClientWatcher("/nebulaim", "test_before", etcdConfig, client)
 
-	AddService("nebulaim", "test_before", "node1","0.0.0.0:12345")
-	AddService("nebulaim", "test_before", "node2","0.0.0.0:98765")
+	AddService("nebulaim", "test_before", "node1", "0.0.0.0:12345")
+	AddService("nebulaim", "test_before", "node2", "0.0.0.0:98765")
 
 	receivedChan := make(chan interface{})
 

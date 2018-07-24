@@ -18,16 +18,16 @@
 package grpc_util
 
 import (
-	"net"
-	"google.golang.org/grpc"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/etcd_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/middleware/recovery2"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"google.golang.org/grpc"
+	"net"
+	"os"
 	"os/signal"
 	"syscall"
-	"os"
-	"github.com/nebulaim/telegramd/baselib/etcd_util"
 )
 
 type RPCServer struct {
@@ -38,7 +38,7 @@ type RPCServer struct {
 
 func NewRpcServer(addr string, discovery *service_discovery.ServiceDiscoveryServerConfig) *RPCServer {
 	s := &RPCServer{
-		addr:     addr,
+		addr: addr,
 	}
 
 	var err error

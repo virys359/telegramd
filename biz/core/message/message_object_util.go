@@ -18,11 +18,11 @@
 package message
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"encoding/json"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 // updateShortMessage#914fbf11 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
@@ -30,7 +30,7 @@ import (
 // 	out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true id:int from_id:flags.8?int to_id:Peer fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int edit_date:flags.15?int post_author:flags.16?string grouped_id:flags.17?long = Message;
 // messageService#9e19a1f6 flags:#
 // 	out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true id:int from_id:flags.8?int to_id:Peer reply_to_msg_id:flags.3?int date:int action:MessageAction = Message;
-func MessageToUpdateShortMessage(message2* mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
+func MessageToUpdateShortMessage(message2 *mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
 	// TODO(@benqi): check message2.ToId
 	var (
 		userId int32
@@ -66,7 +66,7 @@ func MessageToUpdateShortMessage(message2* mtproto.Message) (shortMessage *mtpro
 }
 
 // updateShortChatMessage#16812688 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int from_id:int chat_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
-func MessageToUpdateShortChatMessage(message2* mtproto.Message) (shortMessage *mtproto.TLUpdateShortChatMessage) {
+func MessageToUpdateShortChatMessage(message2 *mtproto.Message) (shortMessage *mtproto.TLUpdateShortChatMessage) {
 	// TODO(@benqi): check message2.ToId
 	switch message2.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_message:
@@ -77,13 +77,13 @@ func MessageToUpdateShortChatMessage(message2* mtproto.Message) (shortMessage *m
 		//	userId = message.GetFromId()
 		//}
 		shortMessage = &mtproto.TLUpdateShortChatMessage{Data2: &mtproto.Updates_Data{
-			Out:          message.GetOut(),
-			Mentioned:    message.GetMentioned(),
-			MediaUnread:  message.GetMediaUnread(),
-			Silent:       message.GetSilent(),
-			Id:           message.GetId(),
-			FromId:       message.GetFromId(),
-			ChatId:       message.GetToId().GetData2().GetChatId(),
+			Out:         message.GetOut(),
+			Mentioned:   message.GetMentioned(),
+			MediaUnread: message.GetMediaUnread(),
+			Silent:      message.GetSilent(),
+			Id:          message.GetId(),
+			FromId:      message.GetFromId(),
+			ChatId:      message.GetToId().GetData2().GetChatId(),
 			// UserId:       userId,
 			Message:      message.GetMessage(),
 			Date:         message.GetDate(),
@@ -120,17 +120,17 @@ func MessageToUpdateShortChatMessage(message2* mtproto.Message) (shortMessage *m
 }
 
 //// updateShortSentMessage#11f1331c flags:# out:flags.1?true id:int pts:int pts_count:int date:int media:flags.9?MessageMedia entities:flags.7?Vector<MessageEntity> = Updates;
-func MessageToUpdateShortSentMessage(message2* mtproto.Message) (sentMessage *mtproto.TLUpdateShortSentMessage) {
+func MessageToUpdateShortSentMessage(message2 *mtproto.Message) (sentMessage *mtproto.TLUpdateShortSentMessage) {
 	switch message2.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_message:
 		message := message2.To_Message()
 		sentMessage = &mtproto.TLUpdateShortSentMessage{Data2: &mtproto.Updates_Data{
 			Out: message.GetOut(),
-			Id:   message.GetId(),
+			Id:  message.GetId(),
 			// Pts:,
 			// PtsCount,
-			Date:         message.GetDate(),
-			Media: message.GetMedia(),
+			Date:     message.GetDate(),
+			Media:    message.GetMedia(),
 			Entities: message.GetEntities(),
 		}}
 	case mtproto.TLConstructor_CRC32_messageService:
@@ -217,7 +217,7 @@ func PickAllIDListByMessages(messageList []*mtproto.Message) (userIdList, chatId
 		channelIdList = make([]int32, 0, len(messageList))
 
 		for _, m := range messageList {
-			switch m.GetConstructor()  {
+			switch m.GetConstructor() {
 			case mtproto.TLConstructor_CRC32_message:
 				m2 := m.To_Message()
 				userIdList = append(userIdList, m2.GetFromId())

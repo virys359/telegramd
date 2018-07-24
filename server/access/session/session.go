@@ -19,8 +19,8 @@ package main
 
 import (
 	"flag"
-	"github.com/nebulaim/telegramd/server/access/session/server"
 	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/server/access/session/server"
 )
 
 /*
@@ -49,7 +49,7 @@ import (
     case OnError(cause) ⇒
       log.error(cause, "Error in upstream")
   }
- */
+*/
 
 func init() {
 	flag.Set("alsologtostderr", "true")

@@ -18,23 +18,23 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/nebulaim/telegramd/proto/zproto"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"fmt"
-	"math/big"
-	"github.com/nebulaim/telegramd/baselib/crypto"
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"bytes"
 	"crypto/sha1"
-	"github.com/golang/protobuf/proto"
-	"time"
-	"encoding/binary"
-	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dataobject"
 	"encoding/base64"
-	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
+	"encoding/binary"
+	"fmt"
 	"github.com/go-sql-driver/mysql"
+	"github.com/golang/glog"
+	"github.com/golang/protobuf/proto"
+	"github.com/nebulaim/telegramd/baselib/crypto"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/proto/zproto"
+	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
+	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dataobject"
+	"math/big"
+	"time"
 )
 
 const (
@@ -84,7 +84,7 @@ var (
 	// 6f4fadf034b10403119cd8e3
 	// b92fcc5b";
 	//
-	dh2048_p =[]byte{
+	dh2048_p = []byte{
 		0xc7, 0x1c, 0xae, 0xb9, 0xc6, 0xb1, 0xc9, 0x04, 0x8e, 0x6c, 0x52, 0x2f,
 		0x70, 0xf1, 0x3f, 0x73, 0x98, 0x0d, 0x40, 0x23, 0x8e, 0x3e, 0x21, 0xc1,
 		0x49, 0x34, 0xd0, 0x37, 0x56, 0x3d, 0x93, 0x0f, 0x48, 0x19, 0x8a, 0x0a,
@@ -109,7 +109,7 @@ var (
 		0xb9, 0x2f, 0xcc, 0x5b,
 	}
 
-	dh2048_g = []byte{ 0x02,}
+	dh2048_g = []byte{0x02}
 )
 
 type handshake struct {
@@ -138,8 +138,8 @@ func newHandshake() *handshake {
 func (s *handshake) onHandshake(conn *net2.TcpConnection, hmsg *zproto.ZProtoHandshakeMessage) (*zproto.ZProtoHandshakeMessage, error) {
 	var (
 		state = hmsg.State
-		err error
-		res mtproto.TLObject
+		err   error
+		res   mtproto.TLObject
 	)
 
 	mtpMessage := &mtproto.UnencryptedMessage{}
@@ -214,9 +214,9 @@ func (s *handshake) onReqPq(state *zproto.HandshakeState, request *mtproto.TLReq
 	}
 
 	resPQ := &mtproto.TLResPQ{Data2: &mtproto.ResPQ_Data{
-		Nonce:                       request.Nonce,
-		ServerNonce:                 crypto.GenerateNonce(16),
-		Pq:                          pq,
+		Nonce:       request.Nonce,
+		ServerNonce: crypto.GenerateNonce(16),
+		Pq:          pq,
 		ServerPublicKeyFingerprints: []int64{int64(fingerprint)},
 	}}
 	//
@@ -378,7 +378,7 @@ func (s *handshake) onReq_DHParams(state *zproto.HandshakeState, request *mtprot
 	g_a.Exp(s.bigIntDH2048G, bigIntA, s.bigIntDH2048P)
 
 	// ServerNonce
-	server_DHInnerData := &mtproto.TLServer_DHInnerData{ Data2: &mtproto.Server_DHInnerData_Data{
+	server_DHInnerData := &mtproto.TLServer_DHInnerData{Data2: &mtproto.Server_DHInnerData_Data{
 		Nonce:       authKeyMD.Nonce,
 		ServerNonce: authKeyMD.ServerNonce,
 		G:           int32(s.dh2048g[0]),
@@ -400,9 +400,9 @@ func (s *handshake) onReq_DHParams(state *zproto.HandshakeState, request *mtprot
 	copy(tmp_aes_key_and_iv[40:], sha1_c[:])
 	copy(tmp_aes_key_and_iv[60:], authKeyMD.NewNonce[:4])
 
-	tmpLen := 20+len(server_DHInnerData_buf)
-	if tmpLen % 16 > 0 {
-		tmpLen = (tmpLen / 16 + 1) * 16
+	tmpLen := 20 + len(server_DHInnerData_buf)
+	if tmpLen%16 > 0 {
+		tmpLen = (tmpLen/16 + 1) * 16
 	} else {
 		tmpLen = 20 + len(server_DHInnerData_buf)
 	}
@@ -415,7 +415,7 @@ func (s *handshake) onReq_DHParams(state *zproto.HandshakeState, request *mtprot
 	e := crypto.NewAES256IGECryptor(tmp_aes_key_and_iv[:32], tmp_aes_key_and_iv[32:64])
 	tmp_encrypted_answer, _ = e.Encrypt(tmp_encrypted_answer)
 
-	server_DHParamsOk := &mtproto.TLServer_DHParamsOk{ Data2: &mtproto.Server_DH_Params_Data{
+	server_DHParamsOk := &mtproto.TLServer_DHParamsOk{Data2: &mtproto.Server_DH_Params_Data{
 		Nonce:           authKeyMD.Nonce,
 		ServerNonce:     authKeyMD.ServerNonce,
 		EncryptedAnswer: string(tmp_encrypted_answer),
@@ -521,15 +521,15 @@ func (s *handshake) onSetClient_DHParams(state *zproto.HandshakeState, request *
 	authKeyAuxHash = append(authKeyAuxHash, sha1_e[:]...)
 
 	// 至此key已经创建成功
-	authKeyId := int64(binary.LittleEndian.Uint64(authKeyAuxHash[len(authKeyMD.NewNonce)+1+12:len(authKeyMD.NewNonce)+1+12+8]))
+	authKeyId := int64(binary.LittleEndian.Uint64(authKeyAuxHash[len(authKeyMD.NewNonce)+1+12 : len(authKeyMD.NewNonce)+1+12+8]))
 
 	// TODO(@benqi): authKeyId生成后要检查在数据库里是否已经存在，有非常小的概率会碰撞
 	// 如果碰撞让客户端重新再来一轮
 
-	dhGenOk := &mtproto.TLDhGenOk{ Data2: &mtproto.SetClient_DHParamsAnswer_Data{
-		Nonce: authKeyMD.Nonce,
-		ServerNonce: authKeyMD.ServerNonce,
-		NewNonceHash1: authKeyAuxHash[len(authKeyAuxHash)-16:len(authKeyAuxHash)],
+	dhGenOk := &mtproto.TLDhGenOk{Data2: &mtproto.SetClient_DHParamsAnswer_Data{
+		Nonce:         authKeyMD.Nonce,
+		ServerNonce:   authKeyMD.ServerNonce,
+		NewNonceHash1: authKeyAuxHash[len(authKeyAuxHash)-16 : len(authKeyAuxHash)],
 	}}
 
 	authKeyMD.AuthKeyId = authKeyId
@@ -538,7 +538,7 @@ func (s *handshake) onSetClient_DHParams(state *zproto.HandshakeState, request *
 	// TODO(@benqi): error 处理
 	do := &dataobject.AuthKeysDO{
 		AuthId: authKeyId,
-		Body:  base64.RawStdEncoding.EncodeToString(authKey),
+		Body:   base64.RawStdEncoding.EncodeToString(authKey),
 	}
 
 	_, err = dao.GetAuthKeysDAO(dao.DB_MASTER).Insert(do)
@@ -563,8 +563,7 @@ func (s *handshake) onSetClient_DHParams(state *zproto.HandshakeState, request *
 	 	handshakeServerSalt->salt <<= 8;
 	 	handshakeServerSalt->salt |= (authNewNonce->bytes[a] ^ authServerNonce->bytes[a]);
 	 }
- 	*/
-
+	*/
 
 	glog.Infof("onSetClient_DHParams - metadata: {%v}, reply: %s", authKeyMD, logger.JsonDebugData(dhGenOk))
 

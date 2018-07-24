@@ -18,18 +18,17 @@
 package file
 
 import (
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dataobject"
 	"fmt"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/base"
-	"math/rand"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
-	"path"
-	"os"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/core"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dataobject"
+	"math/rand"
+	"os"
+	"path"
 	"strings"
 	// "github.com/golang/glog"
 )
-
 
 // inputFile#f52ff27f id:long parts:int name:string md5_checksum:string = InputFile;
 // inputFileBig#fa4f0bb5 id:long parts:int name:string = InputFile;
@@ -76,7 +75,7 @@ func NewFileData(filePartId int64, filePath, uploadName string, fileSize int64, 
 	// os.Rename(core.NBFS_DATA_PATH + filePath)
 	data2.Id = dao.GetFilesDAO(dao.DB_MASTER).Insert(data2)
 
-	err := os.Rename(core.NBFS_DATA_PATH + filePath, core.NBFS_DATA_PATH + data2.FilePath)
+	err := os.Rename(core.NBFS_DATA_PATH+filePath, core.NBFS_DATA_PATH+data2.FilePath)
 	if err != nil {
 		return nil, err
 	}

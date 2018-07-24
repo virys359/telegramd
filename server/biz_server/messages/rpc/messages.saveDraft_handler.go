@@ -19,16 +19,16 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/biz/base"
 )
 
 func makeDraftMessageBySaveDraft(request *mtproto.TLMessagesSaveDraft) *mtproto.TLDraftMessage {
-	return &mtproto.TLDraftMessage{ Data2: &mtproto.DraftMessage_Data{
+	return &mtproto.TLDraftMessage{Data2: &mtproto.DraftMessage_Data{
 		NoWebpage:    request.GetNoWebpage(),
 		ReplyToMsgId: request.GetReplyToMsgId(),
 		Message:      request.GetMessage(),
@@ -46,7 +46,7 @@ func (s *MessagesServiceImpl) MessagesSaveDraft(ctx context.Context, request *mt
 		peer *base.PeerUtil
 	)
 
-	if request.GetPeer().GetConstructor() ==  mtproto.TLConstructor_CRC32_inputPeerSelf {
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
 		peer = &base.PeerUtil{PeerType: base.PEER_USER, PeerId: md.UserId}
 	} else {
 		peer = base.FromInputPeer(request.GetPeer())

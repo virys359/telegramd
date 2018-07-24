@@ -23,17 +23,17 @@ package mysql_client
 
 import (
 	"fmt"
-	"testing"
-	"sync"
-	"time"
 	"log"
+	"sync"
+	"testing"
+	"time"
 )
 
-func TestMysqlPool(t *testing.T){
+func TestMysqlPool(t *testing.T) {
 	mySQLConfig := &MySQLConfig{
-		DSN:"root:1@/nebulaim?charset=utf8",
+		DSN:    "root:1@/nebulaim?charset=utf8",
 		Active: 200,
-		Idle:100,
+		Idle:   100,
 	}
 	mysql := NewSqlxDB(mySQLConfig)
 	defer mysql.Close()
@@ -47,12 +47,12 @@ func TestMysqlPool(t *testing.T){
 
 	var wg sync.WaitGroup
 	var (
-		id int
+		id           int
 		message_data string
 	)
 
 	start := time.Now()
-	for i := 0; i < mySQLConfig.Active -1; i++ {
+	for i := 0; i < mySQLConfig.Active-1; i++ {
 		wg.Add(1)
 		go func(n int) {
 			rows, err := mysql.Query(query)
@@ -81,4 +81,3 @@ func TestMysqlPool(t *testing.T){
 	elapsed := time.Since(start)
 	log.Printf("time: %s", elapsed)
 }
-

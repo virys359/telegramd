@@ -37,9 +37,9 @@ func (m *AccountModel) RegisterDevice(authKeyId int64, userId int32, tokenType i
 	if do == nil {
 		do = &dataobject.DevicesDO{
 			AuthKeyId: authKeyId,
-			UserId: userId,
+			UserId:    userId,
 			TokenType: tokenType,
-			Token: token,
+			Token:     token,
 		}
 		do.Id = m.dao.DevicesDAO.Insert(do)
 	} else {

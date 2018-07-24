@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 )
@@ -32,8 +32,8 @@ func (s *MessagesServiceImpl) MessagesGetFeaturedStickers(ctx context.Context, r
 
 	// TODO(@benqi): Impl MessagesGetFeaturedStickers logic
 	stickers := &mtproto.TLMessagesFeaturedStickers{Data2: &mtproto.Messages_FeaturedStickers_Data{
-		Hash: request.Hash,
-		Sets: []*mtproto.StickerSetCovered{},
+		Hash:   request.Hash,
+		Sets:   []*mtproto.StickerSetCovered{},
 		Unread: []int64{},
 	}}
 

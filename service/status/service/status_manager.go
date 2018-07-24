@@ -18,9 +18,9 @@
 package service
 
 import (
-	"sync"
 	"container/list"
 	"github.com/nebulaim/telegramd/service/status/proto"
+	"sync"
 )
 
 //var (

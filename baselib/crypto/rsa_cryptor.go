@@ -19,8 +19,8 @@ package crypto
 
 import (
 	"crypto/rsa"
-	"encoding/pem"
 	"crypto/x509"
+	"encoding/pem"
 	"math/big"
 )
 
@@ -39,7 +39,7 @@ import (
 
     转成pcks1:
     openssl rsa -in server.key -outform PEM -RSAPublicKey_out -out public_pkcs1.key
- */
+*/
 
 var pkcs1PemPrivateKey = []byte(`
 -----BEGIN RSA PRIVATE KEY-----
@@ -145,7 +145,7 @@ func NewRSACryptor() *RSACryptor {
 	}
 
 	return &RSACryptor{
-		key :	key,
+		key: key,
 	}
 }
 

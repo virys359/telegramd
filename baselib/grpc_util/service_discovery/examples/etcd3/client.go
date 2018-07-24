@@ -18,14 +18,14 @@
 package main
 
 import (
+	"github.com/coreos/etcd/clientv3"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/examples/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"log"
 	"time"
-	"github.com/coreos/etcd/clientv3"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/examples/proto"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
 )
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	}
 	r := etcd3.NewResolver("/grpc-lb", "test", etcdConfg)
 	b := load_balancer.NewBalancer(r, load_balancer.NewRoundRobinSelector())
-	c, err := grpc.Dial("", grpc.WithInsecure(),  grpc.WithBalancer(b), grpc.WithTimeout(time.Second*5))
+	c, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithBalancer(b), grpc.WithTimeout(time.Second*5))
 	if err != nil {
 		log.Printf("grpc dial: %s", err)
 		return

@@ -18,17 +18,17 @@
 package rpc
 
 import (
-	"fmt"
 	"context"
-	"time"
-	"math/rand"
-	"github.com/nebulaim/telegramd/proto/mtproto"
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/core/photo"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/core/file"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/base"
 	document2 "github.com/nebulaim/telegramd/server/nbfs/biz/core/document"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/core/file"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/core/photo"
+	"math/rand"
+	"time"
 )
 
 type PhotoServiceImpl struct {
@@ -118,8 +118,8 @@ func (s *PhotoServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *
 	inputFile := request.GetMedia().GetFile().GetData2()
 
 	var (
-		// reply *mtproto.PhotoDataRsp
-		// isBigFile = request.GetMedia().GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
+	// reply *mtproto.PhotoDataRsp
+	// isBigFile = request.GetMedia().GetFile().GetConstructor() == mtproto.TLConstructor_CRC32_inputFileBig
 	)
 
 	// TODO(@benqi): 出错以后，回滚数据库操作
@@ -255,7 +255,7 @@ func (s *PhotoServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, reques
 
 		thumb = &mtproto.PhotoSize{
 			Constructor: mtproto.TLConstructor_CRC32_photoSize,
-			Data2: szList[0].GetData2(),
+			Data2:       szList[0].GetData2(),
 		}
 		if thumb.Data2.Size == 0 {
 			thumb.Data2.Size = int32(len(thumb.Data2.Bytes))
@@ -270,15 +270,15 @@ func (s *PhotoServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, reques
 	}
 
 	document := &mtproto.TLDocument{Data2: &mtproto.Document_Data{
-		Id:          documentId,
-		AccessHash:  data.AccessHash,
-		Date:        int32(time.Now().Unix()),
-		MimeType:    data.MimeType,
-		Size:        int32(data.FileSize),
-		Thumb:       thumb,
-		DcId:        2,
-		Version:     0,
-		Attributes:  request.GetMedia().GetAttributes(),
+		Id:         documentId,
+		AccessHash: data.AccessHash,
+		Date:       int32(time.Now().Unix()),
+		MimeType:   data.MimeType,
+		Size:       int32(data.FileSize),
+		Thumb:      thumb,
+		DcId:       2,
+		Version:    0,
+		Attributes: request.GetMedia().GetAttributes(),
 	}}
 
 	// messageMediaDocument#7c4414d3 flags:# document:flags.0?Document caption:flags.1?string ttl_seconds:flags.2?int = MessageMedia;

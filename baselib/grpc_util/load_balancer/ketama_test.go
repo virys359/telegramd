@@ -18,8 +18,8 @@
 package load_balancer
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestKetama(t *testing.T) {

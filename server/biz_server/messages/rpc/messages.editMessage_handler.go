@@ -19,16 +19,16 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	message2 "github.com/nebulaim/telegramd/biz/core/message"
 )
 
-func (s *MessagesServiceImpl)makeUpdateEditMessageUpdates(selfUserId int32, message *mtproto.Message) *mtproto.TLUpdates {
+func (s *MessagesServiceImpl) makeUpdateEditMessageUpdates(selfUserId int32, message *mtproto.Message) *mtproto.TLUpdates {
 	userIdList, _, _ := message2.PickAllIDListByMessages([]*mtproto.Message{message})
 	userList := s.UserModel.GetUsersBySelfAndIDList(selfUserId, userIdList)
 

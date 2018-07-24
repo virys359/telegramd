@@ -19,8 +19,8 @@ package account
 
 import (
 	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 )
 
 type accountsDAO struct {

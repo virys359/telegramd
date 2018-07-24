@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	// "github.com/nebulaim/telegramd/biz_server/sync_client"
@@ -36,14 +36,14 @@ func (s *AccountServiceImpl) AccountResetNotifySettings(ctx context.Context, req
 
 	// TODO(@benqi): update notify setting
 	/*
-	 Android client source:
-		} else if (update instanceof TLRPC.TL_updateNotifySettings) {
-			TLRPC.TL_updateNotifySettings updateNotifySettings = (TLRPC.TL_updateNotifySettings) update;
-			if (update.notify_settings instanceof TLRPC.TL_peerNotifySettings && updateNotifySettings.peer instanceof TLRPC.TL_notifyPeer) {
-	           ......
-	        }
-	    }
-	 */
+		 Android client source:
+			} else if (update instanceof TLRPC.TL_updateNotifySettings) {
+				TLRPC.TL_updateNotifySettings updateNotifySettings = (TLRPC.TL_updateNotifySettings) update;
+				if (update.notify_settings instanceof TLRPC.TL_peerNotifySettings && updateNotifySettings.peer instanceof TLRPC.TL_notifyPeer) {
+		           ......
+		        }
+		    }
+	*/
 
 	//peer := &peer2.PeerUtil{}
 	//peer.PeerType = peer2.PEER_ALL

@@ -19,11 +19,11 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/base"
 )
 
 /*
@@ -31,7 +31,7 @@ import (
 	if (ChatObject.isChannel(currentChat) && !currentChat.creator && (!currentChat.megagroup || currentChat.username != null && currentChat.username.length() > 0)) {
 		headerItem.addSubItem(report, LocaleController.getString("ReportChat", R.string.ReportChat));
 	}
- */
+*/
 // account.reportPeer#ae189d5f peer:InputPeer reason:ReportReason = Bool;
 func (s *AccountServiceImpl) AccountReportPeer(ctx context.Context, request *mtproto.TLAccountReportPeer) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
@@ -59,6 +59,6 @@ func (s *AccountServiceImpl) AccountReportPeer(ctx context.Context, request *mtp
 
 	s.AccountModel.InsertReportData(md.UserId, base.PEER_CHANNEL, peer.GetData2().GetChannelId(), int32(reason), text)
 
-	glog.Infof("account.reportPeer#ae189d5f - reply: {true}",)
+	glog.Infof("account.reportPeer#ae189d5f - reply: {true}")
 	return mtproto.ToBool(true), nil
 }

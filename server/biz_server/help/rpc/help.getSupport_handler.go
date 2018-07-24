@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 )
@@ -36,7 +36,7 @@ func (s *HelpServiceImpl) HelpGetSupport(ctx context.Context, request *mtproto.T
 	glog.Infof("help.getSupport#9cdf08cd - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl HelpGetSupport logic
-	reply := &mtproto.TLHelpSupport{ Data2: &mtproto.Help_Support_Data{
+	reply := &mtproto.TLHelpSupport{Data2: &mtproto.Help_Support_Data{
 		PhoneNumber: "+86 111 1111 1111",
 		User:        &mtproto.User{Constructor: mtproto.TLConstructor_CRC32_userEmpty, Data2: &mtproto.User_Data{Id: kSupportUserID}},
 	}}

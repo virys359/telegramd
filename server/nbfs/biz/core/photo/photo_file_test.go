@@ -25,13 +25,13 @@ import (
 	//"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
 	//"image"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"testing"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/core/file"
 	"fmt"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/core/file"
+	"testing"
 )
 
-func init()  {
+func init() {
 	// rand.Seed(time.Now().UnixNano())
 	mysqlConfig1 := mysql_client.MySQLConfig{
 		Name:   "immaster",
@@ -52,7 +52,7 @@ func init()  {
 // go test -v -run=TestUploadPhotoFile
 func TestUploadPhotoFile(t *testing.T) {
 	var (
-		fileId = int64(986511829842923520)
+		fileId     = int64(986511829842923520)
 		accessHash = int64(2540815227215546042)
 	)
 

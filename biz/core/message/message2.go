@@ -18,25 +18,26 @@
 package message
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	// "github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"time"
 	// "github.com/nebulaim/telegramd/baselib/logger"
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	// "github.com/nebulaim/telegramd/biz/core/peer"
+	"github.com/nebulaim/telegramd/biz/core"
 )
 
 const (
-	MESSAGE_TYPE_UNKNOWN = 0
-	MESSAGE_TYPE_MESSAGE_EMPTY = 1
-	MESSAGE_TYPE_MESSAGE = 2
+	MESSAGE_TYPE_UNKNOWN         = 0
+	MESSAGE_TYPE_MESSAGE_EMPTY   = 1
+	MESSAGE_TYPE_MESSAGE         = 2
 	MESSAGE_TYPE_MESSAGE_SERVICE = 3
 )
 const (
@@ -45,11 +46,11 @@ const (
 )
 
 const (
-	PTS_UNKNOWN = 0
-	PTS_MESSAGE_OUTBOX = 1
-	PTS_MESSAGE_INBOX = 2
+	PTS_UNKNOWN             = 0
+	PTS_MESSAGE_OUTBOX      = 1
+	PTS_MESSAGE_INBOX       = 2
 	PTS_READ_HISTORY_OUTBOX = 3
-	PTS_READ_HISTORY_INBOX = 4
+	PTS_READ_HISTORY_INBOX  = 4
 )
 
 /*
@@ -271,7 +272,7 @@ type IDMessage struct {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Loadhistory
-func (m *MessageModel) LoadBackwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
+func (m *MessageModel) LoadBackwardHistoryMessages(userId int32, peerType, peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
 
 	if peerType == base.PEER_CHANNEL {
@@ -326,7 +327,7 @@ func (m *MessageModel) LoadBackwardHistoryMessages(userId int32, peerType , peer
 	return
 }
 
-func (m *MessageModel) LoadForwardHistoryMessages(userId int32, peerType , peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
+func (m *MessageModel) LoadForwardHistoryMessages(userId int32, peerType, peerId int32, offset int32, limit int32) (messages []*mtproto.Message) {
 	// TODO(@benqi): chat and channel
 
 	if peerType == base.PEER_CHANNEL {
@@ -363,7 +364,6 @@ func (m *MessageModel) LoadForwardHistoryMessages(userId int32, peerType , peerI
 		default:
 		}
 
-
 		glog.Infof("GetMessagesByUserIdPeerOffsetLimit - boxesList: %v", doList)
 		if len(doList) == 0 {
 			messages = []*mtproto.Message{}
@@ -389,7 +389,7 @@ func (m *MessageModel) GetMessageByPeerAndMessageId(userId int32, messageId int3
 	return
 }
 
-func (m *MessageModel) GetMessageBoxListByMessageIdList(userId int32, idList []int32) ([]*MessageBox) {
+func (m *MessageModel) GetMessageBoxListByMessageIdList(userId int32, idList []int32) []*MessageBox {
 	doList := m.dao.MessagesDAO.SelectByMessageIdList(userId, idList)
 	boxList := make([]*MessageBox, 0, len(doList))
 	for _, do := range doList {
@@ -407,7 +407,7 @@ func (m *MessageModel) GetMessageBoxListByMessageIdList(userId int32, idList []i
 func (m *MessageModel) GetPeerDialogMessageListByMessageId(userId int32, messageId int32) (messages *InboxMessages) {
 	doList := m.dao.MessagesDAO.SelectPeerDialogMessageListByMessageId(userId, messageId)
 	messages = &InboxMessages{
-		UserIds: make([]int32, 0, len(doList)),
+		UserIds:  make([]int32, 0, len(doList)),
 		Messages: make([]*mtproto.Message, 0, len(doList)),
 	}
 	for _, do := range doList {
@@ -440,7 +440,7 @@ func (m *MessageModel) GetMessagesByPeerAndMessageIdList2(userId int32, idList [
 // sendMessage
 // 所有收件箱信息
 type InboxMessages struct {
-	UserIds []int32
+	UserIds  []int32
 	Messages []*mtproto.Message
 }
 
@@ -460,16 +460,16 @@ type InboxMessages struct {
 func (m *MessageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, clientRandomId int64, message2 *mtproto.Message) (boxId int32, dialogMessageId int64) {
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
-		UserId:fromId,
+		UserId:           fromId,
 		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(fromId))),
-		DialogMessageId: base.NextSnowflakeId(),
-		SenderUserId: fromId,
-		MessageBoxType: MESSAGE_BOX_TYPE_OUTGOING,
-		PeerType: int8(peer.PeerType),
-		PeerId: peer.PeerId,
-		RandomId: clientRandomId,
-		Date2: now,
-		Deleted: 0,
+		DialogMessageId:  core.GetUUID(),
+		SenderUserId:     fromId,
+		MessageBoxType:   MESSAGE_BOX_TYPE_OUTGOING,
+		PeerType:         int8(peer.PeerType),
+		PeerId:           peer.PeerId,
+		RandomId:         clientRandomId,
+		Date2:            now,
+		Deleted:          0,
 	}
 
 	// var mentioned = false
@@ -524,16 +524,16 @@ func (m *MessageModel) SendMessageToInbox(fromId int32, peer *base.PeerUtil, cli
 func (m *MessageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil, clientRandomId, dialogMessageId int64, outboxMessage *mtproto.Message) (*InboxMessages, error) {
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
-		UserId:peer.PeerId,
+		UserId:           peer.PeerId,
 		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
-		DialogMessageId: dialogMessageId,
-		SenderUserId: fromId,
-		MessageBoxType: MESSAGE_BOX_TYPE_INCOMING,
-		PeerType: int8(peer.PeerType),
-		PeerId: peer.PeerId,
-		RandomId: clientRandomId,
-		Date2: now,
-		Deleted: 0,
+		DialogMessageId:  dialogMessageId,
+		SenderUserId:     fromId,
+		MessageBoxType:   MESSAGE_BOX_TYPE_INCOMING,
+		PeerType:         int8(peer.PeerType),
+		PeerId:           peer.PeerId,
+		RandomId:         clientRandomId,
+		Date2:            now,
+		Deleted:          0,
 	}
 
 	inboxMessage := proto.Clone(outboxMessage).(*mtproto.Message)
@@ -589,8 +589,8 @@ func (m *MessageModel) sendChatMessageToInbox(fromId int32, peer *base.PeerUtil,
 		// return
 	}
 	return &InboxMessages{
-		// UserIds: []int32{peer.PeerId},
-		// Messages: []*mtproto.Message{inboxMessage},
+	// UserIds: []int32{peer.PeerId},
+	// Messages: []*mtproto.Message{inboxMessage},
 	}, nil
 }
 
@@ -604,8 +604,8 @@ func (m *MessageModel) sendChannelMessageToInbox(fromId int32, peer *base.PeerUt
 		// return
 	}
 	return &InboxMessages{
-		// UserIds: []int32{peer.PeerId},
-		// Messages: []*mtproto.Message{inboxMessage},
+	// UserIds: []int32{peer.PeerId},
+	// Messages: []*mtproto.Message{inboxMessage},
 	}, nil
 }
 
@@ -635,7 +635,6 @@ func (m *MessageModel) SaveMessage(message *mtproto.Message, userId, messageId i
 	m.dao.MessagesDAO.UpdateMessagesData(string(messageData), userId, messageId)
 	return err
 }
-
 
 func (m *MessageModel) DeleteByMessageIdList(userId int32, idList []int32) {
 	m.dao.MessagesDAO.DeleteMessagesByMessageIdList(userId, idList)

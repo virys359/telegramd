@@ -8,14 +8,14 @@
 package app
 
 import (
-	"testing"
 	"github.com/golang/glog"
 	"sync"
+	"testing"
 )
 
 type NullInstance struct {
 	state int
-	m func()
+	m     func()
 }
 
 func (e *NullInstance) Initialize() error {

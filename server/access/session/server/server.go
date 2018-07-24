@@ -19,21 +19,21 @@ package server
 
 import (
 	"fmt"
-	"time"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/service/idgen/client"
-	"github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/proto/zproto"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/proto/zproto"
+	"github.com/nebulaim/telegramd/service/idgen/client"
 	"github.com/nebulaim/telegramd/service/status/client"
+	"time"
 )
 
 type SessionServer struct {
-	idgen      	   idgen.UUIDGen
+	idgen          idgen.UUIDGen
 	status         status_client.StatusClient
 	server         *zproto.ZProtoServer
 	bizRpcClient   *grpc_util.RPCClient

@@ -18,9 +18,9 @@
 package crypto
 
 import (
-	"crypto/sha256"
-	"crypto/sha1"
 	"crypto/rand"
+	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/hex"
 )
 

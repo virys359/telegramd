@@ -20,11 +20,11 @@ package server
 import (
 	"flag"
 	"fmt"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/BurntSushi/toml"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/zproto"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
+	"github.com/nebulaim/telegramd/proto/zproto"
 )
 
 var (

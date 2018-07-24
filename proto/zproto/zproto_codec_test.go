@@ -18,16 +18,15 @@
 package zproto
 
 import (
-	"testing"
 	"fmt"
 	"hash/crc32"
+	"testing"
 )
 
 func TestCRC32(t *testing.T) {
 	b := []byte("01234567899876543210")
 	b1 := []byte("0123456789")
 	b2 := []byte("9876543210")
-
 
 	fmt.Println(crc32.ChecksumIEEE(b))
 	crc32Hash := crc32.NewIEEE()

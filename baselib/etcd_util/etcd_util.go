@@ -18,9 +18,9 @@
 package etcd_util
 
 import (
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
 	"time"
 )
 
@@ -43,4 +43,3 @@ func NewEtcdRegistry(discovery service_discovery.ServiceDiscoveryServerConfig) (
 
 	return etcd3.NewRegistry(option)
 }
-

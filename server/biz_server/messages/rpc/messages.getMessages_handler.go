@@ -19,11 +19,11 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/message"
 )
 
 // messages.getMessages#4222fa74 id:Vector<int> = messages.Messages;
@@ -38,8 +38,8 @@ func (s *MessagesServiceImpl) MessagesGetMessages(ctx context.Context, request *
 
 	messagesMessages := &mtproto.TLMessagesMessages{Data2: &mtproto.Messages_Messages_Data{
 		Messages: messages,
-		Users: userList,
-		Chats: chatList,
+		Users:    userList,
+		Chats:    chatList,
 	}}
 
 	glog.Infof("messages.getMessages#4222fa74 - reply: %s", logger.JsonDebugData(messagesMessages))

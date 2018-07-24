@@ -32,6 +32,7 @@ type SeqIDGen interface {
 }
 
 type UUIDGenInstance func() UUIDGen
+
 var uuidGenAdapters = make(map[string]UUIDGenInstance)
 
 func UUIDGenRegister(name string, adapter UUIDGenInstance) {
@@ -60,6 +61,7 @@ func NewUUIDGen(adapterName, config string) (adapter UUIDGen, err error) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 type SeqIDGenInstance func() SeqIDGen
+
 var seqIDGenAdapters = make(map[string]SeqIDGenInstance)
 
 func SeqIDGenRegister(name string, adapter SeqIDGenInstance) {

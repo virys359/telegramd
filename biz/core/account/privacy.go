@@ -18,10 +18,10 @@
 package account
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
+	"encoding/json"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"encoding/json"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 /*
@@ -56,7 +56,7 @@ import (
  api:
 	account.getPrivacy#dadbc950 key:InputPrivacyKey = account.PrivacyRules;
 	account.setPrivacy#c9f81ce8 key:InputPrivacyKey rules:Vector<InputPrivacyRule> = account.PrivacyRules;
- */
+*/
 
 /*
 	int newType = currentType;
@@ -75,7 +75,7 @@ import (
 	lastCheckedType = currentType;
 	currentType = newType;
 	updateRows();
- */
+*/
 //
 //type privacyKeyType int8
 //
@@ -133,7 +133,7 @@ func (x PrivacyKeyType) ToPrivacyKey() (key *mtproto.PrivacyKey) {
 ////////////////////////////////////////////////////////////////////////////////////////
 type privacyLogic struct {
 	selfUserId int32
-	dao    *accountsDAO
+	dao        *accountsDAO
 }
 
 func (m *AccountModel) MakePrivacyLogic(userId int32) *privacyLogic {
@@ -174,9 +174,9 @@ func (m privacyLogic) SetPrivacy(key PrivacyKeyType, rules []*mtproto.InputPriva
 	do := m.dao.UserPrivacysDAO.SelectPrivacy(m.selfUserId, int8(key))
 	if do == nil {
 		do := &dataobject.UserPrivacysDO{
-			UserId: m.selfUserId,
+			UserId:  m.selfUserId,
 			KeyType: int8(key),
-			Rules: string(rulesJson),
+			Rules:   string(rulesJson),
 		}
 		m.dao.UserPrivacysDAO.Insert(do)
 	} else {

@@ -19,18 +19,18 @@ package zproto
 
 import (
 	"fmt"
-	"math/rand"
-	"github.com/nebulaim/telegramd/baselib/net2/watcher2"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/baselib/crypto"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/baselib/net2/watcher2"
+	"math/rand"
 )
 
 type ZProtoClientCallBack interface {
 	OnNewClient(client *net2.TcpClient)
-	OnClientMessageArrived(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, msg MessageBase) error
+	OnClientMessageArrived(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, msg MessageBase) error
 	OnClientClosed(client *net2.TcpClient)
 	OnClientTimer(client *net2.TcpClient)
 }
@@ -53,8 +53,8 @@ type ZProtoClient struct {
 
 func NewZProtoClient(protoName string, conf *ZProtoClientConfig, cb ZProtoClientCallBack) *ZProtoClient {
 	clients := map[string][]string{
-		// "session": s.config.SessionClient.AddrList,
-		// s.config.SessionClient.Name: s.config.SessionClient.AddrList,
+	// "session": s.config.SessionClient.AddrList,
+	// s.config.SessionClient.Name: s.config.SessionClient.AddrList,
 	}
 
 	c := &ZProtoClient{
@@ -118,7 +118,7 @@ func (c *ZProtoClient) selectKetama(name string) *load_balancer.Ketama {
 	return nil
 }
 
-func (c *ZProtoClient) SendKetamaMessage(name, key string, md *ZProtoMetadata, msg MessageBase, f func(addr string) ) error {
+func (c *ZProtoClient) SendKetamaMessage(name, key string, md *ZProtoMetadata, msg MessageBase, f func(addr string)) error {
 	ketama := c.selectKetama(name)
 	if ketama == nil {
 		err := fmt.Errorf("not found ketama by name: %s", name)
@@ -250,12 +250,12 @@ func (c *ZProtoClient) OnClientTimer(client *net2.TcpClient) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-func (c *ZProtoClient) onRawPayload(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, payload *ZProtoRawPayload) error {
+func (c *ZProtoClient) onRawPayload(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, payload *ZProtoRawPayload) error {
 	// glog.Info("onRawPayload \n", bytes2.DumpSize(256, payload.Payload))
 
 	var (
 		err error
-		m2 MessageBase
+		m2  MessageBase
 	)
 
 	if c.callback != nil {
@@ -269,65 +269,65 @@ func (c *ZProtoClient) onRawPayload(client *net2.TcpClient, md *ZProtoMetadata, 
 	return err
 }
 
-func (c *ZProtoClient) onPong(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, pong *ZProtoPong) error {
+func (c *ZProtoClient) onPong(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, pong *ZProtoPong) error {
 	glog.Info("onPong: ", pong)
 
 	return nil
 }
 
-func (c *ZProtoClient) onAck(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, ack *ZProtoAck) error {
+func (c *ZProtoClient) onAck(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, ack *ZProtoAck) error {
 	glog.Info("onAck: ", ack)
 
 	return nil
 }
 
-func (c *ZProtoClient) onHandshakeRes(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, handshake *ZProtoHandshakeRes) error {
+func (c *ZProtoClient) onHandshakeRes(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, handshake *ZProtoHandshakeRes) error {
 	glog.Info("onHandshakeRes: ", handshake)
 
 	// TODO(@benqi): check handshake.ProtoRevision
 	return nil
 }
 
-func (c *ZProtoClient) onDrop(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, drop *ZProtoDrop) error {
+func (c *ZProtoClient) onDrop(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, drop *ZProtoDrop) error {
 	glog.Info("onDrop: ", drop)
 
 	// TODO(@benqi): close client
 	return nil
 }
 
-func (c *ZProtoClient) onRedirect(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, redirect *ZProtoRedirect) error {
+func (c *ZProtoClient) onRedirect(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, redirect *ZProtoRedirect) error {
 	glog.Info("onRedirect: ", redirect)
 
 	// TODO(@benqi): close client, redirect
 	return nil
 }
 
-func (c *ZProtoClient) onMarsSignal(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, marsSignal *ZProtoMarsSignal) error {
+func (c *ZProtoClient) onMarsSignal(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, marsSignal *ZProtoMarsSignal) error {
 	glog.Info("onMarsSignal: ", marsSignal)
 
 	// wechat open source mars - marsSignal support
 	return nil
 }
 
-func (c *ZProtoClient) onRpcOk(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, rpcOk *ZProtoRpcOk) error {
+func (c *ZProtoClient) onRpcOk(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, rpcOk *ZProtoRpcOk) error {
 	glog.Info("onRpcOk: ", rpcOk)
 
 	return nil
 }
 
-func (c *ZProtoClient) onRpcError(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, rpcError *ZProtoRpcError) error {
+func (c *ZProtoClient) onRpcError(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, rpcError *ZProtoRpcError) error {
 	glog.Info("onRpcError: ", rpcError)
 
 	return nil
 }
 
-func (c *ZProtoClient) onRpcInternalError(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, rpcError *ZProtoRpcInternalError) error {
+func (c *ZProtoClient) onRpcInternalError(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, rpcError *ZProtoRpcInternalError) error {
 	glog.Info("onRpcInternalError: ", rpcError)
 
 	return nil
 }
 
-func (c *ZProtoClient) onRpcFloodWait(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, rpcError *ZProtoRpcFloodWait) error {
+func (c *ZProtoClient) onRpcFloodWait(client *net2.TcpClient, md *ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, rpcError *ZProtoRpcFloodWait) error {
 	glog.Info("onRpcFloodWait: ", rpcError)
 
 	return nil

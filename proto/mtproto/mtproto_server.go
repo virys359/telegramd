@@ -18,13 +18,13 @@
 package mtproto
 
 import (
+	"fmt"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/etcd_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"net"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/baselib/etcd_util"
-	"fmt"
 )
 
 type MTProtoServerCallback interface {

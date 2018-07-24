@@ -23,22 +23,22 @@ import (
 )
 
 const (
-	PHOTO_SIZE_ORIGINAL	 		= "0"	// client upload original photo
-	PHOTO_SIZE_SMALL_TYPE	 	= "s"
-	PHOTO_SIZE_MEDIUMN_TYPE 	= "m"
-	PHOTO_SIZE_XLARGE_TYPE 		= "x"
-	PHOTO_SIZE_YLARGE_TYPE 		= "y"
-	PHOTO_SIZE_A_TYPE	 		= "a"
-	PHOTO_SIZE_B_TYPE 			= "b"
-	PHOTO_SIZE_C_TYPE 			= "c"
+	PHOTO_SIZE_ORIGINAL     = "0" // client upload original photo
+	PHOTO_SIZE_SMALL_TYPE   = "s"
+	PHOTO_SIZE_MEDIUMN_TYPE = "m"
+	PHOTO_SIZE_XLARGE_TYPE  = "x"
+	PHOTO_SIZE_YLARGE_TYPE  = "y"
+	PHOTO_SIZE_A_TYPE       = "a"
+	PHOTO_SIZE_B_TYPE       = "b"
+	PHOTO_SIZE_C_TYPE       = "c"
 
-	PHOTO_SIZE_SMALL_SIZE	 	= 90
-	PHOTO_SIZE_MEDIUMN_SIZE 	= 320
-	PHOTO_SIZE_XLARGE_SIZE 		= 800
-	PHOTO_SIZE_YLARGE_SIZE 		= 1280
-	PHOTO_SIZE_A_SIZE 			= 160
-	PHOTO_SIZE_B_SIZE 			= 320
-	PHOTO_SIZE_C_SIZE 			= 640
+	PHOTO_SIZE_SMALL_SIZE   = 90
+	PHOTO_SIZE_MEDIUMN_SIZE = 320
+	PHOTO_SIZE_XLARGE_SIZE  = 800
+	PHOTO_SIZE_YLARGE_SIZE  = 1280
+	PHOTO_SIZE_A_SIZE       = 160
+	PHOTO_SIZE_B_SIZE       = 320
+	PHOTO_SIZE_C_SIZE       = 640
 )
 
 /*
@@ -74,7 +74,7 @@ const (
 
 	userProfilePhotoEmpty#4f11bae1 = UserProfilePhoto;
 	userProfilePhoto#d559d8c8 photo_id:long photo_small:FileLocation photo_big:FileLocation = UserProfilePhoto;
- */
+*/
 
 /*
 	storage.fileUnknown#aa963b05 = storage.FileType;
@@ -87,7 +87,7 @@ const (
 	storage.fileMov#4b09ebbc = storage.FileType;
 	storage.fileMp4#b3cea0e4 = storage.FileType;
 	storage.fileWebp#1081464c = storage.FileType;
- */
+*/
 
 //var sizeList = []int{
 //	PHOTO_SIZE_SMALL_SIZE,
@@ -291,9 +291,9 @@ func MakeUserProfilePhoto(photoId int64, sizes []*mtproto.PhotoSize) *mtproto.Us
 
 	// TODO(@benqi): check PhotoSize is photoSizeEmpty
 	photo := &mtproto.TLUserProfilePhoto{Data2: &mtproto.UserProfilePhoto_Data{
-		PhotoId: photoId,
+		PhotoId:    photoId,
 		PhotoSmall: sizes[0].GetData2().GetLocation(),
-		PhotoBig: sizes[len(sizes)-1].GetData2().GetLocation(),
+		PhotoBig:   sizes[len(sizes)-1].GetData2().GetLocation(),
 	}}
 
 	return photo.To_UserProfilePhoto()
@@ -307,9 +307,8 @@ func MakeChatPhoto(sizes []*mtproto.PhotoSize) *mtproto.ChatPhoto {
 	// TODO(@benqi): check PhotoSize is photoSizeEmpty
 	photo := &mtproto.TLChatPhoto{Data2: &mtproto.ChatPhoto_Data{
 		PhotoSmall: sizes[0].GetData2().GetLocation(),
-		PhotoBig: sizes[len(sizes)-1].GetData2().GetLocation(),
+		PhotoBig:   sizes[len(sizes)-1].GetData2().GetLocation(),
 	}}
 
 	return photo.To_ChatPhoto()
 }
-

@@ -18,11 +18,11 @@
 package rpc
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/phone_call"
 	"github.com/nebulaim/telegramd/biz/core/user"
-	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 // Before a voice call is ready, some preliminary actions have to be performed.
@@ -36,6 +36,7 @@ import (
 var (
 	fingerprint uint64 = 12240908862933197005
 )
+
 const (
 	PHONE_STATE_UNKNOWN = iota
 	PHONE_STATE_REQUEST_CALL
@@ -50,10 +51,10 @@ type phoneCallSession struct {
 	participantId         int32
 	participantAccessHash int64
 	date                  int32
-	state                 int 		// phoneCallstate
+	state                 int // phoneCallstate
 	protocol              *mtproto.TLPhoneCallProtocol
-	g_b                   []byte	// acceptCall
-	g_a                   []byte	// confirm
+	g_b                   []byte // acceptCall
+	g_a                   []byte // confirm
 }
 
 // TODO(@benqi): 存储到redis里

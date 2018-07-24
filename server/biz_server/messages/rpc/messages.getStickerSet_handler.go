@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/core/sticker"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"golang.org/x/net/context"
 )
 
 // messages.getStickerSet#2619a90e stickerset:InputStickerSet = messages.StickerSet;
@@ -37,7 +37,7 @@ func (s *MessagesServiceImpl) MessagesGetStickerSet(ctx context.Context, request
 	packs, idList := s.StickerModel.GetStickerPackList(set.GetData2().GetId())
 	var (
 		documents []*mtproto.Document
-		err error
+		err       error
 	)
 
 	if len(idList) == 0 {

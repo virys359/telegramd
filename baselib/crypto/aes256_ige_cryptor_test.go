@@ -18,9 +18,9 @@
 package crypto
 
 import (
-	"testing"
-	"fmt"
 	"encoding/hex"
+	"fmt"
+	"testing"
 )
 
 func TestAES256IGECryptor(t *testing.T) {
@@ -34,7 +34,7 @@ func TestAES256IGECryptor(t *testing.T) {
 
 	MyStringByte := []byte(MyString)
 	i := len(MyStringByte)
-	if i / 16 != 0 {
+	if i/16 != 0 {
 		MyStringByte = append(MyStringByte, make([]byte, 16-i%16)...)
 	}
 

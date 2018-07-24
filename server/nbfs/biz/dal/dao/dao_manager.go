@@ -18,22 +18,22 @@
 package dao
 
 import (
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao/mysql_dao"
-	"github.com/jmoiron/sqlx"
 	"github.com/golang/glog"
+	"github.com/jmoiron/sqlx"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao/mysql_dao"
 	"sync"
 )
 
 const (
-	DB_MASTER 		= "immaster"
-	DB_SLAVE 		= "imslave"
+	DB_MASTER = "immaster"
+	DB_SLAVE  = "imslave"
 )
 
 type MysqlDAOList struct {
-	FilePartsDAO             *mysql_dao.FilePartsDAO
-	FilesDAO                 *mysql_dao.FilesDAO
-	PhotoDatasDAO            *mysql_dao.PhotoDatasDAO
-	DocumentsDAO			 *mysql_dao.DocumentsDAO
+	FilePartsDAO  *mysql_dao.FilePartsDAO
+	FilesDAO      *mysql_dao.FilesDAO
+	PhotoDatasDAO *mysql_dao.PhotoDatasDAO
+	DocumentsDAO  *mysql_dao.DocumentsDAO
 }
 
 // TODO(@benqi): 一主多从
@@ -43,7 +43,7 @@ type MysqlDAOManager struct {
 
 var mysqlDAOManager = &MysqlDAOManager{make(map[string]*MysqlDAOList)}
 
-func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
+func InstallMysqlDAOManager(clients sync.Map /*map[string]*sqlx.DB*/) {
 	clients.Range(func(key, value interface{}) bool {
 		k, _ := key.(string)
 		v, _ := value.(*sqlx.DB)
@@ -60,11 +60,11 @@ func InstallMysqlDAOManager(clients sync.Map/*map[string]*sqlx.DB*/) {
 	})
 }
 
-func  GetMysqlDAOListMap() map[string]*MysqlDAOList {
+func GetMysqlDAOListMap() map[string]*MysqlDAOList {
 	return mysqlDAOManager.daoListMap
 }
 
-func  GetMysqlDAOList(dbName string) (daoList *MysqlDAOList) {
+func GetMysqlDAOList(dbName string) (daoList *MysqlDAOList) {
 	daoList, ok := mysqlDAOManager.daoListMap[dbName]
 	if !ok {
 		glog.Errorf("GetMysqlDAOList - Not found daoList: %s", dbName)

@@ -21,15 +21,15 @@ import (
 	"flag"
 	"github.com/golang/glog"
 
-	auth "github.com/nebulaim/telegramd/biz_server/auth/rpc"
-	"github.com/nebulaim/telegramd/mtproto"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/BurntSushi/toml"
 	"fmt"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/BurntSushi/toml"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	auth "github.com/nebulaim/telegramd/biz_server/auth/rpc"
+	"github.com/nebulaim/telegramd/mtproto"
 	"google.golang.org/grpc"
 )
 
@@ -47,13 +47,13 @@ type RpcServerConfig struct {
 //	Addr string
 //}
 
-type authServerConfig struct{
-	Server 		*RpcServerConfig
+type authServerConfig struct {
+	Server    *RpcServerConfig
 	Discovery service_discovery.ServiceDiscoveryServerConfig
 
 	// RpcClient	*RpcClientConfig
-	Mysql		[]mysql_client.MySQLConfig
-	Redis 		[]redis_client.RedisConfig
+	Mysql []mysql_client.MySQLConfig
+	Redis []redis_client.RedisConfig
 }
 
 // 整合各服务，方便开发调试

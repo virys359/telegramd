@@ -18,20 +18,20 @@
 package rpc
 
 import (
-    "github.com/golang/glog"
-    "github.com/nebulaim/telegramd/proto/mtproto"
-    "golang.org/x/net/context"
-    "fmt"
-    "github.com/nebulaim/telegramd/baselib/grpc_util"
-    "github.com/nebulaim/telegramd/baselib/logger"
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"golang.org/x/net/context"
 )
 
 // messages.getRecentLocations#249431e2 peer:InputPeer limit:int = messages.Messages;
 func (s *MessagesServiceImpl) MessagesGetRecentLocations(ctx context.Context, request *mtproto.TLMessagesGetRecentLocations) (*mtproto.Messages_Messages, error) {
-    md := grpc_util.RpcMetadataFromIncoming(ctx)
-    glog.Infof("MessagesGetRecentLocations - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	md := grpc_util.RpcMetadataFromIncoming(ctx)
+	glog.Infof("MessagesGetRecentLocations - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-    // TODO(@benqi): Impl MessagesGetRecentLocations logic
+	// TODO(@benqi): Impl MessagesGetRecentLocations logic
 
-    return nil, fmt.Errorf("Not impl MessagesGetRecentLocations")
+	return nil, fmt.Errorf("Not impl MessagesGetRecentLocations")
 }

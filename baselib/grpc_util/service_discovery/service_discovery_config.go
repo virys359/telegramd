@@ -23,7 +23,7 @@ import (
 
 type ServiceDiscoveryServerConfig struct {
 	ServiceName string
-	NodeID		string
+	NodeID      string
 	RPCAddr     string
 	EtcdAddrs   []string
 	Interval    base.Duration
@@ -35,4 +35,3 @@ type ServiceDiscoveryClientConfig struct {
 	EtcdAddrs   []string
 	Balancer    string
 }
-

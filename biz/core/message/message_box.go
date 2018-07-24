@@ -18,17 +18,18 @@
 package message
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/biz/base"
 	"encoding/json"
-	"time"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"time"
 	// "github.com/nebulaim/telegramd/biz/model"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/golang/glog"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/core"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 //type InboxMessageList struct {
@@ -67,16 +68,16 @@ type OnInboxSendOK func(int32, int32)
 func (m *MessageModel) CreateMessageOutboxByNew(fromId int32, peer *base.PeerUtil, clientRandomId int64, message2 *mtproto.Message, cb OnOutboxCreated) (box *MessageBox) {
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
-		UserId:fromId,
+		UserId:           fromId,
 		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(fromId))),
-		DialogMessageId: base.NextSnowflakeId(),
-		SenderUserId: fromId,
-		MessageBoxType: MESSAGE_BOX_TYPE_OUTGOING,
-		PeerType: int8(peer.PeerType),
-		PeerId: peer.PeerId,
-		RandomId: clientRandomId,
-		Date2: now,
-		Deleted: 0,
+		DialogMessageId:  core.GetUUID(),
+		SenderUserId:     fromId,
+		MessageBoxType:   MESSAGE_BOX_TYPE_OUTGOING,
+		PeerType:         int8(peer.PeerType),
+		PeerId:           peer.PeerId,
+		RandomId:         clientRandomId,
+		Date2:            now,
+		Deleted:          0,
 	}
 
 	switch message2.GetConstructor() {

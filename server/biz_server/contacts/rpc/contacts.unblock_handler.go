@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // contacts.unblock#e54100bd id:InputUser = Bool;
@@ -34,7 +34,7 @@ func (s *ContactsServiceImpl) ContactsUnblock(ctx context.Context, request *mtpr
 
 	var (
 		blockedId int32
-		id = request.Id
+		id        = request.Id
 	)
 
 	switch id.GetConstructor() {
@@ -58,13 +58,13 @@ func (s *ContactsServiceImpl) ContactsUnblock(ctx context.Context, request *mtpr
 		return nil, err
 	}
 
-	contactLogic :=s.ContactModel.MakeContactLogic(md.UserId)
+	contactLogic := s.ContactModel.MakeContactLogic(md.UserId)
 	unBlocked := contactLogic.UnBlockUser(blockedId)
 
 	if unBlocked {
 		// Sync unblocked: updateUserBlocked
 		updateUserUnBlocked := &mtproto.TLUpdateUserBlocked{Data2: &mtproto.Update_Data{
-			UserId: blockedId,
+			UserId:  blockedId,
 			Blocked: mtproto.ToBool(false),
 		}}
 

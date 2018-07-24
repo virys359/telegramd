@@ -19,14 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
-	"time"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
+	"time"
 )
 
 // photos.uploadProfilePhoto#4f32c098
@@ -52,7 +52,7 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 	// TODO(@benqi): sync update userProfilePhoto
 
 	// fileData := mediaData.GetFile().GetData2()
-	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+	photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 		Id:          result.PhotoId,
 		HasStickers: false,
 		AccessHash:  result.AccessHash, //photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
@@ -66,9 +66,9 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 	}}
 
 	updateUserPhoto := &mtproto.TLUpdateUserPhoto{Data2: &mtproto.Update_Data{
-		UserId: md.UserId,
-		Date: int32(time.Now().Unix()),
-		Photo: photo2.MakeUserProfilePhoto(result.PhotoId, result.SizeList),
+		UserId:   md.UserId,
+		Date:     int32(time.Now().Unix()),
+		Photo:    photo2.MakeUserProfilePhoto(result.PhotoId, result.SizeList),
 		Previous: mtproto.ToBool(false),
 	}}
 	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserPhoto.To_Update())

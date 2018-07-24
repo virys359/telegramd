@@ -18,12 +18,12 @@
 package main
 
 import (
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/nebulaim/telegramd/baselib/app"
-	"github.com/nebulaim/telegramd/proto/zproto"
-	"fmt"
 	"flag"
+	"fmt"
 	"github.com/BurntSushi/toml"
+	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/proto/zproto"
 )
 
 var (
@@ -55,7 +55,7 @@ func (inst *TestClientInsance) OnNewClient(client *net2.TcpClient) {
 
 }
 
-func (inst *TestClientInsance) OnClientMessageArrived(client *net2.TcpClient, md *zproto.ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, msg zproto.MessageBase) error {
+func (inst *TestClientInsance) OnClientMessageArrived(client *net2.TcpClient, md *zproto.ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, msg zproto.MessageBase) error {
 	return nil
 }
 

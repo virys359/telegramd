@@ -18,14 +18,14 @@
 package base
 
 import (
-	"testing"
 	"github.com/BurntSushi/toml"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
-func TestParseDuration(t *testing.T)  {
+func TestParseDuration(t *testing.T) {
 	var d Duration
-	testTable := []string{"2s","10m","2h45m","10us","100ns","20h"}
+	testTable := []string{"2s", "10m", "2h45m", "10us", "100ns", "20h"}
 	for _, v := range testTable {
 		d.UnmarshalText([]byte(v))
 		t.Log(d)
@@ -59,12 +59,12 @@ func TestUnmarshalText(t *testing.T) {
 	//t.Log(result)
 
 	expected := Config{
-		Second:Duration(2000000000),
-		Minute:Duration(600000000000),
-		Mix:Duration(9900000000000),
-		Microsecond:Duration(10000),
-		Nanosecond:Duration(100),
-		Hour:Duration(72000000000000),
+		Second:      Duration(2000000000),
+		Minute:      Duration(600000000000),
+		Mix:         Duration(9900000000000),
+		Microsecond: Duration(10000),
+		Nanosecond:  Duration(100),
+		Hour:        Duration(72000000000000),
 	}
 
 	assert.Equal(t, expected, result)

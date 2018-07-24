@@ -19,11 +19,11 @@ package auth
 
 import (
 	"fmt"
-	"time"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/baselib/crypto"
+	"time"
 )
 
 // TODO(@benqi): 当前测试环境code统一为"12345"
@@ -236,7 +236,7 @@ func (code *phoneCodeData) DoSendCode(phoneRegistered, allowFlashCall, currentNu
 		SentCodeType:     int8(code.sentCodeType),
 		FlashCallPattern: code.flashCallPattern,
 		NextCodeType:     int8(code.nextCodeType),
-		State: 			  kCodeStateSent,
+		State:            kCodeStateSent,
 		ApiId:            apiId,
 		ApiHash:          apiHash,
 		CreatedTime:      time.Now().Unix(),

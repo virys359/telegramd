@@ -18,11 +18,11 @@
 package main
 
 import (
-	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/golang/glog"
-	"net"
 	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/baselib/net2/codec"
+	"net"
 )
 
 func init() {
@@ -30,7 +30,7 @@ func init() {
 }
 
 type EchoServer struct {
-	server* net2.TcpServer
+	server *net2.TcpServer
 }
 
 func NewEchoServer(listener net.Listener, protoName string) *EchoServer {
@@ -44,7 +44,7 @@ func NewEchoServer(listener net.Listener, protoName string) *EchoServer {
 	return s
 }
 
-func (s* EchoServer) Serve() {
+func (s *EchoServer) Serve() {
 	s.server.Serve()
 }
 
@@ -77,28 +77,28 @@ func NewEchoClient(protoName string, clients map[string][]string) *EchoClient {
 	return c
 }
 
-func (c* EchoClient) Serve() {
+func (c *EchoClient) Serve() {
 	c.client.Serve()
 }
 
-func (c* EchoClient) OnNewClient(client *net2.TcpClient) {
+func (c *EchoClient) OnNewClient(client *net2.TcpClient) {
 	glog.Infof("OnNewConnection" + client.GetRemoteName())
 	client.Send("ping\n")
 }
 
-func (c* EchoClient) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
+func (c *EchoClient) OnClientDataArrived(client *net2.TcpClient, msg interface{}) error {
 	glog.Infof("OnDataArrived - recv data: %v client: %s", msg, client.GetRemoteName())
 	return client.Send("ping\n")
 }
 
-func (c* EchoClient) OnClientClosed(client *net2.TcpClient) {
+func (c *EchoClient) OnClientClosed(client *net2.TcpClient) {
 	glog.Infof("OnConnectionClosed" + client.GetRemoteName())
 	if client.AutoReconnect() {
 		client.Reconnect()
 	}
 }
 
-func (c* EchoClient) OnClientTimer(client *net2.TcpClient) {
+func (c *EchoClient) OnClientTimer(client *net2.TcpClient) {
 	glog.Infof("OnTimer")
 }
 
@@ -117,9 +117,9 @@ func (this *EchoInsance) Initialize() error {
 	// this.server = NewEchoServer(listener, "echo")
 
 	clients := map[string][]string{
-		"echo1":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
-		"echo2":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
-		"echo3":[]string{"127.0.0.1:22345", "192.168.1.101:22345"},
+		"echo1": []string{"127.0.0.1:22345", "192.168.1.101:22345"},
+		"echo2": []string{"127.0.0.1:22345", "192.168.1.101:22345"},
+		"echo3": []string{"127.0.0.1:22345", "192.168.1.101:22345"},
 	}
 	this.client = NewEchoClient("echo", clients)
 	return nil
@@ -140,4 +140,3 @@ func main() {
 	// app.AppInstance(instance)
 	app.DoMainAppInstance(instance)
 }
-

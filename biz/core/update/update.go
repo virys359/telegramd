@@ -63,7 +63,7 @@ func NewUpdatesLogicByUpdates(userId int32, updateList []*mtproto.Update) *Updat
 
 // updateShortMessage#914fbf11 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
 // message#44f9b43d flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true post:flags.14?true id:int from_id:flags.8?int to_id:Peer fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int edit_date:flags.15?int post_author:flags.16?string grouped_id:flags.17?long = Message;
-func messageToUpdateShortMessage(message2* mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
+func messageToUpdateShortMessage(message2 *mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
 	// TODO(@benqi): check message2.ToId
 	var (
 		userId int32
@@ -98,22 +98,22 @@ func messageToUpdateShortMessage(message2* mtproto.Message) (shortMessage *mtpro
 	return
 }
 
-func messageToUpdateShortChatMessage(message2* mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
+func messageToUpdateShortChatMessage(message2 *mtproto.Message) (shortMessage *mtproto.TLUpdateShortMessage) {
 	return
 }
 
 //// updateShortSentMessage#11f1331c flags:# out:flags.1?true id:int pts:int pts_count:int date:int media:flags.9?MessageMedia entities:flags.7?Vector<MessageEntity> = Updates;
-func messageToUpdateShortSentMessage(message2* mtproto.Message) (sentMessage *mtproto.TLUpdateShortSentMessage) {
+func messageToUpdateShortSentMessage(message2 *mtproto.Message) (sentMessage *mtproto.TLUpdateShortSentMessage) {
 	switch message2.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_message:
 		message := message2.To_Message()
 		sentMessage = &mtproto.TLUpdateShortSentMessage{Data2: &mtproto.Updates_Data{
 			Out: message.GetOut(),
-			Id:   message.GetId(),
+			Id:  message.GetId(),
 			// Pts:,
 			// PtsCount,
-			Date:         message.GetDate(),
-			Media: message.GetMedia(),
+			Date:     message.GetDate(),
+			Media:    message.GetMedia(),
 			Entities: message.GetEntities(),
 		}}
 	case mtproto.TLConstructor_CRC32_messageService:
@@ -238,7 +238,7 @@ func (this *UpdatesLogic) PushTopUpdateMessageId(messageId int32, randomId int64
 		RandomId: randomId,
 	}}
 
-	updates2 := make([]*mtproto.Update, 0, 1 + len(this.updates))
+	updates2 := make([]*mtproto.Update, 0, 1+len(this.updates))
 	updates2 = append(updates2, updateMessageID.To_Update())
 	this.updates = append(updates2, this.updates...)
 	// this.updates = updates2

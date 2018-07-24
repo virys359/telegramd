@@ -19,14 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"time"
 	// base2 "github.com/nebulaim/telegramd/baselib/helper"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/biz/core/message"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 // updates.getDifference#25939651 flags:# pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
@@ -35,11 +35,11 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	glog.Infof("updates.getDifference#25939651 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var (
-		lastPts = request.GetPts()
+		lastPts      = request.GetPts()
 		otherUpdates []*mtproto.Update
-		messages []*mtproto.Message
-		userList []*mtproto.User
-		chatList []*mtproto.Chat
+		messages     []*mtproto.Message
+		userList     []*mtproto.User
+		chatList     []*mtproto.Chat
 	)
 
 	updateList := update2.GetUpdateListByGtPts(md.UserId, lastPts)
@@ -78,7 +78,7 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 		Date:        int32(time.Now().Unix()),
 		UnreadCount: 0,
 		// Seq:         int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))),
-		Seq:         0,
+		Seq: 0,
 	}}
 	difference := &mtproto.TLUpdatesDifference{Data2: &mtproto.Updates_Difference_Data{
 		NewMessages:  messages,

@@ -18,9 +18,9 @@
 package webpage
 
 import (
-	"testing"
 	"fmt"
 	"net/url"
+	"testing"
 )
 
 func TestGetWebpageOgList(t *testing.T) {
@@ -30,7 +30,7 @@ func TestGetWebpageOgList(t *testing.T) {
 
 func TestUrlParser(t *testing.T) {
 	var (
-		u *url.URL
+		u   *url.URL
 		err error
 	)
 
@@ -39,4 +39,3 @@ func TestUrlParser(t *testing.T) {
 	u, err = url.Parse("https://github.com/nebulaim/telegramd")
 	fmt.Println(u, err)
 }
-

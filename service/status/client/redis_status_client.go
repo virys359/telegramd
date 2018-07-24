@@ -18,18 +18,18 @@
 package status_client
 
 import (
-	"github.com/nebulaim/telegramd/service/status/proto"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"fmt"
-	"strings"
-	"github.com/nebulaim/telegramd/baselib/base"
-	"github.com/golang/glog"
-	"time"
 	"github.com/garyburd/redigo/redis"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
+	"github.com/nebulaim/telegramd/service/status/proto"
+	"strings"
+	"time"
 )
 
 const (
-	onlineKeyPrefix = "online"		//
+	onlineKeyPrefix = "online" //
 )
 
 func makeSessionEntry(userId int32, k, v string) (sess *status.SessionEntry, err error) {
@@ -71,7 +71,6 @@ func NewRedisStatusClient(redis *redis_client.RedisPool) *redisStatusClient {
 	cli := &redisStatusClient{redis}
 	return cli
 }
-
 
 func (c *redisStatusClient) Initialize(config string) error {
 	c.redis = redis_client.GetRedisClient(config)
@@ -116,7 +115,7 @@ func (c *redisStatusClient) SetSessionOffline(userId int32, serverId int32, auth
 
 func (c *redisStatusClient) getOnlineSession(conn redis.Conn, userId int32) (sessList []*status.SessionEntry, err error) {
 	fmt.Printf("%s_%d\n", onlineKeyPrefix, userId)
-	m, err := redis.StringMap(conn.Do("HGETALL", fmt.Sprintf("%s_%d", onlineKeyPrefix, userId)));
+	m, err := redis.StringMap(conn.Do("HGETALL", fmt.Sprintf("%s_%d", onlineKeyPrefix, userId)))
 	if err != nil {
 		glog.Errorf("getOnlineSession - HGETALL {online_%d}, error: %s", userId, err)
 		return
@@ -130,7 +129,7 @@ func (c *redisStatusClient) getOnlineSession(conn redis.Conn, userId int32) (ses
 			continue
 		}
 
-		if time.Now().Unix() < sess.Expired + CHECK_ONLINE_TIMEOUT {
+		if time.Now().Unix() < sess.Expired+CHECK_ONLINE_TIMEOUT {
 			sessList = append(sessList, sess)
 			fmt.Println("getOnlineSession - ", sess)
 		}

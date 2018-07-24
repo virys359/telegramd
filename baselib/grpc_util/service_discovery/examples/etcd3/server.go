@@ -21,8 +21,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/examples/proto"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/examples/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"log"
@@ -124,4 +124,3 @@ func main() {
 	flag.Parse()
 	StartService()
 }
-

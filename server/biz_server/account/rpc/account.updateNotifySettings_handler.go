@@ -19,13 +19,13 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 /*
@@ -44,7 +44,7 @@ import (
 	req.settings.silent = preferences.getBoolean("silent_" + dialog_id, false);
 	req.peer = new TLRPC.TL_inputNotifyPeer();
 	((TLRPC.TL_inputNotifyPeer) req.peer).peer = MessagesController.getInputPeer((int) dialog_id);
- */
+*/
 
 // account.updateNotifySettings#84be5b93 peer:InputNotifyPeer settings:InputPeerNotifySettings = Bool;
 func (s *AccountServiceImpl) AccountUpdateNotifySettings(ctx context.Context, request *mtproto.TLAccountUpdateNotifySettings) (*mtproto.Bool, error) {
@@ -67,7 +67,7 @@ func (s *AccountServiceImpl) AccountUpdateNotifySettings(ctx context.Context, re
 
 	// sync
 	updateNotifySettings := &mtproto.TLUpdateNotifySettings{Data2: &mtproto.Update_Data{
-		Peer_28:        peer.ToNotifyPeer(),
+		Peer_28: peer.ToNotifyPeer(),
 		NotifySettings: &mtproto.PeerNotifySettings{
 			Constructor: mtproto.TLConstructor_CRC32_peerNotifySettings,
 			Data2: &mtproto.PeerNotifySettings_Data{

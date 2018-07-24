@@ -18,11 +18,11 @@
 package service
 
 import (
+	"container/list"
 	"context"
-	"github.com/nebulaim/telegramd/service/status/proto"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"container/list"
+	"github.com/nebulaim/telegramd/service/status/proto"
 )
 
 type statusServiceImpl struct {
@@ -69,7 +69,7 @@ func (s *statusServiceImpl) GetUserOnlineSessions(ctx context.Context, request *
 	}
 
 	glog.Infof("status.GetUserOnlineSessions - reply: %s", logger.JsonDebugData(reply))
-	return reply,  nil
+	return reply, nil
 }
 
 // rpc GetUsersOnlineSessionsList (Int32List) returns (UsersSessionEntryList);

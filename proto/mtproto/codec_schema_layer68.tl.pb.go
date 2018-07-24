@@ -29,17 +29,19 @@ import (
 // "github.com/golang/protobuf/proto"
 )
 
-func NewTLMessagesSearchLayer68() * TLMessagesSearchLayer68 {
+func NewTLMessagesSearchLayer68() *TLMessagesSearchLayer68 {
 	return &TLMessagesSearchLayer68{}
 }
 
-func (m* TLMessagesSearchLayer68) Encode() []byte {
+func (m *TLMessagesSearchLayer68) Encode() []byte {
 	x := NewEncodeBuf(512)
 	x.Int(int32(TLConstructor_CRC32_messages_searchLayer68))
 
 	// flags
 	var flags uint32 = 0
-	if m.FromId != nil { flags |= 1 << 0 }
+	if m.FromId != nil {
+		flags |= 1 << 0
+	}
 	x.UInt(flags)
 
 	x.Bytes(m.Peer.Encode())
@@ -57,7 +59,7 @@ func (m* TLMessagesSearchLayer68) Encode() []byte {
 	return x.buf
 }
 
-func (m* TLMessagesSearchLayer68) Decode(dbuf *DecodeBuf) error {
+func (m *TLMessagesSearchLayer68) Decode(dbuf *DecodeBuf) error {
 	flags := dbuf.UInt()
 	_ = flags
 	m2 := &InputPeer{}

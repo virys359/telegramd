@@ -18,24 +18,24 @@
 package server
 
 import (
-	"net"
-	"sync"
-	"os"
-	"net/http"
-	"reflect"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
+	"net"
+	"net/http"
+	"os"
+	"reflect"
+	"sync"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////
 var _ net.Listener = &HttpListener{}
 
 type HttpListener struct {
-	base         net.Listener
-	acceptChan   chan net.Conn
-	closed       bool
-	closeOnce    sync.Once
-	closeChan    chan struct{}
+	base       net.Listener
+	acceptChan chan net.Conn
+	closed     bool
+	closeOnce  sync.Once
+	closeChan  chan struct{}
 }
 
 func (l *HttpListener) Addr() net.Addr {
@@ -66,7 +66,7 @@ func onMTProtoHttpApiw1(w http.ResponseWriter, req *http.Request) {
 
 	connPtr := writerToConnPtr(w)
 	connMutex.Lock()
-	defer	connMutex.Unlock()
+	defer connMutex.Unlock()
 
 	// Requests can access connections by pointer from the responseWriter object
 	conn, ok := conns[connPtr]
@@ -78,7 +78,7 @@ func onMTProtoHttpApiw1(w http.ResponseWriter, req *http.Request) {
 		conn.(*TcpConnWrapper).RecvChan <- req
 		// _ = conn
 		// _, _ = w.Write([]byte(req.RequestURI + "\n"))
-		msgData, _ := <- conn.(*TcpConnWrapper).SendChan
+		msgData, _ := <-conn.(*TcpConnWrapper).SendChan
 		glog.Info(msgData)
 		w.Write([]byte(msgData.(*http.Request).RequestURI + "\n"))
 		// close(conn.(*TcpConnWrapper).RecvChan)
@@ -142,8 +142,8 @@ func NewMultiProtoHttpCodec(conn *TcpConnWrapper) *MultiProtoHttpCodec {
 	return &MultiProtoHttpCodec{conn}
 }
 
-func (m* MultiProtoHttpCodec) Receive() (interface{}, error) {
-	msgData, ok := <- m.conn.RecvChan
+func (m *MultiProtoHttpCodec) Receive() (interface{}, error) {
+	msgData, ok := <-m.conn.RecvChan
 	glog.Info(msgData, ",  ok: ", ok)
 	// fmt.Errorf()
 	if !ok {
@@ -152,12 +152,11 @@ func (m* MultiProtoHttpCodec) Receive() (interface{}, error) {
 	return msgData, nil
 }
 
-func (m* MultiProtoHttpCodec) Send(msg interface{}) error {
+func (m *MultiProtoHttpCodec) Send(msg interface{}) error {
 	m.conn.SendChan <- msg
 	return nil
 }
 
-func (m* MultiProtoHttpCodec) Close() error {
+func (m *MultiProtoHttpCodec) Close() error {
 	return m.conn.Close()
 }
-

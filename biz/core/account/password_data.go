@@ -18,10 +18,10 @@
 package account
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"encoding/hex"
 	"bytes"
+	"encoding/hex"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 /*
@@ -40,8 +40,7 @@ import (
 	req.new_settings.hint = hint;
 	req.new_settings.new_password_hash = Utilities.computeSHA256(hash, 0, hash.length);
 	req.new_settings.new_salt = new_salt;
- */
-
+*/
 
 // TODO(@benqi): add error code
 // PASSWORD_HASH_INVALID
@@ -58,29 +57,29 @@ import (
 // case 4: email已经验证
 
 const (
-	kStatePasswordNone = 0
-	kStateNoRecoveryPassword = 1
+	kStatePasswordNone             = 0
+	kStateNoRecoveryPassword       = 1
 	kStateEmailUnconfirmedPassword = 2
-	kStateConfirmedPassword = 3
+	kStateConfirmedPassword        = 3
 )
 
 const (
 	kServerSaltLen = 8
-	kSaltLen = 16
-	kHashLen = 32
+	kSaltLen       = 16
+	kHashLen       = 32
 )
 
 type passwordData struct {
-	userId      int32
-	serverSalt  []byte
-	salt        []byte
-	hash        []byte
+	userId     int32
+	serverSalt []byte
+	salt       []byte
+	hash       []byte
 	// TODO(@benqi): process hint
-	hint        string
+	hint string
 	// hasRecovery bool
-	email       string
-	state       int
-	dao         *accountsDAO
+	email string
+	state int
+	dao   *accountsDAO
 }
 
 func makeEMailPattern(email string) string {
@@ -92,7 +91,7 @@ func makeEMailPattern(email string) string {
 
 func (m *AccountModel) MakePasswordData(userId int32) (*passwordData, error) {
 	var (
-		err error
+		err                    error
 		serverSalt, salt, hash []byte
 	)
 
@@ -141,7 +140,6 @@ func (m *AccountModel) MakePasswordData(userId int32) (*passwordData, error) {
 	}
 	return data, nil
 }
-
 
 func (m *AccountModel) CheckRecoverCode(userId int32, code string) error {
 	do := m.dao.UserPasswordsDAO.SelectCode(userId)
@@ -199,10 +197,10 @@ func (p *passwordData) GetPassword() *mtproto.Account_Password {
 		return noPassword.To_Account_Password()
 	case kStateNoRecoveryPassword:
 		password := &mtproto.TLAccountPassword{Data2: &mtproto.Account_Password_Data{
-			NewSalt:                 p.serverSalt,
-			CurrentSalt:             p.salt,
-			Hint:                    p.hint,
-			HasRecovery:             mtproto.ToBool(false),
+			NewSalt:     p.serverSalt,
+			CurrentSalt: p.salt,
+			Hint:        p.hint,
+			HasRecovery: mtproto.ToBool(false),
 			// TODO(@benqi): make pattern
 			EmailUnconfirmedPattern: "",
 		}}
@@ -215,10 +213,10 @@ func (p *passwordData) GetPassword() *mtproto.Account_Password {
 		return noPassword.To_Account_Password()
 	case kStateConfirmedPassword:
 		password := &mtproto.TLAccountPassword{Data2: &mtproto.Account_Password_Data{
-			NewSalt:                 p.serverSalt,
-			CurrentSalt:             p.salt,
-			Hint:                    p.hint,
-			HasRecovery:             mtproto.ToBool(true),
+			NewSalt:     p.serverSalt,
+			CurrentSalt: p.salt,
+			Hint:        p.hint,
+			HasRecovery: mtproto.ToBool(true),
 			// TODO(@benqi): make pattern
 			EmailUnconfirmedPattern: "",
 		}}
@@ -287,7 +285,7 @@ func (p *passwordData) UpdatePasswordSetting(currentPasswordHash, newSalt, newPa
 			return err
 		}
 
-		if len(newPasswordHash) !=0 {
+		if len(newPasswordHash) != 0 {
 			err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NEW_PASSWORD_BAD)
 			glog.Error(err, ": new_password_hash need empty.")
 			return err

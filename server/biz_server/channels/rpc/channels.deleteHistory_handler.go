@@ -18,20 +18,20 @@
 package rpc
 
 import (
-    "github.com/golang/glog"
-    "github.com/nebulaim/telegramd/proto/mtproto"
-    "golang.org/x/net/context"
-    "fmt"
-    "github.com/nebulaim/telegramd/baselib/grpc_util"
-    "github.com/nebulaim/telegramd/baselib/logger"
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"golang.org/x/net/context"
 )
 
 // channels.deleteHistory#af369d42 channel:InputChannel max_id:int = Bool;
 func (s *ChannelsServiceImpl) ChannelsDeleteHistory(ctx context.Context, request *mtproto.TLChannelsDeleteHistory) (*mtproto.Bool, error) {
-    md := grpc_util.RpcMetadataFromIncoming(ctx)
-    glog.Infof("ChannelsDeleteHistory - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	md := grpc_util.RpcMetadataFromIncoming(ctx)
+	glog.Infof("ChannelsDeleteHistory - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-    // TODO(@benqi): Impl ChannelsDeleteHistory logic
+	// TODO(@benqi): Impl ChannelsDeleteHistory logic
 
-    return nil, fmt.Errorf("Not impl ChannelsDeleteHistory")
+	return nil, fmt.Errorf("Not impl ChannelsDeleteHistory")
 }

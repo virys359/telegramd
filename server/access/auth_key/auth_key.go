@@ -18,8 +18,8 @@
 package main
 
 import (
-	"github.com/nebulaim/telegramd/baselib/app"
 	"flag"
+	"github.com/nebulaim/telegramd/baselib/app"
 	"github.com/nebulaim/telegramd/server/access/auth_key/server"
 )
 
@@ -34,4 +34,3 @@ func main() {
 	instance := server.NewAuthKeyServer()
 	app.DoMainAppInstance(instance)
 }
-

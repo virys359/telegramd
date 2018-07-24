@@ -18,10 +18,10 @@
 package document
 
 import (
-	"testing"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"testing"
 )
 
 func TestDocumentAttributes(t *testing.T) {
@@ -37,8 +37,8 @@ func TestDocumentAttributes(t *testing.T) {
 		Stickerset: &mtproto.InputStickerSet{
 			Constructor: mtproto.TLConstructor_CRC32_inputStickerSetID,
 			Data2: &mtproto.InputStickerSet_Data{
-				Id: 835404231795015689,
-				AccessHash:987465871030319816,
+				Id:         835404231795015689,
+				AccessHash: 987465871030319816,
 			},
 		},
 	}}

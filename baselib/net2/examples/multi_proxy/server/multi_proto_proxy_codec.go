@@ -18,14 +18,14 @@
 package server
 
 import (
-	"net"
+	"bytes"
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/net2"
-	"io"
-	"fmt"
-	"bytes"
-	"net/http"
 	"github.com/nebulaim/telegramd/baselib/net2/codec"
+	"io"
+	"net"
+	"net/http"
 	"time"
 )
 

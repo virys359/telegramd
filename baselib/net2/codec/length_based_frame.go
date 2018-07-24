@@ -19,9 +19,9 @@
 package codec
 
 import (
+	"bufio"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"io"
-	"bufio"
 )
 
 func init() {
@@ -31,18 +31,19 @@ func init() {
 const (
 	kDefaultReadBufferSize = 1024
 )
+
 func NewLengthBasedFrame(readBuf int) net2.Protocol {
-	if readBuf <=0 {
+	if readBuf <= 0 {
 		readBuf = kDefaultReadBufferSize
 	}
 
 	return &LengthBasedFrame{
-		readBuf:  readBuf,
+		readBuf: readBuf,
 	}
 }
 
 type LengthBasedFrame struct {
-	readBuf  int
+	readBuf int
 }
 
 func (b *LengthBasedFrame) NewCodec(rw io.ReadWriter) (cc net2.Codec, err error) {

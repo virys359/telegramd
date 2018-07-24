@@ -19,13 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // messages.addChatUser#f9a0aa09 chat_id:int user_id:InputUser fwd_limit:int = Updates;
@@ -34,7 +35,7 @@ func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *
 	glog.Infof("messages.addChatUser#f9a0aa09 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var (
-		err error
+		err           error
 		addChatUserId int32
 	)
 
@@ -57,11 +58,11 @@ func (s *MessagesServiceImpl) MessagesAddChatUser(ctx context.Context, request *
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
-		PeerId: chatLogic.GetChatId(),
+		PeerId:   chatLogic.GetChatId(),
 	}
 
 	addUserMessage := chatLogic.MakeAddUserMessage(md.UserId, addChatUserId)
-	randomId := base.NextSnowflakeId()
+	randomId := core.GetUUID()
 	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, addUserMessage, func(messageId int32) {
 		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})

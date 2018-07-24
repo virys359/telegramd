@@ -16,4 +16,3 @@
  */
 
 package redis_client
-

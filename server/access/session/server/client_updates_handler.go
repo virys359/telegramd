@@ -27,8 +27,8 @@ import (
 
 const (
 	kConnUnknown = 0
-	kTcpConn = 1
-	kHttpConn = 2
+	kTcpConn     = 1
+	kHttpConn    = 2
 )
 
 type clientUpdatesHandler struct {
@@ -58,7 +58,6 @@ func (c *clientUpdatesHandler) SubscribeUpdates(sess *clientSessionHandler, conn
 	// TODO(@benqi): clear
 	glog.Infof("subscribeUpdates -- {last_connID: {%s}, last_sess: {%s}, connID: {%s}}, sess: {%s}",
 		c.tcpConnID, c.session, sess, connID)
-
 
 	if connID.connType == mtproto.TRANSPORT_TCP {
 		c.tcpConnID = connID
@@ -129,8 +128,8 @@ func (c *clientUpdatesHandler) onSyncData(md *zproto.ZProtoMetadata, obj mtproto
 	//case *mtproto.Updates:
 	syncMessage := &pendingMessage{
 		messageId: mtproto.GenerateMessageId(),
-		confirm: true,
-		tl: obj,
+		confirm:   true,
+		tl:        obj,
 	}
 	c.syncMessages = append(c.syncMessages, syncMessage)
 	//default:
@@ -141,7 +140,7 @@ func (c *clientUpdatesHandler) onSyncData(md *zproto.ZProtoMetadata, obj mtproto
 
 	connID := c.getUpdatesConnID()
 
-	if c.session == nil  || connID == nil {
+	if c.session == nil || connID == nil {
 		glog.Error("session not inited.")
 		return
 	}

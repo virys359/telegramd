@@ -18,25 +18,25 @@
 package grpc_util
 
 import (
-	"github.com/golang/glog"
-	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"fmt"
 	"context"
-	"google.golang.org/grpc/metadata"
-	"time"
-	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/codes"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/load_balancer"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"reflect"
+	"time"
 )
 
 const (
-	random = "random"
-	round_robin = "round_robin"
+	random          = "random"
+	round_robin     = "round_robin"
 	consistent_hash = "consistent_hash"
 )
 
@@ -72,7 +72,7 @@ func NewRPCClientByServiceDiscovery(discovery *service_discovery.ServiceDiscover
 		b = load_balancer.NewBalancer(r, load_balancer.NewRoundRobinSelector())
 	}
 
-	c, err = grpc.Dial("", grpc.WithInsecure(),  grpc.WithBalancer(b), grpc.WithTimeout(time.Second*5))
+	c, err = grpc.Dial("", grpc.WithInsecure(), grpc.WithBalancer(b), grpc.WithTimeout(time.Second*5))
 	if err != nil {
 		glog.Error(err)
 		panic(err)
@@ -96,12 +96,12 @@ func NewRPCClient(discovery *service_discovery.ServiceDiscoveryClientConfig) (c 
 	return
 }
 
-func (c* RPCClient) GetClientConn() *grpc.ClientConn {
+func (c *RPCClient) GetClientConn() *grpc.ClientConn {
 	return c.conn
 }
 
 // 通用grpc转发器
-func (c* RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (mtproto.TLObject, error) {
+func (c *RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (mtproto.TLObject, error) {
 	t := mtproto.FindRPCContextTuple(object)
 	if t == nil {
 		err := fmt.Errorf("Invoke error: %v not regist!\n", object)

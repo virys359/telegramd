@@ -18,9 +18,9 @@
 package base
 
 import (
-	"github.com/ttacon/libphonenumber"
 	"fmt"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/ttacon/libphonenumber"
 )
 
 type phoneNumberUtil struct {
@@ -30,7 +30,7 @@ type phoneNumberUtil struct {
 func MakePhoneNumberUtil(number, region string) (*phoneNumberUtil, error) {
 	var (
 		pnumber *libphonenumber.PhoneNumber
-		err error
+		err     error
 	)
 
 	if number == "" {
@@ -133,4 +133,3 @@ func CheckAndGetPhoneNumber(number string) (phoneNumber string, err error) {
 //
 //	return
 //}
-

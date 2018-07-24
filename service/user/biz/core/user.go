@@ -19,14 +19,14 @@ package user
 
 import (
 	"fmt"
-	"time"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/service/user/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/service/user/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	photo2 "github.com/nebulaim/telegramd/service/photo/photo"
+	"github.com/nebulaim/telegramd/service/user/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/service/user/biz/dal/dataobject"
+	"time"
 )
 
 type usersDAO struct {
@@ -370,7 +370,7 @@ func (m *userModel) getUserStatus(userId int32) *mtproto.UserStatus {
 		return mtproto.NewTLUserStatusEmpty().To_UserStatus()
 	}
 
-	if now <= do.LastSeenAt + 5*60 {
+	if now <= do.LastSeenAt+5*60 {
 		status := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
 			Expires: int32(do.LastSeenAt + 5*30),
 		}}
@@ -389,7 +389,7 @@ func makeUserStatusOnline() *mtproto.UserStatus {
 		Constructor: mtproto.TLConstructor_CRC32_userStatusOnline,
 		Data2: &mtproto.UserStatus_Data{
 			// WasOnline: int32(now),
-			Expires:   int32(now + 60),
+			Expires: int32(now + 60),
 		},
 	}
 	return status

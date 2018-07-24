@@ -18,9 +18,9 @@
 package user
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
 )
 
@@ -94,7 +94,6 @@ func (m *UserModel) GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32
 	return
 }
 
-
 func (m *UserModel) GetUserFull(selfUserId int32, userId int32) (userFull *mtproto.TLUserFull) {
 	//TODO(@benqi): 等Link和NotifySettings实现后再来完善
 	//fullUser := &mtproto.TLUserFull{}
@@ -163,11 +162,11 @@ func (m *UserModel) UpdateUserStatus(userId int32, lastSeenAt int64) {
 	rows := m.dao.UserPresencesDAO.UpdateLastSeen(lastSeenAt, 0, userId)
 	if rows == 0 {
 		do := &dataobject.UserPresencesDO{
-			UserId: userId,
-			LastSeenAt: lastSeenAt,
+			UserId:            userId,
+			LastSeenAt:        lastSeenAt,
 			LastSeenAuthKeyId: 0,
-			LastSeenIp: "",
-			CreatedAt: base.NowFormatYMDHMS(),
+			LastSeenIp:        "",
+			CreatedAt:         base.NowFormatYMDHMS(),
 		}
 		m.dao.UserPresencesDAO.Insert(do)
 	}
@@ -180,7 +179,7 @@ func (m *UserModel) GetUserStatus(userId int32) *mtproto.UserStatus {
 		return mtproto.NewTLUserStatusEmpty().To_UserStatus()
 	}
 
-	if now <= do.LastSeenAt + 5*60 {
+	if now <= do.LastSeenAt+5*60 {
 		status := &mtproto.TLUserStatusOnline{Data2: &mtproto.UserStatus_Data{
 			Expires: int32(do.LastSeenAt + 5*30),
 		}}
@@ -192,4 +191,3 @@ func (m *UserModel) GetUserStatus(userId int32) *mtproto.UserStatus {
 		return status.To_UserStatus()
 	}
 }
-

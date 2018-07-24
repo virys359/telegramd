@@ -20,9 +20,9 @@ package model
 import "github.com/nebulaim/telegramd/proto/mtproto"
 
 type LangPacks struct {
-	LangCode    string
-	Version     int32
-	Strings     []*mtproto.LangPackString_Data
+	LangCode          string
+	Version           int32
+	Strings           []*mtproto.LangPackString_Data
 	StringPluralizeds []*mtproto.LangPackString_Data
-	StringDeleteds []*mtproto.LangPackString_Data
+	StringDeleteds    []*mtproto.LangPackString_Data
 }

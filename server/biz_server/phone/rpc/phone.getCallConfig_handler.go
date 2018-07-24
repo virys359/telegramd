@@ -18,12 +18,12 @@
 package rpc
 
 import (
+	"encoding/json"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"encoding/json"
 )
 
 /*
@@ -55,7 +55,7 @@ import (
     "use_system_ns": true,
     "use_system_aec": true
  }
- */
+*/
 
 type callConfigDataJSON struct {
 	AudioFrameSize         int     `json:"audio_frame_size"`

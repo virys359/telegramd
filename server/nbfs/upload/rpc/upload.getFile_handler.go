@@ -20,12 +20,12 @@ package rpc
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
-	photo2 "github.com/nebulaim/telegramd/server/nbfs/biz/core/photo"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/core/document"
+	photo2 "github.com/nebulaim/telegramd/server/nbfs/biz/core/photo"
+	"golang.org/x/net/context"
 )
 
 // upload.getFile#e3a6cfb5 location:InputFileLocation offset:int limit:int = upload.File;
@@ -34,7 +34,7 @@ func (s *UploadServiceImpl) UploadGetFile(ctx context.Context, request *mtproto.
 	glog.Infof("upload.getFile#e3a6cfb5 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 	var (
 		uploadFile *mtproto.Upload_File
-		err error
+		err        error
 	)
 	switch request.GetLocation().GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputFileLocation:

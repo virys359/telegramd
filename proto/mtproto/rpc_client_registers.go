@@ -248,7 +248,7 @@ var rpcContextRegisters = map[string]RPCContextTuple{
 	"TLHelpGetTermsOfService":              RPCContextTuple{"/mtproto.RPCHelp/help_getTermsOfService", func() interface{} { return new(Help_TermsOfService) }},
 	"TLHelpGetCdnConfig":                   RPCContextTuple{"/mtproto.RPCHelp/help_getCdnConfig", func() interface{} { return new(CdnConfig) }},
 	"TLHelpGetRecentMeUrls":                RPCContextTuple{"/mtproto.RPCHelp/help_getRecentMeUrls", func() interface{} { return new(Help_RecentMeUrls) }},
-	"TLHelpGetScheme":                		RPCContextTuple{"/mtproto.RPCHelp/help_getScheme", func() interface{} { return new(Scheme) }},
+	"TLHelpGetScheme":                      RPCContextTuple{"/mtproto.RPCHelp/help_getScheme", func() interface{} { return new(Scheme) }},
 	"TLChannelsGetParticipants":            RPCContextTuple{"/mtproto.RPCChannels/channels_getParticipants", func() interface{} { return new(Channels_ChannelParticipants) }},
 	"TLChannelsGetParticipant":             RPCContextTuple{"/mtproto.RPCChannels/channels_getParticipant", func() interface{} { return new(Channels_ChannelParticipant) }},
 	"TLChannelsExportMessageLink":          RPCContextTuple{"/mtproto.RPCChannels/channels_exportMessageLink", func() interface{} { return new(ExportedMessageLink) }},

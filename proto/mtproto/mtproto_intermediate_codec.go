@@ -21,8 +21,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
-	"io"
 	"github.com/nebulaim/telegramd/baselib/net2"
+	"io"
 )
 
 // https://core.telegram.org/mtproto#tcp-transport

@@ -18,15 +18,16 @@
 package rpc
 
 import (
-	"time"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
+	"time"
 )
 
 // phone.discardCall#78d413a6 peer:InputPhoneCall duration:int reason:PhoneCallDiscardReason connection_id:long = Updates;
@@ -44,10 +45,10 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	}
 
 	phoneCallDiscarded := &mtproto.TLPhoneCallDiscarded{Data2: &mtproto.PhoneCall_Data{
-		Id: callSession.Id,
+		Id:        callSession.Id,
 		NeedDebug: true,
-		Reason: request.GetReason(),
-		Duration: request.GetDuration(),
+		Reason:    request.GetReason(),
+		Duration:  request.GetDuration(),
 	}}
 
 	// var toId int32
@@ -89,7 +90,7 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 		ToId:   peer2.ToPeer(),
 		Action: action.To_MessageAction(),
 	}}
-	randomId := base.NextSnowflakeId()
+	randomId := core.GetUUID()
 	outbox := s.MessageModel.CreateMessageOutboxByNew(callSession.AdminId, peer2, randomId, message.To_Message(), func(messageId int32) {
 		s.UserModel.CreateOrUpdateByOutbox(callSession.AdminId, peer2.PeerType, peer2.PeerId, messageId, false, false)
 	})

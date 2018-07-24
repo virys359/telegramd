@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
 /*
@@ -45,7 +45,7 @@ import (
       users: [ vector<0x0> ],
     },
   },
- */
+*/
 
 // photos.getUserPhotos#91cd32a8 user_id:InputUser offset:int max_id:long limit:int = photos.Photos;
 func (s *PhotosServiceImpl) PhotosGetUserPhotos(ctx context.Context, request *mtproto.TLPhotosGetUserPhotos) (*mtproto.Photos_Photos, error) {
@@ -69,7 +69,7 @@ func (s *PhotosServiceImpl) PhotosGetUserPhotos(ctx context.Context, request *mt
 	for _, photoId := range photoIdList {
 		sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
 		// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
-		photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+		photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 			Id:          photoId,
 			HasStickers: false,
 			AccessHash:  photoId, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),

@@ -29,11 +29,11 @@ import (
 // "github.com/golang/protobuf/proto"
 )
 
-func NewTLHelpGetInviteTextLayer46() * TLHelpGetInviteTextLayer46 {
+func NewTLHelpGetInviteTextLayer46() *TLHelpGetInviteTextLayer46 {
 	return &TLHelpGetInviteTextLayer46{}
 }
 
-func (m* TLHelpGetInviteTextLayer46) Encode() []byte {
+func (m *TLHelpGetInviteTextLayer46) Encode() []byte {
 	x := NewEncodeBuf(512)
 	x.Int(int32(TLConstructor_CRC32_help_getInviteTextLayer46))
 
@@ -42,17 +42,17 @@ func (m* TLHelpGetInviteTextLayer46) Encode() []byte {
 	return x.buf
 }
 
-func (m* TLHelpGetInviteTextLayer46) Decode(dbuf *DecodeBuf) error {
+func (m *TLHelpGetInviteTextLayer46) Decode(dbuf *DecodeBuf) error {
 	m.LangCode = dbuf.String()
 
 	return dbuf.err
 }
 
-func NewTLHelpGetAppUpdateLayer46() * TLHelpGetAppUpdateLayer46 {
+func NewTLHelpGetAppUpdateLayer46() *TLHelpGetAppUpdateLayer46 {
 	return &TLHelpGetAppUpdateLayer46{}
 }
 
-func (m* TLHelpGetAppUpdateLayer46) Encode() []byte {
+func (m *TLHelpGetAppUpdateLayer46) Encode() []byte {
 	x := NewEncodeBuf(512)
 	x.Int(int32(TLConstructor_CRC32_help_getAppUpdateLayer46))
 
@@ -64,7 +64,7 @@ func (m* TLHelpGetAppUpdateLayer46) Encode() []byte {
 	return x.buf
 }
 
-func (m* TLHelpGetAppUpdateLayer46) Decode(dbuf *DecodeBuf) error {
+func (m *TLHelpGetAppUpdateLayer46) Decode(dbuf *DecodeBuf) error {
 	m.DeviceModel = dbuf.String()
 	m.SystemVersion = dbuf.String()
 	m.AppVersion = dbuf.String()

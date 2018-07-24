@@ -18,10 +18,10 @@
 package core
 
 import (
-	"github.com/nebulaim/telegramd/service/contact/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"time"
+	"github.com/nebulaim/telegramd/service/contact/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/service/contact/proto"
+	"time"
 )
 
 // exclude
@@ -103,7 +103,7 @@ func (c *contactLogic) GetContactListByIDList(idList []int32) []contactData {
 func (c *contactLogic) importContact(contact *contact.InputContactData) (imported *contact.ImportedContactData) {
 	var (
 		mutualUpdated = false
-		importers int32
+		importers     int32
 	)
 
 	// TODO(@benqi): phone is me???
@@ -269,7 +269,7 @@ func (c *contactLogic) increasePopularContact(phone string) int32 {
 	if do == nil {
 		// importers = 1
 		do = &dataobject.PopularContactsDO{
-			Phone: phone,
+			Phone:     phone,
 			Importers: 1,
 		}
 		c.dao.PopularContactsDAO.Insert(do)

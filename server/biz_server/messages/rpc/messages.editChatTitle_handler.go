@@ -19,13 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/biz/core"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // messages.editChatTitle#dc452855 chat_id:int title:string = Updates;
@@ -41,7 +42,7 @@ func (s *MessagesServiceImpl) MessagesEditChatTitle(ctx context.Context, request
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
-		PeerId: chatLogic.GetChatId(),
+		PeerId:   chatLogic.GetChatId(),
 	}
 
 	err = chatLogic.EditChatTitle(md.UserId, request.Title)
@@ -52,7 +53,7 @@ func (s *MessagesServiceImpl) MessagesEditChatTitle(ctx context.Context, request
 
 	chatEditMessage := chatLogic.MakeChatEditTitleMessage(md.UserId, request.Title)
 
-	randomId := base.NextSnowflakeId()
+	randomId := core.GetUUID()
 	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, chatEditMessage, func(messageId int32) {
 		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})

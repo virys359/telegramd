@@ -31,11 +31,11 @@ var (
 )
 
 type frontendConfig struct {
-	ServerId      int32 // 服务器ID
-	Server80      *mtproto.MTProtoServerConfig
-	Server443     *mtproto.MTProtoServerConfig
-	Server5222    *mtproto.MTProtoServerConfig
-	Clients		  *zproto.ZProtoClientConfig
+	ServerId   int32 // 服务器ID
+	Server80   *mtproto.MTProtoServerConfig
+	Server443  *mtproto.MTProtoServerConfig
+	Server5222 *mtproto.MTProtoServerConfig
+	Clients    *zproto.ZProtoClientConfig
 }
 
 func (c *frontendConfig) String() string {

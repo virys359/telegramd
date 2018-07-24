@@ -18,13 +18,13 @@
 package mysql_dao
 
 import (
-	"testing"
+	"fmt"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dataobject"
-	"fmt"
+	"testing"
 )
 
-func init()  {
+func init() {
 	mysqlConfig := mysql_client.MySQLConfig{
 		Name:   "immaster",
 		DSN:    "root:@/nebulaim?charset=utf8",

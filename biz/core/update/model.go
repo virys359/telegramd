@@ -22,7 +22,7 @@ import "github.com/nebulaim/telegramd/biz/core"
 /**
   1. peer_user和peer_chat使用user_dialogs存储
   2. channel和super_chat用channel_participants
- */
+*/
 
 type updatesDAO struct {
 	//*mysql_dao.UserContactsDAO

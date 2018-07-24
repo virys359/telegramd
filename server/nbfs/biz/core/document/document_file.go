@@ -18,17 +18,17 @@
 package document
 
 import (
-	"fmt"
-	"os"
-	"time"
-	"math/rand"
 	"encoding/json"
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/core"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/core/photo"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dataobject"
+	"math/rand"
+	"os"
+	"time"
 )
 
 type documentData struct {
@@ -60,7 +60,7 @@ func GetDocumentFileData(id, accessHash int64, version int32, offset, limit int3
 
 	if offset > do.FileSize {
 		limit = 0
-	} else if offset + limit > do.FileSize {
+	} else if offset+limit > do.FileSize {
 		limit = do.FileSize - offset
 	}
 
@@ -80,7 +80,7 @@ func GetDocumentFileData(id, accessHash int64, version int32, offset, limit int3
 	}
 
 	uploadFile := &mtproto.TLUploadFile{Data2: &mtproto.Upload_File_Data{
-		Type: core.MakeStorageFileType(do.Ext),
+		Type:  core.MakeStorageFileType(do.Ext),
 		Mtime: int32(time.Now().Unix()),
 		Bytes: bytes,
 	}}
@@ -89,7 +89,7 @@ func GetDocumentFileData(id, accessHash int64, version int32, offset, limit int3
 
 func makeDocumentByDO(do *dataobject.DocumentsDO) *mtproto.Document {
 	var (
-		thumb *mtproto.PhotoSize
+		thumb    *mtproto.PhotoSize
 		document *mtproto.Document
 	)
 
@@ -117,15 +117,15 @@ func makeDocumentByDO(do *dataobject.DocumentsDO) *mtproto.Document {
 		document = &mtproto.Document{
 			Constructor: mtproto.TLConstructor_CRC32_document,
 			Data2: &mtproto.Document_Data{
-				Id:          do.DocumentId,
-				AccessHash:  do.AccessHash,
-				Date:        int32(time.Now().Unix()),
-				MimeType:    do.MimeType,
-				Size:        do.FileSize,
-				Thumb:       thumb,
-				DcId:        2,
-				Version:     do.Version,
-				Attributes:  attributes.Attributes,
+				Id:         do.DocumentId,
+				AccessHash: do.AccessHash,
+				Date:       int32(time.Now().Unix()),
+				MimeType:   do.MimeType,
+				Size:       do.FileSize,
+				Thumb:      thumb,
+				DcId:       2,
+				Version:    do.Version,
+				Attributes: attributes.Attributes,
 			},
 		}
 	}
@@ -133,7 +133,7 @@ func makeDocumentByDO(do *dataobject.DocumentsDO) *mtproto.Document {
 	return document
 }
 
-func GetDocument(id, accessHash int64, version int32) (*mtproto.Document) {
+func GetDocument(id, accessHash int64, version int32) *mtproto.Document {
 	do := dao.GetDocumentsDAO(dao.DB_SLAVE).SelectByFileLocation(id, accessHash, version)
 	if do == nil {
 		glog.Warning("")
@@ -141,7 +141,7 @@ func GetDocument(id, accessHash int64, version int32) (*mtproto.Document) {
 	return makeDocumentByDO(do)
 }
 
-func GetDocumentList(idList []int64) ([]*mtproto.Document) {
+func GetDocumentList(idList []int64) []*mtproto.Document {
 	doList := dao.GetDocumentsDAO(dao.DB_SLAVE).SelectByIdList(idList)
 	documetList := make([]*mtproto.Document, len(doList))
 	for i := 0; i < len(doList); i++ {

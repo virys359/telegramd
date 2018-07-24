@@ -120,7 +120,7 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_inputFileLocation):                                func() TLObject { return NewTLInputFileLocation() },
 	int32(TLConstructor_CRC32_inputEncryptedFileLocation):                       func() TLObject { return NewTLInputEncryptedFileLocation() },
 	int32(TLConstructor_CRC32_inputDocumentFileLocation):                        func() TLObject { return NewTLInputDocumentFileLocation() },
-	int32(TLConstructor_CRC32_inputDocumentFileLocationLayer11):  				 func() TLObject { return NewTLInputDocumentFileLocationLayer11() },
+	int32(TLConstructor_CRC32_inputDocumentFileLocationLayer11):                 func() TLObject { return NewTLInputDocumentFileLocationLayer11() },
 	int32(TLConstructor_CRC32_inputAppEvent):                                    func() TLObject { return NewTLInputAppEvent() },
 	int32(TLConstructor_CRC32_peerUser):                                         func() TLObject { return NewTLPeerUser() },
 	int32(TLConstructor_CRC32_peerChat):                                         func() TLObject { return NewTLPeerChat() },
@@ -860,7 +860,7 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_help_getConfig):                                   func() TLObject { return NewTLHelpGetConfig() },
 	int32(TLConstructor_CRC32_help_getNearestDc):                                func() TLObject { return NewTLHelpGetNearestDc() },
 	int32(TLConstructor_CRC32_help_getAppUpdate):                                func() TLObject { return NewTLHelpGetAppUpdate() },
-	int32(TLConstructor_CRC32_help_getAppUpdateLayer46):  						 func() TLObject { return NewTLHelpGetAppUpdateLayer46() },
+	int32(TLConstructor_CRC32_help_getAppUpdateLayer46):                         func() TLObject { return NewTLHelpGetAppUpdateLayer46() },
 	int32(TLConstructor_CRC32_help_saveAppLog):                                  func() TLObject { return NewTLHelpSaveAppLog() },
 	int32(TLConstructor_CRC32_help_getInviteText):                               func() TLObject { return NewTLHelpGetInviteText() },
 	int32(TLConstructor_CRC32_help_getSupport):                                  func() TLObject { return NewTLHelpGetSupport() },
@@ -944,17 +944,16 @@ var registers2 = map[int32]newTLObjectFunc{
 	int32(TLConstructor_CRC32_help_getScheme):    func() TLObject { return NewTLHelpGetScheme() },
 
 	// Layer51
-	int32(TLConstructor_CRC32_auth_sendCodeLayer51):  func() TLObject { return NewTLAuthSendCodeLayer51() },
+	int32(TLConstructor_CRC32_auth_sendCodeLayer51): func() TLObject { return NewTLAuthSendCodeLayer51() },
 
 	// Layer46
-	int32(TLConstructor_CRC32_help_getInviteTextLayer46):  func() TLObject { return NewTLHelpGetInviteTextLayer46() },
+	int32(TLConstructor_CRC32_help_getInviteTextLayer46): func() TLObject { return NewTLHelpGetInviteTextLayer46() },
 
 	// Layer68
-	int32(TLConstructor_CRC32_messages_searchLayer68):  func() TLObject { return NewTLMessagesSearchLayer68() },
+	int32(TLConstructor_CRC32_messages_searchLayer68): func() TLObject { return NewTLMessagesSearchLayer68() },
 
 	// Layer2
-	int32(TLConstructor_CRC32_messages_readHistoryLayer2):  func() TLObject { return NewTLMessagesReadHistoryLayer2() },
-
+	int32(TLConstructor_CRC32_messages_readHistoryLayer2): func() TLObject { return NewTLMessagesReadHistoryLayer2() },
 }
 
 func NewTLObjectByClassID(classId int32) TLObject {
@@ -2556,8 +2555,8 @@ func (m *TLFutureSalts) Encode() []byte {
 	x.Int(int32(len(m.GetSalts())))
 	for _, v := range m.GetSalts() {
 		// x.buf = append(x.buf, (*v).Encode()...)
-		
-		// TODO(@benqi): move to parsed_manually_types.go		
+
+		// TODO(@benqi): move to parsed_manually_types.go
 		x.Int(v.GetValidSince())
 		x.Int(v.GetValidUntil())
 		x.Long(v.GetSalt())

@@ -19,10 +19,10 @@ package bytes2
 
 import (
 	"encoding/binary"
+	"encoding/hex"
+	"github.com/golang/glog"
 	"io"
 	"math"
-	"github.com/golang/glog"
-	"encoding/hex"
 )
 
 type BufferInput struct {
@@ -176,10 +176,10 @@ func (m *BufferInput) Bytes(size int) []byte {
 }
 
 func (d *BufferInput) DumpSize(size int) string {
-	if d.off + size > d.size {
+	if d.off+size > d.size {
 		size = d.size - d.off
 	}
-	return hex.Dump(d.buf[d.off:d.off + size])
+	return hex.Dump(d.buf[d.off : d.off+size])
 }
 
 func (d *BufferInput) Dump() string {

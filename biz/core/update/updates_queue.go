@@ -18,53 +18,53 @@
 package updates
 
 import (
-	"time"
-	"github.com/nebulaim/telegramd/proto/mtproto"
+	"encoding/json"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/baselib/base"
-	"encoding/json"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"time"
 	// "github.com/golang/glog"
 	"github.com/golang/glog"
 )
 
 /*
-    private int getUpdateType(TLRPC.Update update) {
-        if (update instanceof TLRPC.TL_updateNewMessage || update instanceof TLRPC.TL_updateReadMessagesContents || update instanceof TLRPC.TL_updateReadHistoryInbox ||
-                update instanceof TLRPC.TL_updateReadHistoryOutbox || update instanceof TLRPC.TL_updateDeleteMessages || update instanceof TLRPC.TL_updateWebPage ||
-                update instanceof TLRPC.TL_updateEditMessage) {
-            return 0;
-        } else if (update instanceof TLRPC.TL_updateNewEncryptedMessage) {
-            return 1;
-        } else if (update instanceof TLRPC.TL_updateNewChannelMessage || update instanceof TLRPC.TL_updateDeleteChannelMessages || update instanceof TLRPC.TL_updateEditChannelMessage ||
-                update instanceof TLRPC.TL_updateChannelWebPage) {
-            return 2;
-        } else {
-            return 3;
-        }
-    }
+   private int getUpdateType(TLRPC.Update update) {
+       if (update instanceof TLRPC.TL_updateNewMessage || update instanceof TLRPC.TL_updateReadMessagesContents || update instanceof TLRPC.TL_updateReadHistoryInbox ||
+               update instanceof TLRPC.TL_updateReadHistoryOutbox || update instanceof TLRPC.TL_updateDeleteMessages || update instanceof TLRPC.TL_updateWebPage ||
+               update instanceof TLRPC.TL_updateEditMessage) {
+           return 0;
+       } else if (update instanceof TLRPC.TL_updateNewEncryptedMessage) {
+           return 1;
+       } else if (update instanceof TLRPC.TL_updateNewChannelMessage || update instanceof TLRPC.TL_updateDeleteChannelMessages || update instanceof TLRPC.TL_updateEditChannelMessage ||
+               update instanceof TLRPC.TL_updateChannelWebPage) {
+           return 2;
+       } else {
+           return 3;
+       }
+   }
 
- */
+*/
 const (
 	PTS_UPDATE_TYPE_UNKNOWN = 0
 
 	// pts
-	PTS_UPDATE_NEW_MESSAGE = 1
-	PTS_UPDATE_DELETE_MESSAGES = 2
-	PTS_UPDATE_READ_HISTORY_OUTBOX = 3
-	PTS_UPDATE_READ_HISTORY_INBOX = 4
-	PTS_UPDATE_WEBPAGE = 5
+	PTS_UPDATE_NEW_MESSAGE          = 1
+	PTS_UPDATE_DELETE_MESSAGES      = 2
+	PTS_UPDATE_READ_HISTORY_OUTBOX  = 3
+	PTS_UPDATE_READ_HISTORY_INBOX   = 4
+	PTS_UPDATE_WEBPAGE              = 5
 	PTS_UPDATE_READ_MESSAGE_CONENTS = 6
-	PTS_UPDATE_EDIT_MESSAGE = 7
+	PTS_UPDATE_EDIT_MESSAGE         = 7
 
 	// qts
 	PTS_UPDATE_NEW_ENCRYPTED_MESSAGE = 8
 
 	// channel pts
-	PTS_UPDATE_NEW_CHANNEL_MESSAGE = 9
+	PTS_UPDATE_NEW_CHANNEL_MESSAGE     = 9
 	PTS_UPDATE_DELETE_CHANNEL_MESSAGES = 9
-	PTS_UPDATE_EDIT_CHANNEL_MESSAGE = 10
-	PTS_UPDATE_EDIT_CHANNEL_WEBPAGE = 11
+	PTS_UPDATE_EDIT_CHANNEL_MESSAGE    = 10
+	PTS_UPDATE_EDIT_CHANNEL_WEBPAGE    = 11
 )
 
 func GetUpdatesState(authKeyId int64, userId int32) *mtproto.TLUpdatesState {

@@ -18,9 +18,9 @@
 package main
 
 import (
-	_ "github.com/nebulaim/telegramd/proto/mtproto"
 	"flag"
 	"github.com/nebulaim/telegramd/baselib/app"
+	_ "github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/sync/server"
 )
 
@@ -36,4 +36,3 @@ func main() {
 	instance := server.NewSyncServer()
 	app.DoMainAppInstance(instance)
 }
-

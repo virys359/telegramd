@@ -20,8 +20,8 @@ package sync_client
 import (
 	"context"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
@@ -61,7 +61,7 @@ func (c *syncClient) SyncOneUpdateData2(serverId int32, authKeyId, sessionId int
 		PushUserId:  pushUserId,
 		ClientMsgId: clientMsgId,
 		Updates:     updates.To_Updates(),
-		RpcResult:   &mtproto.RpcResultData{
+		RpcResult: &mtproto.RpcResultData{
 			AffectedMessages: mtproto.NewTLMessagesAffectedMessages(),
 		},
 	}
@@ -82,7 +82,7 @@ func (c *syncClient) SyncOneUpdateData3(serverId int32, authKeyId, sessionId int
 		PushUserId:  pushUserId,
 		ClientMsgId: clientMsgId,
 		Updates:     updates.To_Updates(),
-		RpcResult:   &mtproto.RpcResultData{
+		RpcResult: &mtproto.RpcResultData{
 			AffectedHistory: mtproto.NewTLMessagesAffectedHistory(),
 		},
 	}
@@ -144,7 +144,7 @@ func (c *syncClient) PushToUserOneUpdateData(pushUserId int32, update *mtproto.U
 	}}
 
 	m := &mtproto.UpdatesRequest{
-		PushType:   mtproto.SyncType_SYNC_TYPE_USER,
+		PushType: mtproto.SyncType_SYNC_TYPE_USER,
 		// AuthKeyId:  authKeyId,
 		// SessionId:  sessionId,
 		PushUserId: pushUserId,
@@ -192,7 +192,7 @@ func (c *syncClient) PushToUserUpdateShortData(pushUserId int32, update *mtproto
 	}}
 
 	m := &mtproto.UpdatesRequest{
-		PushType:   mtproto.SyncType_SYNC_TYPE_USER,
+		PushType: mtproto.SyncType_SYNC_TYPE_USER,
 		// AuthKeyId:  authKeyId,
 		// SessionId:  sessionId,
 		PushUserId: pushUserId,
@@ -240,7 +240,7 @@ func (c *syncClient) PushToUserMeUpdatesData(authKeyId, sessionId int64, pushUse
 
 func (c *syncClient) PushToUserUpdatesData(pushUserId int32, updates *mtproto.Updates) (reply *mtproto.VoidRsp, err error) {
 	m := &mtproto.UpdatesRequest{
-		PushType:   mtproto.SyncType_SYNC_TYPE_USER,
+		PushType: mtproto.SyncType_SYNC_TYPE_USER,
 		// AuthKeyId:  authKeyId,
 		// SessionId:  sessionId,
 		PushUserId: pushUserId,

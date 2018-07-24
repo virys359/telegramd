@@ -17,16 +17,15 @@
 
 package config
 
-type System struct{
+type System struct {
 }
 
 type Logging struct {
 }
 
 type Service struct {
-	Name string
-	Type string
+	Name  string
+	Type  string
 	Proto string
-	Addr string
+	Addr  string
 }
-

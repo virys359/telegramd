@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
 )
 
 /*
@@ -44,7 +44,7 @@ import (
 	} else {
 		needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
 	}
- */
+*/
 
 // account.deleteAccount#418d4e0b reason:string = Bool;
 func (s *AccountServiceImpl) AccountDeleteAccount(ctx context.Context, request *mtproto.TLAccountDeleteAccount) (*mtproto.Bool, error) {

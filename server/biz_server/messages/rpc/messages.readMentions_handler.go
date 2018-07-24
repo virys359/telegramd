@@ -18,20 +18,20 @@
 package rpc
 
 import (
-    "github.com/golang/glog"
-    "github.com/nebulaim/telegramd/proto/mtproto"
-    "golang.org/x/net/context"
-    "fmt"
-    "github.com/nebulaim/telegramd/baselib/grpc_util"
-    "github.com/nebulaim/telegramd/baselib/logger"
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"golang.org/x/net/context"
 )
 
 // messages.readMentions#f0189d3 peer:InputPeer = messages.AffectedHistory;
 func (s *MessagesServiceImpl) MessagesReadMentions(ctx context.Context, request *mtproto.TLMessagesReadMentions) (*mtproto.Messages_AffectedHistory, error) {
-    md := grpc_util.RpcMetadataFromIncoming(ctx)
-    glog.Infof("MessagesReadMentions - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	md := grpc_util.RpcMetadataFromIncoming(ctx)
+	glog.Infof("MessagesReadMentions - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-    // TODO(@benqi): Impl MessagesReadMentions logic
+	// TODO(@benqi): Impl MessagesReadMentions logic
 
-    return nil, fmt.Errorf("Not impl MessagesReadMentions")
+	return nil, fmt.Errorf("Not impl MessagesReadMentions")
 }

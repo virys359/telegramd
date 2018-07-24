@@ -27,7 +27,7 @@ import (
 	//"image"
 )
 
-func init()  {
+func init() {
 	mysqlConfig := mysql_client.MySQLConfig{
 		Name:   "immaster",
 		DSN:    "root:@/nebulaim?charset=utf8",

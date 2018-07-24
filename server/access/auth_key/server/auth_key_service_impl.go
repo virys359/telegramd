@@ -19,11 +19,11 @@ package server
 
 import (
 	"context"
-	"github.com/nebulaim/telegramd/proto/mtproto"
+	"encoding/base64"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
-	"encoding/base64"
 )
 
 type AuthKeyServiceImpl struct {

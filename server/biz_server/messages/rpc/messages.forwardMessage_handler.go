@@ -19,13 +19,13 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // @benqi: android和pc客户端未发现会发送此消息
@@ -38,7 +38,7 @@ func (s *MessagesServiceImpl) MessagesForwardMessage(ctx context.Context, reques
 	var (
 		// fromPeer = helper.FromInputPeer2(md.UserId, request.GetFromPeer())
 
-		peer = base.FromInputPeer2(md.UserId, request.GetPeer())
+		peer              = base.FromInputPeer2(md.UserId, request.GetPeer())
 		messageOutboxList message2.MessageBoxList
 	)
 
@@ -97,7 +97,7 @@ func (s *MessagesServiceImpl) MessagesForwardMessage(ctx context.Context, reques
 			}
 		}
 
-		for k, v := range  inBoxeMap {
+		for k, v := range inBoxeMap {
 
 			syncUpdates = s.makeUpdateNewMessageListUpdates(k, v)
 			sync_client.GetSyncClient().PushToUserUpdatesData(k, syncUpdates.To_Updates())

@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/chat"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 type UpdatesServiceImpl struct {

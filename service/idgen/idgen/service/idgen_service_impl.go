@@ -19,15 +19,15 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/service/idgen/proto"
-	"time"
 	"math/rand"
-	"fmt"
-	"github.com/nebulaim/telegramd/baselib/base"
-	"github.com/coreos/etcd/clientv3"
-	"errors"
+	"time"
 )
 
 const (
@@ -49,7 +49,6 @@ type idgenServiceImpl struct {
 	machineID int64 // 10-bit machine id
 	chProc    chan chan int64
 }
-
 
 func newIDGenServiceImpl(conf *etcdConf) (*idgenServiceImpl, error) {
 	etcd, err := NewEtcd(conf)
@@ -102,7 +101,7 @@ func (s *idgenServiceImpl) initMachineID() {
 
 // uuid generator
 func (s *idgenServiceImpl) uuidTask() {
-	var sn int64     // 12-bit serial no
+	var sn int64      // 12-bit serial no
 	var last_ts int64 // last timestamp
 	for {
 		ret := <-s.chProc

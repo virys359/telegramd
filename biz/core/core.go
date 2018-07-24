@@ -18,22 +18,24 @@
 package core
 
 import (
+	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/service/idgen/client"
 )
 
 const (
-	TOKEN_TYPE_APNS = 1
-	TOKEN_TYPE_GCM = 2
-	TOKEN_TYPE_MPNS = 3
-	TOKEN_TYPE_SIMPLE_PUSH = 4
+	TOKEN_TYPE_APNS         = 1
+	TOKEN_TYPE_GCM          = 2
+	TOKEN_TYPE_MPNS         = 3
+	TOKEN_TYPE_SIMPLE_PUSH  = 4
 	TOKEN_TYPE_UBUNTU_PHONE = 5
-	TOKEN_TYPE_BLACKBERRY = 6
+	TOKEN_TYPE_BLACKBERRY   = 6
 	// Android里使用
 	TOKEN_TYPE_INTERNAL_PUSH = 7
 	// web
 	TOKEN_TYPE_WEB_PUSH = 10
-	TOKEN_TYPE_MAXSIZE = 10
+	TOKEN_TYPE_MAXSIZE  = 10
 )
 
 type CoreModel interface {
@@ -42,6 +44,12 @@ type CoreModel interface {
 }
 
 // type Instance func() Initializer
+var uuidGen idgen.UUIDGen
+
+func GetUUID() (uuid int64) {
+	uuid, _ = uuidGen.GetUUID()
+	return
+}
 
 var models = []CoreModel{}
 
@@ -50,10 +58,12 @@ func RegisterCoreModel(model CoreModel) {
 }
 
 // 必须在mysql／redis等依赖安装完后才能执行
-func InstallCoreModels(inited func()) []CoreModel {
+func InstallCoreModels(serverId int32, inited func()) []CoreModel {
 	if inited != nil {
 		inited()
 	}
+
+	uuidGen, _ = idgen.NewUUIDGen("snowflake", base2.Int32ToString(serverId))
 
 	for _, m := range models {
 		m.InstallModel()

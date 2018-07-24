@@ -23,8 +23,8 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/crypto"
-	"io"
 	"github.com/nebulaim/telegramd/baselib/net2"
+	"io"
 )
 
 type MTProtoAppCodec struct {

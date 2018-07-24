@@ -18,8 +18,8 @@
 package base
 
 import (
-	"reflect"
 	"fmt"
+	"reflect"
 )
 
 func Contains(obj interface{}, target interface{}) (bool, error) {

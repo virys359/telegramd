@@ -18,17 +18,17 @@
 package file
 
 import (
+	"fmt"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/core"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
 	"io/ioutil"
 	"math/rand"
-	"fmt"
-	"time"
 	"testing"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/core"
+	"time"
 )
 
-func init()  {
+func init() {
 	rand.Seed(time.Now().UnixNano())
 	mysqlConfig1 := mysql_client.MySQLConfig{
 		Name:   "immaster",
@@ -56,10 +56,10 @@ func TestSaveFilePart(t *testing.T) {
 
 	sz := len(buf) / kMaxFilePartSize
 
-	var creatorId= rand.Int63()
-	var filePartId= rand.Int63()
+	var creatorId = rand.Int63()
+	var filePartId = rand.Int63()
 
-	var blockSize= kMaxFilePartSize
+	var blockSize = kMaxFilePartSize
 	// = sz % kMaxFilePartSize
 	var uploadFileName string
 

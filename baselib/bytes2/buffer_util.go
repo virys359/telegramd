@@ -18,8 +18,8 @@
 package bytes2
 
 import (
-	"github.com/nebulaim/telegramd/baselib/hack"
 	"encoding/hex"
+	"github.com/nebulaim/telegramd/baselib/hack"
 )
 
 func WriteString(x *BufferOutput, s string) {

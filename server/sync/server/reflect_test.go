@@ -18,10 +18,10 @@
 package server
 
 import (
-	"testing"
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"testing"
 )
 
 func TestReflect(t *testing.T) {

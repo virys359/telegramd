@@ -19,11 +19,11 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/base"
 )
 
 /*
@@ -43,7 +43,7 @@ import (
 	} else {
 		needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + "\n" + error.text);
 	}
- */
+*/
 
 // auth.signIn#bcd51581 phone_number:string phone_code_hash:string phone_code:string = auth.Authorization;
 func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAuthSignIn) (*mtproto.Auth_Authorization, error) {
@@ -52,7 +52,7 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 
 	//// 3. check number
 	//// 客户端发送的手机号格式为: "+86 111 1111 1111"，归一化
-	phoneNumber, err :=  base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
+	phoneNumber, err := base.CheckAndGetPhoneNumber(request.GetPhoneNumber())
 	if err != nil {
 		// PHONE_NUMBER_INVALID
 		glog.Error(err)

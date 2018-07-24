@@ -18,13 +18,13 @@
 package crypto
 
 import (
-	"testing"
-	"fmt"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
-	"crypto/x509"
-	"crypto/rsa"
+	"fmt"
 	"math/big"
+	"testing"
 )
 
 func TestNewRSACryptor(t *testing.T) {

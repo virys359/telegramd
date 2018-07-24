@@ -19,11 +19,11 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/core/account"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 // account.getPrivacy#dadbc950 key:InputPrivacyKey = account.PrivacyRules;
@@ -38,17 +38,17 @@ func (s *AccountServiceImpl) AccountGetPrivacy(ctx context.Context, request *mtp
 	if rulesData == nil {
 		// TODO(@benqi): return nil or empty
 		// rules = mtproto.NewTLAccountPrivacyRules()
-		rules = &mtproto.TLAccountPrivacyRules{ Data2: &mtproto.Account_PrivacyRules_Data{
+		rules = &mtproto.TLAccountPrivacyRules{Data2: &mtproto.Account_PrivacyRules_Data{
 			Rules: []*mtproto.PrivacyRule{mtproto.NewTLPrivacyValueAllowAll().To_PrivacyRule()},
 		}}
 	} else {
 		idList := rulesData.PickAllUserIdList()
 		if len(idList) == 0 {
-			rules = &mtproto.TLAccountPrivacyRules{ Data2: &mtproto.Account_PrivacyRules_Data{
+			rules = &mtproto.TLAccountPrivacyRules{Data2: &mtproto.Account_PrivacyRules_Data{
 				Rules: rulesData.ToPrivacyRuleList(),
 			}}
 		} else {
-			rules = &mtproto.TLAccountPrivacyRules{ Data2: &mtproto.Account_PrivacyRules_Data{
+			rules = &mtproto.TLAccountPrivacyRules{Data2: &mtproto.Account_PrivacyRules_Data{
 				Rules: rulesData.ToPrivacyRuleList(),
 				Users: s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList),
 			}}

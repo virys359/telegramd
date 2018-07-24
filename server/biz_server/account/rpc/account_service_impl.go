@@ -18,8 +18,8 @@
 package rpc
 
 import (
-	"github.com/nebulaim/telegramd/biz/core/account"
 	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/account"
 	"github.com/nebulaim/telegramd/biz/core/user"
 )
 

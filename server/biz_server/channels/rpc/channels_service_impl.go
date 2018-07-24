@@ -20,8 +20,8 @@ package rpc
 import (
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/core/channel"
-	"github.com/nebulaim/telegramd/biz/core/user"
 	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/user"
 )
 
 type ChannelsServiceImpl struct {

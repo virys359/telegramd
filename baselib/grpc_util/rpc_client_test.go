@@ -18,24 +18,24 @@
 package grpc_util
 
 import (
-	"testing"
-	"reflect"
-	"fmt"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/golang/glog"
-	"google.golang.org/grpc"
 	"context"
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"google.golang.org/grpc"
+	"reflect"
+	"testing"
 )
 
 type newRPCReplyFunc func() interface{}
 
-type RPCContextTuple struct  {
-	Method string
+type RPCContextTuple struct {
+	Method       string
 	NewReplyFunc newRPCReplyFunc
 }
 
-var rpcContextRegisters = map[string]RPCContextTuple {
-	"TLAuthSendCode":	RPCContextTuple{
+var rpcContextRegisters = map[string]RPCContextTuple{
+	"TLAuthSendCode": RPCContextTuple{
 		"/rpc.Auth/auth_sentCode", func() interface{} {
 			return new(mtproto.Auth_SentCode)
 		},
@@ -58,7 +58,7 @@ func FindRPCContextTuple(t interface{}) *RPCContextTuple {
 	return &m
 }
 
-func TestReflectTLObject(t *testing.T)  {
+func TestReflectTLObject(t *testing.T) {
 	authSendCode := &mtproto.TLAuthSendCode{}
 
 	rt := reflect.TypeOf(authSendCode)
@@ -69,7 +69,7 @@ func TestReflectTLObject(t *testing.T)  {
 	fmt.Println(rt.Name())
 }
 
-func TestRPCClient(t *testing.T)  {
+func TestRPCClient(t *testing.T) {
 	fmt.Println("TestRPCClient...")
 	conn, err := grpc.Dial("127.0.0.1:10001", grpc.WithInsecure())
 	if err != nil {

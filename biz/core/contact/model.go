@@ -19,8 +19,8 @@ package contact
 
 import (
 	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 )
 
 type ImportedContactData struct {
@@ -46,7 +46,6 @@ type contactsDAO struct {
 	*mysql_dao.UsersDAO
 	*mysql_dao.UnregisteredContactsDAO
 	*mysql_dao.PopularContactsDAO
-
 }
 
 type ContactModel struct {
@@ -62,7 +61,6 @@ func (m *ContactModel) InstallModel() {
 
 func (m *ContactModel) RegisterCallback(cb interface{}) {
 }
-
 
 func (m *ContactModel) CheckContactAndMutualByUserId(selfId, contactId int32) (bool, bool) {
 	do := m.dao.UserContactsDAO.SelectUserContact(selfId, contactId)

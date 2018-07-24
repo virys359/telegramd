@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/core/dialog"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"math"
-	"github.com/nebulaim/telegramd/biz/core/dialog"
 )
 
 // android client request source code
@@ -89,7 +89,7 @@ import (
 			req.offset_peer = new TLRPC.TL_inputPeerEmpty();
 		}
 	}
- */
+*/
 // 由客户端代码: offset_id为当前用户最后一条消息ID，offset_peer为最后一条消息的接收者peer
 // offset_date
 // messages.getDialogs#191ba9c5 flags:# exclude_pinned:flags.0?true offset_date:int offset_id:int offset_peer:InputPeer limit:int = messages.Dialogs;
@@ -114,7 +114,7 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 				panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid"))
 			}
 		}
-	 */
+	*/
 
 	// dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
 	dialogs := s.UserModel.GetDialogsByOffsetId(md.UserId, false, offsetId, request.GetLimit())

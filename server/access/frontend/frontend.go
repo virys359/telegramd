@@ -18,9 +18,9 @@
 package main
 
 import (
+	"flag"
 	"github.com/nebulaim/telegramd/baselib/app"
 	"github.com/nebulaim/telegramd/server/access/frontend/server"
-	"flag"
 )
 
 func init() {

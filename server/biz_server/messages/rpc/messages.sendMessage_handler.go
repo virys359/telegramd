@@ -18,17 +18,17 @@
 package rpc
 
 import (
-	"time"
+	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/gogo/protobuf/proto"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
+	"time"
 )
 
 func makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMessage) (message *mtproto.TLMessage, isWebPageMessage bool) {
@@ -47,9 +47,9 @@ func makeOutboxMessageBySendMessage(fromId int32, peer *base.PeerUtil, request *
 		ToId:         peer.ToPeer(),
 		ReplyToMsgId: request.GetReplyToMsgId(),
 		Message:      request.GetMessage(),
-		ReplyMarkup: request.GetReplyMarkup(),
-		Entities:    request.GetEntities(),
-		Date:        int32(time.Now().Unix()),
+		ReplyMarkup:  request.GetReplyMarkup(),
+		Entities:     request.GetEntities(),
+		Date:         int32(time.Now().Unix()),
 	}}
 
 	// TODO(@benqi): check channel or super chat
@@ -113,7 +113,7 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	// peer
 	var (
 		peer *base.PeerUtil
-		err error
+		err  error
 	)
 
 	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerEmpty {
@@ -135,7 +135,7 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 	outboxMessage, isWebPageMessage := makeOutboxMessageBySendMessage(md.UserId, peer, request)
 	if !isWebPageMessage {
 		var (
-			state *mtproto.ClientUpdatesState
+			state       *mtproto.ClientUpdatesState
 			sentMessage *mtproto.TLUpdateShortSentMessage
 		)
 		if peer.PeerType == base.PEER_USER || peer.PeerType == base.PEER_CHAT {
@@ -228,7 +228,7 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 					pushUpdates.AddChat(s.ChannelModel.GetChannelBySelfID(id, peer.PeerId))
 					sync_client.GetSyncClient().PushToUserUpdatesData(id, pushUpdates.ToUpdates())
 				}
- 			}
+			}
 			glog.Infof("messages.sendMessage#fa88427a - reply: %s", logger.JsonDebugData(syncUpdates))
 			return syncUpdates.ToUpdates(), nil
 		}

@@ -18,9 +18,9 @@
 package core
 
 import (
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/service/contact/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/service/contact/proto"
 )
@@ -83,7 +83,6 @@ func (m *ContactModel) DeleteContacts(selfUserId int32, contactUserIdList []int3
 	logic := m.makeContactLogic(selfUserId)
 	return logic.deleteContacts(contactUserIdList)
 }
-
 
 func (m *ContactModel) BlockUser(selfUserId, id int32) bool {
 	logic := m.makeContactLogic(selfUserId)

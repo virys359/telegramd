@@ -24,16 +24,16 @@ package redis_dao
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
 )
 
 const (
 	// TODO(@benqi): 使用更紧凑的前缀
-	seqUpdatesNgenId = "seq_updates_ngen_"
-	ptsUpdatesNgenId = "pts_updates_ngen_"
-	qtsUpdatesNgenId = "qts_updates_ngen_"
-	boxUpdatesNgenId = "message_box_ngen_"
+	seqUpdatesNgenId        = "seq_updates_ngen_"
+	ptsUpdatesNgenId        = "pts_updates_ngen_"
+	qtsUpdatesNgenId        = "qts_updates_ngen_"
+	boxUpdatesNgenId        = "message_box_ngen_"
 	channelPtsUpdatesNgenId = "channel_pts_updates_ngen_"
 	channelBoxUpdatesNgenId = "channel_message_box_ngen_"
 )

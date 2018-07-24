@@ -21,6 +21,16 @@ import (
 	"flag"
 	"github.com/golang/glog"
 
+	"fmt"
+	"github.com/BurntSushi/toml"
+	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	account "github.com/nebulaim/telegramd/server/biz_server/account/rpc"
 	auth "github.com/nebulaim/telegramd/server/biz_server/auth/rpc"
 	bots "github.com/nebulaim/telegramd/server/biz_server/bots/rpc"
@@ -35,19 +45,9 @@ import (
 	stickers "github.com/nebulaim/telegramd/server/biz_server/stickers/rpc"
 	updates "github.com/nebulaim/telegramd/server/biz_server/updates/rpc"
 	users "github.com/nebulaim/telegramd/server/biz_server/users/rpc"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/BurntSushi/toml"
-	"fmt"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
-	"github.com/nebulaim/telegramd/baselib/app"
-	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"google.golang.org/grpc"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ func (s *messengerServer) Initialize() error {
 	}
 	glog.Info("messengerServer - load conf: ", Conf)
 
-	s.models = core.InstallCoreModels(func() {
+	s.models = core.InstallCoreModels(Conf.ServerId, func() {
 		// 初始化mysql_client、redis_client
 		redis_client.InstallRedisClientManager(Conf.Redis)
 		mysql_client.InstallMysqlClientManager(Conf.Mysql)
@@ -158,4 +158,3 @@ func main() {
 	instance := newMessengerServer()
 	app.DoMainAppInstance(instance)
 }
-

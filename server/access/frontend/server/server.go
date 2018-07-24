@@ -18,15 +18,15 @@
 package server
 
 import (
-	"sync"
-	"time"
+	"fmt"
+	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/proto/zproto"
 	"github.com/nebulaim/telegramd/service/idgen/client"
-	"github.com/golang/glog"
-	"fmt"
+	"sync"
+	"time"
 )
 
 type handshakeState struct {
@@ -43,8 +43,8 @@ type connContext struct {
 	handshakeState *zproto.HandshakeState
 	seqNum         uint64
 
-	sessionAddr    string
-	authKeyId      int64
+	sessionAddr string
+	authKeyId   int64
 }
 
 func (ctx *connContext) getState() int {
@@ -277,9 +277,9 @@ func (s *FrontendServer) genSessionId(conn *net2.TcpConnection) uint64 {
 	if conn.Name() == "frontend443" {
 		// sid = sid | 0 << 60
 	} else if conn.Name() == "frontend80" {
-		sid = sid | 1 << 60
+		sid = sid | 1<<60
 	} else if conn.Name() == "frontend5222" {
-		sid = sid | 2 << 60
+		sid = sid | 2<<60
 	}
 
 	return sid
@@ -345,7 +345,7 @@ func (s *FrontendServer) checkAndSendClientNew(ctx *connContext, conn *net2.TcpC
 	var err error
 	if ctx.sessionAddr == "" {
 		clientNew := &zproto.ZProtoSessionClientNew{
-			// MTPMessage: mmsg,
+		// MTPMessage: mmsg,
 		}
 		err = s.client.SendMessageToAddress("session", kaddr, s.newMetadata(conn), clientNew)
 		if err == nil {
@@ -373,4 +373,3 @@ func (s *FrontendServer) sendClientClosed(conn *net2.TcpConnection) {
 
 	s.client.SendKetamaMessage("session", base.Int64ToString(ctx.authKeyId), s.newMetadata(conn), &zproto.ZProtoSessionClientClosed{}, nil)
 }
-

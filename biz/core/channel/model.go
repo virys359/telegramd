@@ -20,11 +20,11 @@ package channel
 import (
 	"github.com/golang/glog"
 	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 )
 
@@ -92,7 +92,7 @@ func (m *ChannelModel) CheckChannelUserName(id int32, userName string) bool {
 
 	params := map[string]interface{}{
 		"channel_id": id,
-		"user_id": do.Id,
+		"user_id":    do.Id,
 	}
 	return m.dao.CommonDAO.CheckExists("channel_participants", params)
 }
@@ -115,7 +115,7 @@ func (m *ChannelModel) GetChannelBySelfID(selfUserId, channelId int32) (chat *mt
 func (m *ChannelModel) GetChannelParticipantIdList(channelId int32) []int32 {
 	doList := m.dao.ChannelParticipantsDAO.SelectByChannelId(channelId)
 	idList := make([]int32, 0, len(doList))
-	for i := 0; i < len(doList); i++  {
+	for i := 0; i < len(doList); i++ {
 		if doList[i].State == 0 {
 			idList = append(idList, doList[i].UserId)
 		}
@@ -123,7 +123,7 @@ func (m *ChannelModel) GetChannelParticipantIdList(channelId int32) []int32 {
 	return idList
 }
 
-func (m *ChannelModel) GetChannelFullBySelfId(selfUserId int32, channelData *channelLogicData) (*mtproto.TLChannelFull) {
+func (m *ChannelModel) GetChannelFullBySelfId(selfUserId int32, channelData *channelLogicData) *mtproto.TLChannelFull {
 	// TODO(@benqi): nbfs_client
 	var photo *mtproto.Photo
 
@@ -174,11 +174,11 @@ func (m *ChannelModel) GetChannelFullBySelfId(selfUserId int32, channelData *cha
 		Id:                channelData.channel.Id,
 		About:             channelData.channel.Title,
 		ParticipantsCount: channelData.channel.ParticipantCount,
-		AdminsCount:       1,	// TODO(@benqi): calc adminscount
+		AdminsCount:       1, // TODO(@benqi): calc adminscount
 		ChatPhoto:         photo,
 		NotifySettings:    notifySettings,
 		// ExportedInvite:    mtproto.NewTLChatInviteEmpty().To_ExportedChatInvite(), // TODO(@benqi):
-		BotInfo:           []*mtproto.BotInfo{},
+		BotInfo: []*mtproto.BotInfo{},
 	}}
 
 	isAdmin := channelData.checkUserIsAdministrator(selfUserId)

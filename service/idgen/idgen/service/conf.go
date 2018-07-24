@@ -18,11 +18,11 @@
 package service
 
 import (
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/BurntSushi/toml"
 	"flag"
 	"fmt"
+	"github.com/BurntSushi/toml"
 	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 )
 
 var (

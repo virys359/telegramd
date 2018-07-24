@@ -24,9 +24,9 @@
 package mtproto
 
 import (
-	// "encoding/binary"
-	// "fmt"
-	// "github.com/golang/protobuf/proto"
+// "encoding/binary"
+// "fmt"
+// "github.com/golang/protobuf/proto"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,23 +38,21 @@ import (
 func (m *TLInputDocumentFileLocationLayer11) To_InputFileLocation() *InputFileLocation {
 	return &InputFileLocation{
 		Constructor: TLConstructor_CRC32_inputDocumentFileLocationLayer11,
-		Data2: m.Data2,
+		Data2:       m.Data2,
 	}
 }
 
-
 func (m *TLInputDocumentFileLocationLayer11) SetId(v int64) { m.Data2.Id = v }
-func (m *TLInputDocumentFileLocationLayer11) GetId() int64 { return m.Data2.Id }
+func (m *TLInputDocumentFileLocationLayer11) GetId() int64  { return m.Data2.Id }
 
 func (m *TLInputDocumentFileLocationLayer11) SetAccessHash(v int64) { m.Data2.AccessHash = v }
-func (m *TLInputDocumentFileLocationLayer11) GetAccessHash() int64 { return m.Data2.AccessHash }
+func (m *TLInputDocumentFileLocationLayer11) GetAccessHash() int64  { return m.Data2.AccessHash }
 
-
-func NewTLInputDocumentFileLocationLayer11() * TLInputDocumentFileLocationLayer11 {
-	return &TLInputDocumentFileLocationLayer11{ Data2: &InputFileLocation_Data{} }
+func NewTLInputDocumentFileLocationLayer11() *TLInputDocumentFileLocationLayer11 {
+	return &TLInputDocumentFileLocationLayer11{Data2: &InputFileLocation_Data{}}
 }
 
-func (m* TLInputDocumentFileLocationLayer11) Encode() []byte {
+func (m *TLInputDocumentFileLocationLayer11) Encode() []byte {
 	x := NewEncodeBuf(512)
 	x.Int(int32(TLConstructor_CRC32_inputDocumentFileLocationLayer11))
 
@@ -64,7 +62,7 @@ func (m* TLInputDocumentFileLocationLayer11) Encode() []byte {
 	return x.buf
 }
 
-func (m* TLInputDocumentFileLocationLayer11) Decode(dbuf *DecodeBuf) error {
+func (m *TLInputDocumentFileLocationLayer11) Decode(dbuf *DecodeBuf) error {
 	m.SetId(dbuf.Long())
 	m.SetAccessHash(dbuf.Long())
 

@@ -18,13 +18,13 @@
 package status_client
 
 import (
-	"github.com/nebulaim/telegramd/service/status/proto"
 	"fmt"
+	"github.com/nebulaim/telegramd/service/status/proto"
 )
 
 const (
-	ONLINE_TIMEOUT = 60  			// 15秒
-	CHECK_ONLINE_TIMEOUT = 70  		// 17秒, 15+2秒的误差
+	ONLINE_TIMEOUT       = 60 // 15秒
+	CHECK_ONLINE_TIMEOUT = 70 // 17秒, 15+2秒的误差
 	// onlineKeyPrefix = "online"		//
 )
 

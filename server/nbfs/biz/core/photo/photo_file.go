@@ -18,43 +18,42 @@
 package photo
 
 import (
+	"fmt"
 	"github.com/disintegration/imaging"
+	"github.com/golang/glog"
+	base2 "github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dataobject"
 	"image"
-	"fmt"
-	"github.com/golang/glog"
 	"math/rand"
-	base2 "github.com/nebulaim/telegramd/biz/base"
 	// "os"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/core"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
-	"os"
 	"io/ioutil"
+	"os"
 	"time"
 )
 
 const (
+	kPhotoSizeOriginalType = "0" // client upload original photo
+	kPhotoSizeSmallType    = "s"
+	kPhotoSizeMediumType   = "m"
+	kPhotoSizeXLargeType   = "x"
+	kPhotoSizeYLargeType   = "y"
+	kPhotoSizeAType        = "a"
+	kPhotoSizeBType        = "b"
+	kPhotoSizeCType        = "c"
 
-	kPhotoSizeOriginalType      = "0"	// client upload original photo
-	kPhotoSizeSmallType	 		= "s"
-	kPhotoSizeMediumType  		= "m"
-	kPhotoSizeXLargeType 		= "x"
-	kPhotoSizeYLargeType 		= "y"
-	kPhotoSizeAType	 			= "a"
-	kPhotoSizeBType 			= "b"
-	kPhotoSizeCType 			= "c"
+	kPhotoSizeOriginalSize = 0 // client upload original photo
+	kPhotoSizeSmallSize    = 90
+	kPhotoSizeMediumSize   = 320
+	kPhotoSizeXLargeSize   = 800
+	kPhotoSizeYLargeSize   = 1280
+	kPhotoSizeASize        = 160
+	kPhotoSizeBSize        = 320
+	kPhotoSizeCSize        = 640
 
-	kPhotoSizeOriginalSize      = 0		// client upload original photo
-	kPhotoSizeSmallSize	 		= 90
-	kPhotoSizeMediumSize 		= 320
-	kPhotoSizeXLargeSize 		= 800
-	kPhotoSizeYLargeSize 		= 1280
-	kPhotoSizeASize 			= 160
-	kPhotoSizeBSize 			= 320
-	kPhotoSizeCSize 			= 640
-
-	kPhotoSizeAIndex            = 4
+	kPhotoSizeAIndex = 4
 )
 
 var sizeList = []int{
@@ -111,23 +110,22 @@ func getSizeType(idx int) string {
 
 type resizeInfo struct {
 	isWidth bool
-	size int
+	size    int
 }
 
 func makeResizeInfo(img image.Image) resizeInfo {
 	w := img.Bounds().Dx()
 	h := img.Bounds().Dy()
 
-
 	if w >= h {
 		return resizeInfo{
 			isWidth: true,
-			size: w,
+			size:    w,
 		}
 	} else {
 		return resizeInfo{
 			isWidth: false,
-			size : h,
+			size:    h,
 		}
 	}
 }
@@ -197,7 +195,7 @@ func UploadPhotoFile(photoId, accessHash int64, filePath, extName string, isABC 
 			LocalId:    int32(i),
 			AccessHash: rand.Int63(),
 			// Bytes:   []byte{0},
-			Ext:        extName,
+			Ext: extName,
 		}
 
 		if i == 0 {
@@ -245,21 +243,21 @@ func UploadPhotoFile(photoId, accessHash int64, filePath, extName string, isABC 
 					VolumeId: photoDatasDO.VolumeId,
 					LocalId:  int32(i),
 					Secret:   photoDatasDO.AccessHash,
-					DcId: 	photoDatasDO.DcId}}}
+					DcId:     photoDatasDO.DcId}}}
 
 		if i == 0 {
 			continue
 		} else if i == 1 {
 			sizes = append(sizes, &mtproto.PhotoSize{
 				Constructor: mtproto.TLConstructor_CRC32_photoCachedSize,
-				Data2:       photoSizeData,})
+				Data2:       photoSizeData})
 			// TODO(@benqi): 如上预先存起来
 			photoSizeData.Bytes, _ = ioutil.ReadFile(core.NBFS_DATA_PATH + photoDatasDO.FilePath)
 			// photoDatasDO.Bytes
 		} else {
 			sizes = append(sizes, &mtproto.PhotoSize{
 				Constructor: mtproto.TLConstructor_CRC32_photoSize,
-				Data2:       photoSizeData,})
+				Data2:       photoSizeData})
 		}
 	}
 
@@ -319,7 +317,7 @@ func GetPhotoFileData(volumeId int64, localId int32, secret int64, offset int32,
 
 	if offset > do.FileSize {
 		limit = 0
-	} else if offset + limit > do.FileSize {
+	} else if offset+limit > do.FileSize {
 		limit = do.FileSize - offset
 	}
 
@@ -339,7 +337,7 @@ func GetPhotoFileData(volumeId int64, localId int32, secret int64, offset int32,
 	}
 
 	uploadFile := &mtproto.TLUploadFile{Data2: &mtproto.Upload_File_Data{
-		Type: core.MakeStorageFileType(do.Ext),
+		Type:  core.MakeStorageFileType(do.Ext),
 		Mtime: int32(time.Now().Unix()),
 		Bytes: bytes,
 	}}

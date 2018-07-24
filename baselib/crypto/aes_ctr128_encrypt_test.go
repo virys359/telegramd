@@ -18,9 +18,9 @@
 package crypto
 
 import (
+	"encoding/hex"
 	"fmt"
 	"testing"
-	"encoding/hex"
 )
 
 func TestAesCTR128Encrypt(t *testing.T) {
@@ -32,11 +32,10 @@ func TestAesCTR128Encrypt(t *testing.T) {
 	fmt.Printf("We start with a plain text: %s \n", MyString)
 	MyStringByte := []byte(MyString)
 	encryptor, _ := NewAesCTR128Encrypt(key, iv)
-	Encrypted := encryptor.Encrypt(MyStringByte);
+	Encrypted := encryptor.Encrypt(MyStringByte)
 	fmt.Printf("We encrypted the string this way: %s \n", hex.EncodeToString(Encrypted))
 
 	decryptor, _ := NewAesCTR128Encrypt(key, iv)
-	Decrypted := decryptor.Encrypt(MyStringByte);
+	Decrypted := decryptor.Encrypt(MyStringByte)
 	fmt.Printf("Than we have the plain text again: %s \n", string(Decrypted))
 }
-

@@ -56,8 +56,8 @@ const (
 //TRANSPORT_HTTP = 2 // HTTP
 type ClientConnID struct {
 	connType       int
-	clientConnID   uint64 	// client -> frontend netlib connID
-	frontendConnID uint64 	// frontend -> session netlib connID
+	clientConnID   uint64 // client -> frontend netlib connID
+	frontendConnID uint64 // frontend -> session netlib connID
 	// receiveCount   int		// httpReq
 	// sendCount      int		// httpRsp
 }
@@ -97,16 +97,16 @@ type networkSyncMessage struct {
 }
 
 type rpcApiMessages struct {
-	connID     	ClientConnID
-	md         	*zproto.ZProtoMetadata
-	sessionId  	int64
+	connID      ClientConnID
+	md          *zproto.ZProtoMetadata
+	sessionId   int64
 	rpcMessages []*networkApiMessage
 }
 
 type sessionData struct {
-	connID   ClientConnID
-	md       *zproto.ZProtoMetadata
-	buf      []byte
+	connID ClientConnID
+	md     *zproto.ZProtoMetadata
+	buf    []byte
 }
 
 type syncData struct {
@@ -116,13 +116,13 @@ type syncData struct {
 }
 
 type connData struct {
-	isNew    bool
-	connID   ClientConnID
+	isNew  bool
+	connID ClientConnID
 }
 
 ////////////////////////////////////////
 const (
-	// inited --> work --> idle --> quit
+// inited --> work --> idle --> quit
 )
 
 type clientSessionManager struct {
@@ -255,7 +255,6 @@ func (s *clientSessionManager) onSessionClientClosed(connID ClientConnID) error 
 	return nil
 }
 
-
 func (s *clientSessionManager) OnSyncDataArrived(sessionID int64, md *zproto.ZProtoMetadata, data *messageData) error {
 	select {
 	case s.sessionDataChan <- &syncData{sessionID, md, data}:
@@ -280,7 +279,7 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 
 	glog.Infof("sessionDataChan: ", message)
 
-	if message.MessageId & 0xffffffff == 0 {
+	if message.MessageId&0xffffffff == 0 {
 		err = fmt.Errorf("the lower 32 bits of msg_id passed by the client must not be empty: %d", message.MessageId)
 		glog.Error(err)
 
@@ -307,31 +306,31 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 	}
 
 	/*
-	//=============================================================================================
-	// Check Message Sequence Number (msg_seqno)
-	//
-	// https://core.telegram.org/mtproto/description#message-sequence-number-msg-seqno
-	// Message Sequence Number (msg_seqno)
-	//
-	// A 32-bit number equal to twice the number of “content-related” messages
-	// (those requiring acknowledgment, and in particular those that are not containers)
-	// created by the sender prior to this message and subsequently incremented
-	// by one if the current message is a content-related message.
-	// A container is always generated after its entire contents; therefore,
-	// its sequence number is greater than or equal to the sequence numbers of the messages contained in it.
-	//
+		//=============================================================================================
+		// Check Message Sequence Number (msg_seqno)
+		//
+		// https://core.telegram.org/mtproto/description#message-sequence-number-msg-seqno
+		// Message Sequence Number (msg_seqno)
+		//
+		// A 32-bit number equal to twice the number of “content-related” messages
+		// (those requiring acknowledgment, and in particular those that are not containers)
+		// created by the sender prior to this message and subsequently incremented
+		// by one if the current message is a content-related message.
+		// A container is always generated after its entire contents; therefore,
+		// its sequence number is greater than or equal to the sequence numbers of the messages contained in it.
+		//
 
-	if message.SeqNo < sess.lastSeqNo {
-		err = fmt.Errorf("sequence number is greater than or equal to the sequence numbers of the messages contained in it: %d", message.SeqNo)
-		glog.Error(err)
+		if message.SeqNo < sess.lastSeqNo {
+			err = fmt.Errorf("sequence number is greater than or equal to the sequence numbers of the messages contained in it: %d", message.SeqNo)
+			glog.Error(err)
 
-		// TODO(@benqi): ignore this message or close client conn??
-		return
-	}
-	sess.lastSeqNo = message.SeqNo
+			// TODO(@benqi): ignore this message or close client conn??
+			return
+		}
+		sess.lastSeqNo = message.SeqNo
 
-	sess.onMessageData(sessionMsg.md, message.MessageId, message.SeqNo, message.Object)
-    */
+		sess.onMessageData(sessionMsg.md, message.MessageId, message.SeqNo, message.Object)
+	*/
 
 	var messages = &messageListWrapper{[]*mtproto.TLMessage2{}}
 	extractClientMessage(message.MessageId, message.SeqNo, message.Object, messages, func(layer int32) {

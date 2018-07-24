@@ -29,4 +29,3 @@ func main() {
 
 	app.DoMainAppInstance(service.NewStatusServer())
 }
-

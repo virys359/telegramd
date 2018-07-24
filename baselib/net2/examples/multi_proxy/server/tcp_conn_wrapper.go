@@ -19,10 +19,10 @@ package server
 
 import (
 	"bufio"
+	"github.com/golang/glog"
 	"net"
 	"sync"
 	"time"
-	"github.com/golang/glog"
 )
 
 type TcpConnWrapper struct {
@@ -33,7 +33,6 @@ type TcpConnWrapper struct {
 	closeOnce sync.Once
 	RecvChan  chan interface{}
 	SendChan  chan interface{}
-
 }
 
 func NewTcpConnWrapper(base net.Conn) (conn *TcpConnWrapper) {
@@ -41,8 +40,8 @@ func NewTcpConnWrapper(base net.Conn) (conn *TcpConnWrapper) {
 		base:      base,
 		r:         bufio.NewReaderSize(base, 1024),
 		closeChan: make(chan struct{}),
-		RecvChan:   make(chan interface{}),
-		SendChan:   make(chan interface{}),
+		RecvChan:  make(chan interface{}),
+		SendChan:  make(chan interface{}),
 	}
 }
 

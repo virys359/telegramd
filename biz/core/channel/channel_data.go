@@ -18,27 +18,27 @@
 package channel
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"time"
-	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"math/rand"
 	"fmt"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"math/rand"
+	"time"
 	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 	"encoding/base64"
+	"github.com/nebulaim/telegramd/baselib/crypto"
 	// photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"github.com/nebulaim/telegramd/biz/core"
 )
 
 const (
-	kChannelParticipant = 0
-	kChannelParticipantSelf = 1
+	kChannelParticipant        = 0
+	kChannelParticipantSelf    = 1
 	kChannelParticipantCreator = 2
-	kChannelParticipantAdmin = 3
-	kChannelParticipantBanned = 4
+	kChannelParticipantAdmin   = 3
+	kChannelParticipantBanned  = 4
 )
 
 //channelParticipant#15ebac1d user_id:int date:int = ChannelParticipant;
@@ -137,7 +137,7 @@ func (m *ChannelModel) NewChannelLogicByCreateChannel(creatorId int32, userIds [
 	}
 	channelData.channel.Id = int32(m.dao.ChannelsDAO.Insert(channelData.channel))
 
-	channelData.participants = make([]dataobject.ChannelParticipantsDO, 1 + len(userIds))
+	channelData.participants = make([]dataobject.ChannelParticipantsDO, 1+len(userIds))
 	channelData.participants[0].ChannelId = channelData.channel.Id
 	channelData.participants[0].UserId = creatorId
 	channelData.participants[0].ParticipantType = kChannelParticipantCreator
@@ -179,7 +179,7 @@ func (this *channelLogicData) ExportedChatInvite() string {
 // TODO(@benqi): 性能优化
 func (this *channelLogicData) checkUserIsAdministrator(userId int32) bool {
 	this.checkOrLoadChannelParticipantList()
-	for i := 0; i < len(this.participants); i++  {
+	for i := 0; i < len(this.participants); i++ {
 		if this.participants[i].ParticipantType == kChannelParticipantCreator ||
 			this.participants[i].ParticipantType == kChannelParticipantAdmin {
 			return true
@@ -237,7 +237,7 @@ func (this *channelLogicData) MakeDeleteUserMessage(operatorId, channelUserId in
 
 func (this *channelLogicData) MakeChannelEditTitleMessage(operatorId int32, title string) *mtproto.Message {
 	action := &mtproto.TLMessageActionChatEditTitle{Data2: &mtproto.MessageAction_Data{
-		Title:  title,
+		Title: title,
 	}}
 
 	return this.MakeMessageService(operatorId, action.To_MessageAction())
@@ -255,12 +255,11 @@ func (this *channelLogicData) GetChannelParticipantList() []*mtproto.ChannelPart
 	return participantList
 }
 
-
 func (this *channelLogicData) GetChannelParticipantIdList() []int32 {
 	this.checkOrLoadChannelParticipantList()
 
 	idList := make([]int32, 0, len(this.participants))
-	for i := 0; i < len(this.participants); i++  {
+	for i := 0; i < len(this.participants); i++ {
 		if this.participants[i].State == 0 {
 			idList = append(idList, this.participants[i].UserId)
 		}
@@ -348,10 +347,10 @@ func (this *channelLogicData) ToChannel(selfUserId int32) *mtproto.Chat {
 		return channel.To_Chat()
 	} else {
 		channel := &mtproto.TLChannel{Data2: &mtproto.Chat_Data{
-			Creator:           this.channel.CreatorUserId == selfUserId,
-			Id:                this.channel.Id,
-			Title:             this.channel.Title,
-			AdminsEnabled:     this.channel.AdminsEnabled == 1,
+			Creator:       this.channel.CreatorUserId == selfUserId,
+			Id:            this.channel.Id,
+			Title:         this.channel.Title,
+			AdminsEnabled: this.channel.AdminsEnabled == 1,
 			// Photo:             mtproto.NewTLChatPhotoEmpty().To_ChatPhoto(),
 			ParticipantsCount: this.channel.ParticipantCount,
 			Date:              this.channel.Date,
@@ -422,7 +421,7 @@ func (this *channelLogicData) DeleteChannelUser(operatorId, deleteUserId int32) 
 	// this.participants = append(this.participants[:found], this.participants[found+1:]...)
 
 	var now = int32(time.Now().Unix())
-	this.channel.ParticipantCount = int32(len(this.participants)-1)
+	this.channel.ParticipantCount = int32(len(this.participants) - 1)
 	this.channel.Version += 1
 	this.channel.Date = now
 	this.dao.ChannelsDAO.UpdateParticipantCount(this.channel.ParticipantCount, now, this.channel.Id)

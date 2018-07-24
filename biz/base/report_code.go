@@ -18,24 +18,24 @@
 package base
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"fmt"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 type ReportReasonType int8
 
 const (
 	//inputReportReasonOther#e1746d0a text:string = ReportReason;
-	REASON_OTHER 		ReportReasonType 	= 0		// 其它
+	REASON_OTHER ReportReasonType = 0 // 其它
 
 	//inputReportReasonSpam#58dbcab8 = ReportReason;
-	REASON_SPAM 		ReportReasonType	= 1		// 垃圾
+	REASON_SPAM ReportReasonType = 1 // 垃圾
 
 	//inputReportReasonViolence#1e22c78d = ReportReason;
-	REASON_VIOLENCE 	ReportReasonType	= 2		// 暴力
+	REASON_VIOLENCE ReportReasonType = 2 // 暴力
 
 	//inputReportReasonPornography#2e59d922 = ReportReason;
-	REASON_PORNOGRAPHY	ReportReasonType	= 3		// 色情
+	REASON_PORNOGRAPHY ReportReasonType = 3 // 色情
 )
 
 func (i ReportReasonType) String() (s string) {
@@ -74,22 +74,22 @@ func (i ReportReasonType) ToReportReason(text string) (reason *mtproto.ReportRea
 	case REASON_OTHER:
 		reason = &mtproto.ReportReason{
 			Constructor: mtproto.TLConstructor_CRC32_inputReportReasonOther,
-			Data2: &mtproto.ReportReason_Data{text},
+			Data2:       &mtproto.ReportReason_Data{text},
 		}
 	case REASON_SPAM:
 		reason = &mtproto.ReportReason{
 			Constructor: mtproto.TLConstructor_CRC32_inputReportReasonSpam,
-			Data2: &mtproto.ReportReason_Data{},
+			Data2:       &mtproto.ReportReason_Data{},
 		}
 	case REASON_VIOLENCE:
 		reason = &mtproto.ReportReason{
 			Constructor: mtproto.TLConstructor_CRC32_inputReportReasonViolence,
-			Data2: &mtproto.ReportReason_Data{},
+			Data2:       &mtproto.ReportReason_Data{},
 		}
 	case REASON_PORNOGRAPHY:
 		reason = &mtproto.ReportReason{
 			Constructor: mtproto.TLConstructor_CRC32_inputReportReasonPornography,
-			Data2: &mtproto.ReportReason_Data{},
+			Data2:       &mtproto.ReportReason_Data{},
 		}
 	default:
 		panic(fmt.Sprintf("ToReportReason(%v) error!", i))

@@ -18,22 +18,22 @@
 package server
 
 import (
-	"time"
 	"fmt"
-	"sync"
 	"github.com/gogo/protobuf/proto"
-	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/proto/zproto"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/service/idgen/client"
 	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/proto/zproto"
+	"github.com/nebulaim/telegramd/service/idgen/client"
 	"github.com/nebulaim/telegramd/service/status/client"
+	"google.golang.org/grpc"
+	"sync"
+	"time"
 )
 
 func init() {
@@ -64,7 +64,7 @@ func init() {
 //}
 
 type connContext struct {
-	serverId int32
+	serverId  int32
 	sessionId uint64
 }
 
@@ -137,7 +137,7 @@ func (s *syncServer) Destroy() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 func (s *syncServer) newMetadata() *zproto.ZProtoMetadata {
 	md := &zproto.ZProtoMetadata{
-		From: "sync",
+		From:        "sync",
 		ReceiveTime: time.Now().Unix(),
 	}
 	md.SpanId, _ = s.idgen.GetUUID()
@@ -163,7 +163,7 @@ func (s *syncServer) OnNewClient(client *net2.TcpClient) {
 	zproto.SendMessageByClient(client, s.newMetadata(), req)
 }
 
-func (s *syncServer) OnClientMessageArrived(client *net2.TcpClient, md *zproto.ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, msg zproto.MessageBase) error {
+func (s *syncServer) OnClientMessageArrived(client *net2.TcpClient, md *zproto.ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, msg zproto.MessageBase) error {
 	switch msg.(type) {
 	case *zproto.ZProtoSyncData:
 		buf := msg.(*zproto.ZProtoSyncData).SyncRawData

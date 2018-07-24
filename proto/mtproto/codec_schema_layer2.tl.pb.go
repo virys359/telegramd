@@ -24,16 +24,16 @@
 package mtproto
 
 import (
-	// "encoding/binary"
-	// "fmt"
-	// "github.com/golang/protobuf/proto"
+// "encoding/binary"
+// "fmt"
+// "github.com/golang/protobuf/proto"
 )
 
-func NewTLMessagesReadHistoryLayer2() * TLMessagesReadHistoryLayer2 {
+func NewTLMessagesReadHistoryLayer2() *TLMessagesReadHistoryLayer2 {
 	return &TLMessagesReadHistoryLayer2{}
 }
 
-func (m* TLMessagesReadHistoryLayer2) Encode() []byte {
+func (m *TLMessagesReadHistoryLayer2) Encode() []byte {
 	x := NewEncodeBuf(512)
 	x.Int(int32(TLConstructor_CRC32_messages_readHistory))
 
@@ -44,7 +44,7 @@ func (m* TLMessagesReadHistoryLayer2) Encode() []byte {
 	return x.buf
 }
 
-func (m* TLMessagesReadHistoryLayer2) Decode(dbuf *DecodeBuf) error {
+func (m *TLMessagesReadHistoryLayer2) Decode(dbuf *DecodeBuf) error {
 	m1 := &InputPeer{}
 	m1.Decode(dbuf)
 	m.Peer = m1

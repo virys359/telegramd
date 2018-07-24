@@ -18,10 +18,10 @@
 package service
 
 import (
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/BurntSushi/toml"
 	"flag"
 	"fmt"
+	"github.com/BurntSushi/toml"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 )
 
 var (
@@ -34,8 +34,8 @@ type rpcServerConfig struct {
 }
 
 type statusConfig struct {
-	Server     *rpcServerConfig
-	Discovery  service_discovery.ServiceDiscoveryServerConfig
+	Server    *rpcServerConfig
+	Discovery service_discovery.ServiceDiscoveryServerConfig
 }
 
 func init() {

@@ -42,8 +42,8 @@ func RpcMetadataFromMD(md metadata.MD) (*RpcMetadata, error) {
 	buf, err := base64.StdEncoding.DecodeString(val)
 	if err != nil {
 		return nil, fmt.Errorf("base64 decode error, rpc_metadata: %s, error: %v", val, err)
-			//panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_OTHER2),
-			//	fmt.Sprintf("Base64 decode error, rpc_metadata: %s", val)))
+		//panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_OTHER2),
+		//	fmt.Sprintf("Base64 decode error, rpc_metadata: %s", val)))
 	}
 
 	rpcMetadata := &RpcMetadata{}

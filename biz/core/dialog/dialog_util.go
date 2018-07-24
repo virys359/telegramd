@@ -20,20 +20,20 @@ package dialog
 import "github.com/nebulaim/telegramd/proto/mtproto"
 
 type dialogItems struct {
-	MessageIdList        []int32
-	ChannelMessageIdMap  map[int32]int32
-	UserIdList           []int32
-	ChatIdList           []int32
-	ChannelIdList        []int32
+	MessageIdList       []int32
+	ChannelMessageIdMap map[int32]int32
+	UserIdList          []int32
+	ChatIdList          []int32
+	ChannelIdList       []int32
 }
 
 func makeDialogItems() *dialogItems {
 	return &dialogItems{
-		MessageIdList: make([]int32, 0),
+		MessageIdList:       make([]int32, 0),
 		ChannelMessageIdMap: make(map[int32]int32, 0),
-		UserIdList: make([]int32, 0),
-		ChatIdList: make([]int32, 0),
-		ChannelIdList: make([]int32, 0),
+		UserIdList:          make([]int32, 0),
+		ChatIdList:          make([]int32, 0),
+		ChannelIdList:       make([]int32, 0),
 	}
 }
 

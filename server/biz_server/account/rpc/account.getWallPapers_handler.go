@@ -19,17 +19,17 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"golang.org/x/net/context"
 )
 
 /*
 	wallPaper#ccb03657 id:int title:string sizes:Vector<PhotoSize> color:int = WallPaper;
 	wallPaperSolid#63117f24 id:int title:string bg_color:int color:int = WallPaper;
- */
+*/
 
 // account.getWallPapers#c04cfac2 = Vector<WallPaper>;
 func (s *AccountServiceImpl) AccountGetWallPapers(ctx context.Context, request *mtproto.TLAccountGetWallPapers) (*mtproto.Vector_WallPaper, error) {

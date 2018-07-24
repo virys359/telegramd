@@ -18,8 +18,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nebulaim/telegramd/baselib/cache"
 	"github.com/garyburd/redigo/redis"
+	"github.com/nebulaim/telegramd/baselib/cache"
 )
 
 func TestRedisCache(t *testing.T) {

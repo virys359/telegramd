@@ -20,9 +20,9 @@ package main
 import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	// "github.com/golang/glog"
+	"fmt"
 	"github.com/nebulaim/telegramd/service/status/client"
 	"math/rand"
-	"fmt"
 )
 
 type SessionID struct {
@@ -32,7 +32,7 @@ type SessionID struct {
 }
 
 func genRandomSession(n int32) SessionID {
-	return SessionID{rand.Int31n(n)+1, 1, rand.Int63()}
+	return SessionID{rand.Int31n(n) + 1, 1, rand.Int63()}
 }
 
 func main() {

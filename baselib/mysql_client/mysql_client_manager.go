@@ -18,9 +18,9 @@
 package mysql_client
 
 import (
-	"github.com/jmoiron/sqlx"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
+	"github.com/jmoiron/sqlx"
 	"sync"
 )
 

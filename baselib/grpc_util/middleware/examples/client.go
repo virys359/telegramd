@@ -18,14 +18,14 @@
 package main
 
 import (
-	"time"
+	"context"
 	"fmt"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/middleware/examples/zproto"
+	"google.golang.org/grpc"
 	"io"
 	"math/rand"
-	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/baselib/base"
-	"context"
+	"time"
 )
 
 func main() {
@@ -56,4 +56,3 @@ func main() {
 		}
 	}
 }
-

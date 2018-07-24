@@ -19,19 +19,19 @@ package chat
 
 import (
 	"fmt"
-	"time"
-	"math/rand"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"math/rand"
+	"time"
 )
 
 const (
-	kChatParticipant = 0
+	kChatParticipant        = 0
 	kChatParticipantCreator = 1
-	kChatParticipantAdmin = 2
+	kChatParticipantAdmin   = 2
 )
 
 type chatLogicData struct {
@@ -96,7 +96,7 @@ func (m *ChatModel) NewChatLogicByCreateChat(creatorId int32, userIds []int32, t
 	}
 	chatData.chat.Id = int32(m.dao.ChatsDAO.Insert(chatData.chat))
 
-	chatData.participants = make([]dataobject.ChatParticipantsDO, 1 + len(userIds))
+	chatData.participants = make([]dataobject.ChatParticipantsDO, 1+len(userIds))
 	chatData.participants[0].ChatId = chatData.chat.Id
 	chatData.participants[0].UserId = creatorId
 	chatData.participants[0].ParticipantType = kChatParticipantCreator
@@ -180,7 +180,7 @@ func (this *chatLogicData) MakeDeleteUserMessage(operatorId, chatUserId int32) *
 func (this *chatLogicData) MakeChatEditTitleMessage(operatorId int32, title string) *mtproto.Message {
 	// idList := this.GetChatParticipantIdList()
 	action := &mtproto.TLMessageActionChatEditTitle{Data2: &mtproto.MessageAction_Data{
-		Title:  title,
+		Title: title,
 	}}
 
 	return this.MakeMessageService(operatorId, action.To_MessageAction())
@@ -198,12 +198,11 @@ func (this *chatLogicData) GetChatParticipantList() []*mtproto.ChatParticipant {
 	return participantList
 }
 
-
 func (this *chatLogicData) GetChatParticipantIdList() []int32 {
 	this.checkOrLoadChatParticipantList()
 
 	idList := make([]int32, 0, len(this.participants))
-	for i := 0; i < len(this.participants); i++  {
+	for i := 0; i < len(this.participants); i++ {
 		if this.participants[i].State == 0 {
 			idList = append(idList, this.participants[i].UserId)
 		}
@@ -215,9 +214,9 @@ func (this *chatLogicData) GetChatParticipants() *mtproto.TLChatParticipants {
 	this.checkOrLoadChatParticipantList()
 
 	return &mtproto.TLChatParticipants{Data2: &mtproto.ChatParticipants_Data{
-		ChatId: this.chat.Id,
+		ChatId:       this.chat.Id,
 		Participants: this.GetChatParticipantList(),
-		Version: this.chat.Version,
+		Version:      this.chat.Version,
 	}}
 }
 
@@ -291,10 +290,10 @@ func (this *chatLogicData) ToChat(selfUserId int32) *mtproto.Chat {
 		return chat.To_Chat()
 	} else {
 		chat := &mtproto.TLChat{Data2: &mtproto.Chat_Data{
-			Creator:           this.chat.CreatorUserId == selfUserId,
-			Id:                this.chat.Id,
-			Title:             this.chat.Title,
-			AdminsEnabled:     this.chat.AdminsEnabled == 1,
+			Creator:       this.chat.CreatorUserId == selfUserId,
+			Id:            this.chat.Id,
+			Title:         this.chat.Title,
+			AdminsEnabled: this.chat.AdminsEnabled == 1,
 			// Photo:             mtproto.NewTLChatPhotoEmpty().To_ChatPhoto(),
 			ParticipantsCount: this.chat.ParticipantCount,
 			Date:              this.chat.Date,
@@ -365,7 +364,7 @@ func (this *chatLogicData) DeleteChatUser(operatorId, deleteUserId int32) error 
 	// this.participants = append(this.participants[:found], this.participants[found+1:]...)
 
 	var now = int32(time.Now().Unix())
-	this.chat.ParticipantCount = int32(len(this.participants)-1)
+	this.chat.ParticipantCount = int32(len(this.participants) - 1)
 	this.chat.Version += 1
 	this.chat.Date = now
 	this.dao.ChatsDAO.UpdateParticipantCount(this.chat.ParticipantCount, now, this.chat.Id)

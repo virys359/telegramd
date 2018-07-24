@@ -18,9 +18,9 @@
 package zproto
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/bytes2"
-	"fmt"
 )
 
 const (
@@ -48,13 +48,13 @@ const (
 	kVersion        = 1
 )
 
-
 type MessageBase interface {
 	Encode(x *bytes2.BufferOutput)
 	Decode(dbuf *bytes2.BufferInput) error
 }
 
 type newZProtoMessage func() MessageBase
+
 var zprotoFactories = make(map[uint32]newZProtoMessage)
 
 //func CheckPackageType(packageType uint32) (r bool) {
@@ -131,8 +131,8 @@ type ZProtoMetadata struct {
 	ReceiveTime  int64
 	From         string
 	// To        string
-	Options      map[string]string
-	extend       []byte
+	Options map[string]string
+	extend  []byte
 }
 
 func (m *ZProtoMetadata) Encode(x *bytes2.BufferOutput) {
@@ -536,20 +536,20 @@ func (m *ZProtoRpcInternalError) Decode(dbuf *bytes2.BufferInput) error {
 }
 
 func init() {
-	zprotoFactories[PROTO] =              func() MessageBase { return &ZProtoRawPayload{} }
-	zprotoFactories[PING] =               func() MessageBase { return &ZProtoPing{} }
-	zprotoFactories[PONG] =               func() MessageBase { return &ZProtoPong{} }
-	zprotoFactories[DROP] =               func() MessageBase { return &ZProtoDrop{} }
-	zprotoFactories[REDIRECT] =           func() MessageBase { return &ZProtoRedirect{} }
-	zprotoFactories[ACK] =                func() MessageBase { return &ZProtoAck{} }
-	zprotoFactories[HANDSHAKE_REQ] =      func() MessageBase { return &ZProtoHandshakeReq{} }
-	zprotoFactories[HANDSHAKE_RSP] =      func() MessageBase { return &ZProtoHandshakeRes{} }
-	zprotoFactories[MARS_SIGNAL] =        func() MessageBase { return &ZProtoMarsSignal{} }
-	zprotoFactories[MESSAGE_ACK] =        func() MessageBase { return &ZProtoMessageAck{} }
-	zprotoFactories[RPC_REQUEST] =        func() MessageBase { return &ZProtoRpcRequest{} }
-	zprotoFactories[RPC_OK] =             func() MessageBase { return &ZProtoRpcOk{} }
-	zprotoFactories[RPC_ERROR] =          func() MessageBase { return &ZProtoRpcError{} }
-	zprotoFactories[RPC_FLOOD_WAIT] =     func() MessageBase { return &ZProtoRpcFloodWait{} }
+	zprotoFactories[PROTO] = func() MessageBase { return &ZProtoRawPayload{} }
+	zprotoFactories[PING] = func() MessageBase { return &ZProtoPing{} }
+	zprotoFactories[PONG] = func() MessageBase { return &ZProtoPong{} }
+	zprotoFactories[DROP] = func() MessageBase { return &ZProtoDrop{} }
+	zprotoFactories[REDIRECT] = func() MessageBase { return &ZProtoRedirect{} }
+	zprotoFactories[ACK] = func() MessageBase { return &ZProtoAck{} }
+	zprotoFactories[HANDSHAKE_REQ] = func() MessageBase { return &ZProtoHandshakeReq{} }
+	zprotoFactories[HANDSHAKE_RSP] = func() MessageBase { return &ZProtoHandshakeRes{} }
+	zprotoFactories[MARS_SIGNAL] = func() MessageBase { return &ZProtoMarsSignal{} }
+	zprotoFactories[MESSAGE_ACK] = func() MessageBase { return &ZProtoMessageAck{} }
+	zprotoFactories[RPC_REQUEST] = func() MessageBase { return &ZProtoRpcRequest{} }
+	zprotoFactories[RPC_OK] = func() MessageBase { return &ZProtoRpcOk{} }
+	zprotoFactories[RPC_ERROR] = func() MessageBase { return &ZProtoRpcError{} }
+	zprotoFactories[RPC_FLOOD_WAIT] = func() MessageBase { return &ZProtoRpcFloodWait{} }
 	zprotoFactories[RPC_INTERNAL_ERROR] = func() MessageBase { return &ZProtoRpcInternalError{} }
 }
 

@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // account.updateStatus#6628562c offline:Bool = Bool;
@@ -55,9 +55,9 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 		UserId: md.UserId,
 		Status: status,
 	}}
-	updates := &mtproto.TLUpdateShort{ Data2: &mtproto.Updates_Data{
+	updates := &mtproto.TLUpdateShort{Data2: &mtproto.Updates_Data{
 		Update: updateUserStatus.To_Update(),
-		Date:  int32(time.Now().Unix()),
+		Date:   int32(time.Now().Unix()),
 	}}
 
 	// push to other contacts.

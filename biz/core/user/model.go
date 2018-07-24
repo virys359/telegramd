@@ -18,11 +18,10 @@
 package user
 
 import (
+	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
-	"github.com/golang/glog"
 )
 
 type usersDAO struct {
@@ -30,7 +29,7 @@ type usersDAO struct {
 	*mysql_dao.UserPresencesDAO
 	*mysql_dao.UserContactsDAO
 	*mysql_dao.UserDialogsDAO
-	redisClient *redis_client.RedisPool
+	// redisClient *redis_client.RedisPool
 }
 
 type UserModel struct {
@@ -44,8 +43,7 @@ func (m *UserModel) InstallModel() {
 	m.dao.UserPresencesDAO = dao.GetUserPresencesDAO(dao.DB_MASTER)
 	m.dao.UserContactsDAO = dao.GetUserContactsDAO(dao.DB_MASTER)
 	m.dao.UserDialogsDAO = dao.GetUserDialogsDAO(dao.DB_MASTER)
-
-	m.dao.redisClient = redis_client.GetRedisClient(dao.CACHE)
+	// m.dao.redisClient = redis_client.GetRedisClient(dao.CACHE)
 }
 
 func (m *UserModel) RegisterCallback(cb interface{}) {

@@ -18,12 +18,12 @@
 package mtproto
 
 import (
-	"net"
-	"fmt"
-	"net/http"
-	"github.com/golang/glog"
 	"encoding/binary"
+	"fmt"
+	"github.com/golang/glog"
 	"io/ioutil"
+	"net"
+	"net/http"
 	// "time"
 	"github.com/nebulaim/telegramd/baselib/net2"
 	// "strings"
@@ -38,14 +38,14 @@ type MTProtoHttpProxyCodec struct {
 
 func NewMTProtoHttpProxyCodec(conn net.Conn) *MTProtoHttpProxyCodec {
 	// return conn.tcpConn.SetReadDeadline(time.Now().Add(tcpHeartbeat * 2))
-	conn.SetReadDeadline(time.Now().Add(time.Second*60))
+	conn.SetReadDeadline(time.Now().Add(time.Second * 60))
 	// .(*net2.BufferedConn).Conn.(*net.TCPConn).SetReadDeadline(time.Now().Add())
 	return &MTProtoHttpProxyCodec{
-		conn:  conn,
+		conn: conn,
 	}
 }
 
-func (c* MTProtoHttpProxyCodec) Receive() (interface{}, error) {
+func (c *MTProtoHttpProxyCodec) Receive() (interface{}, error) {
 	req, err := http.ReadRequest(c.conn.(*net2.BufferedConn).BufioReader())
 	if err != nil {
 		glog.Error(err)
@@ -76,7 +76,7 @@ func (c* MTProtoHttpProxyCodec) Receive() (interface{}, error) {
 	return msg, nil
 }
 
-func (c* MTProtoHttpProxyCodec) Send(msg interface{}) error {
+func (c *MTProtoHttpProxyCodec) Send(msg interface{}) error {
 	// SendToHttpReply(msg, w)
 	message, ok := msg.(*MTPRawMessage)
 	if !ok {
@@ -89,11 +89,11 @@ func (c* MTProtoHttpProxyCodec) Send(msg interface{}) error {
 	b := message.Encode()
 
 	rsp := http.Response{
-		StatusCode:    200,
-		ProtoMajor:    1,
-		ProtoMinor:    1,
-		Request:       &http.Request{Method: "POST"},
-		Header:        http.Header{
+		StatusCode: 200,
+		ProtoMajor: 1,
+		ProtoMinor: 1,
+		Request:    &http.Request{Method: "POST"},
+		Header: http.Header{
 			"Access-Control-Allow-Headers": {"origin, content-type"},
 			"Access-Control-Allow-Methods": {"POST, OPTIONS"},
 			"Access-Control-Allow-Origin":  {"*"},
@@ -117,7 +117,6 @@ func (c* MTProtoHttpProxyCodec) Send(msg interface{}) error {
 	return err
 }
 
-func (c* MTProtoHttpProxyCodec) Close() error {
+func (c *MTProtoHttpProxyCodec) Close() error {
 	return c.conn.Close()
 }
-

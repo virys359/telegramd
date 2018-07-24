@@ -20,13 +20,13 @@ package watcher2
 import (
 	"github.com/coreos/etcd/clientv3"
 	// "encoding/json"
-	"github.com/golang/glog"
-	etcd3 "github.com/coreos/etcd/clientv3"
 	"context"
-	"fmt"
-	"github.com/nebulaim/telegramd/baselib/net2"
 	"encoding/json"
+	"fmt"
+	etcd3 "github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/net2"
 )
 
 // see: /baselib/grpc_util/service_discovery/registry.go
@@ -41,8 +41,8 @@ type ClientWatcher struct {
 	registryDir string
 	serviceName string
 	// rootPath    string
-	client      *net2.TcpClientGroupManager
-	nodes       map[string]*nodeData
+	client *net2.TcpClientGroupManager
+	nodes  map[string]*nodeData
 }
 
 func NewClientWatcher(registryDir, serviceName string, cfg etcd3.Config, client *net2.TcpClientGroupManager) (watcher *ClientWatcher, err error) {

@@ -18,16 +18,16 @@
 package user
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"encoding/json"
 	"github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
-	"encoding/json"
 )
 
-func dialogDOToDialog(dialogDO* dataobject.UserDialogsDO) *mtproto.TLDialog {
+func dialogDOToDialog(dialogDO *dataobject.UserDialogsDO) *mtproto.TLDialog {
 	dialog := mtproto.NewTLDialog()
 	// dialogData := dialog.GetData2()
 	// draftIdList := make([]int32, 0)
@@ -79,7 +79,7 @@ func dialogDOListToDialogList(dialogDOList []dataobject.UserDialogsDO) (dialogs 
 }
 
 func (m *UserModel) GetDialogsByOffsetId(userId int32, isPinned bool, offsetId int32, limit int32) (dialogs []*mtproto.Dialog) {
-	dialogDOList :=m. dao.UserDialogsDAO.SelectByPinnedAndOffset(
+	dialogDOList := m.dao.UserDialogsDAO.SelectByPinnedAndOffset(
 		userId, base2.BoolToInt8(isPinned), offsetId, limit)
 	glog.Infof("GetDialogsByOffsetId - dialogDOList: {%v}, query: {userId: %d, isPinned: %v, offeetId: %d, limit: %d ", dialogDOList, userId, isPinned, offsetId, limit)
 
@@ -132,7 +132,7 @@ func (m *UserModel) GetPeersDialogs(selfId int32, peers []*mtproto.InputPeer) (d
 func (m *UserModel) CreateOrUpdateByOutbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions, clearDraft bool) {
 	var (
 		affectedRows = int64(0)
-		date = int32(time.Now().Unix())
+		date         = int32(time.Now().Unix())
 	)
 
 	if clearDraft && unreadMentions {
@@ -169,7 +169,7 @@ func (m *UserModel) CreateOrUpdateByOutbox(userId, peerType int32, peerId int32,
 func (m *UserModel) CreateOrUpdateByInbox(userId, peerType int32, peerId int32, topMessage int32, unreadMentions bool) {
 	var (
 		affectedRows = int64(0)
-		date = int32(time.Now().Unix())
+		date         = int32(time.Now().Unix())
 	)
 
 	if unreadMentions {

@@ -19,13 +19,13 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/base"
 	"math"
-	"github.com/nebulaim/telegramd/biz/core/message"
 )
 
 // From android client
@@ -68,7 +68,7 @@ import (
 		return;
 	}
 	req.limit = 1;
- */
+*/
 
 // From tdesktop client
 /*
@@ -252,22 +252,22 @@ import (
 
 	_firstLoadRequest = MTP::send(
 		MTPmessages_GetHistory(
- */
+*/
 
 const (
-	kLoadTypeBackward 			= 0
-	kLoadTypeForward 			= 1
-	kLoadTypeFirstUnread 		= 2
+	kLoadTypeBackward           = 0
+	kLoadTypeForward            = 1
+	kLoadTypeFirstUnread        = 2
 	kLoadTypeFirstAroundMessage = 3
-	kLoadTypeFirstAroundDate 	= 4
+	kLoadTypeFirstAroundDate    = 4
 
-	kLoadTypeLimit1 			= 16
+	kLoadTypeLimit1 = 16
 )
 
 // TODO(@benqi): only android client
 // limit = count
 // offset_id = max_id
-func calcLoadHistoryType(isChannel bool, offsetId, offsetDate, addOffset, limit,  maxId, minId int32) int {
+func calcLoadHistoryType(isChannel bool, offsetId, offsetDate, addOffset, limit, maxId, minId int32) int {
 	if limit == 1 {
 		return kLoadTypeLimit1
 	}
@@ -279,21 +279,21 @@ func calcLoadHistoryType(isChannel bool, offsetId, offsetDate, addOffset, limit,
 
 	if addOffset == 0 {
 		return kLoadTypeBackward
-	} else if addOffset == -limit + 5 {
+	} else if addOffset == -limit+5 {
 		return kLoadTypeFirstAroundDate
-	} else if addOffset == -limit / 2 {
+	} else if addOffset == -limit/2 {
 		return kLoadTypeFirstAroundMessage
-	} else if addOffset == -limit - 1 {
-		return 	kLoadTypeForward
-	} else if addOffset == -limit + 6 {
-		if maxId !=0 {
+	} else if addOffset == -limit-1 {
+		return kLoadTypeForward
+	} else if addOffset == -limit+6 {
+		if maxId != 0 {
 			return kLoadTypeFirstUnread
 		}
 	}
 	return kLoadTypeBackward
 }
 
-func (s *MessagesServiceImpl) loadHistoryMessage(loadType int, selfUserId int32, peer *base.PeerUtil, offsetId, offsetDate, addOffset, limit,  maxId, minId int32) []*mtproto.Message {
+func (s *MessagesServiceImpl) loadHistoryMessage(loadType int, selfUserId int32, peer *base.PeerUtil, offsetId, offsetDate, addOffset, limit, maxId, minId int32) []*mtproto.Message {
 	messages := []*mtproto.Message{}
 
 	switch loadType {
@@ -302,7 +302,7 @@ func (s *MessagesServiceImpl) loadHistoryMessage(loadType int, selfUserId int32,
 		offsetId = math.MaxInt32
 		messages = s.MessageModel.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, limit)
 	case kLoadTypeBackward:
-		messages = s.MessageModel.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
+		messages = s.MessageModel.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, addOffset+limit)
 	case kLoadTypeFirstAroundDate:
 	case kLoadTypeFirstAroundMessage:
 		// LOAD_HISTORY_TYPE_FORWARD and LOAD_HISTORY_TYPE_BACKWARD
@@ -313,7 +313,7 @@ func (s *MessagesServiceImpl) loadHistoryMessage(loadType int, selfUserId int32,
 		}
 		messages = append(messages, messages1...)
 		// 降序
-		messages2 := s.MessageModel.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, limit + addOffset)
+		messages2 := s.MessageModel.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, limit+addOffset)
 		messages = append(messages, messages2...)
 	case kLoadTypeForward:
 		messages = s.MessageModel.LoadForwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, -addOffset)
@@ -321,7 +321,7 @@ func (s *MessagesServiceImpl) loadHistoryMessage(loadType int, selfUserId int32,
 			messages[i], messages[j] = messages[j], messages[i]
 		}
 	case kLoadTypeFirstUnread:
-		messages = s.MessageModel.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, addOffset + limit)
+		messages = s.MessageModel.LoadBackwardHistoryMessages(selfUserId, peer.PeerType, peer.PeerId, offsetId, addOffset+limit)
 	}
 
 	return messages
@@ -340,8 +340,8 @@ func (s *MessagesServiceImpl) getHistoryMessages(md *grpc_util.RpcMetadata, requ
 
 	var (
 		isChannel = peer.PeerType == base.PEER_CHANNEL
-		users []*mtproto.User
-		chats []*mtproto.Chat
+		users     []*mtproto.User
+		chats     []*mtproto.Chat
 	)
 
 	loadType := calcLoadHistoryType(isChannel, offsetId, request.GetOffsetDate(), addOffset, limit, request.GetMaxId(), request.GetMinId())

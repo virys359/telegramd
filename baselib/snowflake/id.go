@@ -28,9 +28,9 @@ package snowflake
 import (
 	"errors"
 	"fmt"
+	"github.com/golang/glog"
 	"sync"
 	"time"
-	"github.com/golang/glog"
 )
 
 const (

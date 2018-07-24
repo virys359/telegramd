@@ -19,13 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // messages.deleteChatUser#e0611f16 chat_id:int user_id:InputUser = Updates;
@@ -34,7 +35,7 @@ func (s *MessagesServiceImpl) MessagesDeleteChatUser(ctx context.Context, reques
 	glog.Infof("messages.deleteChatUser#e0611f16 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var (
-		err error
+		err              error
 		deleteChatUserId int32
 	)
 
@@ -56,7 +57,7 @@ func (s *MessagesServiceImpl) MessagesDeleteChatUser(ctx context.Context, reques
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
-		PeerId: chatLogic.GetChatId(),
+		PeerId:   chatLogic.GetChatId(),
 	}
 
 	err = chatLogic.CheckDeleteChatUser(md.UserId, deleteChatUserId)
@@ -67,7 +68,7 @@ func (s *MessagesServiceImpl) MessagesDeleteChatUser(ctx context.Context, reques
 
 	// make delete user message
 	deleteUserMessage := chatLogic.MakeDeleteUserMessage(md.UserId, deleteChatUserId)
-	randomId := base.NextSnowflakeId()
+	randomId := core.GetUUID()
 	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, deleteUserMessage, func(messageId int32) {
 		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})

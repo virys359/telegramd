@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 )
@@ -32,7 +32,7 @@ func (s *MessagesServiceImpl) MessagesGetRecentStickers(ctx context.Context, req
 
 	// TODO(@benqi): Impl MessagesGetRecentStickers logic
 	stickers := &mtproto.TLMessagesRecentStickers{Data2: &mtproto.Messages_RecentStickers_Data{
-		Hash: request.Hash,
+		Hash:     request.Hash,
 		Stickers: []*mtproto.Document{},
 	}}
 

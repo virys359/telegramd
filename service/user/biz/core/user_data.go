@@ -29,6 +29,3 @@ type userData struct {
 //func (m *userData) ToUser() *mtproto.User {
 //	return m.TLUser.To_User()
 //}
-
-
-

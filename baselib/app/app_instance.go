@@ -18,13 +18,13 @@
 package app
 
 import (
+	"flag"
+	"github.com/golang/glog"
+	"math/rand"
+	"os"
 	"os/signal"
 	"syscall"
-	"github.com/golang/glog"
-	"os"
-	"flag"
 	"time"
-	"math/rand"
 )
 
 var GAppInstance AppInstance

@@ -25,8 +25,8 @@ import (
 )
 
 type redisConn struct {
-	pool   *RedisPool
-	conn   redis.Conn
+	pool *RedisPool
+	conn redis.Conn
 }
 
 type RedisPool struct {
@@ -67,7 +67,7 @@ func NewRedisPool(c *RedisConfig) (pool *RedisPool) {
 	}
 
 	pool.Pool = &redis.Pool{
-		MaxActive: 	 c.Active,
+		MaxActive:   c.Active,
 		MaxIdle:     c.Idle,
 		IdleTimeout: time.Duration(c.IdleTimeout),
 		Dial:        dialFunc,
@@ -120,4 +120,3 @@ func (c *redisConn) Receive() (reply interface{}, err error) {
 	}
 	return c.conn.Receive()
 }
-

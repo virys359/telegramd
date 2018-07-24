@@ -18,15 +18,16 @@
 package message
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"encoding/json"
-	"time"
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"fmt"
+	"github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/golang/glog"
-	"fmt"
+	"github.com/nebulaim/telegramd/biz/core"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"time"
 )
 
 type ChannelMessageBox struct {
@@ -45,7 +46,7 @@ func (m *MessageModel) CreateChannelMessageBoxByNew(fromId, channelId int32, cli
 	boxId := int32(update2.NextChannelMessageBoxId(base2.Int32ToString(channelId)))
 	messageDatasDO := &dataobject.MessageDatasDO{
 		DialogId:     int64(-channelId),
-		MessageId:    base.NextSnowflakeId(),
+		MessageId:    core.GetUUID(),
 		SenderUserId: fromId,
 		PeerType:     int8(base.PEER_CHANNEL),
 		PeerId:       channelId,
@@ -87,12 +88,12 @@ func (m *MessageModel) CreateChannelMessageBoxByNew(fromId, channelId int32, cli
 	m.dao.ChannelMessageBoxesDAO.Insert(channelMessageBoxesDO)
 
 	box = &ChannelMessageBox{
-		SenderUserId:          fromId,
-		ChannelId:  channelId,
+		SenderUserId:        fromId,
+		ChannelId:           channelId,
 		ChannelMessageBoxId: boxId,
-		MessageId: channelMessageBoxesDO.MessageId,
-		RandomId:        clientRandomId,
-		Message:         message2,
+		MessageId:           channelMessageBoxesDO.MessageId,
+		RandomId:            clientRandomId,
+		Message:             message2,
 	}
 
 	if cb != nil {

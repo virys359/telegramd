@@ -18,18 +18,18 @@
 package redis_client
 
 import (
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
 )
 
-type redisClientManager struct{
+type redisClientManager struct {
 	// TODO(@benqi): 使用sync.Map，动态添加和卸载数据库
 	redisClients map[string]*RedisPool
 }
 
 var redisClients = &redisClientManager{make(map[string]*RedisPool)}
 
-func  InstallRedisClientManager(configs []RedisConfig) {
+func InstallRedisClientManager(configs []RedisConfig) {
 	for _, config := range configs {
 		client := NewRedisPool(&config)
 		if client == nil {
@@ -43,7 +43,7 @@ func  InstallRedisClientManager(configs []RedisConfig) {
 	}
 }
 
-func  GetRedisClient(redisName string) (client *RedisPool) {
+func GetRedisClient(redisName string) (client *RedisPool) {
 	client, ok := redisClients.redisClients[redisName]
 	if !ok {
 		glog.Errorf("getRedisClient - Not found client: %s", redisName)
@@ -51,6 +51,6 @@ func  GetRedisClient(redisName string) (client *RedisPool) {
 	return
 }
 
-func  GetRedisClientManager() map[string]*RedisPool {
+func GetRedisClientManager() map[string]*RedisPool {
 	return redisClients.redisClients
 }

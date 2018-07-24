@@ -18,13 +18,13 @@
 package rpc
 
 import (
-	"time"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"golang.org/x/net/context"
+	"time"
 )
 
 // users.getFullUser#ca30a5b1 id:InputUser = UserFull;
@@ -41,64 +41,64 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 
 	switch request.GetId().GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputUserSelf:
-	    // User
-	    //userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(md.UserId)
-	    //user := &mtproto.TLUser{ Data2: &mtproto.User_Data{
-			//Self:       true,
-			//Contact:    true,
-			//Id:         userDO.Id,
-			//FirstName:  userDO.FirstName,
-			//LastName:   userDO.LastName,
-			//Username:   userDO.Username,
-			//AccessHash: userDO.AccessHash,
-			//Phone:      userDO.Phone,
+		// User
+		//userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(md.UserId)
+		//user := &mtproto.TLUser{ Data2: &mtproto.User_Data{
+		//Self:       true,
+		//Contact:    true,
+		//Id:         userDO.Id,
+		//FirstName:  userDO.FirstName,
+		//LastName:   userDO.LastName,
+		//Username:   userDO.Username,
+		//AccessHash: userDO.AccessHash,
+		//Phone:      userDO.Phone,
 		//}}
 		user = s.UserModel.GetUserById(md.UserId, md.UserId).To_User()
-	    fullUser.SetUser(user)
-	    //GetUser()user.To_User())
+		fullUser.SetUser(user)
+		//GetUser()user.To_User())
 
-	    // Link
-	    link := &mtproto.TLContactsLink{ Data2: &mtproto.Contacts_Link_Data{
-	    	MyLink:	mtproto.NewTLContactLinkContact().To_ContactLink(),
-	    	ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
-	    	User: user,
+		// Link
+		link := &mtproto.TLContactsLink{Data2: &mtproto.Contacts_Link_Data{
+			MyLink:      mtproto.NewTLContactLinkContact().To_ContactLink(),
+			ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
+			User:        user,
 		}}
-	    fullUser.SetLink(link.To_Contacts_Link())
+		fullUser.SetLink(link.To_Contacts_Link())
 	case mtproto.TLConstructor_CRC32_inputUser:
-	    inputUser := request.GetId().To_InputUser()
-	    // request.Id.Payload.(*mtproto.InputUser_InputUser).InputUser
-	    // User
-	    //userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(inputUser.GetUserId())
+		inputUser := request.GetId().To_InputUser()
+		// request.Id.Payload.(*mtproto.InputUser_InputUser).InputUser
+		// User
+		//userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(inputUser.GetUserId())
 		//user := &mtproto.TLUser{ Data2: &mtproto.User_Data{
-			//Self:       md.UserId == inputUser.GetUserId(),
-			//Contact:    true,
-			//Id:         userDO.Id,
-			//FirstName:  userDO.FirstName,
-			//LastName:   userDO.LastName,
-			//Username:   userDO.Username,
-			//AccessHash: userDO.AccessHash,
-			//Phone:      userDO.Phone,
+		//Self:       md.UserId == inputUser.GetUserId(),
+		//Contact:    true,
+		//Id:         userDO.Id,
+		//FirstName:  userDO.FirstName,
+		//LastName:   userDO.LastName,
+		//Username:   userDO.Username,
+		//AccessHash: userDO.AccessHash,
+		//Phone:      userDO.Phone,
 		//}}
 
 		user = s.UserModel.GetUserById(md.UserId, inputUser.GetUserId()).To_User()
 		fullUser.SetUser(user)
 
-	    // Link
-		link := &mtproto.TLContactsLink{ Data2: &mtproto.Contacts_Link_Data{
-			MyLink:	mtproto.NewTLContactLinkContact().To_ContactLink(),
+		// Link
+		link := &mtproto.TLContactsLink{Data2: &mtproto.Contacts_Link_Data{
+			MyLink:      mtproto.NewTLContactLinkContact().To_ContactLink(),
 			ForeignLink: mtproto.NewTLContactLinkContact().To_ContactLink(),
-			User: user,
+			User:        user,
 		}}
 		fullUser.SetLink(link.To_Contacts_Link())
 	case mtproto.TLConstructor_CRC32_inputUserEmpty:
-	    // TODO(@benqi): BAD_REQUEST: 400
+		// TODO(@benqi): BAD_REQUEST: 400
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 		glog.Error(err)
 		return nil, err
 	}
 
 	// NotifySettings
-	peerNotifySettings := &mtproto.TLPeerNotifySettings{ Data2: &mtproto.PeerNotifySettings_Data{
+	peerNotifySettings := &mtproto.TLPeerNotifySettings{Data2: &mtproto.PeerNotifySettings_Data{
 		ShowPreviews: true,
 		MuteUntil:    0,
 		Sound:        "default",
@@ -112,7 +112,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 	// photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
 	sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
 	// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
-	photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+	photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 		Id:          photoId,
 		HasStickers: false,
 		AccessHash:  photoId, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),

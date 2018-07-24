@@ -18,11 +18,11 @@
 package idgen
 
 import (
-	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/redis_client"
 	// "github.com/go-redis/redis"
-	"github.com/garyburd/redigo/redis"
 	"fmt"
+	"github.com/garyburd/redigo/redis"
 )
 
 // import "github.com/golang/glog"

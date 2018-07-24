@@ -18,20 +18,20 @@
 package rpc
 
 import (
-    "github.com/golang/glog"
-    "github.com/nebulaim/telegramd/proto/mtproto"
-    "golang.org/x/net/context"
-    "fmt"
-    "github.com/nebulaim/telegramd/baselib/grpc_util"
-    "github.com/nebulaim/telegramd/baselib/logger"
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"golang.org/x/net/context"
 )
 
 // channels.togglePreHistoryHidden#eabbb94c channel:InputChannel enabled:Bool = Updates;
 func (s *ChannelsServiceImpl) ChannelsTogglePreHistoryHidden(ctx context.Context, request *mtproto.TLChannelsTogglePreHistoryHidden) (*mtproto.Updates, error) {
-    md := grpc_util.RpcMetadataFromIncoming(ctx)
-    glog.Infof("ChannelsTogglePreHistoryHidden - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	md := grpc_util.RpcMetadataFromIncoming(ctx)
+	glog.Infof("ChannelsTogglePreHistoryHidden - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-    // TODO(@benqi): Impl ChannelsTogglePreHistoryHidden logic
+	// TODO(@benqi): Impl ChannelsTogglePreHistoryHidden logic
 
-    return nil, fmt.Errorf("Not impl ChannelsTogglePreHistoryHidden")
+	return nil, fmt.Errorf("Not impl ChannelsTogglePreHistoryHidden")
 }

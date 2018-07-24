@@ -19,12 +19,12 @@ package zproto
 
 import (
 	"fmt"
-	"net"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/baselib/etcd_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery/etcd3"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"net"
 )
 
 type ZProtoServerCallback interface {
@@ -153,7 +153,7 @@ func (s *ZProtoServer) onRawPayload(conn *net2.TcpConnection, md *ZProtoMetadata
 
 	var (
 		err error
-		m2 MessageBase
+		m2  MessageBase
 	)
 
 	if s.callback != nil {

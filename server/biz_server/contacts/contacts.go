@@ -19,6 +19,6 @@ package main
 
 // import "github.com/nebulaim/telegramd/biz_server/contacts/rpc"
 
-func main()  {
+func main() {
 	// rpc.DoMainServer()
 }

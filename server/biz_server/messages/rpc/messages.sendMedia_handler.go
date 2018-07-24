@@ -18,18 +18,18 @@
 package rpc
 
 import (
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/base"
-	"time"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	message2 "github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
-	"github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/gogo/protobuf/proto"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/base"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
+	"time"
 )
 
 func makeGeoPointByInput(geoPoint *mtproto.InputGeoPoint) *mtproto.GeoPoint {
@@ -91,8 +91,8 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 			HasStickers: false,
 			AccessHash:  mediaPhoto.GetId().GetData2().GetAccessHash(),
 			// result.AccessHash, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
-			Date:        now,
-			Sizes:       sizeList,
+			Date:  now,
+			Sizes: sizeList,
 		}}
 
 		messageMedia := &mtproto.TLMessageMediaPhoto{Data2: &mtproto.MessageMedia_Data{
@@ -209,15 +209,15 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 }
 
 func (s *MessagesServiceImpl) makeOutboxMessageBySendMedia(authKeyId int64, fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMedia) *mtproto.TLMessage {
-	message := &mtproto.TLMessage{ Data2: &mtproto.Message_Data{
+	message := &mtproto.TLMessage{Data2: &mtproto.Message_Data{
 		Out:          true,
 		Silent:       request.GetSilent(),
 		FromId:       fromId,
 		ToId:         peer.ToPeer(),
 		ReplyToMsgId: request.GetReplyToMsgId(),
-		Media: 		  s.makeMediaByInputMedia(authKeyId, request.GetMedia()),
-		ReplyMarkup: request.GetReplyMarkup(),
-		Date:        int32(time.Now().Unix()),
+		Media:        s.makeMediaByInputMedia(authKeyId, request.GetMedia()),
+		ReplyMarkup:  request.GetReplyMarkup(),
+		Date:         int32(time.Now().Unix()),
 	}}
 
 	// TODO(@benqi): check channel or super chat
@@ -283,7 +283,7 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 	// peer
 	var (
 		peer *base.PeerUtil
-		err error
+		err  error
 	)
 
 	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerEmpty {

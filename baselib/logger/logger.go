@@ -26,7 +26,7 @@ var (
 	emptyBytes = []byte("{}")
 )
 
-func JsonDebugData(message interface{}) ([]byte) {
+func JsonDebugData(message interface{}) []byte {
 	if data, err := json.Marshal(message); err == nil {
 		return data
 	}

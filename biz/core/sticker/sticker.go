@@ -18,10 +18,10 @@
 package sticker
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 //public static final int TYPE_IMAGE = 0;
@@ -59,7 +59,7 @@ func GetStickerSetList(hash int32) []*mtproto.StickerSet {
 func GetStickerSet(stickerset *mtproto.InputStickerSet) *mtproto.StickerSet {
 	var (
 		inputSet = stickerset.GetData2()
-		set *mtproto.StickerSet
+		set      *mtproto.StickerSet
 	)
 
 	switch stickerset.GetConstructor() {
@@ -87,7 +87,7 @@ func (m *StickerModel) GetStickerPackList(setId int64) ([]*mtproto.StickerPack, 
 	for i := 0; i < len(doList); i++ {
 		packs[i] = &mtproto.StickerPack{
 			Constructor: mtproto.TLConstructor_CRC32_stickerPack,
-			Data2: 		 &mtproto.StickerPack_Data{
+			Data2: &mtproto.StickerPack_Data{
 				Emoticon:  doList[i].Emoticon,
 				Documents: []int64{doList[i].DocumentId},
 			},

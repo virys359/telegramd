@@ -23,24 +23,23 @@ import (
 )
 
 const (
-	PEER_EMPTY 		= 0
-	PEER_SELF 		= 1
-	PEER_USER 		= 2
-	PEER_CHAT 		= 3
-	PEER_CHANNEL 	= 4
-	PEER_USERS		= 5
-	PEER_CHATS 		= 6
-	PEER_ALL 		= 7
-	PEER_UNKNOWN 	= -1
+	PEER_EMPTY   = 0
+	PEER_SELF    = 1
+	PEER_USER    = 2
+	PEER_CHAT    = 3
+	PEER_CHANNEL = 4
+	PEER_USERS   = 5
+	PEER_CHATS   = 6
+	PEER_ALL     = 7
+	PEER_UNKNOWN = -1
 )
 
 type PeerUtil struct {
-	selfId 			int32
-	PeerType 		int32
-	PeerId 			int32
-	AccessHash    	int64
+	selfId     int32
+	PeerType   int32
+	PeerId     int32
+	AccessHash int64
 }
-
 
 func (p PeerUtil) String() (s string) {
 	switch p.PeerType {
@@ -122,18 +121,18 @@ func (p *PeerUtil) ToInputPeer() (peer *mtproto.InputPeer) {
 	case PEER_EMPTY:
 		peer = &mtproto.InputPeer{
 			Constructor: mtproto.TLConstructor_CRC32_inputPeerEmpty,
-			Data2: &mtproto.InputPeer_Data{},
+			Data2:       &mtproto.InputPeer_Data{},
 		}
 	case PEER_SELF:
 		peer = &mtproto.InputPeer{
 			Constructor: mtproto.TLConstructor_CRC32_inputPeerSelf,
-			Data2: &mtproto.InputPeer_Data{},
+			Data2:       &mtproto.InputPeer_Data{},
 		}
 	case PEER_USER:
 		peer = &mtproto.InputPeer{
 			Constructor: mtproto.TLConstructor_CRC32_inputPeerUser,
 			Data2: &mtproto.InputPeer_Data{
-				UserId: p.PeerId,
+				UserId:     p.PeerId,
 				AccessHash: p.AccessHash,
 			},
 		}
@@ -148,7 +147,7 @@ func (p *PeerUtil) ToInputPeer() (peer *mtproto.InputPeer) {
 		peer = &mtproto.InputPeer{
 			Constructor: mtproto.TLConstructor_CRC32_inputPeerChannel,
 			Data2: &mtproto.InputPeer_Data{
-				ChannelId: p.PeerId,
+				ChannelId:  p.PeerId,
 				AccessHash: p.AccessHash,
 			},
 		}
@@ -182,12 +181,12 @@ func (p *PeerUtil) ToPeer() (peer *mtproto.Peer) {
 		if p.PeerId != 0 {
 			peer = &mtproto.Peer{
 				Constructor: mtproto.TLConstructor_CRC32_peerUser,
-				Data2: &mtproto.Peer_Data{UserId: p.PeerId},
+				Data2:       &mtproto.Peer_Data{UserId: p.PeerId},
 			}
 		} else if p.selfId != 0 {
 			peer = &mtproto.Peer{
 				Constructor: mtproto.TLConstructor_CRC32_peerUser,
-				Data2: &mtproto.Peer_Data{UserId: p.selfId},
+				Data2:       &mtproto.Peer_Data{UserId: p.selfId},
 			}
 		} else {
 			panic(fmt.Sprintf("ToPeer(%v) error!", p))
@@ -195,17 +194,17 @@ func (p *PeerUtil) ToPeer() (peer *mtproto.Peer) {
 	case PEER_USER:
 		peer = &mtproto.Peer{
 			Constructor: mtproto.TLConstructor_CRC32_peerUser,
-			Data2: &mtproto.Peer_Data{UserId: p.PeerId},
+			Data2:       &mtproto.Peer_Data{UserId: p.PeerId},
 		}
 	case PEER_CHAT:
 		peer = &mtproto.Peer{
 			Constructor: mtproto.TLConstructor_CRC32_peerChat,
-			Data2: &mtproto.Peer_Data{ChatId: p.PeerId},
+			Data2:       &mtproto.Peer_Data{ChatId: p.PeerId},
 		}
 	case PEER_CHANNEL:
 		peer = &mtproto.Peer{
 			Constructor: mtproto.TLConstructor_CRC32_peerChannel,
-			Data2: &mtproto.Peer_Data{ChannelId: p.PeerId},
+			Data2:       &mtproto.Peer_Data{ChannelId: p.PeerId},
 		}
 	default:
 		panic(fmt.Sprintf("ToPeer(%v) error!", p))
@@ -242,17 +241,17 @@ func (p *PeerUtil) ToInputNotifyPeer(peer *mtproto.InputNotifyPeer) {
 	case PEER_USERS:
 		peer = &mtproto.InputNotifyPeer{
 			Constructor: mtproto.TLConstructor_CRC32_inputNotifyUsers,
-			Data2: &mtproto.InputNotifyPeer_Data{},
+			Data2:       &mtproto.InputNotifyPeer_Data{},
 		}
 	case PEER_CHATS:
 		peer = &mtproto.InputNotifyPeer{
 			Constructor: mtproto.TLConstructor_CRC32_inputNotifyChats,
-			Data2: &mtproto.InputNotifyPeer_Data{},
+			Data2:       &mtproto.InputNotifyPeer_Data{},
 		}
 	case PEER_ALL:
 		peer = &mtproto.InputNotifyPeer{
 			Constructor: mtproto.TLConstructor_CRC32_inputNotifyAll,
-			Data2: &mtproto.InputNotifyPeer_Data{},
+			Data2:       &mtproto.InputNotifyPeer_Data{},
 		}
 	default:
 		panic(fmt.Sprintf("ToInputNotifyPeer(%v) error!", p))
@@ -289,17 +288,17 @@ func (p *PeerUtil) ToNotifyPeer() (peer *mtproto.NotifyPeer) {
 	case PEER_USERS:
 		peer = &mtproto.NotifyPeer{
 			Constructor: mtproto.TLConstructor_CRC32_notifyUsers,
-			Data2: &mtproto.NotifyPeer_Data{},
+			Data2:       &mtproto.NotifyPeer_Data{},
 		}
 	case PEER_CHATS:
 		peer = &mtproto.NotifyPeer{
 			Constructor: mtproto.TLConstructor_CRC32_notifyChats,
-			Data2: &mtproto.NotifyPeer_Data{},
+			Data2:       &mtproto.NotifyPeer_Data{},
 		}
 	case PEER_ALL:
 		peer = &mtproto.NotifyPeer{
 			Constructor: mtproto.TLConstructor_CRC32_notifyAll,
-			Data2: &mtproto.NotifyPeer_Data{},
+			Data2:       &mtproto.NotifyPeer_Data{},
 		}
 	default:
 		panic(fmt.Sprintf("ToNotifyPeer(%v) error!", p))
@@ -312,17 +311,17 @@ func ToPeerByTypeAndID(peerType int8, peerId int32) (peer *mtproto.Peer) {
 	case PEER_USER:
 		peer = &mtproto.Peer{
 			Constructor: mtproto.TLConstructor_CRC32_peerUser,
-			Data2: &mtproto.Peer_Data{UserId: peerId},
+			Data2:       &mtproto.Peer_Data{UserId: peerId},
 		}
 	case PEER_CHAT:
 		peer = &mtproto.Peer{
 			Constructor: mtproto.TLConstructor_CRC32_peerChat,
-			Data2: &mtproto.Peer_Data{ChatId: peerId},
+			Data2:       &mtproto.Peer_Data{ChatId: peerId},
 		}
 	case PEER_CHANNEL:
 		peer = &mtproto.Peer{
 			Constructor: mtproto.TLConstructor_CRC32_peerChannel,
-			Data2: &mtproto.Peer_Data{ChannelId: peerId},
+			Data2:       &mtproto.Peer_Data{ChannelId: peerId},
 		}
 	default:
 		panic(fmt.Sprintf("ToPeerByTypeAndID(%d, %d) error!", peerType, peerId))

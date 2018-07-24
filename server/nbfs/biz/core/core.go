@@ -18,12 +18,12 @@
 package core
 
 import (
-	"github.com/golang/glog"
 	"crypto/md5"
 	"fmt"
-	"os"
-	"io"
+	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"io"
+	"os"
 )
 
 //const (

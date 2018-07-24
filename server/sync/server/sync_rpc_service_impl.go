@@ -19,16 +19,16 @@ package server
 
 import (
 	// "github.com/nebulaim/telegramd/biz/core/user"
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	update3 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/service/status/proto"
 	"golang.org/x/net/context"
 	"sync"
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/baselib/base"
 	"time"
-	"fmt"
-	update3 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/service/status/proto"
 )
 
 /*
@@ -47,7 +47,7 @@ import (
             return 3;
         }
     }
- */
+*/
 
 // messages.AffectedHistory
 // messages.AffectedMessages
@@ -58,7 +58,7 @@ type SyncServiceImpl struct {
 	s  *syncServer
 	// TODO(@benqi): 多个连接
 	// updates map[int32]chan *zproto.PushUpdatesNotify
-	pushChan chan *mtproto.PushUpdatesData
+	pushChan  chan *mtproto.PushUpdatesData
 	closeChan chan int
 }
 
@@ -190,7 +190,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 
 			// push
 			pushData := &mtproto.PushUpdatesData{
-				AuthKeyId:   ss4.AuthKeyId,
+				AuthKeyId: ss4.AuthKeyId,
 				// SessionId:   ss4.SessionId,
 				State:       state,
 				UpdatesData: updatesData,
@@ -250,7 +250,7 @@ func updateShortChatMessageToMessage(shortMessage *mtproto.TLUpdateShortChatMess
 }
 
 func updateShortToUpdateNewMessage(userId int32, shortMessage *mtproto.TLUpdateShortMessage) *mtproto.Update {
-	updateNew := &mtproto.TLUpdateNewMessage{ Data2: &mtproto.Update_Data{
+	updateNew := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
 		Message_1: updateShortMessageToMessage(userId, shortMessage),
 		Pts:       shortMessage.GetPts(),
 		PtsCount:  shortMessage.GetPtsCount(),
@@ -259,7 +259,7 @@ func updateShortToUpdateNewMessage(userId int32, shortMessage *mtproto.TLUpdateS
 }
 
 func updateShortChatToUpdateNewMessage(userId int32, shortMessage *mtproto.TLUpdateShortChatMessage) *mtproto.Update {
-	updateNew := &mtproto.TLUpdateNewMessage{ Data2: &mtproto.Update_Data{
+	updateNew := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
 		Message_1: updateShortChatMessageToMessage(shortMessage),
 		Pts:       shortMessage.GetPts(),
 		PtsCount:  shortMessage.GetPtsCount(),
@@ -271,11 +271,11 @@ func updateShortChatToUpdateNewMessage(userId int32, shortMessage *mtproto.TLUpd
 // rpc SyncUpdatesData(UpdatesRequest) returns (ClientUpdatesState);
 func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpdatesState, error) {
 	var (
-		pushUserId = request.GetPushUserId()
+		pushUserId    = request.GetPushUserId()
 		pts, ptsCount int32
-		seq = int32(0)
-		updates = request.GetUpdates()
-		date = int32(time.Now().Unix())
+		seq           = int32(0)
+		updates       = request.GetUpdates()
+		date          = int32(time.Now().Unix())
 	)
 
 	switch updates.GetConstructor() {
@@ -302,11 +302,11 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 		for _, update := range updates2.GetUpdates() {
 			switch update.GetConstructor() {
 			case mtproto.TLConstructor_CRC32_updateNewMessage,
-				 mtproto.TLConstructor_CRC32_updateReadHistoryOutbox,
-				 mtproto.TLConstructor_CRC32_updateReadHistoryInbox,
-				 mtproto.TLConstructor_CRC32_updateWebPage,
-				 mtproto.TLConstructor_CRC32_updateReadMessagesContents,
-				 mtproto.TLConstructor_CRC32_updateEditMessage:
+				mtproto.TLConstructor_CRC32_updateReadHistoryOutbox,
+				mtproto.TLConstructor_CRC32_updateReadHistoryInbox,
+				mtproto.TLConstructor_CRC32_updateWebPage,
+				mtproto.TLConstructor_CRC32_updateReadMessagesContents,
+				mtproto.TLConstructor_CRC32_updateEditMessage:
 
 				pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
 				ptsCount = 1

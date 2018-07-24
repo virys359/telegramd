@@ -20,12 +20,12 @@ package rpc
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/core/channel"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"golang.org/x/net/context"
 )
 
 // channels.getParticipant#546dd7a6 channel:InputChannel user_id:InputUser = channels.ChannelParticipant;
@@ -59,7 +59,7 @@ func (s *ChannelsServiceImpl) ChannelsGetParticipant(ctx context.Context, reques
 
 	channelParticipant := &mtproto.TLChannelsChannelParticipant{Data2: &mtproto.Channels_ChannelParticipant_Data{
 		Participant: channel.MakeChannelParticipant2ByDO(md.UserId, do),
-		Users: s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{do.UserId, do.InviterUserId}),
+		Users:       s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{do.UserId, do.InviterUserId}),
 	}}
 
 	glog.Infof("channels.getParticipant#546dd7a6 - reply: {%v}", channelParticipant)

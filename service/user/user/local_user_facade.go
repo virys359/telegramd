@@ -20,9 +20,9 @@ package user_client
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
+	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 type localUserFacade struct {

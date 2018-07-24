@@ -18,10 +18,10 @@
 package service
 
 import (
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/golang/glog"
-	"google.golang.org/grpc"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/service/idgen/proto"
+	"google.golang.org/grpc"
 	"log"
 )
 

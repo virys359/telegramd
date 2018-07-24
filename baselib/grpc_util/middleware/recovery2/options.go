@@ -29,7 +29,7 @@ var (
 )
 
 type options struct {
-	unaryRecoveryHandlerFunc UnaryRecoveryHandlerFunc
+	unaryRecoveryHandlerFunc  UnaryRecoveryHandlerFunc
 	unaryRecoveryHandlerFunc2 UnaryRecoveryHandlerFunc
 	streamRecoveryHandlerFunc StreamRecoveryHandlerFunc
 }

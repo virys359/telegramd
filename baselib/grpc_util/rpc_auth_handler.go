@@ -18,13 +18,12 @@
 package grpc_util
 
 import (
-	"google.golang.org/grpc/codes"
 	"context"
-	"google.golang.org/grpc"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
-
 
 func parseToken(token string) (struct{}, error) {
 	return struct{}{}, nil

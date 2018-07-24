@@ -95,7 +95,7 @@ func NewNode(node int64) (*Node, error) {
 	stepMask = -1 ^ (-1 << StepBits)
 	timeShift = NodeBits + StepBits
 	nodeShift = StepBits
-	
+
 	if node < 0 || node > nodeMax {
 		return nil, errors.New("Node number must be between 0 and " + strconv.FormatInt(nodeMax, 10))
 	}

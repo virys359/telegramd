@@ -49,4 +49,3 @@ func (c *localContactFacade) Initialize(config string) error {
 
 	return err
 }
-

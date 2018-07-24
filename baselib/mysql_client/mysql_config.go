@@ -19,8 +19,8 @@ package mysql_client
 
 import (
 	_ "github.com/go-sql-driver/mysql" // import your used driver
-	"github.com/jmoiron/sqlx"
 	"github.com/golang/glog"
+	"github.com/jmoiron/sqlx"
 )
 
 type MySQLConfig struct {
@@ -30,7 +30,7 @@ type MySQLConfig struct {
 	Idle   int    // pool
 }
 
-func NewSqlxDB(c* MySQLConfig) (db *sqlx.DB) {
+func NewSqlxDB(c *MySQLConfig) (db *sqlx.DB) {
 	db, err := sqlx.Connect("mysql", c.DSN)
 	if err != nil {
 		glog.Errorf("Connect db error: %s", err)

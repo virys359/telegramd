@@ -18,10 +18,10 @@
 package photo
 
 import (
-	"time"
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"time"
 )
 
 type PhotoModel struct {
@@ -65,7 +65,7 @@ func (m *PhotoModel) GetPhoto(photoId int64) (photo *mtproto.Photo) {
 		if len(sizes) == 0 {
 			photo = mtproto.NewTLPhotoEmpty().To_Photo()
 		} else {
-			photo2 := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+			photo2 := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 				Id:          photoId,
 				HasStickers: false,
 				AccessHash:  photoId, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
@@ -78,7 +78,6 @@ func (m *PhotoModel) GetPhoto(photoId int64) (photo *mtproto.Photo) {
 	return
 }
 
-
 func MakeUserProfilePhoto(photoId int64, sizes []*mtproto.PhotoSize) *mtproto.UserProfilePhoto {
 	if len(sizes) == 0 {
 		return mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
@@ -86,9 +85,9 @@ func MakeUserProfilePhoto(photoId int64, sizes []*mtproto.PhotoSize) *mtproto.Us
 
 	// TODO(@benqi): check PhotoSize is photoSizeEmpty
 	photo := &mtproto.TLUserProfilePhoto{Data2: &mtproto.UserProfilePhoto_Data{
-		PhotoId: photoId,
+		PhotoId:    photoId,
 		PhotoSmall: sizes[0].GetData2().GetLocation(),
-		PhotoBig: sizes[len(sizes)-1].GetData2().GetLocation(),
+		PhotoBig:   sizes[len(sizes)-1].GetData2().GetLocation(),
 	}}
 
 	return photo.To_UserProfilePhoto()
@@ -102,7 +101,7 @@ func MakeChatPhoto(sizes []*mtproto.PhotoSize) *mtproto.ChatPhoto {
 	// TODO(@benqi): check PhotoSize is photoSizeEmpty
 	photo := &mtproto.TLChatPhoto{Data2: &mtproto.ChatPhoto_Data{
 		PhotoSmall: sizes[0].GetData2().GetLocation(),
-		PhotoBig: sizes[len(sizes)-1].GetData2().GetLocation(),
+		PhotoBig:   sizes[len(sizes)-1].GetData2().GetLocation(),
 	}}
 
 	return photo.To_ChatPhoto()

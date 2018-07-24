@@ -19,8 +19,8 @@ package grpc_util
 
 import (
 	"fmt"
-	"reflect"
 	"github.com/gogo/protobuf/proto"
+	"reflect"
 )
 
 func NewMessageByName(mname string) (proto.Message, error) {
@@ -31,4 +31,3 @@ func NewMessageByName(mname string) (proto.Message, error) {
 
 	return reflect.New(mt.Elem()).Interface().(proto.Message), nil
 }
-

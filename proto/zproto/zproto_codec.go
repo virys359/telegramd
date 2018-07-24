@@ -21,11 +21,11 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/bytes2"
 	"github.com/nebulaim/telegramd/baselib/net2"
+	"hash/crc32"
 	"io"
 	"net"
-	"github.com/nebulaim/telegramd/baselib/bytes2"
-	"hash/crc32"
 	"time"
 )
 
@@ -78,7 +78,7 @@ type ZProtoCodec struct {
 	recvLastPackageIndex uint32
 	sendLastPackageIndex uint32
 	nextSeqNo            uint32
-	connID	             uint64
+	connID               uint64
 }
 
 func (c *ZProtoCodec) encodeMessage(x *bytes2.BufferOutput, m *ZProtoMessage) {
@@ -92,7 +92,7 @@ func (c *ZProtoCodec) encodeMessage(x *bytes2.BufferOutput, m *ZProtoMessage) {
 	x.UInt32(0)
 	if m.Metadata != nil {
 		m.Metadata.Encode(x)
-		binary.LittleEndian.PutUint32(x.Buf()[len:], uint32(x.Len() - len))
+		binary.LittleEndian.PutUint32(x.Buf()[len:], uint32(x.Len()-len))
 	}
 	m.Message.Encode(x)
 }
@@ -109,7 +109,7 @@ func (c *ZProtoCodec) decodeMessage(b []byte) (*ZProtoMessage, error) {
 
 	// TODO(@benqi): check mdLen
 	mdLen := dbuf.UInt32() // binary.LittleEndian.Uint32(payload[16:20])
-	if mdLen > uint32(len(b) - 28) {
+	if mdLen > uint32(len(b)-28) {
 		err := fmt.Errorf("metadata len invalid - mdLen: %d, bLen: %d", mdLen, len(b))
 		glog.Error(err)
 		return nil, err
@@ -198,7 +198,7 @@ func (c *ZProtoCodec) Receive() (interface{}, error) {
 	// 2. check packageIndex
 	// TODO(@benqi): check packageIndex
 	packageIndex := dbuf.UInt32() // binary.LittleEndian.Uint32(c.headBuf[8:12])
-	if packageIndex != 0 && packageIndex != c.recvLastPackageIndex + 1 {
+	if packageIndex != 0 && packageIndex != c.recvLastPackageIndex+1 {
 		err = fmt.Errorf("invalid packageIndex - lastPackageIndex: %d, packageIndex: %d", c.recvLastPackageIndex, packageIndex)
 		glog.Error(err)
 		return nil, err
@@ -214,7 +214,6 @@ func (c *ZProtoCodec) Receive() (interface{}, error) {
 	crcHash := crc32.NewIEEE()
 	crcHash.Write(c.headBuf)
 	crcHash.Write(payload[:len(payload)-4])
-
 
 	// 3. check crc32
 	crc := binary.LittleEndian.Uint32(payload[len(payload)-4:])

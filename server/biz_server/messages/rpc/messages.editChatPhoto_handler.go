@@ -18,16 +18,17 @@
 package rpc
 
 import (
-	"time"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/biz/core"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
+	"time"
 )
 
 /*
@@ -42,7 +43,7 @@ import (
 		},
 	  },
 	},
- */
+*/
 // messages.editChatPhoto#ca4c79d8 chat_id:int photo:InputChatPhoto = Updates;
 func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request *mtproto.TLMessagesEditChatPhoto) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
@@ -56,12 +57,12 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
-		PeerId: chatLogic.GetChatId(),
+		PeerId:   chatLogic.GetChatId(),
 	}
 
 	var (
 		photoId int64 = 0
-		action *mtproto.MessageAction
+		action  *mtproto.MessageAction
 	)
 
 	chatPhoto := request.GetPhoto()
@@ -82,7 +83,7 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 		photoId = result.PhotoId
 		// user.SetUserPhotoID(md.UserId, uuid)
 		// fileData := mediaData.GetFile().GetData2()
-		photo := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+		photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 			Id:          photoId,
 			HasStickers: false,
 			AccessHash:  result.AccessHash, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
@@ -100,7 +101,7 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 	chatLogic.EditChatPhoto(md.UserId, photoId)
 	editChatPhotoMessage := chatLogic.MakeMessageService(md.UserId, action)
 
-	randomId := base.NextSnowflakeId()
+	randomId := core.GetUUID()
 	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, editChatPhotoMessage, func(messageId int32) {
 		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})

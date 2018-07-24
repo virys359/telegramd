@@ -29,20 +29,23 @@ import (
 // "github.com/golang/protobuf/proto"
 )
 
-func NewTLAuthSendCodeLayer51() * TLAuthSendCodeLayer51 {
+func NewTLAuthSendCodeLayer51() *TLAuthSendCodeLayer51 {
 	return &TLAuthSendCodeLayer51{}
 }
 
-func (m* TLAuthSendCodeLayer51) Encode() []byte {
+func (m *TLAuthSendCodeLayer51) Encode() []byte {
 	x := NewEncodeBuf(512)
 	x.Int(int32(TLConstructor_CRC32_auth_sendCodeLayer51))
 
 	// flags
 	var flags uint32 = 0
-	if m.AllowFlashcall == true { flags |= 1 << 0 }
-	if m.CurrentNumber != nil { flags |= 1 << 0 }
+	if m.AllowFlashcall == true {
+		flags |= 1 << 0
+	}
+	if m.CurrentNumber != nil {
+		flags |= 1 << 0
+	}
 	x.UInt(flags)
-
 
 	x.String(m.PhoneNumber)
 	if m.CurrentNumber != nil {
@@ -55,10 +58,12 @@ func (m* TLAuthSendCodeLayer51) Encode() []byte {
 	return x.buf
 }
 
-func (m* TLAuthSendCodeLayer51) Decode(dbuf *DecodeBuf) error {
+func (m *TLAuthSendCodeLayer51) Decode(dbuf *DecodeBuf) error {
 	flags := dbuf.UInt()
 	_ = flags
-	if (flags & (1 << 0)) != 0 { m.AllowFlashcall = true }
+	if (flags & (1 << 0)) != 0 {
+		m.AllowFlashcall = true
+	}
 	m.PhoneNumber = dbuf.String()
 	if (flags & (1 << 0)) != 0 {
 		m4 := &Bool{}

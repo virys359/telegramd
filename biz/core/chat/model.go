@@ -18,16 +18,16 @@
 package chat
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	// photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	// "time"
 	"github.com/nebulaim/telegramd/biz/base"
 	// "github.com/nebulaim/telegramd/biz/core/account"
 	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 )
 
 type chatsDAO struct {
@@ -100,7 +100,7 @@ func (m *ChatModel) GetChatBySelfID(selfUserId, chatId int32) (chat *mtproto.Cha
 	return
 }
 
-func (m *ChatModel) GetChatFullBySelfId(selfUserId int32, chatData *chatLogicData) (*mtproto.TLChatFull) {
+func (m *ChatModel) GetChatFullBySelfId(selfUserId int32, chatData *chatLogicData) *mtproto.TLChatFull {
 	// sizes, _ := nbfs_client.GetPhotoSizeList(chatData.chat.PhotoId)
 	// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
 	var photo *mtproto.Photo

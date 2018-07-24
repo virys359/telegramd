@@ -18,8 +18,8 @@
 package crypto
 
 import (
-	"crypto/cipher"
 	"crypto/aes"
+	"crypto/cipher"
 	"strconv"
 )
 
@@ -48,9 +48,9 @@ func NewAesCTR128Encrypt(key []byte, iv []byte) (*AesCTR128Encrypt, error) {
 
 	stream2 := cipher.NewCTR(block2, iv)
 
-	return &AesCTR128Encrypt {
+	return &AesCTR128Encrypt{
 		// block:	block2,
-		stream:	stream2,
+		stream: stream2,
 	}, nil
 }
 

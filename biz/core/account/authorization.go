@@ -26,7 +26,7 @@ func (m *AccountModel) GetAuthorizationList(selfAuthKeyId int64, userId int32) [
 	doList := m.dao.AuthUsersDAO.SelectListByUserId(userId)
 	sessList := make([]*mtproto.Authorization, 0, len(doList))
 	var (
-		hash int64
+		hash  int64
 		Flags int32
 	)
 	for _, do := range doList {

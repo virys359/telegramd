@@ -18,8 +18,8 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"fmt"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 // invokeAfterMsg#cb9f372d {X:Type} msg_id:long query:!X = X;

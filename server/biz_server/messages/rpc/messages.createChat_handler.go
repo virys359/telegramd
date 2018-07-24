@@ -19,13 +19,14 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/core"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // messages.createChat#9cb126e users:Vector<InputUser> title:string = Updates;
@@ -55,11 +56,11 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHAT,
-		PeerId: chat.GetChatId(),
+		PeerId:   chat.GetChatId(),
 	}
 
 	createChatMessage := chat.MakeCreateChatMessage(md.UserId)
-	randomId := base.NextSnowflakeId()
+	randomId := core.GetUUID()
 	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, createChatMessage, func(messageId int32) {
 		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
 	})

@@ -19,12 +19,12 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
+	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	"github.com/nebulaim/telegramd/baselib/base"
 )
 
 // updates.getChannelDifference#3173d78 flags:# force:flags.0?true channel:InputChannel filter:ChannelMessagesFilter pts:int limit:int = updates.ChannelDifference;
@@ -84,14 +84,14 @@ func (s *UpdatesServiceImpl) UpdatesGetChannelDifference(ctx context.Context, re
 	var difference *mtproto.Updates_ChannelDifference
 
 	//if len(updateList) == 0 {
-		difference = &mtproto.Updates_ChannelDifference{
-			Constructor: mtproto.TLConstructor_CRC32_updates_channelDifferenceEmpty,
-			Data2:  &mtproto.Updates_ChannelDifference_Data{
-				Final:   true,
-				Pts:     int32(update2.CurrentChannelPtsId(base.Int32ToString(request.GetChannel().GetData2().GetChannelId()))),
-				Timeout: 30,
-			},
-		}
+	difference = &mtproto.Updates_ChannelDifference{
+		Constructor: mtproto.TLConstructor_CRC32_updates_channelDifferenceEmpty,
+		Data2: &mtproto.Updates_ChannelDifference_Data{
+			Final:   true,
+			Pts:     int32(update2.CurrentChannelPtsId(base.Int32ToString(request.GetChannel().GetData2().GetChannelId()))),
+			Timeout: 30,
+		},
+	}
 	//} else {
 	//	difference = &mtproto.Updates_ChannelDifference{
 	//		Constructor: mtproto.TLConstructor_CRC32_updates_channelDifferenceEmpty,

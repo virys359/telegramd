@@ -23,8 +23,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/nebulaim/telegramd/proto/zproto"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/proto/zproto"
 )
 
 func init() {

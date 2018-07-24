@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 )
@@ -47,9 +47,9 @@ func (s *ChannelsServiceImpl) ChannelsGetFullChannel(ctx context.Context, reques
 
 	// idList := channelLogic.GetChannelParticipantIdList()
 	messagesChatFull := &mtproto.TLMessagesChatFull{Data2: &mtproto.Messages_ChatFull_Data{
-		FullChat: 	s.ChannelModel.GetChannelFullBySelfId(md.UserId, channelLogic).To_ChatFull(),
-		Chats:      []*mtproto.Chat{channelLogic.ToChannel(md.UserId)},
-		Users: 		[]*mtproto.User{},
+		FullChat: s.ChannelModel.GetChannelFullBySelfId(md.UserId, channelLogic).To_ChatFull(),
+		Chats:    []*mtproto.Chat{channelLogic.ToChannel(md.UserId)},
+		Users:    []*mtproto.User{},
 	}}
 
 	glog.Infof("channels.getFullChannel#8736a09 - reply: %s", logger.JsonDebugData(messagesChatFull))

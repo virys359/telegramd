@@ -18,9 +18,9 @@
 package snowflake
 
 import (
-	"testing"
-	"log"
 	"fmt"
+	"log"
+	"testing"
 )
 
 func TestID(t *testing.T) {

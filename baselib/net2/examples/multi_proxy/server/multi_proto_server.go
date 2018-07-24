@@ -18,13 +18,13 @@
 package server
 
 import (
-	"net"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/net2"
+	"net"
 )
 
 type MultiProtoServer struct {
-	server       *net2.TcpServer
+	server *net2.TcpServer
 }
 
 func NewMultiProtoServer(listener net.Listener, protoName string) *MultiProtoServer {
@@ -33,7 +33,7 @@ func NewMultiProtoServer(listener net.Listener, protoName string) *MultiProtoSer
 	return s
 }
 
-func (s* MultiProtoServer) Serve() {
+func (s *MultiProtoServer) Serve() {
 	s.server.Serve()
 }
 
@@ -53,7 +53,7 @@ func (s *MultiProtoServer) OnConnectionClosed(conn *net2.TcpConnection) {
 }
 
 type MultiProtoInsance struct {
-	server       *MultiProtoServer
+	server *MultiProtoServer
 	// client       *EchoClient
 }
 

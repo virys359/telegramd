@@ -18,14 +18,14 @@
 package status_client
 
 import (
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/golang/glog"
 	"context"
+	"encoding/json"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/service/status/proto"
 	"google.golang.org/grpc"
 	"time"
-	"encoding/json"
 )
 
 type rpcStatusClient struct {
@@ -69,10 +69,10 @@ func (c *rpcStatusClient) Initialize(config string) error {
 func (c *rpcStatusClient) SetSessionOnline(userId int32, serverId int32, authKeyId int64) error {
 	cli := status.NewRPCStatusClient(c.conn)
 	session := &status.SessionEntry{
-		UserId: userId,
-		ServerId: serverId,
+		UserId:    userId,
+		ServerId:  serverId,
 		AuthKeyId: authKeyId,
-		Expired: time.Now().Unix() + 120,
+		Expired:   time.Now().Unix() + 120,
 	}
 	_, err := cli.SetSessionOnline(context.Background(), session)
 	return err

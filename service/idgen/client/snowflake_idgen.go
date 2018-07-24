@@ -18,9 +18,9 @@
 package idgen
 
 import (
+	"errors"
 	"github.com/bwmarrin/snowflake"
 	"github.com/golang/glog"
-	"errors"
 	"github.com/nebulaim/telegramd/baselib/base"
 )
 

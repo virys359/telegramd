@@ -19,12 +19,12 @@ package grpc_util
 
 import (
 	"encoding/base64"
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
-	"google.golang.org/grpc/metadata"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"fmt"
+	"google.golang.org/grpc/metadata"
 )
 
 var (

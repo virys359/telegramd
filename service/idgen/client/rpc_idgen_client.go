@@ -18,13 +18,13 @@
 package idgen
 
 import (
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/service/idgen/proto"
 	"context"
-	"google.golang.org/grpc"
 	"encoding/json"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
+	"github.com/nebulaim/telegramd/service/idgen/proto"
+	"google.golang.org/grpc"
 )
 
 type RpcIDGenClient struct {

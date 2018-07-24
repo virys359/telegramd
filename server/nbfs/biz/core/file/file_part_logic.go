@@ -18,16 +18,16 @@
 package file
 
 import (
-	"os"
-	"fmt"
-	"io/ioutil"
 	"crypto/md5"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
+	"fmt"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/server/nbfs/biz/base"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/base"
 	"github.com/nebulaim/telegramd/server/nbfs/biz/core"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dao"
+	"github.com/nebulaim/telegramd/server/nbfs/biz/dal/dataobject"
+	"io/ioutil"
+	"os"
 )
 
 const (
@@ -36,9 +36,10 @@ const (
 
 type filePartData struct {
 	SavedFilePath string
-	SavedMd5Hash string
+	SavedMd5Hash  string
 	*dataobject.FilePartsDO
 }
+
 // 判断文件是否存在
 func pathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
@@ -50,7 +51,6 @@ func pathExists(path string) (bool, error) {
 	}
 	return false, err
 }
-
 
 func DoSavedFilePart(creatorId, filePartId int64) (*filePartData, error) {
 	data := dao.GetFilePartsDAO(dao.DB_MASTER).SelectFileParts(creatorId, filePartId)
@@ -116,12 +116,12 @@ func MakeFilePartData(creatorId, filePartId int64, isNew, isBigFile bool) (*file
 	data = dao.GetFilePartsDAO(dao.DB_MASTER).SelectFileParts(creatorId, filePartId)
 	if data == nil {
 		data = &dataobject.FilePartsDO{
-			CreatorId:      creatorId,
-			FilePartId:     filePartId,
-			FilePart:       -1,
-			IsBigFile:      base2.BoolToInt8(isBigFile),
+			CreatorId:  creatorId,
+			FilePartId: filePartId,
+			FilePart:   -1,
+			IsBigFile:  base2.BoolToInt8(isBigFile),
 			// FileTotalParts: fileTotalParts,
-			FilePath:       fmt.Sprintf("/0/%d.parts", base.NextSnowflakeId()),
+			FilePath: fmt.Sprintf("/0/%d.parts", base.NextSnowflakeId()),
 		}
 		data.Id = dao.GetFilePartsDAO(dao.DB_MASTER).Insert(data)
 	}

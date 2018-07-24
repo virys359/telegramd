@@ -54,11 +54,11 @@ const (
 )
 
 const (
-	SESSION_HANDSHAKE    			= 0xFF01
-	SESSION_SESSION_DATA 			= 0xFF02
-	SYNC_DATA            			= 0xFF03
-	SESSION_SESSION_CLIENT_NEW 		= 0xFF04
-	SESSION_SESSION_CLIENT_CLOSED 	= 0xFF05
+	SESSION_HANDSHAKE             = 0xFF01
+	SESSION_SESSION_DATA          = 0xFF02
+	SYNC_DATA                     = 0xFF03
+	SESSION_SESSION_CLIENT_NEW    = 0xFF04
+	SESSION_SESSION_CLIENT_CLOSED = 0xFF05
 )
 
 //func isHandshake(state int) bool {
@@ -203,9 +203,9 @@ func (m *ZProtoSyncData) Decode(dbuf *bytes2.BufferInput) error {
 ///////////////////////////////////////////////////////////////////////////////////////////
 type ZProtoSessionClientNew struct {
 	// proto int32
-	ConnType   int
-	SessionId  uint64
-	AuthKeyId  int64
+	ConnType  int
+	SessionId uint64
+	AuthKeyId int64
 }
 
 func (m *ZProtoSessionClientNew) String() string {
@@ -228,9 +228,9 @@ func (m *ZProtoSessionClientNew) Decode(dbuf *bytes2.BufferInput) error {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 type ZProtoSessionClientClosed struct {
-	ConnType   int
-	SessionId  uint64
-	AuthKeyId  int64
+	ConnType  int
+	SessionId uint64
+	AuthKeyId int64
 }
 
 func (m *ZProtoSessionClientClosed) String() string {
@@ -301,9 +301,9 @@ func (m *ZProtoSessionClientClosed) Decode(dbuf *bytes2.BufferInput) error {
 //}
 
 func init() {
-	zprotoFactories[SESSION_HANDSHAKE] 				= func() MessageBase { return &ZProtoHandshakeMessage{} }
-	zprotoFactories[SESSION_SESSION_DATA] 			= func() MessageBase { return &ZProtoSessionData{} }
-	zprotoFactories[SYNC_DATA] 						= func() MessageBase { return &ZProtoSyncData{} }
-	zprotoFactories[SESSION_SESSION_CLIENT_NEW] 	= func() MessageBase { return &ZProtoSessionClientNew{} }
-	zprotoFactories[SESSION_SESSION_CLIENT_CLOSED] 	= func() MessageBase { return &ZProtoSessionClientClosed{} }
+	zprotoFactories[SESSION_HANDSHAKE] = func() MessageBase { return &ZProtoHandshakeMessage{} }
+	zprotoFactories[SESSION_SESSION_DATA] = func() MessageBase { return &ZProtoSessionData{} }
+	zprotoFactories[SYNC_DATA] = func() MessageBase { return &ZProtoSyncData{} }
+	zprotoFactories[SESSION_SESSION_CLIENT_NEW] = func() MessageBase { return &ZProtoSessionClientNew{} }
+	zprotoFactories[SESSION_SESSION_CLIENT_CLOSED] = func() MessageBase { return &ZProtoSessionClientClosed{} }
 }

@@ -19,8 +19,8 @@ package rpc
 
 import (
 	"github.com/BurntSushi/toml"
-	model2 "github.com/nebulaim/telegramd/server/biz_server/help/model"
 	"github.com/nebulaim/telegramd/biz/core"
+	model2 "github.com/nebulaim/telegramd/server/biz_server/help/model"
 )
 
 const (

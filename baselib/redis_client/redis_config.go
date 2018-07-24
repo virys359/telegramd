@@ -18,23 +18,23 @@
 package redis_client
 
 import (
-	"github.com/nebulaim/telegramd/baselib/base"
 	"fmt"
+	"github.com/nebulaim/telegramd/baselib/base"
 )
 
 // Redis client config.
 type RedisConfig struct {
-	Name         	string 			// redis name
-	Addr         	string
-	Active       	int 			// pool
-	Idle         	int 			// pool
-	DialTimeout  	base.Duration
-	ReadTimeout  	base.Duration
-	WriteTimeout 	base.Duration
-	IdleTimeout  	base.Duration
+	Name         string // redis name
+	Addr         string
+	Active       int // pool
+	Idle         int // pool
+	DialTimeout  base.Duration
+	ReadTimeout  base.Duration
+	WriteTimeout base.Duration
+	IdleTimeout  base.Duration
 
-	DBNum			string			// db号
-	Password 		string			// 密码
+	DBNum    string // db号
+	Password string // 密码
 }
 
 func (c *RedisConfig) ToRedisCacheConfig() string {

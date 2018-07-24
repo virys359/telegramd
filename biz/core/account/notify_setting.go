@@ -18,10 +18,10 @@
 package account
 
 import (
-	"github.com/nebulaim/telegramd/biz/dal/dataobject"
-	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 func (m *AccountModel) GetNotifySettings(userId int32, peer *base.PeerUtil) *mtproto.PeerNotifySettings {
@@ -53,7 +53,7 @@ func (m *AccountModel) SetNotifySettings(userId int32, peer *base.PeerUtil, sett
 
 	var (
 		showPreviews = base2.BoolToInt8(settings.GetShowPreviews())
-		silent = base2.BoolToInt8(settings.GetSilent())
+		silent       = base2.BoolToInt8(settings.GetSilent())
 	)
 
 	do := m.dao.UserNotifySettingsDAO.SelectByPeer(userId, int8(peer.PeerType), peer.PeerId)

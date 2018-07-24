@@ -18,14 +18,14 @@
 package base
 
 import (
-	"io"
-	"unicode/utf8"
 	"encoding/binary"
 	"fmt"
+	"io"
+	"unicode/utf8"
 )
 
 type Buffer struct {
-	buf []byte
+	buf     []byte
 	readPos int
 }
 
@@ -228,4 +228,3 @@ func (b *Buffer) WriteRune(r rune) (int, error) {
 func (b *Buffer) String() string {
 	return string(b.Bytes())
 }
-

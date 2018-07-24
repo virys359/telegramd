@@ -18,16 +18,16 @@
 package server
 
 import (
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
-	"time"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"google.golang.org/grpc"
-	"github.com/nebulaim/telegramd/proto/zproto"
-	"github.com/nebulaim/telegramd/proto/mtproto"
 	"fmt"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/grpc_util"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/proto/zproto"
+	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
+	"google.golang.org/grpc"
+	"time"
 	// "github.com/nebulaim/telegramd/mtproto2"
 )
 
@@ -75,7 +75,7 @@ func (s *AuthKeyServer) Destroy() {
 	glog.Infof("sessionServer - destroy...")
 	s.server.Stop()
 	s.rpcServer.Stop()
-	time.Sleep(1*time.Second)
+	time.Sleep(1 * time.Second)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////

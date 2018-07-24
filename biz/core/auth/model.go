@@ -19,8 +19,8 @@ package auth
 
 import (
 	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 )
 
@@ -68,7 +68,6 @@ func (m *AuthModel) BindAuthKeyAndUser(authKeyId int64, userId int32) {
 	}
 }
 
-
 func (m *AuthModel) MakeCodeData(authKeyId int64, phoneNumber string) *phoneCodeData {
 	// TODO(@benqi): 独立出统一消息推送系统
 	// 检查phpne是否存在，若存在是否在线决定是否通过短信发送或通过其他客户端发送
@@ -111,7 +110,6 @@ func (m *AuthModel) MakeCodeDataByHash(authKeyId int64, phoneNumber, codeHash st
 	}
 	return code
 }
-
 
 func init() {
 	core.RegisterCoreModel(&AuthModel{dao: &authsDAO{}})

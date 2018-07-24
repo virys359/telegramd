@@ -99,8 +99,6 @@ func (manager *ConnectionManager) delConnection(conn Connection) {
 	manager.disposeWait.Done()
 }
 
-
-
 //type Manager struct {
 //	sessionMaps [sessionMapNum]sessionMap
 //	disposeOnce sync.Once

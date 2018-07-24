@@ -18,12 +18,12 @@
 package main
 
 import (
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/nebulaim/telegramd/baselib/app"
-	"github.com/nebulaim/telegramd/proto/zproto"
-	"fmt"
 	"flag"
+	"fmt"
 	"github.com/BurntSushi/toml"
+	"github.com/nebulaim/telegramd/baselib/app"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/proto/zproto"
 )
 
 var (
@@ -55,7 +55,7 @@ func (s *TestServerInsance) OnServerNewConnection(conn *net2.TcpConnection) {
 
 }
 
-func (s *TestServerInsance) OnServerMessageDataArrived(c *net2.TcpConnection,md *zproto.ZProtoMetadata, sessionId, messageId uint64,  seqNo uint32, msg zproto.MessageBase) error {
+func (s *TestServerInsance) OnServerMessageDataArrived(c *net2.TcpConnection, md *zproto.ZProtoMetadata, sessionId, messageId uint64, seqNo uint32, msg zproto.MessageBase) error {
 	return nil
 }
 

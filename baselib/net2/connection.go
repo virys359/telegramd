@@ -18,10 +18,10 @@
 package net2
 
 import (
-	//"net"
-	//"sync/atomic"
-	//"fmt"
-	//"sync"
+//"net"
+//"sync/atomic"
+//"fmt"
+//"sync"
 )
 
 type Connection interface {

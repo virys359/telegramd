@@ -19,13 +19,13 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"golang.org/x/net/context"
 )
 
 // Android client有三种场景会调用importContacts:
@@ -37,7 +37,7 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	glog.Infof("contacts.importContacts#2c800be5 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var (
-		err error
+		err              error
 		importedContacts *mtproto.TLContactsImportedContacts
 	)
 
@@ -128,13 +128,13 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	imported := &mtproto.TLImportedContact{Data2: &mtproto.ImportedContact_Data{
-		UserId: contactUser.GetId(),
+		UserId:   contactUser.GetId(),
 		ClientId: inputContact.GetClientId(),
 	}}
 	// contacts.importedContacts#77d01c3b imported:Vector<ImportedContact> popular_invites:Vector<PopularContact> retry_contacts:Vector<long> users:Vector<User> = contacts.ImportedContacts;
 	importedContacts = &mtproto.TLContactsImportedContacts{Data2: &mtproto.Contacts_ImportedContacts_Data{
 		Imported: []*mtproto.ImportedContact{imported.To_ImportedContact()},
-		Users: []*mtproto.User{contactUser.To_User()},
+		Users:    []*mtproto.User{contactUser.To_User()},
 	}}
 
 	glog.Infof("contacts.importContacts#2c800be5 - reply: %s", logger.JsonDebugData(importedContacts))

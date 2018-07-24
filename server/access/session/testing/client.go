@@ -18,13 +18,13 @@
 package main
 
 import (
-	"github.com/nebulaim/telegramd/baselib/net2"
-	"github.com/golang/glog"
 	"flag"
-	"github.com/nebulaim/telegramd/proto/zproto"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/gogo/protobuf/proto"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/crypto"
+	"github.com/nebulaim/telegramd/baselib/net2"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/proto/zproto"
 )
 
 type sessionClient struct {
@@ -40,7 +40,7 @@ func (s *sessionClient) OnNewClient(client *net2.TcpClient) {
 
 	authKeyMD := &mtproto.AuthKeyMetadata{}
 	state := &zproto.HandshakeState{
-		State : zproto.STATE_pq,
+		State:    zproto.STATE_pq,
 		ResState: zproto.RES_STATE_NONE,
 	}
 	state.Ctx, _ = proto.Marshal(authKeyMD)
@@ -49,7 +49,7 @@ func (s *sessionClient) OnNewClient(client *net2.TcpClient) {
 		State: state,
 		MTPMessage: &mtproto.UnencryptedMessage{
 			MessageId: 0,
-			Object: req_pq,
+			Object:    req_pq,
 		},
 	}
 
@@ -91,4 +91,3 @@ func main() {
 	client.client.Serve()
 	select {}
 }
-
