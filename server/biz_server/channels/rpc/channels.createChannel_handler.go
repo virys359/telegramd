@@ -162,7 +162,7 @@ func (s *ChannelsServiceImpl) ChannelsCreateChannel(ctx context.Context, request
 	//	//}}
 	//	//updates.AddUpdate(updateChatParticipants.To_Update())
 	//	updates.AddUpdateNewMessage(inbox.Message)
-	//	//updates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+	//	//updates.AddUsers(user.GetUsersBySelfAndIDList(nbox.UserId, chat.GetChatParticipantIdList()))
 	//	updates.AddChat(channel.ToChannel(inbox.UserId))
 	//	sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
 	//}

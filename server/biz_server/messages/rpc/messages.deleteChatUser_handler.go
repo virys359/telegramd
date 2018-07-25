@@ -96,7 +96,7 @@ func (s *MessagesServiceImpl) MessagesDeleteChatUser(ctx context.Context, reques
 		updates := update2.NewUpdatesLogic(md.UserId)
 		updates.AddUpdate(updateChatParticipants.To_Update())
 		updates.AddUpdateNewMessage(inbox.Message)
-		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chatLogic.GetChatParticipantIdList()))
+		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(inbox.UserId, chatLogic.GetChatParticipantIdList()))
 		updates.AddChat(chatLogic.ToChat(inbox.UserId))
 		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
 	}

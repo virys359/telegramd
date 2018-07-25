@@ -89,7 +89,7 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 		}}
 		updates.AddUpdate(updateChatParticipants.To_Update())
 		updates.AddUpdateNewMessage(inbox.Message)
-		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(inbox.UserId, chat.GetChatParticipantIdList()))
 		updates.AddChat(chat.ToChat(inbox.UserId))
 		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
 	}
