@@ -45,7 +45,6 @@ func (s *UploadServiceImpl) UploadSaveFilePart(ctx context.Context, request *mtp
 		return nil, err
 	}
 
-	ioutil.WriteFile(fmt.Sprintf("/tmp/uploads/%d_%d.tmp", request.GetFileId(), request.GetFilePart()), request.GetBytes(), 0644)
 	err = filePartLogic.SaveFilePart(request.FilePart, request.Bytes)
 	if err != nil {
 		glog.Error(err)

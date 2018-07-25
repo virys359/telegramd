@@ -34,6 +34,7 @@ import (
 	"google.golang.org/grpc"
 	"sync"
 	"time"
+	"github.com/nebulaim/telegramd/server/sync/biz/core/update"
 )
 
 func init() {
@@ -43,26 +44,6 @@ func init() {
 	proto.RegisterType((*mtproto.VoidRsp)(nil), "mtproto.VoidRsp")
 }
 
-//type rpcServerConfig struct {
-//	Addr string
-//}
-//
-//type syncConfig struct {
-//	Server        *rpcServerConfig
-//	Discovery     service_discovery.ServiceDiscoveryServerConfig
-//	Redis         []redis_client.RedisConfig
-//	Mysql         []mysql_client.MySQLConfig
-//	SessionClient *ClientConfig
-//}
-//
-//type ClientConfig struct {
-//	Name      string
-//	ProtoName string
-//	AddrList  []string
-//	EtcdAddrs []string
-//	Balancer  string
-//}
-
 type connContext struct {
 	serverId  int32
 	sessionId uint64
@@ -70,6 +51,7 @@ type connContext struct {
 
 type syncServer struct {
 	idgen      idgen.UUIDGen
+	// update     *update.UpdateModel
 	status     status_client.StatusClient
 	client     *zproto.ZProtoClient
 	server     *grpc_util.RPCServer
@@ -113,13 +95,9 @@ func (s *syncServer) Initialize() error {
 }
 
 func (s *syncServer) RunLoop() {
-	// go s.clientWatcher.WatchClients(nil)
-	// go s.client.Serve()
 	go s.server.Serve(func(s2 *grpc.Server) {
-		// cache := cache2.NewAuthKeyCacheManager()
-		// mtproto.RegisterRPCAuthKeyServer(s, rpc.NewAuthKeyService(cache))
-		// mtproto.RegisterRPCSyncServer(s2, NewSyncService(s))
-		s.impl = NewSyncService(s)
+		updateModel := update.NewUpdateModel(Conf.ServerId, "immaster", "cache")
+		s.impl = NewSyncService(s, updateModel)
 		mtproto.RegisterRPCSyncServer(s2, s.impl)
 	})
 	s.client.Serve()

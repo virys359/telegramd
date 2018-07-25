@@ -49,26 +49,6 @@ func (c *syncConfig) String() string {
 		c.SessionClient)
 }
 
-//type rpcServerConfig struct {
-//	Addr string
-//}
-//
-//type syncConfig struct {
-//	Server        *rpcServerConfig
-//	Discovery     service_discovery.ServiceDiscoveryServerConfig
-//	Redis         []redis_client.RedisConfig
-//	Mysql         []mysql_client.MySQLConfig
-//	SessionClient *ClientConfig
-//}
-//
-//type ClientConfig struct {
-//	Name      string
-//	ProtoName string
-//	AddrList  []string
-//	EtcdAddrs []string
-//	Balancer  string
-//}
-
 func init() {
 	flag.StringVar(&confPath, "conf", "./sync.toml", "config path")
 }

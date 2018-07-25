@@ -70,7 +70,7 @@ func (c *RedisSeqClient) GetNextSeqID(key string) (seq int64, err error) {
 		glog.Errorf("redis_seq_client.GetNextSeqID - INCR {%s}, error: {%v}", key, err)
 	}
 
-	return 0, nil
+	return
 }
 
 func init() {

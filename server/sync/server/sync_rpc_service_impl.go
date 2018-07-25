@@ -18,13 +18,11 @@
 package server
 
 import (
-	// "github.com/nebulaim/telegramd/biz/core/user"
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	update3 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/server/sync/biz/core/update"
 	"github.com/nebulaim/telegramd/service/status/proto"
 	"golang.org/x/net/context"
 	"sync"
@@ -60,13 +58,16 @@ type SyncServiceImpl struct {
 	// updates map[int32]chan *zproto.PushUpdatesNotify
 	pushChan  chan *mtproto.PushUpdatesData
 	closeChan chan int
+
+	*update.UpdateModel
 }
 
-func NewSyncService(sync2 *syncServer) *SyncServiceImpl {
+func NewSyncService(sync2 *syncServer, updateModel *update.UpdateModel) *SyncServiceImpl {
 	s := &SyncServiceImpl{
-		s:         sync2,
-		closeChan: make(chan int),
-		pushChan:  make(chan *mtproto.PushUpdatesData, 1024),
+		s:           sync2,
+		closeChan:   make(chan int),
+		pushChan:    make(chan *mtproto.PushUpdatesData, 1024),
+		UpdateModel: updateModel,
 	}
 
 	go s.pushUpdatesLoop()
@@ -159,7 +160,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 					// continue
 					// TODO(@benqi): move to received ack handler
 					if state.Pts != 0 {
-						update3.UpdateServerAuthStateSeq(ss4.AuthKeyId, state.Pts, state.Qts)
+						s.UpdateModel.UpdateServerAuthStateSeq(ss4.AuthKeyId, state.Pts, state.Qts)
 					}
 					encodeUpdateData()
 				} else {
@@ -175,7 +176,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 			case mtproto.SyncType_SYNC_TYPE_USER:
 				// TODO(@benqi): move to received ack handler
 				if state.Pts != 0 {
-					update3.UpdateServerAuthStateSeq(ss4.AuthKeyId, state.Pts, state.Qts)
+					s.UpdateModel.UpdateServerAuthStateSeq(ss4.AuthKeyId, state.Pts, state.Qts)
 				}
 				encodeUpdateData()
 			case mtproto.SyncType_SYNC_TYPE_RPC_RESULT:
@@ -195,6 +196,7 @@ func (s *SyncServiceImpl) pushUpdatesToSession(state *mtproto.ClientUpdatesState
 				State:       state,
 				UpdatesData: updatesData,
 			}
+			glog.Infof("pushUpdatesToSession - phshData: {server_id: %d, auth_key_id: %d, state: {%v}}", k, pushData.AuthKeyId, state)
 			s.s.sendToSessionServer(int(k), pushData)
 		}
 	}
@@ -269,7 +271,7 @@ func updateShortChatToUpdateNewMessage(userId int32, shortMessage *mtproto.TLUpd
 
 // rpc
 // rpc SyncUpdatesData(UpdatesRequest) returns (ClientUpdatesState);
-func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpdatesState, error) {
+func (s *SyncServiceImpl) processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpdatesState, error) {
 	var (
 		pushUserId    = request.GetPushUserId()
 		pts, ptsCount int32
@@ -281,18 +283,18 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 	switch updates.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_updateShortMessage:
 		shortMessage := updates.To_UpdateShortMessage()
-		pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
+		pts = int32(s.UpdateModel.NextPtsId(pushUserId))
 		ptsCount = 1
 		shortMessage.SetPts(pts)
 		shortMessage.SetPtsCount(ptsCount)
-		update3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortToUpdateNewMessage(pushUserId, shortMessage))
+		s.UpdateModel.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortToUpdateNewMessage(pushUserId, shortMessage))
 	case mtproto.TLConstructor_CRC32_updateShortChatMessage:
 		shortMessage := updates.To_UpdateShortChatMessage()
-		pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
+		pts = int32(s.UpdateModel.NextPtsId(pushUserId))
 		ptsCount = 1
 		shortMessage.SetPts(pts)
 		shortMessage.SetPtsCount(ptsCount)
-		update3.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortChatToUpdateNewMessage(pushUserId, shortMessage))
+		s.UpdateModel.AddToPtsQueue(pushUserId, pts, ptsCount, updateShortChatToUpdateNewMessage(pushUserId, shortMessage))
 	case mtproto.TLConstructor_CRC32_updateShort:
 		short := updates.To_UpdateShort()
 		short.SetDate(date)
@@ -308,20 +310,20 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 				mtproto.TLConstructor_CRC32_updateReadMessagesContents,
 				mtproto.TLConstructor_CRC32_updateEditMessage:
 
-				pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
+				pts = int32(s.UpdateModel.NextPtsId(pushUserId))
 				ptsCount = 1
 				totalPtsCount += 1
 
 				// @benqi: 以上都有Pts和PtsCount
 				update.Data2.Pts = pts
 				update.Data2.PtsCount = ptsCount
-				update3.AddToPtsQueue(pushUserId, pts, ptsCount, update)
+				s.UpdateModel.AddToPtsQueue(pushUserId, pts, ptsCount, update)
 			case mtproto.TLConstructor_CRC32_updateDeleteMessages:
 				deleteMessages := update.To_UpdateDeleteMessages().GetMessages()
 
 				// TODO(@benqi): NextPtsCountId
 				for i := 0; i < len(deleteMessages); i++ {
-					pts = int32(update3.NextPtsId(base.Int32ToString(pushUserId)))
+					pts = int32(s.UpdateModel.NextPtsId(pushUserId))
 				}
 
 				ptsCount = int32(len(deleteMessages))
@@ -329,20 +331,20 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 				// @benqi: 以上都有Pts和PtsCount
 				update.Data2.Pts = pts
 				update.Data2.PtsCount = ptsCount
-				update3.AddToPtsQueue(pushUserId, pts, ptsCount, update)
+				s.UpdateModel.AddToPtsQueue(pushUserId, pts, ptsCount, update)
 			case mtproto.TLConstructor_CRC32_updateNewChannelMessage:
 				if request.PushType == mtproto.SyncType_SYNC_TYPE_USER_NOTME {
 					channelMessage := update.To_UpdateNewChannelMessage().GetMessage()
 
 					// TODO(@benqi): Check toId() invalid.
-					pts = int32(update3.NextChannelPtsId(base.Int32ToString(channelMessage.GetData2().GetToId().GetData2().GetChannelId())))
+					pts = int32(s.UpdateModel.NextChannelPtsId(channelMessage.GetData2().GetToId().GetData2().GetChannelId()))
 					ptsCount = 1
 					totalPtsCount += 1
 
 					// @benqi: 以上都有Pts和PtsCount
 					update.Data2.Pts = pts
 					update.Data2.PtsCount = ptsCount
-					update3.AddToChannelPtsQueue(channelMessage.GetData2().GetToId().GetData2().GetChannelId(), pts, ptsCount, update)
+					s.UpdateModel.AddToChannelPtsQueue(channelMessage.GetData2().GetToId().GetData2().GetChannelId(), pts, ptsCount, update)
 				}
 			}
 		}
@@ -369,10 +371,10 @@ func processUpdatesRequest(request *mtproto.UpdatesRequest) (*mtproto.ClientUpda
 func (s *SyncServiceImpl) SyncUpdatesData(ctx context.Context, request *mtproto.UpdatesRequest) (reply *mtproto.ClientUpdatesState, err error) {
 	glog.Infof("syncUpdatesData - request: {%v}", request)
 
-	reply, err = processUpdatesRequest(request)
+	reply, err = s.processUpdatesRequest(request)
 	if err == nil {
 		if reply.Pts != 0 {
-			update3.UpdateServerAuthStateSeq(request.AuthKeyId, reply.Pts, reply.Qts)
+			s.UpdateModel.UpdateServerAuthStateSeq(request.AuthKeyId, reply.Pts, reply.Qts)
 		}
 		s.pushUpdatesToSession(reply, request)
 		glog.Infof("syncUpdatesData - reply: %s", logger.JsonDebugData(reply))
@@ -385,16 +387,16 @@ func (s *SyncServiceImpl) SyncUpdatesData(ctx context.Context, request *mtproto.
 
 // rpc PushUpdatesData(UpdatesRequest) returns (VoidRsp);
 func (s *SyncServiceImpl) PushUpdatesData(ctx context.Context, request *mtproto.UpdatesRequest) (reply *mtproto.VoidRsp, err error) {
-	glog.Infof("syncUpdatesData - request: {%v}", request)
+	glog.Infof("pushUpdatesData - request: {%v}", request)
 
 	var state *mtproto.ClientUpdatesState
-	state, err = processUpdatesRequest(request)
+	state, err = s.processUpdatesRequest(request)
 	if err == nil {
 		if state.Pts != 0 {
-			update3.UpdateServerAuthStateSeq(request.AuthKeyId, state.Pts, state.Qts)
+			s.UpdateModel.UpdateServerAuthStateSeq(request.AuthKeyId, state.Pts, state.Qts)
 		}
 		s.pushUpdatesToSession(state, request)
-		glog.Infof("syncUpdatesData - reply: %s", logger.JsonDebugData(state))
+		glog.Infof("pushUpdatesData - reply: %s", logger.JsonDebugData(state))
 		reply = &mtproto.VoidRsp{}
 	} else {
 		glog.Error(err)
@@ -412,8 +414,8 @@ func (s *SyncServiceImpl) PushUpdatesData(ctx context.Context, request *mtproto.
 func (s *SyncServiceImpl) GetNewUpdatesData(ctx context.Context, request *mtproto.NewUpdatesRequest) (reply *mtproto.Updates, err error) {
 	glog.Infof("getNewUpdatesData - request: {%v}", request)
 
-	state := update3.GetUpdatesState2(request.GetAuthKeyId(), request.GetUserId())
-	updateList := update3.GetUpdateListByGtPts(request.UserId, state.GetPts())
+	state := s.UpdateModel.GetUpdatesState2(request.GetAuthKeyId(), request.GetUserId())
+	updateList := s.UpdateModel.GetUpdateListByGtPts(request.UserId, state.GetPts())
 	glog.Info("getNewUpdatesData - state: ", state, ", updates: ", updateList)
 	updatesData := []*mtproto.Update{}
 	for _, u := range updateList {
