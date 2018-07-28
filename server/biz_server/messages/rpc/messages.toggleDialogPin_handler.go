@@ -18,20 +18,30 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/base"
 )
 
 // messages.toggleDialogPin#3289be6a flags:# pinned:flags.0?true peer:InputPeer = Bool;
 func (s *MessagesServiceImpl) MessagesToggleDialogPin(ctx context.Context, request *mtproto.TLMessagesToggleDialogPin) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesToggleDialogPin - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.toggleDialogPin#3289be6a - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesToggleDialogPin logic
+	peer := base.FromInputPeer2(md.UserId, request.GetPeer())
 
-	return nil, fmt.Errorf("Not impl MessagesToggleDialogPin")
+	if peer.PeerType == base.PEER_EMPTY {
+		glog.Error("empty peer")
+		return mtproto.ToBool(false), nil
+	}
+
+	// TODO(@benqi): check access_hash
+	dialogLogic := s.DialogModel.MakeDialogLogic(md.UserId, peer.PeerType, peer.PeerId)
+	dialogLogic.ToggleDialogPin(request.GetPinned())
+
+	glog.Info("messages.toggleDialogPin#3289be6a - reply {true}")
+	return mtproto.ToBool(true), nil
 }

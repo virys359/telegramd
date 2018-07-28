@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/sticker"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/dialog"
 )
 
 type MessagesServiceImpl struct {
@@ -32,6 +33,7 @@ type MessagesServiceImpl struct {
 	*chat.ChatModel
 	*channel.ChannelModel
 	*sticker.StickerModel
+	*dialog.DialogModel
 }
 
 func NewMessagesServiceImpl(models []core.CoreModel) *MessagesServiceImpl {
@@ -49,6 +51,8 @@ func NewMessagesServiceImpl(models []core.CoreModel) *MessagesServiceImpl {
 			impl.ChannelModel = m.(*channel.ChannelModel)
 		case *sticker.StickerModel:
 			impl.StickerModel = m.(*sticker.StickerModel)
+		case *dialog.DialogModel:
+			impl.DialogModel = m.(*dialog.DialogModel)
 		}
 	}
 

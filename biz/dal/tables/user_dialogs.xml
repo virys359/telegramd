@@ -12,7 +12,7 @@
     <operation name="SelectPinnedDialogs" result_set="list">
         <sql>
             SELECT
-                id, peer_type, peer_id, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
+                id, user_id, peer_type, peer_id, is_pinned, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
             FROM
                 user_dialogs
             WHERE
@@ -27,7 +27,7 @@
     <operation name="SelectByPeer">
         <sql>
             SELECT
-                id, peer_type, peer_id, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
+                id, user_id, peer_type, peer_id, is_pinned, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
             FROM
                 user_dialogs
             WHERE
@@ -37,7 +37,7 @@
     <operation name="SelectDialogsByUserID" result_set="list">
         <sql>
             SELECT
-                id, peer_type, peer_id, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
+                id, user_id, peer_type, peer_id, is_pinned, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
             FROM
                 user_dialogs
             WHERE
@@ -52,7 +52,7 @@
         <sql>
             <![CDATA[
             SELECT
-                id, peer_type, peer_id, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
+                id, user_id, peer_type, peer_id, is_pinned, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
             FROM
                 user_dialogs
             WHERE
@@ -69,7 +69,7 @@
         </params>
         <sql>
             SELECT
-                id, peer_type, peer_id, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
+                id, user_id, peer_type, peer_id, is_pinned, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
             FROM
                 user_dialogs
             WHERE
@@ -81,7 +81,7 @@
     <operation name="SelectDialogsByPeerType" result_set="list">
         <sql>
             SELECT
-                id, peer_type, peer_id, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
+                id, user_id, peer_type, peer_id, is_pinned, top_message, read_inbox_max_id, read_outbox_max_id, unread_count, unread_mentions_count, show_previews, silent, mute_until, sound, pts, draft_type, draft_message_data, date2
             FROM
                 user_dialogs
             WHERE
@@ -180,6 +180,17 @@
                 user_dialogs
             SET
                 draft_type = 2, draft_message_data = :draft_message_data
+            WHERE
+                user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
+        </sql>
+    </operation>
+
+    <operation name="UpdatePinned">
+        <sql>
+            UPDATE
+                user_dialogs
+            SET
+                is_pinned = :is_pinned
             WHERE
                 user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
         </sql>

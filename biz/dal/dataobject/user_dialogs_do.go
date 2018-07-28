@@ -18,7 +18,7 @@
 package dataobject
 
 type UserDialogsDO struct {
-	Id                  int32  `db:"id"`
+	Id                  int64  `db:"id"`
 	UserId              int32  `db:"user_id"`
 	PeerType            int8   `db:"peer_type"`
 	PeerId              int32  `db:"peer_id"`

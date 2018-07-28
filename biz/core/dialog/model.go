@@ -17,14 +17,14 @@
 
 package dialog
 
-import "github.com/nebulaim/telegramd/biz/core"
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+)
 
 type dialogsDAO struct {
-	//*mysql_dao.UserContactsDAO
-	//*mysql_dao.UsersDAO
-	//*mysql_dao.UnregisteredContactsDAO
-	//*mysql_dao.PopularContactsDAO
-
+	*mysql_dao.UserDialogsDAO
 }
 
 type DialogModel struct {
@@ -35,10 +35,17 @@ func (m *DialogModel) RegisterCallback(cb interface{}) {
 }
 
 func (m *DialogModel) InstallModel() {
-	//m.dao.UserContactsDAO = dao.GetUserContactsDAO(dao.DB_MASTER)
-	//m.dao.UsersDAO = dao.GetUsersDAO(dao.DB_MASTER)
-	//m.dao.UnregisteredContactsDAO = dao.GetUnregisteredContactsDAO(dao.DB_MASTER)
-	//m.dao.PopularContactsDAO = dao.GetPopularContactsDAO(dao.DB_MASTER)
+	m.dao.UserDialogsDAO = dao.GetUserDialogsDAO(dao.DB_MASTER)
+}
+
+func (m *DialogModel) MakeDialogLogic(userId, peerType, peerId int32) *dialogLogic {
+	// m.dao.UserDialogsDAO = dao.GetUserDialogsDAO(dao.DB_MASTER)
+	return &dialogLogic{
+		selfUserId: userId,
+		peerType:   peerType,
+		peerId:     peerId,
+		dao:        m.dao,
+	}
 }
 
 func init() {
