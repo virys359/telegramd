@@ -45,9 +45,9 @@ import (
 	stickers "github.com/nebulaim/telegramd/server/biz_server/stickers/rpc"
 	updates "github.com/nebulaim/telegramd/server/biz_server/updates/rpc"
 	users "github.com/nebulaim/telegramd/server/biz_server/users/rpc"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"google.golang.org/grpc"
+	"github.com/nebulaim/telegramd/service/document/client"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ func (s *messengerServer) Initialize() error {
 		dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 		dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 
-		nbfs_client.InstallNbfsClient(Conf.NbfsRpcClient)
+		document_client.InstallNbfsClient(Conf.NbfsRpcClient)
 		sync_client.InstallSyncClient(Conf.SyncRpcClient2)
 	})
 
@@ -146,7 +146,7 @@ func (s *messengerServer) RunLoop() {
 func (s *messengerServer) Destroy() {
 	glog.Infof("messengerServer - destroy...")
 	//s.server.Stop()
-	//s.rpcServer.Stop()
+	s.rpcServer.Stop()
 	//time.Sleep(1*time.Second)
 }
 

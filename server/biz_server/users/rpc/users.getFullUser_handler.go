@@ -22,9 +22,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"golang.org/x/net/context"
 	"time"
+	"github.com/nebulaim/telegramd/service/document/client"
 )
 
 // users.getFullUser#ca30a5b1 id:InputUser = UserFull;
@@ -110,7 +110,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 	// profilePhoto := user.GetData2().GetPhoto()
 	// profilePhoto.GetData2().
 	// photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
-	sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
+	sizes, _ := document_client.GetPhotoSizeList(photoId)
 	// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
 	photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 		Id:          photoId,

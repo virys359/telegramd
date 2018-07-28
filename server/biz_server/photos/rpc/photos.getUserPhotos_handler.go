@@ -22,7 +22,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"golang.org/x/net/context"
 	"time"
 )
@@ -67,7 +67,7 @@ func (s *PhotosServiceImpl) PhotosGetUserPhotos(ctx context.Context, request *mt
 	photoIdList := s.UserModel.GetUserPhotoIDList(userId)
 	// idList := []int32{}
 	for _, photoId := range photoIdList {
-		sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
+		sizes, _ := document_client.GetPhotoSizeList(photoId)
 		// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
 		photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 			Id:          photoId,

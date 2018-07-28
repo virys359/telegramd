@@ -20,7 +20,7 @@ package photo
 import (
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"time"
 )
 
@@ -39,7 +39,7 @@ func (m *PhotoModel) GetUserProfilePhoto(photoId int64) (photo *mtproto.UserProf
 	if photoId == 0 {
 		photo = mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
 	} else {
-		sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
+		sizes, _ := document_client.GetPhotoSizeList(photoId)
 		photo = MakeUserProfilePhoto(photoId, sizes)
 	}
 
@@ -50,7 +50,7 @@ func (m *PhotoModel) GetChatPhoto(photoId int64) (photo *mtproto.ChatPhoto) {
 	if photoId == 0 {
 		photo = mtproto.NewTLChatPhotoEmpty().To_ChatPhoto()
 	} else {
-		sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
+		sizes, _ := document_client.GetPhotoSizeList(photoId)
 		photo = MakeChatPhoto(sizes)
 	}
 
@@ -61,7 +61,7 @@ func (m *PhotoModel) GetPhoto(photoId int64) (photo *mtproto.Photo) {
 	if photoId == 0 {
 		photo = mtproto.NewTLPhotoEmpty().To_Photo()
 	} else {
-		sizes, _ := nbfs_client.GetPhotoSizeList(photoId)
+		sizes, _ := document_client.GetPhotoSizeList(photoId)
 		if len(sizes) == 0 {
 			photo = mtproto.NewTLPhotoEmpty().To_Photo()
 		} else {

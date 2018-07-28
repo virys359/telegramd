@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/core/sticker"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"golang.org/x/net/context"
 )
 
@@ -43,7 +43,7 @@ func (s *MessagesServiceImpl) MessagesGetStickerSet(ctx context.Context, request
 	if len(idList) == 0 {
 		documents = []*mtproto.Document{}
 	} else {
-		documents, err = nbfs_client.GetDocumentByIdList(idList)
+		documents, err = document_client.GetDocumentByIdList(idList)
 		if err != nil {
 			glog.Error(err)
 			documents = []*mtproto.Document{}

@@ -25,7 +25,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/core"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
@@ -75,7 +75,7 @@ func (s *MessagesServiceImpl) MessagesEditChatPhoto(ctx context.Context, request
 	case mtproto.TLConstructor_CRC32_inputChatUploadedPhoto:
 		file := chatPhoto.GetData2().GetFile()
 		// photoId = helper.NextSnowflakeId()
-		result, err := nbfs_client.UploadPhotoFile(md.AuthId, file) // photoId, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
+		result, err := document_client.UploadPhotoFile(md.AuthId, file) // photoId, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 		if err != nil {
 			glog.Errorf("UploadPhoto error: %v", err)
 			return nil, err

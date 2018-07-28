@@ -22,7 +22,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"golang.org/x/net/context"
 )
 
@@ -44,7 +44,7 @@ func (s *AccountServiceImpl) AccountGetWallPapers(ctx context.Context, request *
 
 	for _, wallData := range wallDataList {
 		if wallData.Type == 0 {
-			szList, _ := nbfs_client.GetPhotoSizeList(wallData.PhotoId)
+			szList, _ := document_client.GetPhotoSizeList(wallData.PhotoId)
 			wall := &mtproto.TLWallPaper{Data2: &mtproto.WallPaper_Data{
 				Id:    wallData.Id,
 				Title: wallData.Title,

@@ -467,7 +467,7 @@ func (s *clientSessionManager) onRpcRequest(requests *rpcApiMessages) {
 			// err.(*mtproto.TLRpcError)
 
 		} else {
-			glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
+			// glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
 			reply.Result = rpcResult
 		}
 
@@ -546,7 +546,7 @@ func extractClientMessage(msgId int64, seqNo int32, object mtproto.TLObject, mes
 		//
 
 		for _, m := range msgContainer.Messages {
-			glog.Info("processMsgContainer - request data: ", m)
+			// glog.Info("processMsgContainer - request data: ", m)
 			if m.Object == nil {
 				continue
 			}
@@ -639,7 +639,7 @@ func extractClientMessage(msgId int64, seqNo int32, object mtproto.TLObject, mes
 		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: invokeWithoutUpdatesExt})
 
 	default:
-		glog.Info("processOthers - request data: ", object)
+		// glog.Info("processOthers - request data: ", object)
 		messages.messages = append(messages.messages, &mtproto.TLMessage2{MsgId: msgId, Seqno: seqNo, Object: object})
 	}
 }

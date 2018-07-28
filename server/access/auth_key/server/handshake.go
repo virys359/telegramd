@@ -35,6 +35,7 @@ import (
 	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dataobject"
 	"math/big"
 	"time"
+	"github.com/nebulaim/telegramd/baselib/bytes2"
 )
 
 const (
@@ -251,14 +252,18 @@ func (s *handshake) onReq_DHParams(state *zproto.HandshakeState, request *mtprot
 	// 客户端传输数据解析
 	// check Nonce
 	if !bytes.Equal(request.Nonce, authKeyMD.Nonce) {
-		err = fmt.Errorf("onReq_DHParams - Invalid Nonce")
+		err = fmt.Errorf("onReq_DHParams - Invalid Nonce, req: %s, back: %s",
+			bytes2.HexDump(request.Nonce),
+			bytes2.HexDump(authKeyMD.Nonce))
 		glog.Error(err)
 		return nil, err
 	}
 
 	// check ServerNonce
 	if !bytes.Equal(request.ServerNonce, authKeyMD.ServerNonce) {
-		err = fmt.Errorf("onReq_DHParams - Wrong ServerNonce")
+		err = fmt.Errorf("onReq_DHParams - Wrong ServerNonce, req: %s, back: %s",
+			bytes2.HexDump(request.ServerNonce),
+			bytes2.HexDump(authKeyMD.ServerNonce))
 		glog.Error(err)
 		return nil, err
 	}

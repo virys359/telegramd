@@ -26,6 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/proto/zproto"
 	"math/rand"
 	"time"
+	"reflect"
 )
 
 const (
@@ -457,7 +458,7 @@ func (c *clientSessionHandler) onMessageData(connID ClientConnID, md *zproto.ZPr
 	)
 
 	for _, message := range messages {
-		glog.Info("onMessageData - ", message)
+		// glog.Info("onMessageData - ", message)
 
 		if message.Object == nil {
 			continue
@@ -1055,25 +1056,25 @@ func (c *clientSessionHandler) onInvokeAfterMsgsExt(connID ClientConnID, md *zpr
 }
 
 func (c *clientSessionHandler) onInvokeWithoutUpdatesExt(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, request *TLInvokeWithoutUpdatesExt) bool {
-	glog.Infof("onInvokeWithoutUpdatesExt - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+	glog.Infof("onInvokeWithoutUpdatesExt - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
 		c,
 		connID,
 		md,
 		msgId,
 		seqNo,
-		request)
+		reflect.TypeOf(request))
 
 	return c.onRpcRequest(connID, md, msgId, seqNo, request.Query)
 }
 
 func (c *clientSessionHandler) onRpcRequest(connID ClientConnID, md *zproto.ZProtoMetadata, msgId int64, seqNo int32, object mtproto.TLObject) bool {
-	glog.Infof("onInvokeWithoutUpdatesExt - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%v}}",
+	glog.Infof("onRpcRequest - request data: {sess: %s, conn_id: %s, md: %s, msg_id: %d, seq_no: %d, request: {%s}}",
 		c,
 		connID,
 		md,
 		msgId,
 		seqNo,
-		object)
+		reflect.TypeOf(object))
 
 	// TODO(@benqi): sync AuthUserId??
 	requestMessage := &mtproto.TLMessage2{

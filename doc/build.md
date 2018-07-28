@@ -88,7 +88,8 @@ if password is empty ignore this section otherwise add password to the following
 ```
 $ $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key/auth_key.toml
 $ $GOPATH/src/github.com/nebulaim/telegramd/server/sync/sync.toml
-$ $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs/nbfs.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/server/upload/upload.toml
+$ $GOPATH/src/github.com/nebulaim/telegramd/service/ocument/document.toml
 $ $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server/biz_server.toml
 ```
 set ***my-secret-pw*** in mysql dsn as follow:
@@ -134,9 +135,16 @@ $ go get
 $ go build
 ```
 
-### build nbfs
+### build upload
 ```
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/upload
+$ go get
+$ go build
+```
+
+### build document
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/service/document
 $ go get
 $ go build
 ```
@@ -178,16 +186,11 @@ $ ./auth_key
 $ cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
 $ ./sync
 
-$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
-$ mkdir /opt/nbfs/0
-$ mkdir /opt/nbfs/s
-$ mkdir /opt/nbfs/m
-$ mkdir /opt/nbfs/x
-$ mkdir /opt/nbfs/y
-$ mkdir /opt/nbfs/a
-$ mkdir /opt/nbfs/b
-$ mkdir /opt/nbfs/c
-$ ./nbfs
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/server/upload
+$ ./upload
+
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/service/document
+$ ./document
 
 $ cd $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server
 $ ./biz_server

@@ -148,7 +148,7 @@ func (cgm *TcpClientGroupManager) SendDataToAddress(name, address string, msg in
 
 	cgm.clientMapLock.RUnlock()
 
-	glog.Info("tcp_client_group_manager sendDataToAddress: {name: %s, conn: %s, msg: {%v}}", name, c, msg)
+	glog.Infof("tcp_client_group_manager sendDataToAddress: {name: %s, conn: %s, msg: {%v}}", name, c, msg)
 	return c.Send(msg)
 }
 

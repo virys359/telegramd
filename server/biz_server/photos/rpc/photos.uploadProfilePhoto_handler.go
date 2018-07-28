@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
@@ -41,7 +41,7 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 	file := request.GetFile()
 	// uuid := helper.NextSnowflakeId()
 
-	result, err := nbfs_client.UploadPhotoFile(md.AuthId, file) // uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
+	result, err := document_client.UploadPhotoFile(md.AuthId, file) // uuid, file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 	if err != nil {
 		glog.Errorf("UploadPhoto error: %v", err)
 		return nil, err

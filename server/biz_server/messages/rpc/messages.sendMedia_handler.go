@@ -26,10 +26,10 @@ import (
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
+	"github.com/nebulaim/telegramd/service/document/client"
 )
 
 func makeGeoPointByInput(geoPoint *mtproto.InputGeoPoint) *mtproto.GeoPoint {
@@ -57,7 +57,7 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 		uploadedPhoto := media.To_InputMediaUploadedPhoto()
 		file := uploadedPhoto.GetFile()
 
-		result, err := nbfs_client.UploadPhotoFile(authKeyId, file)
+		result, err := document_client.UploadPhotoFile(authKeyId, file)
 		// , file.GetData2().GetId(), file.GetData2().GetParts(), file.GetData2().GetName(), file.GetData2().GetMd5Checksum())
 		if err != nil {
 			glog.Errorf("UploadPhoto error: %v, by %s", err, logger.JsonDebugData(media))
@@ -84,7 +84,7 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 		// inputPhoto#fb95c6c4 id:long access_hash:long = InputPhoto;
 		//inputMediaPhoto#81fa373a flags:# id:InputPhoto caption:string ttl_seconds:flags.0?int = InputMedia;
 		mediaPhoto := media.To_InputMediaPhoto()
-		sizeList, _ := nbfs_client.GetPhotoSizeList(mediaPhoto.GetId().GetData2().GetId())
+		sizeList, _ := document_client.GetPhotoSizeList(mediaPhoto.GetId().GetData2().GetId())
 
 		photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 			Id:          mediaPhoto.GetId().GetData2().GetId(),
@@ -131,7 +131,7 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 	case mtproto.TLConstructor_CRC32_inputMediaUploadedDocument:
 		// inputMediaUploadedDocument#e39621fd flags:# file:InputFile thumb:flags.2?InputFile mime_type:string attributes:Vector<DocumentAttribute> caption:string stickers:flags.0?Vector<InputDocument> ttl_seconds:flags.1?int = InputMedia;
 		uploadedDocument := media.To_InputMediaUploadedDocument()
-		messageMedia, _ := nbfs_client.UploadedDocumentMedia(authKeyId, uploadedDocument)
+		messageMedia, _ := document_client.UploadedDocumentMedia(authKeyId, uploadedDocument)
 
 		return messageMedia.To_MessageMedia()
 		// id:InputDocument caption:string ttl_seconds:flags.0?int
@@ -139,7 +139,7 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 		// inputMediaDocument#5acb668e flags:# id:InputDocument caption:string ttl_seconds:flags.0?int = InputMedia;
 		// document := media.To_InputMediaDocument()
 		id := media.To_InputMediaDocument().GetId()
-		document3, _ := nbfs_client.GetDocumentById(id.GetData2().GetId(), id.GetData2().GetAccessHash())
+		document3, _ := document_client.GetDocumentById(id.GetData2().GetId(), id.GetData2().GetAccessHash())
 
 		// messageMediaDocument#7c4414d3 flags:# document:flags.0?Document caption:flags.1?string ttl_seconds:flags.2?int = MessageMedia;
 		messageMedia := &mtproto.TLMessageMediaDocument{Data2: &mtproto.MessageMedia_Data{

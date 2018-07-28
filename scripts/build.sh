@@ -26,11 +26,17 @@ go get
 go build
 ./sync &
 
-echo "build nbfs ..."
-cd ${telegramd}/server/nbfs
+echo "build upload ..."
+cd ${telegramd}/server/upload
 go get
 go build
-./nbfs &
+./upload &
+
+echo "build document ..."
+cd ${telegramd}/server/document
+go get
+go build
+./document &
 
 echo "build biz_server ..."
 cd ${telegramd}/server/biz_server

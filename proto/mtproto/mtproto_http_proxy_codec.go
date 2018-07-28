@@ -99,14 +99,14 @@ func (c *MTProtoHttpProxyCodec) Send(msg interface{}) error {
 			"Access-Control-Allow-Origin":  {"*"},
 			"Access-Control-Max-Age":       {"1728000"},
 			"Cache-control":                {"no-store"},
-			"Connection":                   {"close"},
+			"Connection":                   {"keep-alive"},
 			"Content-type":                 {"application/octet-stream"},
 			"Pragma":                       {"no-cache"},
 			"Strict-Transport-Security":    {"max-age=15768000"},
 		},
 		ContentLength: int64(len(b)),
 		Body:          ioutil.NopCloser(bytes.NewReader(b)),
-		Close:         true,
+		Close:         false,
 	}
 
 	err := rsp.Write(c.conn)

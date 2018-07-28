@@ -42,11 +42,6 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
         go get
         go build
     
-    编译session
-        cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/session
-        go get
-        go build
-    
     编译auth_key
         cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
         go get
@@ -57,44 +52,49 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
         go get
         go build
     
-    编译nbfs
-        cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
+    编译upload
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/upload
         go get
         go build
     
+    编译document
+        cd $GOPATH/src/github.com/nebulaim/telegramd/service/document
+        go get
+        go build
+
     编译biz_server
         cd $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server
+        go get
+        go build
+        
+    编译session
+        cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/session
         go get
         go build
     ```
 
 - 运行
     ```
-    cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/frontend
-    ./frontend
-
     cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
     ./auth_key
 
     cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
     ./sync
     
-    cd $GOPATH/src/github.com/nebulaim/telegramd/server/nbfs
-    mkdir /opt/nbfs/0
-    mkdir /opt/nbfs/s
-    mkdir /opt/nbfs/m
-    mkdir /opt/nbfs/x
-    mkdir /opt/nbfs/y
-    mkdir /opt/nbfs/a
-    mkdir /opt/nbfs/b
-    mkdir /opt/nbfs/c
-    ./nbfs
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/upload
+    ./upload
+
+    cd $GOPATH/src/github.com/nebulaim/telegramd/service/document
+    ./document
 
     cd $GOPATH/src/github.com/nebulaim/telegramd/server/biz_server
     ./biz_server
 
     cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/session
     ./session
+    
+    cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/frontend
+    ./frontend
     ```
 
 #### 更多文档

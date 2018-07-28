@@ -110,7 +110,7 @@ func (c *RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (m
 		// return nil, err
 	}
 
-	glog.Infof("Invoke - method: {%s}, req: {%v}", t.Method, object)
+	glog.Infof("Invoke - method: {%s}", t.Method)
 	r := t.NewReplyFunc()
 	glog.Infof("Invoke - NewReplyFunc: {%v}, t: {%v}", r, reflect.TypeOf(r))
 
@@ -140,7 +140,7 @@ func (c *RPCClient) Invoke(rpcMetaData *RpcMetadata, object mtproto.TLObject) (m
 		}
 		return nil, mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_INTERNAL), "INTERNAL_SERVER_ERROR")
 	} else {
-		glog.Infof("Invoke - Invoke reply: {%v}\n", r)
+		// glog.Infof("Invoke - Invoke reply: {%v}\n", r)
 		reply, ok := r.(mtproto.TLObject)
 
 		glog.Infof("Invoke %s time: %d", t.Method, (time.Now().Unix() - rpcMetaData.ReceiveTime))
