@@ -21,7 +21,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz/core/sticker"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/service/document/client"
 	"golang.org/x/net/context"
@@ -33,7 +32,7 @@ func (s *MessagesServiceImpl) MessagesGetStickerSet(ctx context.Context, request
 	glog.Infof("messages.getStickerSet#2619a90e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): check inputStickerSetEmpty
-	set := sticker.GetStickerSet(request.GetStickerset())
+	set := s.StickerModel.GetStickerSet(request.GetStickerset())
 	packs, idList := s.StickerModel.GetStickerPackList(set.GetData2().GetId())
 	var (
 		documents []*mtproto.Document

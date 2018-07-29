@@ -42,7 +42,7 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 
 	// 消息已读逻辑
 	// 1. inbox，设置unread_count为0以及read_inbox_max_id
-	dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateUnreadByPeer(request.GetMaxId(), md.UserId, int8(peer.PeerType), peer.PeerId)
+	s.DialogModel.UpdateUnreadByPeer(md.UserId, int8(peer.PeerType), peer.PeerId, request.GetMaxId())
 
 	updateReadHistoryInbox := mtproto.NewTLUpdateReadHistoryInbox()
 	updateReadHistoryInbox.SetPeer(peer.ToPeer())
@@ -59,34 +59,35 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 
 	// 2. outbox, 设置read_outbox_max_id
 	if peer.PeerType == base.PEER_USER {
-		outboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(peer.PeerId, int8(peer.PeerType), md.UserId)
-		dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateReadOutboxMaxIdByPeer(outboxDO.TopMessage, peer.PeerId, int8(peer.PeerType), md.UserId)
+		outboxTopMessage := s.DialogModel.GetTopMessage(peer.PeerId, int8(peer.PeerType), md.UserId)
+		s.DialogModel.UpdateReadOutboxMaxIdByPeer(peer.PeerId, int8(peer.PeerType), md.UserId, outboxTopMessage)
 
 		updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
 		outboxPeer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
 			UserId: md.UserId,
 		}}
 		updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
-		updateReadHistoryOutbox.SetMaxId(outboxDO.TopMessage)
+		updateReadHistoryOutbox.SetMaxId(outboxTopMessage)
 
 		sync_client.GetSyncClient().PushToUserOneUpdateData(peer.PeerId, updateReadHistoryOutbox.To_Update())
 	} else {
-		doList := dao.GetChatParticipantsDAO(dao.DB_SLAVE).SelectByChatId(peer.PeerId)
-		for _, do := range doList {
-			if do.UserId == md.UserId {
+		chatLogic, _ := s.ChatModel.NewChatLogicById(peer.PeerId)
+		chatParticipants := chatLogic.GetChatParticipantList()
+		for _, participant := range chatParticipants {
+			if participant.GetData2().GetUserId() == md.UserId {
 				continue
 			}
-			outboxDO := dao.GetUserDialogsDAO(dao.DB_SLAVE).SelectByPeer(do.UserId, int8(peer.PeerType), peer.PeerId)
-			dao.GetUserDialogsDAO(dao.DB_MASTER).UpdateReadOutboxMaxIdByPeer(outboxDO.TopMessage, do.UserId, int8(peer.PeerType), peer.PeerId)
+			outboxTopMessage := s.DialogModel.GetTopMessage(participant.GetData2().GetUserId(), int8(peer.PeerType), peer.PeerId)
+			s.DialogModel.UpdateReadOutboxMaxIdByPeer(participant.GetData2().GetUserId(), int8(peer.PeerType), peer.PeerId, outboxTopMessage)
 
 			updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
 			outboxPeer := &mtproto.TLPeerChat{Data2: &mtproto.Peer_Data{
 				ChatId: peer.PeerId,
 			}}
 			updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
-			updateReadHistoryOutbox.SetMaxId(outboxDO.TopMessage)
+			updateReadHistoryOutbox.SetMaxId(outboxTopMessage)
 
-			sync_client.GetSyncClient().PushToUserOneUpdateData(do.UserId, updateReadHistoryOutbox.To_Update())
+			sync_client.GetSyncClient().PushToUserOneUpdateData(participant.GetData2().GetUserId(), updateReadHistoryOutbox.To_Update())
 		}
 	}
 

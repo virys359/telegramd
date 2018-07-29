@@ -17,7 +17,12 @@
 
 package updates
 
-import "github.com/nebulaim/telegramd/biz/core"
+import (
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/service/idgen/client"
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/biz/dal/dao"
+)
 
 /**
   1. peer_user和peer_chat使用user_dialogs存储
@@ -25,11 +30,7 @@ import "github.com/nebulaim/telegramd/biz/core"
 */
 
 type updatesDAO struct {
-	//*mysql_dao.UserContactsDAO
-	//*mysql_dao.UsersDAO
-	//*mysql_dao.UnregisteredContactsDAO
-	//*mysql_dao.PopularContactsDAO
-
+	idgen.SeqIDGen
 }
 
 type UpdateModel struct {
@@ -37,10 +38,11 @@ type UpdateModel struct {
 }
 
 func (m *UpdateModel) InstallModel() {
-	//m.dao.UserContactsDAO = dao.GetUserContactsDAO(dao.DB_MASTER)
-	//m.dao.UsersDAO = dao.GetUsersDAO(dao.DB_MASTER)
-	//m.dao.UnregisteredContactsDAO = dao.GetUnregisteredContactsDAO(dao.DB_MASTER)
-	//m.dao.PopularContactsDAO = dao.GetPopularContactsDAO(dao.DB_MASTER)
+	var err error
+	m.dao.SeqIDGen, _ = idgen.NewSeqIDGen("redis", dao.CACHE)
+	if err != nil {
+		glog.Fatal("seqidgen init error: ", err)
+	}
 }
 
 func (m *UpdateModel) RegisterCallback(cb interface{}) {

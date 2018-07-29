@@ -21,10 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
@@ -43,7 +41,7 @@ type ChannelBoxCreated func(int32)
 
 func (m *MessageModel) CreateChannelMessageBoxByNew(fromId, channelId int32, clientRandomId int64, message2 *mtproto.Message, cb ChannelBoxCreated) (box *ChannelMessageBox) {
 	now := int32(time.Now().Unix())
-	boxId := int32(update2.NextChannelMessageBoxId(base2.Int32ToString(channelId)))
+	boxId := int32(core.NextChannelMessageBoxId(channelId))
 	messageDatasDO := &dataobject.MessageDatasDO{
 		DialogId:     int64(-channelId),
 		MessageId:    core.GetUUID(),

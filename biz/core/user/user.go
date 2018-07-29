@@ -41,31 +41,6 @@ func (this *userData) ToUser() *mtproto.User {
 	return this.TLUser.To_User()
 }
 
-//func CheckBannedByPhoneNumber(phoneNumber string) bool {
-//	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
-//	return do != nil && do.Banned != 0
-//}
-//
-//func GetUser(userId int32) (user* mtproto.TLUser) {
-//	usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
-//	userDO := usersDAO.SelectById(userId)
-//
-//	if userDO != nil {
-//		// TODO(@benqi): fill bot, photo, about...
-//		user = &mtproto.TLUser{ Data2: &mtproto.User_Data{
-//			// user.Self由业务层进行判断
-//			// user.Self = true
-//			Id: userDO.Id,
-//			AccessHash: userDO.AccessHash,
-//			FirstName: userDO.FirstName,
-//			LastName: userDO.LastName,
-//			Username: userDO.Username,
-//			Phone: userDO.Phone,
-//		}}
-//	}
-//	return
-//}
-
 func (m *UserModel) GetUsersBySelfAndIDList(selfUserId int32, userIdList []int32) (users []*mtproto.User) {
 	if len(userIdList) == 0 {
 		users = []*mtproto.User{}
@@ -190,4 +165,9 @@ func (m *UserModel) GetUserStatus(userId int32) *mtproto.UserStatus {
 		}}
 		return status.To_UserStatus()
 	}
+}
+
+func (m *UserModel) DeleteUser(userId int32, reason string) bool {
+	affected := m.dao.UsersDAO.Delete(reason, base.NowFormatYMDHMS(), userId)
+	return affected == 1
 }

@@ -51,13 +51,8 @@ func (s *AccountServiceImpl) AccountDeleteAccount(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("AccountDeleteAccount - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AccountDeleteAccount logic
-	affected := dao.GetUsersDAO(dao.DB_MASTER).Delete(
-		request.GetReason(),
-		base2.NowFormatYMDHMS(),
-		md.UserId)
+	deletedOk := s.UserModel.DeleteUser(md.UserId, request.GetReason())
 
-	deletedOk := affected == 1
 	// TODO(@benqi): 1. Clear account data 2. Kickoff other client
 
 	glog.Infof("AccountDeleteAccount - reply: {%v}", deletedOk)

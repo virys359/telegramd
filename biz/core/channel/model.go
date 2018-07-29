@@ -26,6 +26,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
+	"fmt"
 )
 
 type channelsDAO struct {
@@ -193,6 +194,17 @@ func (m *ChannelModel) GetChannelFullBySelfId(selfUserId int32, channelData *cha
 
 	channelFull.SetExportedInvite(exportedInvite.To_ExportedChatInvite())
 	return channelFull
+}
+
+func (m *ChannelModel) GetChannelParticipant(channelId, userId int32) *mtproto.ChannelParticipant {
+	do := m.dao.ChannelParticipantsDAO.SelectByUserId(channelId, userId)
+	if do == nil {
+		err := fmt.Errorf("not find userId in (%d, %d)", channelId, userId)
+		glog.Error(err)
+		return nil
+	}
+
+	return MakeChannelParticipant2ByDO(userId, do)
 }
 
 func init() {

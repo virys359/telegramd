@@ -47,6 +47,7 @@ func NewUpdateModel(serverId int32, dbName, redisName string) *UpdateModel {
 		glog.Fatal("not found db: ", dbName)
 	}
 
+	m.dao.CommonDAO = mysql_dao.NewCommonDAO(db)
 	m.dao.AuthUpdatesStateDAO = mysql_dao.NewAuthUpdatesStateDAO(db)
 	m.dao.AuthSeqUpdatesDAO = mysql_dao.NewAuthSeqUpdatesDAO(db)
 	m.dao.UserQtsUpdatesDAO = mysql_dao.NewUserQtsUpdatesDAO(db)

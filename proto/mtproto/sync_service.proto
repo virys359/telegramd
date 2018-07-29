@@ -151,10 +151,45 @@ message NewUpdatesRequest {
 
 // func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *mtproto.TLUpdatesGetDifference) (*mtproto.Updates_Difference, error) {
 
+// GetServerUpdatesState
+// func (m *UpdateModel) GetUpdateListByGtPts(userId, pts int32) []*mtproto.Update {
+message UserGtPtsUpdatesRequest {
+    int32 user_id = 1;
+    int32 pts = 2;
+}
+
+message ChannelGtPtsUpdatesRequest {
+    int32 channel_id = 1;
+    int32 pts = 2;
+}
+
+message ChannelPtsRequest {
+    int32 channel_id = 1;
+}
+
+message SeqId {
+    int32 pts = 1;
+}
+
+message UpdatesStateRequest {
+    int64 auth_key_id = 1;
+    int32 user_id = 2;
+    int32 pts = 3;
+    int32 qts = 4;
+}
+
 // Interface exported by the server.
 service RPCSync {
     rpc SyncUpdatesData(UpdatesRequest) returns (ClientUpdatesState);
     rpc PushUpdatesData(UpdatesRequest) returns (VoidRsp);
     // PushUpdatesDataList(UpdatesListRequest) returns (VoidRsp);
     rpc GetNewUpdatesData(NewUpdatesRequest) returns (Updates);
+
+    rpc GetCurrentChannelPts(ChannelPtsRequest) returns (SeqId);
+    rpc GetUserGtPtsUpdatesData(UserGtPtsUpdatesRequest) returns (Updates);
+    rpc GetChannelGtPtsUpdatesData(ChannelGtPtsUpdatesRequest) returns (Updates);
+    rpc GetServerUpdatesState(UpdatesStateRequest) returns (updates_State);
+
+
+    rpc UpdateUpdatesState(UpdatesStateRequest) returns (VoidRsp);
 }

@@ -20,7 +20,6 @@ package user
 import (
 	"encoding/hex"
 	"github.com/nebulaim/telegramd/baselib/crypto"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"math/rand"
@@ -32,7 +31,7 @@ func CheckUserAccessHash(id int32, hash int64) bool {
 }
 
 func (m *UserModel) CheckPhoneNumberExist(phoneNumber string) bool {
-	return nil != dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+	return nil != m.dao.UsersDAO.SelectByPhoneNumber(phoneNumber)
 }
 
 func makeUserStatusOnline() *mtproto.UserStatus {
@@ -100,7 +99,7 @@ func (m *UserModel) makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *user
 }
 
 func (m *UserModel) GetUserByPhoneNumber(selfId int32, phoneNumber string) *userData {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+	do := m.dao.UsersDAO.SelectByPhoneNumber(phoneNumber)
 	if do == nil {
 		return nil
 	}
@@ -108,8 +107,16 @@ func (m *UserModel) GetUserByPhoneNumber(selfId int32, phoneNumber string) *user
 	return m.makeUserDataByDO(selfId, do)
 }
 
+func (m *UserModel) GetUserByUsername(selfId int32, username string) *userData {
+	do := m.dao.UsersDAO.SelectByUsername(username)
+	if do == nil {
+		return nil
+	}
+	return m.makeUserDataByDO(selfId, do)
+}
+
 func (m *UserModel) GetMyUserByPhoneNumber(phoneNumber string) *userData {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByPhoneNumber(phoneNumber)
+	do := m.dao.UsersDAO.SelectByPhoneNumber(phoneNumber)
 	if do == nil {
 		return nil
 	}
@@ -118,12 +125,11 @@ func (m *UserModel) GetMyUserByPhoneNumber(phoneNumber string) *userData {
 }
 
 func (m *UserModel) GetUserById(selfId int32, userId int32) *userData {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(userId)
+	do := m.dao.UsersDAO.SelectById(userId)
 	return m.makeUserDataByDO(selfId, do)
 }
 
 func (m *UserModel) CreateNewUser(phoneNumber, countryCode, firstName, lastName string) *mtproto.TLUser {
-	// usersDAO := dao.GetUsersDAO(dao.DB_SLAVE)
 	do := &dataobject.UsersDO{
 		AccessHash:  rand.Int63(),
 		Phone:       phoneNumber,
@@ -131,7 +137,7 @@ func (m *UserModel) CreateNewUser(phoneNumber, countryCode, firstName, lastName 
 		LastName:    lastName,
 		CountryCode: countryCode,
 	}
-	do.Id = int32(dao.GetUsersDAO(dao.DB_MASTER).Insert(do))
+	do.Id = int32(m.dao.UsersDAO.Insert(do))
 	user := &mtproto.TLUser{Data2: &mtproto.User_Data{
 		Id:            do.Id,
 		Self:          true,
@@ -155,7 +161,7 @@ func (m *UserModel) CreateNewUserPassword(userId int32) {
 		UserId:     userId,
 		ServerSalt: hex.EncodeToString(crypto.GenerateNonce(8)),
 	}
-	dao.GetUserPasswordsDAO(dao.DB_MASTER).Insert(do)
+	m.dao.UserPasswordsDAO.Insert(do)
 }
 
 func (m *UserModel) CheckAccessHashByUserId(userId int32, accessHash int64) bool {
@@ -163,11 +169,11 @@ func (m *UserModel) CheckAccessHashByUserId(userId int32, accessHash int64) bool
 		"id":          userId,
 		"access_hash": accessHash,
 	}
-	return dao.GetCommonDAO(dao.DB_SLAVE).CheckExists("users", params)
+	return m.dao.CommonDAO.CheckExists("users", params)
 }
 
 func (m *UserModel) GetCountryCodeByUser(userId int32) string {
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectCountryCode(userId)
+	do := m.dao.UsersDAO.SelectCountryCode(userId)
 	if do == nil {
 		return ""
 	} else {

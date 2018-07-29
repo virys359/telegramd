@@ -29,7 +29,8 @@ type usersDAO struct {
 	*mysql_dao.UserPresencesDAO
 	*mysql_dao.UserContactsDAO
 	*mysql_dao.UserDialogsDAO
-	// redisClient *redis_client.RedisPool
+	*mysql_dao.UserPasswordsDAO
+	*mysql_dao.CommonDAO
 }
 
 type UserModel struct {
@@ -43,7 +44,8 @@ func (m *UserModel) InstallModel() {
 	m.dao.UserPresencesDAO = dao.GetUserPresencesDAO(dao.DB_MASTER)
 	m.dao.UserContactsDAO = dao.GetUserContactsDAO(dao.DB_MASTER)
 	m.dao.UserDialogsDAO = dao.GetUserDialogsDAO(dao.DB_MASTER)
-	// m.dao.redisClient = redis_client.GetRedisClient(dao.CACHE)
+	m.dao.UserPasswordsDAO = dao.GetUserPasswordsDAO(dao.DB_MASTER)
+	m.dao.CommonDAO = dao.GetCommonDAO(dao.DB_MASTER)
 }
 
 func (m *UserModel) RegisterCallback(cb interface{}) {

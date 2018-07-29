@@ -102,21 +102,6 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 		offsetId = math.MaxInt32
 	}
 
-	/*
-		peer := helper.FromInputPeer(request.OffsetPeer)
-		if peer.PeerType == helper.PEER_EMPTY {
-			// 取出全部
-		} else {
-			// 通过message_boxs表检查offset_peer
-			offsetMessageDO := dao.GetMessageBoxesDAO(dao.DB_SLAVE).SelectByUserIdAndMessageBoxId(md.UserId, offsetId)
-			// TODO(@benqi): date, access_hash check
-			if offsetMessageDO == nil || ( peer.PeerType != int32(offsetMessageDO.PeerType)  && peer.PeerId != offsetMessageDO.PeerId) {
-				panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_BAD_REQUEST), "InputPeer invalid"))
-			}
-		}
-	*/
-
-	// dialogs := user.GetDialogsByOffsetId(md.UserId, !request.GetExcludePinned(), offsetId, request.GetLimit())
 	dialogs := s.UserModel.GetDialogsByOffsetId(md.UserId, false, offsetId, request.GetLimit())
 	// glog.Infof("dialogs - {%v}", dialogs)
 

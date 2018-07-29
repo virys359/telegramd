@@ -70,36 +70,6 @@ func (c *contactLogic) GetContactListByIDList(idList []int32) []contactData {
 	return contactList
 }
 
-//func findContaceByPhone(contacts []contactData, phone string) *dataobject.UserContactsDO {
-//	for _, c := range contacts {
-//		if c.ContactPhone == phone {
-//			return c
-//		}
-//	}
-//	return nil
-//}
-//
-//// include deleted
-//func (c contactLogic) GetAllContactList() []contactData {
-//	doList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectAllUserContacts(c.selfUserID)
-//	contactList := make([]contactData, 0, len(doList))
-//	for index, _ := range doList {
-//		contactList = append(contactList, &doList[index])
-//	}
-//	return contactList
-//}
-//
-//// exclude deleted
-//func (c contactLogic) GetContactList() []contactData {
-//	doList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(c.selfUserID)
-//	contactList := make([]contactData, 0, len(doList))
-//	for index, _ := range doList {
-//		contactList = append(contactList, &doList[index])
-//	}
-//	return contactList
-//}
-//
-
 func (c *contactLogic) importContact(contact *InputContactData) (imported *ImportedContactData) {
 	var (
 		mutualUpdated = false

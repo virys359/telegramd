@@ -249,3 +249,68 @@ func (c *syncClient) PushToUserUpdatesData(pushUserId int32, updates *mtproto.Up
 	reply, err = c.client.PushUpdatesData(context.Background(), m)
 	return
 }
+
+func (c *syncClient) GetCurrentChannelPts(channelId int32) (pts int32, err error) {
+	req := &mtproto.ChannelPtsRequest{
+		ChannelId: channelId,
+	}
+	var ptsId *mtproto.SeqId
+	ptsId, err = c.client.GetCurrentChannelPts(context.Background(), req)
+	if err == nil {
+		pts = ptsId.Pts
+	}
+	return
+}
+
+func (c *syncClient) GetUpdateListByGtPts(userId, pts int32) (updateList []*mtproto.Update, err error) {
+	req := &mtproto.UserGtPtsUpdatesRequest{
+		UserId: userId,
+		Pts:    pts,
+	}
+
+	var updates *mtproto.Updates
+	updates, err = c.client.GetUserGtPtsUpdatesData(context.Background(), req)
+	if err == nil {
+		updateList = updates.GetData2().GetUpdates()
+	}
+	return
+}
+
+func (c *syncClient) GetChannelUpdateListByGtPts(channelId, pts int32) (updateList []*mtproto.Update, err error) {
+	req := &mtproto.ChannelGtPtsUpdatesRequest{
+		ChannelId: channelId,
+		Pts:       pts,
+	}
+
+	var updates *mtproto.Updates
+	updates, err = c.client.GetChannelGtPtsUpdatesData(context.Background(), req)
+	if err == nil {
+		updateList = updates.GetData2().GetUpdates()
+	}
+	return
+}
+
+func (c *syncClient) GetServerUpdatesState(authKeyId int64, userId int32) (state *mtproto.TLUpdatesState, err error) {
+	req := &mtproto.UpdatesStateRequest{
+		AuthKeyId: authKeyId,
+		UserId:    userId,
+	}
+
+	var state2 *mtproto.Updates_State
+	state2, err = c.client.GetServerUpdatesState(context.Background(), req)
+	if err == nil {
+		state = state2.To_UpdatesState()
+	}
+	return
+}
+
+func (c *syncClient) UpdateAuthStateSeq(authKeyId int64, pts, qts int32) (err error) {
+	req := &mtproto.UpdatesStateRequest{
+		AuthKeyId: authKeyId,
+		Pts:       pts,
+		Qts:       qts,
+	}
+	_, err = c.client.UpdateUpdatesState(context.Background(), req)
+	return
+}
+

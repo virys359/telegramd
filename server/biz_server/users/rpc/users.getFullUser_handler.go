@@ -41,22 +41,8 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 
 	switch request.GetId().GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputUserSelf:
-		// User
-		//userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(md.UserId)
-		//user := &mtproto.TLUser{ Data2: &mtproto.User_Data{
-		//Self:       true,
-		//Contact:    true,
-		//Id:         userDO.Id,
-		//FirstName:  userDO.FirstName,
-		//LastName:   userDO.LastName,
-		//Username:   userDO.Username,
-		//AccessHash: userDO.AccessHash,
-		//Phone:      userDO.Phone,
-		//}}
 		user = s.UserModel.GetUserById(md.UserId, md.UserId).To_User()
 		fullUser.SetUser(user)
-		//GetUser()user.To_User())
-
 		// Link
 		link := &mtproto.TLContactsLink{Data2: &mtproto.Contacts_Link_Data{
 			MyLink:      mtproto.NewTLContactLinkContact().To_ContactLink(),
@@ -66,20 +52,6 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 		fullUser.SetLink(link.To_Contacts_Link())
 	case mtproto.TLConstructor_CRC32_inputUser:
 		inputUser := request.GetId().To_InputUser()
-		// request.Id.Payload.(*mtproto.InputUser_InputUser).InputUser
-		// User
-		//userDO := dao.GetUsersDAO(dao.DB_SLAVE).SelectById(inputUser.GetUserId())
-		//user := &mtproto.TLUser{ Data2: &mtproto.User_Data{
-		//Self:       md.UserId == inputUser.GetUserId(),
-		//Contact:    true,
-		//Id:         userDO.Id,
-		//FirstName:  userDO.FirstName,
-		//LastName:   userDO.LastName,
-		//Username:   userDO.Username,
-		//AccessHash: userDO.AccessHash,
-		//Phone:      userDO.Phone,
-		//}}
-
 		user = s.UserModel.GetUserById(md.UserId, inputUser.GetUserId()).To_User()
 		fullUser.SetUser(user)
 
@@ -107,11 +79,7 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 	fullUser.SetNotifySettings(peerNotifySettings.To_PeerNotifySettings())
 
 	photoId := user.GetData2().GetPhoto().GetData2().GetPhotoId()
-	// profilePhoto := user.GetData2().GetPhoto()
-	// profilePhoto.GetData2().
-	// photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
 	sizes, _ := document_client.GetPhotoSizeList(photoId)
-	// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
 	photo := &mtproto.TLPhoto{Data2: &mtproto.Photo_Data{
 		Id:          photoId,
 		HasStickers: false,
@@ -120,17 +88,6 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 		Sizes:       sizes,
 	}}
 	fullUser.SetProfilePhoto(photo.To_Photo())
-	//time.Now()
-	//
-	//var profilePhoto *mtproto.UserProfilePhoto
-	//photoId := user2.GetDefaultUserPhotoID(request.GetId().GetData2().GetUserId())
-	//if photoId == 0 {
-	//	profilePhoto =  mtproto.NewTLUserProfilePhotoEmpty().To_UserProfilePhoto()
-	//} else {
-	//	sizeList, _ := nbfs_client.GetPhotoSizeList(photoId)
-	//	profilePhoto = photo.MakeUserProfilePhoto(photoId, sizeList)
-	//}
-	//fullUser.SetProfilePhoto()
 
 	glog.Infof("users.getFullUser#ca30a5b1 - reply: %s", logger.JsonDebugData(fullUser))
 	return fullUser.To_UserFull(), nil

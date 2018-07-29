@@ -24,9 +24,12 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
+	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao/mysql_dao"
 )
 
 type AuthKeyServiceImpl struct {
+	*mysql_dao.AuthUsersDAO
+	*mysql_dao.AuthKeysDAO
 }
 
 // rpc QueryAuthKey(AuthKeyRequest) returns (AuthKeyData);

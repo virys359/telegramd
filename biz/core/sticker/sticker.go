@@ -19,7 +19,6 @@ package sticker
 
 import (
 	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 )
@@ -46,9 +45,9 @@ func makeStickerSet(do *dataobject.StickerSetsDO) *mtproto.StickerSet {
 	return sitckers.To_StickerSet()
 }
 
-func GetStickerSetList(hash int32) []*mtproto.StickerSet {
+func (m *StickerModel) GetStickerSetList(hash int32) []*mtproto.StickerSet {
 	//
-	doList := dao.GetStickerSetsDAO(dao.DB_SLAVE).SelectAll()
+	doList := m.dao.StickerSetsDAO.SelectAll()
 	stickers := make([]*mtproto.StickerSet, len(doList))
 	for i := 0; i < len(doList); i++ {
 		stickers[i] = makeStickerSet(&doList[i])
@@ -56,7 +55,7 @@ func GetStickerSetList(hash int32) []*mtproto.StickerSet {
 	return stickers
 }
 
-func GetStickerSet(stickerset *mtproto.InputStickerSet) *mtproto.StickerSet {
+func (m *StickerModel) GetStickerSet(stickerset *mtproto.InputStickerSet) *mtproto.StickerSet {
 	var (
 		inputSet = stickerset.GetData2()
 		set      *mtproto.StickerSet
@@ -64,12 +63,12 @@ func GetStickerSet(stickerset *mtproto.InputStickerSet) *mtproto.StickerSet {
 
 	switch stickerset.GetConstructor() {
 	case mtproto.TLConstructor_CRC32_inputStickerSetID:
-		do := dao.GetStickerSetsDAO(dao.DB_SLAVE).SelectByID(inputSet.GetId(), inputSet.GetAccessHash())
+		do := m.dao.StickerSetsDAO.SelectByID(inputSet.GetId(), inputSet.GetAccessHash())
 		if do != nil {
 			set = makeStickerSet(do)
 		}
 	case mtproto.TLConstructor_CRC32_inputStickerSetShortName:
-		do := dao.GetStickerSetsDAO(dao.DB_SLAVE).SelectByShortName(inputSet.GetShortName())
+		do := m.dao.StickerSetsDAO.SelectByShortName(inputSet.GetShortName())
 		if do != nil {
 			set = makeStickerSet(do)
 		}
@@ -81,7 +80,7 @@ func GetStickerSet(stickerset *mtproto.InputStickerSet) *mtproto.StickerSet {
 }
 
 func (m *StickerModel) GetStickerPackList(setId int64) ([]*mtproto.StickerPack, []int64) {
-	doList := dao.GetStickerPacksDAO(dao.DB_SLAVE).SelectBySetID(setId)
+	doList := m.dao.StickerPacksDAO.SelectBySetID(setId)
 	packs := make([]*mtproto.StickerPack, len(doList))
 	idList := make([]int64, len(doList))
 	for i := 0; i < len(doList); i++ {
@@ -96,7 +95,3 @@ func (m *StickerModel) GetStickerPackList(setId int64) ([]*mtproto.StickerPack, 
 	}
 	return packs, idList
 }
-
-//func GetStickerDocumentList(idList []int64) []*mtproto.Document {
-//	return nil
-//}

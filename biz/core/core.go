@@ -64,6 +64,7 @@ func InstallCoreModels(serverId int32, inited func()) []CoreModel {
 	}
 
 	uuidGen, _ = idgen.NewUUIDGen("snowflake", base2.Int32ToString(serverId))
+	initSeqIDGen("cache")
 
 	for _, m := range models {
 		m.InstallModel()

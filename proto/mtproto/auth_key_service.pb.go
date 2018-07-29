@@ -1418,6 +1418,11 @@ It has these top-level messages:
 	RpcResultData
 	UpdatesRequest
 	NewUpdatesRequest
+	UserGtPtsUpdatesRequest
+	ChannelGtPtsUpdatesRequest
+	ChannelPtsRequest
+	SeqId
+	UpdatesStateRequest
 */
 package mtproto
 

@@ -25,6 +25,7 @@ import (
 
 type stickersDAO struct {
 	*mysql_dao.StickerPacksDAO
+	*mysql_dao.StickerSetsDAO
 }
 
 type StickerModel struct {
@@ -33,6 +34,7 @@ type StickerModel struct {
 
 func (m *StickerModel) InstallModel() {
 	m.dao.StickerPacksDAO = dao.GetStickerPacksDAO(dao.DB_MASTER)
+	m.dao.StickerSetsDAO = dao.GetStickerSetsDAO(dao.DB_MASTER)
 }
 
 func (m *StickerModel) RegisterCallback(cb interface{}) {

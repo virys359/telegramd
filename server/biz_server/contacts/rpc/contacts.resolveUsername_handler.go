@@ -31,21 +31,15 @@ func (s *ContactsServiceImpl) ContactsResolveUsername(ctx context.Context, reque
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("contacts.resolveUsername#f93ccba3 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ContactsResolveUsername logic
-	do := dao.GetUsersDAO(dao.DB_SLAVE).SelectByUsername(request.GetUsername())
-	if do == nil {
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
-		glog.Error(err)
-		return nil, err
-	}
+	user := s.UserModel.GetUserByUsername(md.UserId, request.GetUsername())
 
 	peer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
-		UserId: do.Id,
+		UserId: user.GetId(),
 	}}
 	resolvedPeer := &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
 		Peer:  peer.To_Peer(),
 		Chats: []*mtproto.Chat{},
-		Users: []*mtproto.User{s.UserModel.GetUserById(md.UserId, do.Id).To_User()},
+		Users: []*mtproto.User{user.To_User()},
 	}}
 
 	glog.Infof("contacts.resolveUsername#f93ccba3 - reply: {%v}", resolvedPeer)

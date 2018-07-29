@@ -433,3 +433,67 @@ func (s *SyncServiceImpl) GetNewUpdatesData(ctx context.Context, request *mtprot
 	glog.Infof("getNewUpdatesData - reply: %s", logger.JsonDebugData(reply))
 	return
 }
+
+func (s *SyncServiceImpl) GetCurrentChannelPts(ctx context.Context, request *mtproto.ChannelPtsRequest) (reply *mtproto.SeqId, err error) {
+	glog.Infof("getCurrentChannelPts - request: {%v}", request)
+
+	pts := s.UpdateModel.CurrentChannelPtsId(request.GetChannelId())
+	reply = &mtproto.SeqId{
+		Pts: int32(pts),
+	}
+
+	glog.Infof("getCurrentChannelPts - reply: %s", logger.JsonDebugData(reply))
+	return
+}
+
+func (s *SyncServiceImpl) GetUserGtPtsUpdatesData(ctx context.Context, request *mtproto.UserGtPtsUpdatesRequest) (reply *mtproto.Updates, err error) {
+	glog.Infof("getUserGtPtsUpdatesData - request: {%v}", request)
+
+	updateList := s.UpdateModel.GetUpdateListByGtPts(request.GetUserId(), request.GetPts())
+	reply = &mtproto.Updates{Constructor: mtproto.TLConstructor_CRC32_updates, Data2: &mtproto.Updates_Data{
+		Updates: updateList,
+		Users:   []*mtproto.User{},
+		Chats:   []*mtproto.Chat{},
+		Date:    int32(time.Now().Unix()),
+		Seq:     0,
+	}}
+
+	glog.Infof("getUserGtPtsUpdatesData - reply: %s", logger.JsonDebugData(reply))
+	return
+}
+
+func (s *SyncServiceImpl) GetChannelGtPtsUpdatesData(ctx context.Context, request *mtproto.ChannelGtPtsUpdatesRequest) (reply *mtproto.Updates, err error) {
+	glog.Infof("getChannelGtPtsUpdatesData - request: {%v}", request)
+
+	updateList := s.UpdateModel.GetChannelUpdateListByGtPts(request.GetChannelId(), request.GetPts())
+	reply = &mtproto.Updates{Constructor: mtproto.TLConstructor_CRC32_updates, Data2: &mtproto.Updates_Data{
+		Updates: updateList,
+		Users:   []*mtproto.User{},
+		Chats:   []*mtproto.Chat{},
+		Date:    int32(time.Now().Unix()),
+		Seq:     0,
+	}}
+
+	glog.Infof("getChannelGtPtsUpdatesData - reply: %s", logger.JsonDebugData(reply))
+	return
+}
+
+func (s *SyncServiceImpl) GetServerUpdatesState(ctx context.Context, request *mtproto.UpdatesStateRequest) (reply *mtproto.Updates_State, err error) {
+	glog.Infof("getServerUpdatesState - request: {%v}", request)
+
+	state := s.UpdateModel.GetServerUpdatesState(request.GetAuthKeyId(), request.GetUserId())
+	reply = state.To_Updates_State()
+
+	glog.Infof("getServerUpdatesState - reply: %s", logger.JsonDebugData(reply))
+	return
+}
+
+func (s *SyncServiceImpl) UpdateUpdatesState(ctx context.Context, request *mtproto.UpdatesStateRequest) (reply *mtproto.VoidRsp, err error) {
+	glog.Infof("updateUpdatesState - request: {%v}", request)
+
+	s.UpdateModel.UpdateAuthStateSeq(request.GetAuthKeyId(), request.GetPts(), request.GetQts())
+	reply = &mtproto.VoidRsp{}
+
+	glog.Info("updateUpdatesState - reply: {VoidRsp}")
+	return
+}

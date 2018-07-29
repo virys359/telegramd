@@ -20,17 +20,12 @@ package message
 import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	// "github.com/golang/glog"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"time"
-	// "github.com/nebulaim/telegramd/baselib/logger"
 	"encoding/json"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
-	// "github.com/nebulaim/telegramd/biz/core/peer"
 	"github.com/nebulaim/telegramd/biz/core"
 )
 
@@ -461,7 +456,7 @@ func (m *MessageModel) SendMessageToOutbox(fromId int32, peer *base.PeerUtil, cl
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:           fromId,
-		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(fromId))),
+		UserMessageBoxId: int32(core.NextMessageBoxId(fromId)),
 		DialogMessageId:  core.GetUUID(),
 		SenderUserId:     fromId,
 		MessageBoxType:   MESSAGE_BOX_TYPE_OUTGOING,
@@ -525,7 +520,7 @@ func (m *MessageModel) sendUserMessageToInbox(fromId int32, peer *base.PeerUtil,
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:           peer.PeerId,
-		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(peer.PeerId))),
+		UserMessageBoxId: int32(core.NextMessageBoxId(peer.PeerId)),
 		DialogMessageId:  dialogMessageId,
 		SenderUserId:     fromId,
 		MessageBoxType:   MESSAGE_BOX_TYPE_INCOMING,
@@ -784,3 +779,21 @@ func (m *messageModel) GetPeerMessageBoxID(userId, boxID, peerId int32) int32 {
 	return id
 }
 */
+//
+//func (m *MessageModel) DeleteMessagesByMessageIdList(userId int32, messageIds []int32) {
+//	m.dao.MessagesDAO.DeleteMessagesByMessageIdList(userId, messageIds)
+//}
+
+func (m *MessageModel) GetPeerDialogMessageIdList(userId int32, idList []int32) map[int32][]int32{
+	doList := m.dao.MessagesDAO.SelectPeerDialogMessageIdList(userId, idList)
+	deleteIdListMap := make(map[int32][]int32)
+	for _, do := range doList {
+		if messageIdList, ok := deleteIdListMap[do.UserId]; !ok {
+			deleteIdListMap[do.UserId] = []int32{do.UserMessageBoxId}
+		} else {
+			deleteIdListMap[do.UserId] = append(messageIdList, do.UserMessageBoxId)
+		}
+	}
+
+	return deleteIdListMap
+}

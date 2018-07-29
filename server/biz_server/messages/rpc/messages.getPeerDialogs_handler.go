@@ -22,9 +22,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // messages.getPeerDialogs#2d9776b9 peers:Vector<InputPeer> = messages.PeerDialogs;
@@ -78,8 +78,8 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 		peerDialogs.Data2.Chats = s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
-	state := update2.GetServerUpdatesState(md.AuthId, md.UserId)
-	update2.UpdateAuthStateSeq(md.AuthId, state.GetPts(), 0)
+	state, _ := sync_client.GetSyncClient().GetServerUpdatesState(md.AuthId, md.UserId)
+	sync_client.GetSyncClient().UpdateAuthStateSeq(md.AuthId, state.GetPts(), 0)
 
 	// state := update2.GetUpdatesState2(md.AuthId, md.UserId)
 	peerDialogs.SetState(state.To_Updates_State())

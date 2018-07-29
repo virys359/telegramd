@@ -48,18 +48,12 @@ func (s *ChannelsServiceImpl) ChannelsGetParticipant(ctx context.Context, reques
 		userId = request.UserId.GetData2().GetUserId()
 	}
 
-	// GetData2().GetUserId()
 	inputChannel := request.GetChannel().To_InputChannel()
-	do := dao.GetChannelParticipantsDAO(dao.DB_SLAVE).SelectByUserId(inputChannel.GetChannelId(), userId)
-	if do == nil {
-		err := fmt.Errorf("not find userId in (%v, %d)", inputChannel, userId)
-		glog.Error(err)
-		return nil, err
-	}
-
+	participant := s.ChannelModel.GetChannelParticipant(inputChannel.GetChannelId(), userId)
+	idList := []int32{participant.GetData2().GetUserId(), participant.GetData2().GetInviterId()}
 	channelParticipant := &mtproto.TLChannelsChannelParticipant{Data2: &mtproto.Channels_ChannelParticipant_Data{
-		Participant: channel.MakeChannelParticipant2ByDO(md.UserId, do),
-		Users:       s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{do.UserId, do.InviterUserId}),
+		Participant: participant,
+		Users:       s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList),
 	}}
 
 	glog.Infof("channels.getParticipant#546dd7a6 - reply: {%v}", channelParticipant)

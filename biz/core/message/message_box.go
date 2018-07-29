@@ -23,13 +23,10 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"time"
-	// "github.com/nebulaim/telegramd/biz/model"
 	"fmt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/core"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 )
 
 //type InboxMessageList struct {
@@ -69,7 +66,7 @@ func (m *MessageModel) CreateMessageOutboxByNew(fromId int32, peer *base.PeerUti
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:           fromId,
-		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(fromId))),
+		UserMessageBoxId: int32(core.NextMessageBoxId(fromId)),
 		DialogMessageId:  core.GetUUID(),
 		SenderUserId:     fromId,
 		MessageBoxType:   MESSAGE_BOX_TYPE_OUTGOING,
@@ -149,7 +146,7 @@ func (this *MessageBox) makeInboxMessageDO(fromId int32, peer *base.PeerUtil, in
 	now := int32(time.Now().Unix())
 	messageDO := &dataobject.MessagesDO{
 		UserId:           inboxUserId,
-		UserMessageBoxId: int32(update2.NextMessageBoxId(base2.Int32ToString(inboxUserId))),
+		UserMessageBoxId: int32(core.NextMessageBoxId(inboxUserId)),
 		DialogMessageId:  this.DialogMessageId,
 		SenderUserId:     this.UserId,
 		MessageBoxType:   MESSAGE_BOX_TYPE_INCOMING,
@@ -249,3 +246,4 @@ func (this *MessageBoxList) ToMessageList() []*mtproto.Message {
 	}
 	return messageList
 }
+

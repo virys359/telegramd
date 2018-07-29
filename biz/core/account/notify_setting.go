@@ -48,9 +48,6 @@ func (m *AccountModel) GetNotifySettings(userId int32, peer *base.PeerUtil) *mtp
 }
 
 func (m *AccountModel) SetNotifySettings(userId int32, peer *base.PeerUtil, settings *mtproto.TLInputPeerNotifySettings) {
-	// slave := dao.GetUserNotifySettingsDAO(dao.DB_SLAVE)
-	// master := dao.GetUserNotifySettingsDAO(dao.DB_MASTER)
-
 	var (
 		showPreviews = base2.BoolToInt8(settings.GetShowPreviews())
 		silent       = base2.BoolToInt8(settings.GetSilent())

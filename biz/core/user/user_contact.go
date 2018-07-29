@@ -31,8 +31,8 @@ func (m *UserModel) GetContactUserIDList(userId int32) []int32 {
 	return idList
 }
 
-func (m *UserModel) GetStatuseList(selfId int32) []*mtproto.ContactStatus {
-	//doList := dao.GetUserContactsDAO(dao.DB_SLAVE).SelectUserContacts(selfId)
+func (m *UserModel) GetStatusList(selfId int32) []*mtproto.ContactStatus {
+	//doList := m.dao.UserContactsDAO.SelectUserContacts(selfId)
 	//
 	//contactIdList := make([]int32, 0, len(doList))
 	//for _, do := range doList {

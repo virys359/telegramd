@@ -21,7 +21,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz/core/sticker"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 )
@@ -33,7 +32,7 @@ func (s *MessagesServiceImpl) MessagesGetAllStickers(ctx context.Context, reques
 
 	stickers := &mtproto.TLMessagesAllStickers{Data2: &mtproto.Messages_AllStickers_Data{
 		Hash: 0, // TODO(@benqi): hash规则
-		Sets: sticker.GetStickerSetList(request.Hash),
+		Sets: s.StickerModel.GetStickerSetList(request.Hash),
 	}}
 
 	glog.Infof("messages.getAllStickers#1c9618b1 - reply: %s", logger.JsonDebugData(stickers))

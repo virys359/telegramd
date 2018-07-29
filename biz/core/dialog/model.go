@@ -48,6 +48,22 @@ func (m *DialogModel) MakeDialogLogic(userId, peerType, peerId int32) *dialogLog
 	}
 }
 
+func (m *DialogModel) UpdateUnreadByPeer(userId int32, peerType int8, peerId int32, readInboxMaxId int32) {
+	m.dao.UserDialogsDAO.UpdateUnreadByPeer(readInboxMaxId, userId, peerType, peerId)
+}
+
+func (m *DialogModel) UpdateReadOutboxMaxIdByPeer(userId int32, peerType int8, peerId int32, topMessage int32)  {
+	m.dao.UserDialogsDAO.UpdateReadOutboxMaxIdByPeer(topMessage, userId, peerType, peerId)
+}
+
+func (m *DialogModel) GetTopMessage(userId int32, peerType int8, peerId int32) int32 {
+	do := m.dao.UserDialogsDAO.SelectByPeer(userId, peerType, peerId)
+	if do != nil {
+		return do.TopMessage
+	}
+	return 0
+}
+
 func init() {
 	core.RegisterCoreModel(&DialogModel{dao: &dialogsDAO{}})
 }

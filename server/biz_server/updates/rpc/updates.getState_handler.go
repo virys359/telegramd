@@ -21,9 +21,9 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // 执行getState后，获取最新的pts, qts and seq
@@ -32,7 +32,7 @@ func (s *UpdatesServiceImpl) UpdatesGetState(ctx context.Context, request *mtpro
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("updates.getState#edd4882a  - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	state := update2.GetServerUpdatesState(md.AuthId, md.UserId)
+	state, _ := sync_client.GetSyncClient().GetServerUpdatesState(md.AuthId, md.UserId)
 	glog.Infof("updates.getState#edd4882a  - reply: %s", logger.JsonDebugData(state))
 	return state.To_Updates_State(), nil
 }

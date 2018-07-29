@@ -24,9 +24,8 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"time"
-	// base2 "github.com/nebulaim/telegramd/baselib/helper"
 	"github.com/nebulaim/telegramd/biz/core/message"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // updates.getDifference#25939651 flags:# pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
@@ -42,7 +41,7 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 		chatList     []*mtproto.Chat
 	)
 
-	updateList := update2.GetUpdateListByGtPts(md.UserId, lastPts)
+	updateList, _ := sync_client.GetSyncClient().GetUpdateListByGtPts(md.UserId, lastPts)
 
 	for _, update := range updateList {
 		switch update.GetConstructor() {
@@ -89,7 +88,7 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	}}
 
 	// TODO(@benqi): remove to received ack handler.
-	update2.UpdateAuthStateSeq(md.AuthId, lastPts, 0)
+	sync_client.GetSyncClient().UpdateAuthStateSeq(md.AuthId, lastPts, 0)
 
 	glog.Infof("updates.getDifference#25939651 - reply: %s", logger.JsonDebugData(difference))
 	return difference.To_Updates_Difference(), nil
