@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // messages.toggleDialogPin#3289be6a flags:# pinned:flags.0?true peer:InputPeer = Bool;
@@ -41,6 +42,13 @@ func (s *MessagesServiceImpl) MessagesToggleDialogPin(ctx context.Context, reque
 	// TODO(@benqi): check access_hash
 	dialogLogic := s.DialogModel.MakeDialogLogic(md.UserId, peer.PeerType, peer.PeerId)
 	dialogLogic.ToggleDialogPin(request.GetPinned())
+
+	// sync other sessions
+	updateDialogPinned := &mtproto.TLUpdateDialogPinned{Data2: &mtproto.Update_Data{
+		Pinned: request.GetPinned(),
+		Peer_39: peer.ToPeer(),
+	}}
+	sync_client.GetSyncClient().SyncOneUpdateData(md.AuthId, md.SessionId, md.UserId, updateDialogPinned.To_Update())
 
 	glog.Info("messages.toggleDialogPin#3289be6a - reply {true}")
 	return mtproto.ToBool(true), nil
