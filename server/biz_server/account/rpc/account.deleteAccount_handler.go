@@ -19,10 +19,8 @@ package rpc
 
 import (
 	"github.com/golang/glog"
-	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 )
