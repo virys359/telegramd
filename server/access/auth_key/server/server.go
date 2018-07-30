@@ -28,8 +28,6 @@ import (
 	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
 	"google.golang.org/grpc"
 	"time"
-	// "github.com/nebulaim/telegramd/mtproto2"
-	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao/mysql_dao"
 )
 
 type AuthKeyServer struct {
