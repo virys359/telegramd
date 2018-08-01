@@ -3,7 +3,7 @@
 ver = "0.0.1"
 #logPath = "/tmp/biz_server.log"
 
-[nbfs]
+serverId = 1
 dataPath = "/opt/nbfs"
 
 [rpcServer]
