@@ -33,7 +33,7 @@ go build
 ./upload &
 
 echo "build document ..."
-cd ${telegramd}/server/document
+cd ${telegramd}/service/document
 go get
 go build
 ./document &
