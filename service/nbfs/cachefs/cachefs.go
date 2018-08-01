@@ -43,8 +43,11 @@ var subPaths = []string{"0", "a", "b", "c", "s", "m", "x", "y"}
 // var uuidgen idgen.UUIDGen
 
 func InitCacheFS(dataPath string) error {
+	if dataPath == "" {
+		dataPath = rootDataPath
+	}
 	for _, p := range subPaths {
-		err := os.MkdirAll(rootDataPath + "/" + p, 0755)
+		err := os.MkdirAll(dataPath + "/" + p, 0755)
 		if err != nil {
 			glog.Fatal("init cache fs error: ", err)
 			return err
