@@ -64,10 +64,11 @@ type PhoneServiceImpl struct {
 	*user.UserModel
 	*phone_call.PhoneCallModel
 	*message.MessageModel
+	RelayIp string
 }
 
-func NewPhoneServiceImpl(models []core.CoreModel) *PhoneServiceImpl {
-	impl := &PhoneServiceImpl{}
+func NewPhoneServiceImpl(models []core.CoreModel, relayIp string) *PhoneServiceImpl {
+	impl := &PhoneServiceImpl{RelayIp: relayIp}
 
 	for _, m := range models {
 		switch m.(type) {

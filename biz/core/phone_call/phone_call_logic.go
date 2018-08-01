@@ -183,13 +183,13 @@ func (p *phoneCallLogic) ToPhoneCallAccepted() *mtproto.TLPhoneCallAccepted {
 }
 
 // phoneConnection#9d4c17c0 id:long ip:string ipv6:string port:int peer_tag:bytes = PhoneConnection;
-func makeConnection() *mtproto.PhoneConnection {
+func makeConnection(relayIp string) *mtproto.PhoneConnection {
 	return &mtproto.PhoneConnection{
 		Constructor: mtproto.TLConstructor_CRC32_phoneConnection,
 		Data2: &mtproto.PhoneConnection_Data{
 			Id: 50003,
 			// Ip:      "192.168.4.32",
-			Ip:      "192.168.1.104",
+			Ip:      relayIp,
 			Ipv6:    "",
 			Port:    50001,
 			PeerTag: []byte("24ffcbeb7980d28b"),
@@ -198,7 +198,7 @@ func makeConnection() *mtproto.PhoneConnection {
 }
 
 // phoneCall#ffe6ab67 id:long access_hash:long date:int admin_id:int participant_id:int g_a_or_b:bytes key_fingerprint:long protocol:PhoneCallProtocol connection:PhoneConnection alternative_connections:Vector<PhoneConnection> start_date:int = PhoneCall;
-func (p *phoneCallLogic) ToPhoneCall(selfId int32, keyFingerprint int64) *mtproto.TLPhoneCall {
+func (p *phoneCallLogic) ToPhoneCall(selfId int32, keyFingerprint int64, relayIp string) *mtproto.TLPhoneCall {
 	var (
 		accessHash int64
 		gaOrGb     []byte
@@ -221,7 +221,7 @@ func (p *phoneCallLogic) ToPhoneCall(selfId int32, keyFingerprint int64) *mtprot
 		GAOrB:                  gaOrGb,
 		KeyFingerprint:         keyFingerprint,
 		Protocol:               p.toPhoneCallProtocol(),
-		Connection:             makeConnection(),
+		Connection:             makeConnection(relayIp),
 		AlternativeConnections: []*mtproto.PhoneConnection{}, // TODO(@benqi):
 		StartDate:              0,
 	}}

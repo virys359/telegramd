@@ -53,7 +53,7 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 	updatesData := update2.NewUpdatesLogic(md.UserId)
 	// 1. add phoneCallRequested
 	updatePhoneCall := &mtproto.TLUpdatePhoneCall{Data2: &mtproto.Update_Data{
-		PhoneCall: callSession.ToPhoneCall(callSession.ParticipantId, request.GetKeyFingerprint()).To_PhoneCall(),
+		PhoneCall: callSession.ToPhoneCall(callSession.ParticipantId, request.GetKeyFingerprint(), s.RelayIp).To_PhoneCall(),
 	}}
 	updatesData.AddUpdate(updatePhoneCall.To_Update())
 	// 2. add users
@@ -64,7 +64,7 @@ func (s *PhoneServiceImpl) PhoneConfirmCall(ctx context.Context, request *mtprot
 	/////////////////////////////////////////////////////////////////////////////////
 	// 2. reply
 	phoneCall := &mtproto.TLPhonePhoneCall{Data2: &mtproto.Phone_PhoneCall_Data{
-		PhoneCall: callSession.ToPhoneCall(md.UserId, request.GetKeyFingerprint()).To_PhoneCall(),
+		PhoneCall: callSession.ToPhoneCall(md.UserId, request.GetKeyFingerprint(), s.RelayIp).To_PhoneCall(),
 		Users:     s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId, callSession.ParticipantId}),
 	}}
 

@@ -4,6 +4,7 @@ ver = "0.0.1"
 #logPath = "/tmp/biz_server.log"
 
 serverId = 1
+relayIp = "127.0.0.1"
 
 [rpcServer]
 addr = "0.0.0.0:10001"

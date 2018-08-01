@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018, https://github.com/nebulaim
+ *  Copyright (c) 2017, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,68 +17,5 @@
 
 package main
 
-import (
-	"flag"
-	"github.com/golang/glog"
-
-	"fmt"
-	"github.com/BurntSushi/toml"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/nebulaim/telegramd/baselib/redis_client"
-	"github.com/nebulaim/telegramd/biz/dal/dao"
-	phone "github.com/nebulaim/telegramd/biz_server/phone/rpc"
-	"github.com/nebulaim/telegramd/mtproto"
-	"google.golang.org/grpc"
-)
-
-func init() {
-	flag.Set("alsologtostderr", "true")
-	flag.Set("log_dir", "false")
-}
-
-type RpcServerConfig struct {
-	Addr string
-}
-
-//type RpcClientConfig struct {
-//	ServiceName string
-//	Addr string
-//}
-
-type phoneServerConfig struct {
-	Server    *RpcServerConfig
-	Discovery service_discovery.ServiceDiscoveryServerConfig
-
-	// RpcClient	*RpcClientConfig
-	Mysql []mysql_client.MySQLConfig
-	Redis []redis_client.RedisConfig
-}
-
-// 整合各服务，方便开发调试
 func main() {
-	flag.Parse()
-
-	config := &phoneServerConfig{}
-	if _, err := toml.DecodeFile("./auth.toml", config); err != nil {
-		fmt.Errorf("%s\n", err)
-		return
-	}
-
-	glog.Info(config)
-
-	// 初始化mysql_client、redis_client
-	redis_client.InstallRedisClientManager(config.Redis)
-	mysql_client.InstallMysqlClientManager(config.Mysql)
-
-	// 初始化redis_dao、mysql_dao
-	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
-	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
-
-	// Start server
-	grpcServer := grpc_util.NewRpcServer(config.Server.Addr, &config.Discovery)
-	grpcServer.Serve(func(s *grpc.Server) {
-		mtproto.RegisterRPCPhoneServer(s, &phone.PhoneServiceImpl{})
-	})
 }

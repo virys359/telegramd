@@ -59,6 +59,7 @@ var (
 
 type messengerConfig struct {
 	ServerId       int32 // 服务器ID
+	RelayIp        string
 	RpcServer      *grpc_util.RPCServerConfig
 	Mysql          []mysql_client.MySQLConfig
 	Redis          []redis_client.RedisConfig
@@ -135,7 +136,7 @@ func (s *messengerServer) RunLoop() {
 		mtproto.RegisterRPCLangpackServer(s2, langpack.NewLangpackServiceImpl(s.models))
 		mtproto.RegisterRPCMessagesServer(s2, messages.NewMessagesServiceImpl(s.models))
 		mtproto.RegisterRPCPaymentsServer(s2, payments.NewPaymentsServiceImpl(s.models))
-		mtproto.RegisterRPCPhoneServer(s2, phone.NewPhoneServiceImpl(s.models))
+		mtproto.RegisterRPCPhoneServer(s2, phone.NewPhoneServiceImpl(s.models, Conf.RelayIp))
 		mtproto.RegisterRPCPhotosServer(s2, photos.NewPhotosServiceImpl(s.models))
 		mtproto.RegisterRPCStickersServer(s2, stickers.NewStickersServiceImpl(s.models))
 		mtproto.RegisterRPCUpdatesServer(s2, updates.NewUpdatesServiceImpl(s.models))
