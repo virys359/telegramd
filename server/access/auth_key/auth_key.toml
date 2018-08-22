@@ -1,6 +1,7 @@
 # auth_key.toml
 
 ver = "0.0.1"
+serverId = 1
 
 [server.server]
 name = "handshake"

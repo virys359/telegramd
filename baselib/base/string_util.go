@@ -88,8 +88,16 @@ func JoinUint64List(s []uint64, sep string) string {
 }
 
 // IsAlNumString returns true if an alpha numeric string consists of characters a-zA-Z0-9
+
+// https://github.com/nebulaim/telegramd/issues/99
+//
+// there are some issue in username validation
+// 1 - issue : username can be only numeric [must check first character for alphabet]
+// 2 - issue :underscore not allowed [must edit IsAlNumString and add underscore support to it.
+//   by the way underscore can't repeat without any character between them. for example s_a_b_a. ]
 func IsAlNumString(s string) bool {
 	c := 0
+	prevtmp := ' '
 	for _, r := range s {
 		switch {
 		case '0' <= r && r <= '9':
@@ -101,7 +109,11 @@ func IsAlNumString(s string) bool {
 		case 'A' <= r && r <= 'Z':
 			c++
 			break
+		case prevtmp != '_' && '_' == r:
+			c++
+			break
 		}
+		prevtmp = r
 	}
 	return len(s) == c
 }

@@ -44,7 +44,7 @@ func (s *AccountServiceImpl) AccountCheckUsername(ctx context.Context, request *
 	// You can use a-z, 0-9 and underscores.
 	// Minimum length is 5 characters.";
 	//
-	if len(request.Username) < kMinimumUserNameLen || !base.IsAlNumString(request.Username) {
+	if len(request.Username) < kMinimumUserNameLen || !base.IsAlNumString(request.Username) || base.IsNumber(request.Username[0]) {
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
 		glog.Error("account.checkUsername#2714d86c - format error: ", err)
 		return nil, err
