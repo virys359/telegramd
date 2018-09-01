@@ -22,7 +22,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 	// "github.com/go-redis/redis"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 )
 
 // import "github.com/golang/glog"
