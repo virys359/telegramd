@@ -19,8 +19,8 @@ package redis_client
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"github.com/golang/glog"
+	"github.com/gomodule/redigo/redis"
 	"time"
 )
 

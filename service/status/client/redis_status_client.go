@@ -19,8 +19,8 @@ package status_client
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"github.com/golang/glog"
+	"github.com/gomodule/redigo/redis"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/nebulaim/telegramd/service/status/proto"
