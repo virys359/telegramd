@@ -24,7 +24,7 @@ package redis_dao
 
 import (
 	"github.com/golang/glog"
-	"github.com/gomodule/redigo/internal"
+	"github.com/gomodule/redigo/redis"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 )
 
