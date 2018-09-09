@@ -174,15 +174,15 @@ func (m *EncryptedMessage2) Encode(authKeyId int64, authKey []byte) ([]byte, err
 
 func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, error) {
 	objData := m.Object.Encode()
-	var additional_size = (32 + len(objData)) % 16
-	if additional_size != 0 {
-		additional_size = 16 - additional_size
+	var additionalSize = (32 + len(objData)) % 16
+	if additionalSize != 0 {
+		additionalSize = 16 - additionalSize
 	}
-	if MTPROTO_VERSION == 2 && additional_size < 12 {
-		additional_size += 16
+	if MTPROTO_VERSION == 2 && additionalSize < 12 {
+		additionalSize += 16
 	}
 
-	x := NewEncodeBuf(32 + len(objData) + additional_size)
+	x := NewEncodeBuf(32 + len(objData) + additionalSize)
 	// x.Long(authKeyId)
 	// msgKey := make([]byte, 16)
 	// x.Bytes(msgKey)
@@ -195,16 +195,17 @@ func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, err
 	x.Int(m.SeqNo)
 	x.Int(int32(len(objData)))
 	x.Bytes(objData)
-	x.Bytes(crypto.GenerateNonce(additional_size))
+	x.Bytes(crypto.GenerateNonce(additionalSize))
 
 	// glog.Info("Encode object: ", m.Object)
 
-	encryptedData, _ := m.encrypt(authKey, x.buf)
-	x2 := NewEncodeBuf(56 + len(objData) + additional_size)
+	encryptedData, _ := m.encrypt(authKey, x.buf, len(objData))
+	x2 := NewEncodeBuf(56 + len(objData) + additionalSize)
 	x2.Long(authKeyId)
 	x2.Bytes(m.msgKey)
 	x2.Bytes(encryptedData)
 
+	// glog.Info(x2.buf)
 	return x2.buf, nil
 }
 
@@ -218,7 +219,7 @@ func (m *EncryptedMessage2) decode(authKey []byte, b []byte) error {
 	// aesKey, aesIV := generateMessageKey(msgKey, authKey, false)
 	// x, err := doAES256IGEdecrypt(b[16:], aesKey, aesIV)
 
-	x, err := m.descrypt(msgKey, authKey, b[16:])
+	x, err := m.decrypt(msgKey, authKey, b[16:])
 	if err != nil {
 		return err
 	}
@@ -251,7 +252,7 @@ func (m *EncryptedMessage2) decode(authKey []byte, b []byte) error {
 	return nil
 }
 
-func (m *EncryptedMessage2) descrypt(msgKey, authKey, data []byte) ([]byte, error) {
+func (m *EncryptedMessage2) decrypt(msgKey, authKey, data []byte) ([]byte, error) {
 	// dbuf := NewDecodeBuf(data)
 	// m.authKeyId = dbuf.Long()
 	// msgKey := dbuf.Bytes(16)
@@ -277,25 +278,25 @@ func (m *EncryptedMessage2) descrypt(msgKey, authKey, data []byte) ([]byte, erro
 		return nil, err
 	}
 
-	sha256MsgKey := make([]byte, 96)
+	messageKey := make([]byte, 96)
 	switch MTPROTO_VERSION {
 	case 2:
 		t_d := make([]byte, 0, 32+dataLen)
 		t_d = append(t_d, authKey[88:88+32]...)
 		t_d = append(t_d, x[:dataLen]...)
-		copy(sha256MsgKey, crypto.Sha256Digest(t_d))
+		copy(messageKey, crypto.Sha256Digest(t_d))
 	default:
-		copy(sha256MsgKey[4:], crypto.Sha1Digest(x))
+		copy(messageKey[4:], crypto.Sha1Digest(x[:32 + messageLen]))
 	}
 
-	if !bytes.Equal(sha256MsgKey[8:8+16], msgKey[:16]) {
+	if !bytes.Equal(messageKey[8:8+16], msgKey[:16]) {
 		err = fmt.Errorf("descrypted data error: (data: %s, aesKey: %s, aseIV: %s, authKeyId: %d, authKey: %s), msgKey verify error, sign: %s, msgKey: %s",
 			hex.EncodeToString(data[:64]),
 			hex.EncodeToString(aesKey),
 			hex.EncodeToString(aesIV),
 			m.authKeyId,
 			hex.EncodeToString(authKey[88:88+32]),
-			hex.EncodeToString(sha256MsgKey[8:8+16]),
+			hex.EncodeToString(messageKey[8:8+16]),
 			hex.EncodeToString(msgKey[:16]))
 		glog.Error(err)
 		return nil, err
@@ -304,22 +305,24 @@ func (m *EncryptedMessage2) descrypt(msgKey, authKey, data []byte) ([]byte, erro
 	return x, nil
 }
 
-func (m *EncryptedMessage2) encrypt(authKey []byte, data []byte) ([]byte, error) {
-	message_key := make([]byte, 32)
+func (m *EncryptedMessage2) encrypt(authKey []byte, data []byte, messageSize int) ([]byte, error) {
+	messageKey := make([]byte, 32)
 	switch MTPROTO_VERSION {
 	case 2:
 		t_d := make([]byte, 0, 32+len(data))
 		t_d = append(t_d, authKey[88+8:88+8+32]...)
 		t_d = append(t_d, data...)
-		copy(message_key, crypto.Sha256Digest(t_d))
+		copy(messageKey, crypto.Sha256Digest(t_d))
 	default:
-		copy(message_key[4:], crypto.Sha1Digest(data))
+		copy(messageKey[4:], crypto.Sha1Digest(data[:32+messageSize]))
 	}
 
+	// glog.Info(data[:messageSize])
+	// glog.Info(messageKey)
 	// copy(message_key[8:], )
 	// memcpy(p_data + 8, message_key + 8, 16);
 
-	aesKey, aesIV := generateMessageKey(message_key[8:8+16], authKey, true)
+	aesKey, aesIV := generateMessageKey(messageKey[8:8+16], authKey, true)
 	e := crypto.NewAES256IGECryptor(aesKey, aesIV)
 
 	x, err := e.Encrypt(data)
@@ -328,7 +331,7 @@ func (m *EncryptedMessage2) encrypt(authKey []byte, data []byte) ([]byte, error)
 		return nil, err
 	}
 
-	m.msgKey = message_key[8 : 8+16]
+	m.msgKey = messageKey[8 : 8+16]
 	return x, nil
 }
 
