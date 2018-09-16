@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.7.4
+-- version 4.8.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-06-21 14:20:16
--- 服务器版本： 5.6.37
--- PHP Version: 5.6.30
+-- Generation Time: 2018-09-16 06:48:33
+-- 服务器版本： 5.7.23
+-- PHP Version: 7.1.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -300,10 +300,73 @@ CREATE TABLE `channels` (
   `about` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `photo_id` bigint(20) NOT NULL DEFAULT '0',
   `link` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `broadcast` tinyint(4) NOT NULL DEFAULT '0',
   `admins_enabled` tinyint(4) NOT NULL DEFAULT '0',
   `deactivated` tinyint(4) NOT NULL DEFAULT '0',
   `version` int(11) NOT NULL DEFAULT '1',
   `date` int(11) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `channel_media_unread`
+--
+
+CREATE TABLE `channel_media_unread` (
+  `id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `channel_id` int(11) NOT NULL,
+  `channel_message_id` int(11) NOT NULL,
+  `media_unread` tinyint(4) NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `channel_messages`
+--
+
+CREATE TABLE `channel_messages` (
+  `id` int(11) NOT NULL,
+  `channel_id` int(11) NOT NULL,
+  `channel_message_id` int(11) NOT NULL,
+  `sender_user_id` int(11) NOT NULL,
+  `random_id` bigint(20) NOT NULL,
+  `message_data_id` bigint(20) NOT NULL,
+  `message_type` tinyint(4) NOT NULL DEFAULT '0',
+  `message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `has_media_unread` tinyint(4) NOT NULL DEFAULT '0',
+  `edit_message` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `edit_date` int(11) NOT NULL DEFAULT '0',
+  `views` int(11) NOT NULL DEFAULT '1',
+  `date` int(11) NOT NULL DEFAULT '0',
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `channel_messages2`
+--
+
+CREATE TABLE `channel_messages2` (
+  `id` int(11) NOT NULL,
+  `channel_id` int(11) NOT NULL,
+  `sender_user_id` int(11) NOT NULL,
+  `channel_message_box_id` int(11) NOT NULL,
+  `dialog_message_id` bigint(20) NOT NULL,
+  `random_id` bigint(20) NOT NULL,
+  `message_type` tinyint(4) NOT NULL DEFAULT '0',
+  `message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `date2` int(11) NOT NULL DEFAULT '0',
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -318,6 +381,8 @@ CREATE TABLE `channel_message_boxes` (
   `id` int(11) NOT NULL,
   `sender_user_id` int(11) NOT NULL,
   `channel_id` int(11) NOT NULL,
+  `dialog_id` bigint(20) NOT NULL,
+  `dialog_message_id` int(11) NOT NULL,
   `channel_message_box_id` int(11) NOT NULL,
   `message_id` bigint(20) NOT NULL,
   `date` int(11) NOT NULL DEFAULT '0',
@@ -446,6 +511,22 @@ CREATE TABLE `documents` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `draft_messages`
+--
+
+CREATE TABLE `draft_messages` (
+  `id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `draft_id` int(11) NOT NULL,
+  `draft_type` tinyint(4) NOT NULL DEFAULT '2',
+  `draft_message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `files`
 --
 
@@ -490,6 +571,20 @@ CREATE TABLE `file_parts` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `mentions`
+--
+
+CREATE TABLE `mentions` (
+  `id` bigint(20) NOT NULL,
+  `dialog_id` bigint(20) NOT NULL,
+  `message_id` int(11) NOT NULL,
+  `mentioned_user_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `messages`
 --
 
@@ -521,14 +616,12 @@ CREATE TABLE `message_boxes` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `user_message_box_id` int(11) NOT NULL,
-  `dialog_message_id` bigint(20) NOT NULL,
-  `sender_user_id` int(11) NOT NULL,
+  `dialog_id` bigint(20) NOT NULL DEFAULT '0',
+  `dialog_message_id` int(11) NOT NULL,
+  `message_data_id` bigint(20) NOT NULL,
   `message_box_type` tinyint(4) NOT NULL,
-  `peer_type` tinyint(4) NOT NULL,
-  `peer_id` int(11) NOT NULL,
-  `random_id` bigint(20) NOT NULL,
-  `message_type` tinyint(4) NOT NULL DEFAULT '0',
-  `message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `reply_to_msg_id` int(11) NOT NULL DEFAULT '0',
+  `media_unread` tinyint(4) NOT NULL DEFAULT '0',
   `date2` int(11) NOT NULL DEFAULT '0',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -543,15 +636,20 @@ CREATE TABLE `message_boxes` (
 
 CREATE TABLE `message_datas` (
   `id` int(11) NOT NULL,
+  `message_data_id` bigint(20) NOT NULL,
   `dialog_id` bigint(20) NOT NULL,
-  `message_id` bigint(20) NOT NULL DEFAULT '0',
+  `dialog_message_id` int(11) NOT NULL DEFAULT '0',
   `sender_user_id` int(11) NOT NULL,
   `peer_type` tinyint(4) NOT NULL,
   `peer_id` int(11) NOT NULL,
   `random_id` bigint(20) NOT NULL,
   `message_type` tinyint(4) NOT NULL DEFAULT '0',
   `message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `has_media_unread` tinyint(4) NOT NULL DEFAULT '0',
   `date` int(11) NOT NULL DEFAULT '0',
+  `edit_message` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `edit_date` int(11) NOT NULL DEFAULT '0',
+  `views` int(11) NOT NULL DEFAULT '1',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -766,6 +864,21 @@ CREATE TABLE `tmp_passwords` (
   `tmp_password` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `valid_until` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `username`
+--
+
+CREATE TABLE `username` (
+  `id` bigint(20) NOT NULL,
+  `peer_type` tinyint(4) NOT NULL,
+  `peer_id` int(11) NOT NULL,
+  `username` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -1123,6 +1236,27 @@ ALTER TABLE `channels`
   ADD KEY `creator_user_id_3` (`creator_user_id`,`access_hash`);
 
 --
+-- Indexes for table `channel_media_unread`
+--
+ALTER TABLE `channel_media_unread`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `channel_messages`
+--
+ALTER TABLE `channel_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `sender_user_id` (`sender_user_id`,`random_id`),
+  ADD UNIQUE KEY `channel_id` (`channel_id`,`channel_message_id`),
+  ADD UNIQUE KEY `message_data_id` (`message_data_id`);
+
+--
+-- Indexes for table `channel_messages2`
+--
+ALTER TABLE `channel_messages2`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `channel_message_boxes`
 --
 ALTER TABLE `channel_message_boxes`
@@ -1168,6 +1302,14 @@ ALTER TABLE `documents`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `draft_messages`
+--
+ALTER TABLE `draft_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`,`draft_id`),
+  ADD KEY `user_id_2` (`user_id`,`draft_id`,`draft_type`);
+
+--
 -- Indexes for table `files`
 --
 ALTER TABLE `files`
@@ -1180,6 +1322,12 @@ ALTER TABLE `file_parts`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `mentions`
+--
+ALTER TABLE `mentions`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `messages`
 --
 ALTER TABLE `messages`
@@ -1189,16 +1337,17 @@ ALTER TABLE `messages`
 -- Indexes for table `message_boxes`
 --
 ALTER TABLE `message_boxes`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`,`message_data_id`);
 
 --
 -- Indexes for table `message_datas`
 --
 ALTER TABLE `message_datas`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `message_id` (`message_id`),
-  ADD UNIQUE KEY `sender_user_id` (`sender_user_id`,`peer_type`,`peer_id`,`random_id`),
-  ADD KEY `dialog_id` (`dialog_id`,`date`);
+  ADD UNIQUE KEY `dialog_id` (`dialog_id`,`dialog_message_id`),
+  ADD UNIQUE KEY `sender_user_id` (`sender_user_id`,`random_id`),
+  ADD UNIQUE KEY `message_data_id` (`message_data_id`);
 
 --
 -- Indexes for table `orgs`
@@ -1270,6 +1419,14 @@ ALTER TABLE `sticker_sets`
 --
 ALTER TABLE `tmp_passwords`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `username`
+--
+ALTER TABLE `username`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `peer_type` (`peer_type`,`peer_id`),
+  ADD UNIQUE KEY `username` (`username`);
 
 --
 -- Indexes for table `users`
@@ -1450,6 +1607,24 @@ ALTER TABLE `channels`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- 使用表AUTO_INCREMENT `channel_media_unread`
+--
+ALTER TABLE `channel_media_unread`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `channel_messages`
+--
+ALTER TABLE `channel_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `channel_messages2`
+--
+ALTER TABLE `channel_messages2`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- 使用表AUTO_INCREMENT `channel_message_boxes`
 --
 ALTER TABLE `channel_message_boxes`
@@ -1492,6 +1667,12 @@ ALTER TABLE `documents`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- 使用表AUTO_INCREMENT `draft_messages`
+--
+ALTER TABLE `draft_messages`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
@@ -1501,6 +1682,12 @@ ALTER TABLE `files`
 -- 使用表AUTO_INCREMENT `file_parts`
 --
 ALTER TABLE `file_parts`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `mentions`
+--
+ALTER TABLE `mentions`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
@@ -1580,6 +1767,12 @@ ALTER TABLE `sticker_sets`
 --
 ALTER TABLE `tmp_passwords`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用表AUTO_INCREMENT `username`
+--
+ALTER TABLE `username`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `users`
