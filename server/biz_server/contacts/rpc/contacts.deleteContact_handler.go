@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -73,7 +73,7 @@ func (s *ContactsServiceImpl) ContactsDeleteContact(ctx context.Context, request
 	selfUpdates.AddUpdate(contactLink.To_Update())
 	selfUpdates.AddUser(deleteUser.To_User())
 	// TODO(@benqi): handle seq
-	sync_client.GetSyncClient().PushToUserUpdatesData(md.UserId, selfUpdates.ToUpdates())
+	// sync_client.GetSyncClient().PushToUserUpdatesData(md.UserId, selfUpdates.ToUpdates())
 
 	// TODO(@benqi): 推给联系人逻辑需要再考虑考虑
 	if needUpdate {
@@ -89,7 +89,7 @@ func (s *ContactsServiceImpl) ContactsDeleteContact(ctx context.Context, request
 		selfUser := s.UserModel.GetUserById(md.UserId, md.UserId)
 		contactUpdates.AddUser(selfUser.To_User())
 		// TODO(@benqi): handle seq
-		sync_client.GetSyncClient().PushToUserUpdatesData(deleteId, contactUpdates.ToUpdates())
+		// sync_client.GetSyncClient().PushToUserUpdatesData(deleteId, contactUpdates.ToUpdates())
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////

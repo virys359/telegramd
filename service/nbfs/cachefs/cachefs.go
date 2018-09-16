@@ -18,13 +18,13 @@
 package cachefs
 
 import (
-	"os"
-	"github.com/golang/glog"
-	"fmt"
-	"io/ioutil"
 	"crypto/md5"
-	"strings"
+	"fmt"
+	"github.com/golang/glog"
+	"io/ioutil"
+	"os"
 	"path"
+	"strings"
 )
 
 //type CacheFileIndex struct {
@@ -40,6 +40,7 @@ import (
 
 var rootDataPath = "/opt/nbfs"
 var subPaths = []string{"0", "a", "b", "c", "s", "m", "x", "y"}
+
 // var uuidgen idgen.UUIDGen
 
 func InitCacheFS(dataPath string) error {
@@ -47,7 +48,7 @@ func InitCacheFS(dataPath string) error {
 		rootDataPath = dataPath
 	}
 	for _, p := range subPaths {
-		err := os.MkdirAll(rootDataPath + "/" + p, 0755)
+		err := os.MkdirAll(rootDataPath+"/"+p, 0755)
 		if err != nil {
 			glog.Fatal("init cache fs error: ", err)
 			return err

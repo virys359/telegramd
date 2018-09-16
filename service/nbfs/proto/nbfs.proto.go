@@ -18,7 +18,7 @@
 package nbfs
 
 type DocumentFileMetadata struct {
-	FileId			 int64
+	FileId           int64
 	DocumentId       int64
 	AccessHash       int64
 	DcId             int32
@@ -30,19 +30,18 @@ type DocumentFileMetadata struct {
 	MimeType         string
 }
 
-
 type PhotoFileMetadata struct {
-	FileId	   int64
-	PhotoId    int64
-	PhotoType  int8
-	SizeType   string
-	DcId       int32
-	VolumeId   int64
-	LocalId    int32
-	SecretId   int64
-	Width      int32
-	Height     int32
-	FileSize   int32
-	FilePath   string
-	Ext        string
+	FileId    int64
+	PhotoId   int64
+	PhotoType int8
+	SizeType  string
+	DcId      int32
+	VolumeId  int64
+	LocalId   int32
+	SecretId  int64
+	Width     int32
+	Height    int32
+	FileSize  int32
+	FilePath  string
+	Ext       string
 }

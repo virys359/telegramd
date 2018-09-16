@@ -25,7 +25,7 @@ import (
 )
 
 func TestReflect(t *testing.T) {
-	req := &mtproto.ConnectToSessionServerReq{}
+	req := &mtproto.TLSyncConnectToSessionServer{}
 	fmt.Println(proto.MessageName(req))
 	// m, _ = protoToRawPayload(req)
 }

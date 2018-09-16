@@ -18,10 +18,10 @@
 package updates
 
 import (
-	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/service/idgen/client"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/service/idgen/client"
 )
 
 /**

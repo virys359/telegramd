@@ -210,7 +210,7 @@ func (this *chatLogicData) GetChatParticipantIdList() []int32 {
 	return idList
 }
 
-func (this *chatLogicData) GetChatParticipants() *mtproto.TLChatParticipants {
+func (this *chatLogicData) 	GetChatParticipants() *mtproto.TLChatParticipants {
 	this.checkOrLoadChatParticipantList()
 
 	return &mtproto.TLChatParticipants{Data2: &mtproto.ChatParticipants_Data{

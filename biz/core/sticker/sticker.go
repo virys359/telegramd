@@ -33,9 +33,11 @@ import (
 
 // stickerSet#cd303b41 flags:# installed:flags.0?true archived:flags.1?true official:flags.2?true masks:flags.3?true id:long access_hash:long title:string short_name:string count:int hash:int = StickerSet;
 
+// stickerSet#5585a139 flags:# archived:flags.1?true official:flags.2?true masks:flags.3?true installed_date:flags.0?int id:long access_hash:long title:string short_name:string count:int hash:int = StickerSet;
+
 func makeStickerSet(do *dataobject.StickerSetsDO) *mtproto.StickerSet {
 	sitckers := &mtproto.TLStickerSet{Data2: &mtproto.StickerSet_Data{
-		Installed:  true,
+		// Installed:  true,
 		Id:         do.StickerSetId,
 		AccessHash: do.AccessHash,
 		Title:      do.Title,

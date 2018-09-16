@@ -55,7 +55,7 @@ func (s *MessagesServiceImpl) MessagesSaveDraft(ctx context.Context, request *mt
 	draft := makeDraftMessageBySaveDraft(request)
 
 	// TODO(@benqi): 会话未存在如何处理？
-	s.UserModel.SaveDraftMessage(md.UserId, peer.PeerType, peer.PeerId, draft.To_DraftMessage())
+	s.DialogModel.SaveDraftMessage(md.UserId, peer.PeerType, peer.PeerId, draft.To_DraftMessage())
 
 	// TODO(@benqi): sync other client
 

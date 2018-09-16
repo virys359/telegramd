@@ -345,7 +345,7 @@ func (s *FrontendServer) checkAndSendClientNew(ctx *connContext, conn *net2.TcpC
 	var err error
 	if ctx.sessionAddr == "" {
 		clientNew := &zproto.ZProtoSessionClientNew{
-		// MTPMessage: mmsg,
+			// MTPMessage: mmsg,
 		}
 		err = s.client.SendMessageToAddress("session", kaddr, s.newMetadata(conn), clientNew)
 		if err == nil {

@@ -30,16 +30,28 @@ func (s *ContactsServiceImpl) ContactsResolveUsername(ctx context.Context, reque
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("contacts.resolveUsername#f93ccba3 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	user := s.UserModel.GetUserByUsername(md.UserId, request.GetUsername())
+	var resolvedPeer *mtproto.TLContactsResolvedPeer
 
-	peer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
-		UserId: user.GetId(),
-	}}
-	resolvedPeer := &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
-		Peer:  peer.To_Peer(),
-		Chats: []*mtproto.Chat{},
-		Users: []*mtproto.User{user.To_User()},
-	}}
+	user := s.UserModel.GetUserByUsername(md.UserId, request.GetUsername())
+	if user != nil {
+		peer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
+			UserId: user.GetId(),
+		}}
+		resolvedPeer = &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
+			Peer:  peer.To_Peer(),
+			Chats: []*mtproto.Chat{},
+			Users: []*mtproto.User{user.To_User()},
+		}}
+	} else {
+		peer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
+			UserId: 0,
+		}}
+		resolvedPeer = &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
+			Peer:  peer.To_Peer(),
+			Chats: []*mtproto.Chat{},
+			Users: []*mtproto.User{},
+		}}
+	}
 
 	glog.Infof("contacts.resolveUsername#f93ccba3 - reply: {%v}", resolvedPeer)
 	return resolvedPeer.To_Contacts_ResolvedPeer(), nil

@@ -183,9 +183,11 @@ func (this *UpdatesLogic) ToUpdateShortSentMessage() *mtproto.Updates {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-func (this *UpdatesLogic) AddUpdateNewMessage(message *mtproto.Message) {
+func (this *UpdatesLogic) AddUpdateNewMessage(pts, ptsCount int32, message *mtproto.Message) {
 	updateNewMessage := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
 		Message_1: message,
+		Pts:       pts,
+		PtsCount:  ptsCount,
 	}}
 	this.updates = append(this.updates, updateNewMessage.To_Update())
 }
@@ -270,6 +272,7 @@ func (this *UpdatesLogic) AddUser(user *mtproto.User) {
 	this.users = append(this.users, user)
 }
 
+/*
 /////////////////////////////////////////////////////////////////////////////////////////
 // TODO(@benqi): check error
 func (this *UpdatesLogic) SetupState(state *mtproto.ClientUpdatesState) {
@@ -298,3 +301,4 @@ func (this *UpdatesLogic) SetupState(state *mtproto.ClientUpdatesState) {
 		}
 	}
 }
+*/

@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -53,18 +53,18 @@ func (s *MessagesServiceImpl) MessagesToggleChatAdmins(ctx context.Context, requ
 
 	replyUpdates := syncUpdates.ToUpdates()
 
-	updateChatAdmins := &mtproto.TLUpdateChatAdmins{Data2: &mtproto.Update_Data{
-		ChatId:  chatLogic.GetChatId(),
-		Enabled: request.GetEnabled(),
-		Version: chatLogic.GetVersion(),
-	}}
-
-	sync_client.GetSyncClient().PushToUserNotMeUpdateShortData(md.AuthId, md.SessionId, md.UserId, updateChatAdmins.To_Update())
-
-	idList := chatLogic.GetChatParticipantIdList()
-	for _, id := range idList {
-		sync_client.GetSyncClient().PushToUserUpdateShortData(id, updateChatAdmins.To_Update())
-	}
+	//updateChatAdmins := &mtproto.TLUpdateChatAdmins{Data2: &mtproto.Update_Data{
+	//	ChatId:  chatLogic.GetChatId(),
+	//	Enabled: request.GetEnabled(),
+	//	Version: chatLogic.GetVersion(),
+	//}}
+	//
+	//// sync_client.GetSyncClient().PushToUserNotMeUpdateShortData(md.AuthId, md.SessionId, md.UserId, updateChatAdmins.To_Update())
+	//
+	//idList := chatLogic.GetChatParticipantIdList()
+	//for _, id := range idList {
+	//	// sync_client.GetSyncClient().PushToUserUpdateShortData(id, updateChatAdmins.To_Update())
+	//}
 
 	glog.Infof("messages.toggleChatAdmins#ec8bd9e1 - reply: {%v}", replyUpdates)
 	return replyUpdates, nil

@@ -74,7 +74,7 @@ func (i ReportReasonType) ToReportReason(text string) (reason *mtproto.ReportRea
 	case REASON_OTHER:
 		reason = &mtproto.ReportReason{
 			Constructor: mtproto.TLConstructor_CRC32_inputReportReasonOther,
-			Data2:       &mtproto.ReportReason_Data{text},
+			Data2:       &mtproto.ReportReason_Data{Text: text},
 		}
 	case REASON_SPAM:
 		reason = &mtproto.ReportReason{

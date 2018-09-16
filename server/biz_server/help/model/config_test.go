@@ -18,22 +18,27 @@
 package model
 
 import (
-	// "fmt"
-	// "github.com/nebulaim/telegramd/helper/orm"
-	// _ "github.com/go-sql-driver/mysql" // import your used driver
+	"encoding/json"
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"io/ioutil"
 	"testing"
 )
 
 func TestGetAuthKey(t *testing.T) {
-	var config Config
-
-	if _, err := toml.DecodeFile("./config_test.toml", &config); err != nil {
-		fmt.Errorf("%s\n", err)
+	helpConfig := mtproto.NewTLConfig()
+	// data2 := &ProfilePhotoIds{}
+	configData, err := ioutil.ReadFile("./config_test.json")
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	fmt.Printf("%s\n", logger.JsonDebugData(config))
+	err = json.Unmarshal([]byte(configData), helpConfig)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("%s\n", logger.JsonDebugData(helpConfig))
 }

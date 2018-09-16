@@ -116,7 +116,7 @@ func (m *ChannelModel) NewChannelLogicById(channelId int32) (channelData *channe
 	return
 }
 
-func (m *ChannelModel) NewChannelLogicByCreateChannel(creatorId int32, userIds []int32, title, about string) (channelData *channelLogicData) {
+func (m *ChannelModel) NewChannelLogicByCreateChannel(creatorId int32, title, about string) (channelData *channelLogicData) {
 	// TODO(@benqi): 事务
 	channelData = &channelLogicData{
 		channel: &dataobject.ChannelsDO{
@@ -124,84 +124,76 @@ func (m *ChannelModel) NewChannelLogicByCreateChannel(creatorId int32, userIds [
 			AccessHash:    rand.Int63(),
 			// TODO(@benqi): use message_id is randomid
 			// RandomId:         helper.NextSnowflakeId(),
-			ParticipantCount: int32(1 + len(userIds)),
+			ParticipantCount: 1,
 			Title:            title,
 			About:            about,
 			PhotoId:          0,
 			Version:          1,
 			Date:             int32(time.Now().Unix()),
 		},
-		participants: make([]dataobject.ChannelParticipantsDO, 1+len(userIds)),
-		dao:          m.dao,
-		cb:           m.photoCallback,
+		// participants: make([]dataobject.ChannelParticipantsDO, 1+len(userIds)),
+		dao: m.dao,
+		cb:  m.photoCallback,
 	}
 	channelData.channel.Id = int32(m.dao.ChannelsDAO.Insert(channelData.channel))
 
-	channelData.participants = make([]dataobject.ChannelParticipantsDO, 1+len(userIds))
-	channelData.participants[0].ChannelId = channelData.channel.Id
-	channelData.participants[0].UserId = creatorId
-	channelData.participants[0].ParticipantType = kChannelParticipantCreator
-	m.dao.ChannelParticipantsDAO.Insert(&channelData.participants[0])
-
-	for i := 0; i < len(userIds); i++ {
-		channelData.participants[i+1].ChannelId = channelData.channel.Id
-		channelData.participants[i+1].UserId = userIds[i]
-		channelData.participants[i+1].ParticipantType = kChannelParticipant
-		channelData.participants[i+1].InviterUserId = creatorId
-		channelData.participants[i+1].InvitedAt = channelData.channel.Date
-		channelData.participants[i+1].JoinedAt = channelData.channel.Date
-		m.dao.ChannelParticipantsDAO.Insert(&channelData.participants[i+1])
+	participant := &dataobject.ChannelParticipantsDO{
+		ChannelId:       channelData.channel.Id,
+		UserId:          creatorId,
+		ParticipantType: kChannelParticipantCreator,
 	}
+	m.dao.ChannelParticipantsDAO.Insert(participant)
+
 	return
 }
 
-func (this *channelLogicData) GetPhotoId() int64 {
-	return this.channel.PhotoId
+func (m *channelLogicData) GetPhotoId() int64 {
+	return m.channel.PhotoId
 }
 
-func (this *channelLogicData) GetChannelId() int32 {
-	return this.channel.Id
+func (m *channelLogicData) GetChannelId() int32 {
+	return m.channel.Id
 }
 
-func (this *channelLogicData) GetVersion() int32 {
-	return this.channel.Version
+func (m *channelLogicData) GetVersion() int32 {
+	return m.channel.Version
 }
 
-func (this *channelLogicData) ExportedChatInvite() string {
-	if this.channel.Link == "" {
+func (m *channelLogicData) ExportedChatInvite() string {
+	if m.channel.Link == "" {
 		// TODO(@benqi): 检查唯一性
-		this.channel.Link = "https://nebula.im/joinchat/" + base64.StdEncoding.EncodeToString(crypto.GenerateNonce(16))
-		this.dao.ChannelsDAO.UpdateLink(this.channel.Link, int32(time.Now().Unix()), this.channel.Id)
+		m.channel.Link = "https://nebula.im/joinchat/" + base64.StdEncoding.EncodeToString(crypto.GenerateNonce(16))
+		m.dao.ChannelsDAO.UpdateLink(m.channel.Link, int32(time.Now().Unix()), m.channel.Id)
 	}
-	return this.channel.Link
+	return m.channel.Link
 }
 
 // TODO(@benqi): 性能优化
-func (this *channelLogicData) checkUserIsAdministrator(userId int32) bool {
-	this.checkOrLoadChannelParticipantList()
-	for i := 0; i < len(this.participants); i++ {
-		if this.participants[i].ParticipantType == kChannelParticipantCreator ||
-			this.participants[i].ParticipantType == kChannelParticipantAdmin {
+func (m *channelLogicData) checkUserIsAdministrator(userId int32) bool {
+	m.checkOrLoadChannelParticipantList()
+	for i := 0; i < len(m.participants); i++ {
+		if m.participants[i].ParticipantType == kChannelParticipantCreator ||
+			m.participants[i].ParticipantType == kChannelParticipantAdmin {
 			return true
 		}
 	}
 	return false
 }
 
-func (this *channelLogicData) checkOrLoadChannelParticipantList() {
-	if len(this.participants) == 0 {
-		this.participants = this.dao.ChannelParticipantsDAO.SelectByChannelId(this.channel.Id)
+func (m *channelLogicData) checkOrLoadChannelParticipantList() {
+	if len(m.participants) == 0 {
+		m.participants = m.dao.ChannelParticipantsDAO.SelectByChannelId(m.channel.Id)
 	}
 }
 
-func (this *channelLogicData) MakeMessageService(fromId int32, action *mtproto.MessageAction) *mtproto.Message {
+func (m *channelLogicData) MakeMessageService(fromId int32, action *mtproto.MessageAction) *mtproto.Message {
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHANNEL,
-		PeerId:   this.channel.Id,
+		PeerId:   m.channel.Id,
 	}
 
 	message := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
-		Date:   this.channel.Date,
+		Date:   m.channel.Date,
 		FromId: fromId,
 		ToId:   peer.ToPeer(),
 		Post:   true,
@@ -210,81 +202,81 @@ func (this *channelLogicData) MakeMessageService(fromId int32, action *mtproto.M
 	return message.To_Message()
 }
 
-func (this *channelLogicData) MakeCreateChannelMessage(creatorId int32) *mtproto.Message {
+func (m *channelLogicData) MakeCreateChannelMessage(creatorId int32) *mtproto.Message {
 	action := &mtproto.TLMessageActionChannelCreate{Data2: &mtproto.MessageAction_Data{
-		Title: this.channel.Title,
+		Title: m.channel.Title,
 	}}
-	return this.MakeMessageService(creatorId, action.To_MessageAction())
+	return m.MakeMessageService(creatorId, action.To_MessageAction())
 }
 
-func (this *channelLogicData) MakeAddUserMessage(inviterId, channelUserId int32) *mtproto.Message {
+func (m *channelLogicData) MakeAddUserMessage(inviterId, channelUserId int32) *mtproto.Message {
 	action := &mtproto.TLMessageActionChatAddUser{Data2: &mtproto.MessageAction_Data{
-		Title: this.channel.Title,
+		Title: m.channel.Title,
 		Users: []int32{channelUserId},
 	}}
 
-	return this.MakeMessageService(inviterId, action.To_MessageAction())
+	return m.MakeMessageService(inviterId, action.To_MessageAction())
 }
 
-func (this *channelLogicData) MakeDeleteUserMessage(operatorId, channelUserId int32) *mtproto.Message {
+func (m *channelLogicData) MakeDeleteUserMessage(operatorId, channelUserId int32) *mtproto.Message {
 	action := &mtproto.TLMessageActionChatDeleteUser{Data2: &mtproto.MessageAction_Data{
-		Title:  this.channel.Title,
+		Title:  m.channel.Title,
 		UserId: channelUserId,
 	}}
 
-	return this.MakeMessageService(operatorId, action.To_MessageAction())
+	return m.MakeMessageService(operatorId, action.To_MessageAction())
 }
 
-func (this *channelLogicData) MakeChannelEditTitleMessage(operatorId int32, title string) *mtproto.Message {
+func (m *channelLogicData) MakeChannelEditTitleMessage(operatorId int32, title string) *mtproto.Message {
 	action := &mtproto.TLMessageActionChatEditTitle{Data2: &mtproto.MessageAction_Data{
 		Title: title,
 	}}
 
-	return this.MakeMessageService(operatorId, action.To_MessageAction())
+	return m.MakeMessageService(operatorId, action.To_MessageAction())
 }
 
-func (this *channelLogicData) GetChannelParticipantList() []*mtproto.ChannelParticipant {
-	this.checkOrLoadChannelParticipantList()
+func (m *channelLogicData) GetChannelParticipantList() []*mtproto.ChannelParticipant {
+	m.checkOrLoadChannelParticipantList()
 
-	participantList := make([]*mtproto.ChannelParticipant, 0, len(this.participants))
-	for i := 0; i < len(this.participants); i++ {
-		if this.participants[i].State == 0 {
-			participantList = append(participantList, makeChannelParticipantByDO(&this.participants[i]))
+	participantList := make([]*mtproto.ChannelParticipant, 0, len(m.participants))
+	for i := 0; i < len(m.participants); i++ {
+		if m.participants[i].State == 0 {
+			participantList = append(participantList, makeChannelParticipantByDO(&m.participants[i]))
 		}
 	}
 	return participantList
 }
 
-func (this *channelLogicData) GetChannelParticipantIdList() []int32 {
-	this.checkOrLoadChannelParticipantList()
+func (m *channelLogicData) GetChannelParticipantIdList() []int32 {
+	m.checkOrLoadChannelParticipantList()
 
-	idList := make([]int32, 0, len(this.participants))
-	for i := 0; i < len(this.participants); i++ {
-		if this.participants[i].State == 0 {
-			idList = append(idList, this.participants[i].UserId)
+	idList := make([]int32, 0, len(m.participants))
+	for i := 0; i < len(m.participants); i++ {
+		if m.participants[i].State == 0 {
+			idList = append(idList, m.participants[i].UserId)
 		}
 	}
 	return idList
 }
 
-func (this *channelLogicData) GetChannelParticipants() *mtproto.TLChannelsChannelParticipants {
-	this.checkOrLoadChannelParticipantList()
+func (m *channelLogicData) GetChannelParticipants() *mtproto.TLChannelsChannelParticipants {
+	m.checkOrLoadChannelParticipantList()
 
 	return &mtproto.TLChannelsChannelParticipants{Data2: &mtproto.Channels_ChannelParticipants_Data{
 		// ChatId: this.channel.Id,
-		Participants: this.GetChannelParticipantList(),
+		Participants: m.GetChannelParticipantList(),
 		// Version: this.channel.Version,
 	}}
 }
 
-func (this *channelLogicData) AddChannelUser(inviterId, userId int32) error {
-	this.checkOrLoadChannelParticipantList()
+func (m *channelLogicData) AddChannelUser(inviterId, userId int32) error {
+	m.checkOrLoadChannelParticipantList()
 
 	// TODO(@benqi): check userId exisits
 	var founded = -1
-	for i := 0; i < len(this.participants); i++ {
-		if userId == this.participants[i].UserId {
-			if this.participants[i].State == 1 {
+	for i := 0; i < len(m.participants); i++ {
+		if userId == m.participants[i].UserId {
+			if m.participants[i].State == 1 {
 				founded = i
 			} else {
 				return fmt.Errorf("userId exisits")
@@ -295,90 +287,111 @@ func (this *channelLogicData) AddChannelUser(inviterId, userId int32) error {
 	var now = int32(time.Now().Unix())
 
 	if founded != -1 {
-		this.participants[founded].State = 0
-		this.dao.ChannelParticipantsDAO.Update(inviterId, now, now, this.participants[founded].Id)
+		m.participants[founded].State = 0
+		m.dao.ChannelParticipantsDAO.Update(inviterId, now, now, m.participants[founded].Id)
 	} else {
 		channelParticipant := &dataobject.ChannelParticipantsDO{
-			ChannelId:       this.channel.Id,
+			ChannelId:       m.channel.Id,
 			UserId:          userId,
 			ParticipantType: kChannelParticipant,
 			InviterUserId:   inviterId,
 			InvitedAt:       now,
 			JoinedAt:        now,
 		}
-		channelParticipant.Id = int32(this.dao.ChannelParticipantsDAO.Insert(channelParticipant))
-		this.participants = append(this.participants, *channelParticipant)
+		channelParticipant.Id = int32(m.dao.ChannelParticipantsDAO.Insert(channelParticipant))
+		m.participants = append(m.participants, *channelParticipant)
 	}
 
 	// update chat
-	this.channel.ParticipantCount += 1
-	this.channel.Version += 1
-	this.channel.Date = now
-	this.dao.ChannelsDAO.UpdateParticipantCount(this.channel.ParticipantCount, now, this.channel.Id)
+	m.channel.ParticipantCount += 1
+	m.channel.Version += 1
+	m.channel.Date = now
+	m.dao.ChannelsDAO.UpdateParticipantCount(m.channel.ParticipantCount, now, m.channel.Id)
 
 	return nil
 }
 
-func (this *channelLogicData) findChatParticipant(selfUserId int32) (int, *dataobject.ChannelParticipantsDO) {
-	for i := 0; i < len(this.participants); i++ {
-		if this.participants[i].UserId == selfUserId {
-			return i, &this.participants[i]
+func (m *channelLogicData) findChatParticipant(selfUserId int32) (int, *dataobject.ChannelParticipantsDO) {
+	for i := 0; i < len(m.participants); i++ {
+		if m.participants[i].UserId == selfUserId {
+			return i, &m.participants[i]
 		}
 	}
 	return -1, nil
 }
 
-func (this *channelLogicData) ToChannel(selfUserId int32) *mtproto.Chat {
+func (m *channelLogicData) ToChannel(selfUserId int32) *mtproto.Chat {
 	// TODO(@benqi): kicked:flags.1?true left:flags.2?true admins_enabled:flags.3?true admin:flags.4?true deactivated:flags.5?true
 
 	var forbidden = false
-	for i := 0; i < len(this.participants); i++ {
-		if this.participants[i].UserId == selfUserId && this.participants[i].State == 1 {
-			forbidden = true
-			break
-		}
-	}
+	//for i := 0; i < len(this.participants); i++ {
+	//	if this.participants[i].UserId == selfUserId && this.participants[i].State == 1 {
+	//		forbidden = true
+	//		break
+	//	}
+	//}
 
 	if forbidden {
 		channel := &mtproto.TLChannelForbidden{Data2: &mtproto.Chat_Data{
-			Id:    this.channel.Id,
-			Title: this.channel.Title,
+			Id:    m.channel.Id,
+			Title: m.channel.Title,
 		}}
 		return channel.To_Chat()
 	} else {
+		// channel#450b7115 flags:#
+		// 	creator:flags.0?true
+		// 	left:flags.2?true
+		// 	editor:flags.3?true
+		// 	broadcast:flags.5?true
+		// 	verified:flags.7?true
+		// 	megagroup:flags.8?true
+		// 	restricted:flags.9?true
+		// 	democracy:flags.10?true
+		// 	signatures:flags.11?true
+		// 	min:flags.12?true
+		//  id:int
+		// 	access_hash:flags.13?long
+		// 	title:string
+		// 	username:flags.6?string
+		// 	photo:ChatPhoto
+		// 	date:int
+		// 	version:int
+		// 	restriction_reason:flags.9?string
+		// 	admin_rights:flags.14?ChannelAdminRights
+		// 	banned_rights:flags.15?ChannelBannedRights
+		// 	participants_count:flags.17?int = Chat;
 		channel := &mtproto.TLChannel{Data2: &mtproto.Chat_Data{
-			Creator:       this.channel.CreatorUserId == selfUserId,
-			Id:            this.channel.Id,
-			Title:         this.channel.Title,
-			AdminsEnabled: this.channel.AdminsEnabled == 1,
-			// Photo:             mtproto.NewTLChatPhotoEmpty().To_ChatPhoto(),
-			ParticipantsCount: this.channel.ParticipantCount,
-			Date:              this.channel.Date,
-			Version:           this.channel.Version,
+			Creator:    m.channel.CreatorUserId == selfUserId,
+			Id:         m.channel.Id,
+			AccessHash: rand.Int63(),
+			Title:      m.channel.Title,
+			// AdminsEnabled:     this.channel.AdminsEnabled == 1,
+			// ParticipantsCount: this.channel.ParticipantCount,
+			Date:    m.channel.Date,
+			Version: m.channel.Version,
 		}}
 
-		if this.channel.PhotoId == 0 {
+		if m.channel.PhotoId == 0 {
 			channel.SetPhoto(mtproto.NewTLChatPhotoEmpty().To_ChatPhoto())
 		} else {
-			// sizeList, _ := nbfs_client.GetPhotoSizeList(this.channel.PhotoId)
-			channel.SetPhoto(this.cb.GetChatPhoto(this.channel.PhotoId))
+			channel.SetPhoto(m.cb.GetChatPhoto(m.channel.PhotoId))
 		}
 		return channel.To_Chat()
 	}
 }
 
-func (this *channelLogicData) CheckDeleteChannelUser(operatorId, deleteUserId int32) error {
+func (m *channelLogicData) CheckDeleteChannelUser(operatorId, deleteUserId int32) error {
 	// operatorId is creatorUserId，allow delete all user_id
 	// other delete me
-	if operatorId != this.channel.CreatorUserId && operatorId != deleteUserId {
+	if operatorId != m.channel.CreatorUserId && operatorId != deleteUserId {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
 	}
 
-	this.checkOrLoadChannelParticipantList()
+	m.checkOrLoadChannelParticipantList()
 	var found = -1
-	for i := 0; i < len(this.participants); i++ {
-		if deleteUserId == this.participants[i].UserId {
-			if this.participants[i].State == 0 {
+	for i := 0; i < len(m.participants); i++ {
+		if deleteUserId == m.participants[i].UserId {
+			if m.participants[i].State == 0 {
 				found = i
 			}
 			break
@@ -392,18 +405,18 @@ func (this *channelLogicData) CheckDeleteChannelUser(operatorId, deleteUserId in
 	return nil
 }
 
-func (this *channelLogicData) DeleteChannelUser(operatorId, deleteUserId int32) error {
+func (m *channelLogicData) DeleteChannelUser(operatorId, deleteUserId int32) error {
 	// operatorId is creatorUserId，allow delete all user_id
 	// other delete me
-	if operatorId != this.channel.CreatorUserId && operatorId != deleteUserId {
+	if operatorId != m.channel.CreatorUserId && operatorId != deleteUserId {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
 	}
 
-	this.checkOrLoadChannelParticipantList()
+	m.checkOrLoadChannelParticipantList()
 	var found = -1
-	for i := 0; i < len(this.participants); i++ {
-		if deleteUserId == this.participants[i].UserId {
-			if this.participants[i].State == 0 {
+	for i := 0; i < len(m.participants); i++ {
+		if deleteUserId == m.participants[i].UserId {
+			if m.participants[i].State == 0 {
 				found = i
 			}
 			break
@@ -414,76 +427,76 @@ func (this *channelLogicData) DeleteChannelUser(operatorId, deleteUserId int32) 
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
 	}
 
-	this.participants[found].State = 1
-	this.dao.ChannelParticipantsDAO.DeleteChannelUser(this.participants[found].Id)
+	m.participants[found].State = 1
+	m.dao.ChannelParticipantsDAO.DeleteChannelUser(m.participants[found].Id)
 
 	// delete found.
 	// this.participants = append(this.participants[:found], this.participants[found+1:]...)
 
 	var now = int32(time.Now().Unix())
-	this.channel.ParticipantCount = int32(len(this.participants) - 1)
-	this.channel.Version += 1
-	this.channel.Date = now
-	this.dao.ChannelsDAO.UpdateParticipantCount(this.channel.ParticipantCount, now, this.channel.Id)
+	m.channel.ParticipantCount = int32(len(m.participants) - 1)
+	m.channel.Version += 1
+	m.channel.Date = now
+	m.dao.ChannelsDAO.UpdateParticipantCount(m.channel.ParticipantCount, now, m.channel.Id)
 
 	return nil
 }
 
-func (this *channelLogicData) EditChannelTitle(editUserId int32, title string) error {
-	this.checkOrLoadChannelParticipantList()
+func (m *channelLogicData) EditChannelTitle(editUserId int32, title string) error {
+	m.checkOrLoadChannelParticipantList()
 
-	_, participant := this.findChatParticipant(editUserId)
+	_, participant := m.findChatParticipant(editUserId)
 
 	if participant == nil || participant.State == 1 {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
 	}
 
 	// check editUserId is creator or admin
-	if this.channel.AdminsEnabled != 0 && participant.ParticipantType == kChannelParticipant {
+	if m.channel.AdminsEnabled != 0 && participant.ParticipantType == kChannelParticipant {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
 	}
 
-	if this.channel.Title == title {
+	if m.channel.Title == title {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_NOT_MODIFIED)
 	}
 
-	this.channel.Title = title
-	this.channel.Date = int32(time.Now().Unix())
-	this.channel.Version += 1
+	m.channel.Title = title
+	m.channel.Date = int32(time.Now().Unix())
+	m.channel.Version += 1
 
-	this.dao.ChannelsDAO.UpdateTitle(title, this.channel.Date, this.channel.Id)
+	m.dao.ChannelsDAO.UpdateTitle(title, m.channel.Date, m.channel.Id)
 	return nil
 }
 
-func (this *channelLogicData) EditChannelPhoto(editUserId int32, photoId int64) error {
-	this.checkOrLoadChannelParticipantList()
+func (m *channelLogicData) EditChannelPhoto(editUserId int32, photoId int64) error {
+	m.checkOrLoadChannelParticipantList()
 
-	_, participant := this.findChatParticipant(editUserId)
+	_, participant := m.findChatParticipant(editUserId)
 
 	if participant == nil || participant.State == 1 {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
 	}
 
 	// check editUserId is creator or admin
-	if this.channel.AdminsEnabled != 0 && participant.ParticipantType == kChannelParticipant {
+	if m.channel.AdminsEnabled != 0 && participant.ParticipantType == kChannelParticipant {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
 	}
 
-	if this.channel.PhotoId == photoId {
+	if m.channel.PhotoId == photoId {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_NOT_MODIFIED)
 	}
 
-	this.channel.PhotoId = photoId
-	this.channel.Date = int32(time.Now().Unix())
-	this.channel.Version += 1
+	m.channel.PhotoId = photoId
+	m.channel.Date = int32(time.Now().Unix())
+	m.channel.Version += 1
 
-	this.dao.ChannelsDAO.UpdatePhotoId(photoId, this.channel.Date, this.channel.Id)
+	m.dao.ChannelsDAO.UpdatePhotoId(photoId, m.channel.Date, m.channel.Id)
 	return nil
 }
 
-func (this *channelLogicData) EditChannelAdmin(operatorId, editChannelAdminId int32, isAdmin bool) error {
+func (m *channelLogicData) EditChannelAdmin(operatorId, editChannelAdminId int32, isAdmin bool) error {
 	// operatorId is creator
-	if operatorId != this.channel.CreatorUserId {
+	if operatorId != m.channel.CreatorUserId {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
 	}
 
@@ -492,10 +505,10 @@ func (this *channelLogicData) EditChannelAdmin(operatorId, editChannelAdminId in
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 	}
 
-	this.checkOrLoadChannelParticipantList()
+	m.checkOrLoadChannelParticipantList()
 
 	// check exists
-	_, participant := this.findChatParticipant(editChannelAdminId)
+	_, participant := m.findChatParticipant(editChannelAdminId)
 	if participant == nil || participant.State == 1 {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PARTICIPANT_NOT_EXISTS)
 	}
@@ -509,24 +522,24 @@ func (this *channelLogicData) EditChannelAdmin(operatorId, editChannelAdminId in
 	} else {
 		participant.ParticipantType = kChannelParticipant
 	}
-	this.dao.ChannelParticipantsDAO.UpdateParticipantType(participant.ParticipantType, participant.Id)
+	m.dao.ChannelParticipantsDAO.UpdateParticipantType(participant.ParticipantType, participant.Id)
 
 	// update version
-	this.channel.Date = int32(time.Now().Unix())
-	this.channel.Version += 1
-	this.dao.ChannelsDAO.UpdateVersion(this.channel.Date, this.channel.Id)
+	m.channel.Date = int32(time.Now().Unix())
+	m.channel.Version += 1
+	m.dao.ChannelsDAO.UpdateVersion(m.channel.Date, m.channel.Id)
 
 	return nil
 }
 
-func (this *channelLogicData) ToggleChannelAdmins(userId int32, adminsEnabled bool) error {
+func (m *channelLogicData) ToggleChannelAdmins(userId int32, adminsEnabled bool) error {
 	// check is creator
-	if userId != this.channel.CreatorUserId {
+	if userId != m.channel.CreatorUserId {
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
 	}
 
 	var (
-		channelAdminsEnabled = this.channel.AdminsEnabled == 1
+		channelAdminsEnabled = m.channel.AdminsEnabled == 1
 	)
 
 	// Check modified
@@ -534,11 +547,11 @@ func (this *channelLogicData) ToggleChannelAdmins(userId int32, adminsEnabled bo
 		return mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_NOT_MODIFIED)
 	}
 
-	this.channel.AdminsEnabled = base2.BoolToInt8(adminsEnabled)
-	this.channel.Date = int32(time.Now().Unix())
-	this.channel.Version += 1
+	m.channel.AdminsEnabled = base2.BoolToInt8(adminsEnabled)
+	m.channel.Date = int32(time.Now().Unix())
+	m.channel.Version += 1
 
-	this.dao.ChannelsDAO.UpdateAdminsEnabled(this.channel.AdminsEnabled, this.channel.Date, this.channel.Id)
+	m.dao.ChannelsDAO.UpdateAdminsEnabled(m.channel.AdminsEnabled, m.channel.Date, m.channel.Id)
 
 	return nil
 }

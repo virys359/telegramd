@@ -3,11 +3,23 @@
     <operation name="Insert">
         <sql>
             INSERT INTO user_dialogs
-                (user_id, peer_type, peer_id, top_message, unread_count, draft_message_data, date2, created_at)
+                (user_id, peer_type, peer_id, top_message, unread_count, unread_mentions_count, draft_message_data, date2, created_at)
             VALUES
-                (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :draft_message_data, :date2, :created_at)
+                (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :unread_mentions_count, :draft_message_data, :date2, :created_at)
         </sql>
     </operation>
+
+    <operation name="InsertOrUpdate">
+        <sql>
+            INSERT INTO user_dialogs
+                (user_id, peer_type, peer_id, top_message, unread_count, unread_mentions_count, draft_message_data, date2)
+            VALUES
+                (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :unread_mentions_count, '', :date2)
+            ON DUPLICATE KEY UPDATE
+                top_message = VALUES(top_message), unread_count = unread_count + VALUES(unread_count), unread_mentions_count=unread_mentions_count + VALUES(unread_mentions_count), date2 = VALUES(date2)
+        </sql>
+    </operation>
+
     <!-- GetPinnedDialogs -->
     <operation name="SelectPinnedDialogs" result_set="list">
         <sql>
@@ -163,6 +175,7 @@
                 user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
         </sql>
     </operation>
+
     <operation name="UpdateReadOutboxMaxIdByPeer">
         <sql>
             UPDATE
@@ -185,12 +198,38 @@
         </sql>
     </operation>
 
+    <operation name="ClearDraft">
+        <sql>
+            UPDATE
+                user_dialogs
+            SET
+                draft_type = 0, draft_message_data = ''
+            WHERE
+                user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
+        </sql>
+    </operation>
+
     <operation name="UpdatePinned">
         <sql>
             UPDATE
                 user_dialogs
             SET
                 is_pinned = :is_pinned
+            WHERE
+                user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
+        </sql>
+    </operation>
+
+    <operation name="UpdateDialog">
+        <params>
+            <param name="unreadCount" type="int32" />
+            <param name="unreadMentionCount" type="int32" />
+        </params>
+        <sql>
+            UPDATE
+                user_dialogs
+            SET
+                top_message = :top_message, unread_count = unread_count + unreadCount, unread_mentions_count = unread_mentions_count + unreadMentionCount
             WHERE
                 user_id=:user_id AND peer_type = :peer_type AND peer_id = :peer_id
         </sql>

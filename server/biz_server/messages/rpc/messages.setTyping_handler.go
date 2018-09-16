@@ -23,8 +23,10 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"time"
 )
 
 // messages.setTyping#a3825e50 peer:InputPeer action:SendMessageAction = Bool;
@@ -38,7 +40,15 @@ func (s *MessagesServiceImpl) MessagesSetTyping(ctx context.Context, request *mt
 			UserId: md.UserId,
 			Action: request.GetAction(),
 		}}
-		sync_client.GetSyncClient().PushToUserUpdateShortData(peer.PeerId, typing.To_Update())
+
+		updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+			Updates: []*mtproto.Update{typing.To_Update()},
+			Users:   []*mtproto.User{},
+			Chats:   []*mtproto.Chat{},
+			Seq:     0,
+			Date:    int32(time.Now().Unix()),
+		}}
+		sync_client.GetSyncClient().PushUpdates(peer.PeerId, updates.To_Updates())
 	} else {
 		// 其他的不需要推送
 	}

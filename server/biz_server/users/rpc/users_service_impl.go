@@ -20,10 +20,12 @@ package rpc
 import (
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/account"
 )
 
 type UsersServiceImpl struct {
 	*user.UserModel
+	*account.AccountModel
 }
 
 func NewUsersServiceImpl(models []core.CoreModel) *UsersServiceImpl {
@@ -33,6 +35,8 @@ func NewUsersServiceImpl(models []core.CoreModel) *UsersServiceImpl {
 		switch m.(type) {
 		case *user.UserModel:
 			impl.UserModel = m.(*user.UserModel)
+		case *account.AccountModel:
+			impl.AccountModel = m.(*account.AccountModel)
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,18 +18,15 @@
 package rpc
 
 import (
-	"github.com/gogo/protobuf/proto"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	message2 "github.com/nebulaim/telegramd/biz/core/message"
-	"github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/service/document/client"
 )
 
 func makeGeoPointByInput(geoPoint *mtproto.InputGeoPoint) *mtproto.GeoPoint {
@@ -73,8 +70,8 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 		}}
 
 		messageMedia := &mtproto.TLMessageMediaPhoto{Data2: &mtproto.MessageMedia_Data{
-			Photo_1:    photo.To_Photo(),
-			Caption:    uploadedPhoto.GetCaption(),
+			Photo_1: photo.To_Photo(),
+			// Caption:    uploadedPhoto.GetCaption(),
 			TtlSeconds: uploadedPhoto.GetTtlSeconds(),
 		}}
 		return messageMedia.To_MessageMedia()
@@ -96,8 +93,8 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 		}}
 
 		messageMedia := &mtproto.TLMessageMediaPhoto{Data2: &mtproto.MessageMedia_Data{
-			Photo_1:    photo.To_Photo(),
-			Caption:    mediaPhoto.GetCaption(),
+			Photo_1: photo.To_Photo(),
+			// Caption:    mediaPhoto.GetCaption(),
 			TtlSeconds: mediaPhoto.GetTtlSeconds(),
 		}}
 		return messageMedia.To_MessageMedia()
@@ -143,8 +140,8 @@ func (s *MessagesServiceImpl) makeMediaByInputMedia(authKeyId int64, media *mtpr
 
 		// messageMediaDocument#7c4414d3 flags:# document:flags.0?Document caption:flags.1?string ttl_seconds:flags.2?int = MessageMedia;
 		messageMedia := &mtproto.TLMessageMediaDocument{Data2: &mtproto.MessageMedia_Data{
-			Document:   document3,
-			Caption:    media.To_InputMediaDocument().GetCaption(),
+			Document: document3,
+			// Caption:    media.To_InputMediaDocument().GetCaption(),
 			TtlSeconds: media.To_InputMediaDocument().GetTtlSeconds(),
 		}}
 
@@ -228,12 +225,9 @@ func (s *MessagesServiceImpl) makeOutboxMessageBySendMedia(authKeyId int64, from
 	return message
 }
 
-func (s *MessagesServiceImpl) makeUpdateNewMessageUpdates(selfUserId int32, message *mtproto.Message) *mtproto.TLUpdates {
-	userIdList, _, _ := message2.PickAllIDListByMessages([]*mtproto.Message{message})
+func (s *MessagesServiceImpl) makeUpdatesByUpdateNewMessage(selfUserId int32, updateNew *mtproto.TLUpdateNewMessage) *mtproto.TLUpdates {
+	userIdList, _, _ := message2.PickAllIDListByMessages([]*mtproto.Message{updateNew.GetMessage()})
 	userList := s.UserModel.GetUsersBySelfAndIDList(selfUserId, userIdList)
-	updateNew := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
-		Message_1: message,
-	}}
 	return &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
 		Updates: []*mtproto.Update{updateNew.To_Update()},
 		Users:   userList,
@@ -241,34 +235,6 @@ func (s *MessagesServiceImpl) makeUpdateNewMessageUpdates(selfUserId int32, mess
 		Seq:     0,
 	}}
 
-}
-
-// TODO(@benqi): check error
-func SetupUpdatesState(state *mtproto.ClientUpdatesState, updates *mtproto.TLUpdates) *mtproto.TLUpdates {
-	pts := state.GetPts() - state.GetPtsCount() + 1
-
-	for _, update := range updates.GetUpdates() {
-		switch update.GetConstructor() {
-		case mtproto.TLConstructor_CRC32_updateNewMessage,
-			mtproto.TLConstructor_CRC32_updateDeleteMessages,
-			mtproto.TLConstructor_CRC32_updateReadHistoryOutbox,
-			mtproto.TLConstructor_CRC32_updateReadHistoryInbox,
-			mtproto.TLConstructor_CRC32_updateWebPage,
-			mtproto.TLConstructor_CRC32_updateReadMessagesContents,
-			mtproto.TLConstructor_CRC32_updateEditMessage:
-
-			//if pts >= state.GetPtsCount() {
-			//	return false
-			//}
-			//
-			update.Data2.Pts = pts
-			update.Data2.PtsCount = 1
-			pts += 1
-		}
-	}
-
-	return updates
-	// return pts == state.GetPtsCount()
 }
 
 // messages.sendMedia#c8f16791 flags:# silent:flags.5?true background:flags.6?true clear_draft:flags.7?true peer:InputPeer reply_to_msg_id:flags.0?int media:InputMedia random_id:long reply_markup:flags.2?ReplyMarkup = Updates;
@@ -303,91 +269,62 @@ func (s *MessagesServiceImpl) MessagesSendMedia(ctx context.Context, request *mt
 		peer = base.FromInputPeer(request.GetPeer())
 	}
 
+	// 1. draft
+	if request.GetClearDraft() {
+		s.DoClearDraft(md.UserId, md.AuthId, peer)
+	}
+
 	/////////////////////////////////////////////////////////////////////////////////////
 	// 发件箱
-	// sendMessageToOutbox
 	outboxMessage := s.makeOutboxMessageBySendMedia(md.AuthId, md.UserId, peer, request)
 
-	if peer.PeerType == base.PEER_USER || peer.PeerType == base.PEER_CHAT {
-		// TODO(@benqi): set media_unread.
+	resultCB := func(pts, ptsCount int32, outBox *message2.MessageBox2) (*mtproto.Updates, error) {
+		updateNewMessage := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
+			Message_1: outBox.ToMessage(md.UserId),
+			Pts:       pts,
+			PtsCount:  ptsCount,
+		}}
+		syncUpdates := 	s.makeUpdatesByUpdateNewMessage(md.UserId, updateNewMessage)
 
-		messageOutbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, request.GetRandomId(), outboxMessage.To_Message(), func(messageId int32) {
-			// 更新会话信息
-			s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned(), request.GetClearDraft())
-		})
-
-		syncUpdates := s.makeUpdateNewMessageUpdates(md.UserId, messageOutbox.Message)
-		state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
-		if err != nil {
-			return nil, err
-		}
-
-		reply := SetupUpdatesState(state, syncUpdates)
 		updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
-			Id_4:     messageOutbox.MessageId,
+			Id_4:     outBox.MessageId,
 			RandomId: request.GetRandomId(),
 		}}
-		updateList := []*mtproto.Update{updateMessageID.To_Update()}
-		updateList = append(updateList, reply.GetUpdates()...)
-		reply.SetUpdates(updateList)
+		updateList := []*mtproto.Update{updateMessageID.To_Update(), updateNewMessage.To_Update()}
 
-		/////////////////////////////////////////////////////////////////////////////////////
-		// 收件箱
-		if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
-			inBoxes, _ := messageOutbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
-				// 更新会话信息
-				switch peer.PeerType {
-				case base.PEER_USER:
-					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessage.GetMentioned())
-				case base.PEER_CHAT:
-					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessage.GetMentioned())
-				}
-			})
-
-			for i := 0; i < len(inBoxes); i++ {
-				syncUpdates = s.makeUpdateNewMessageUpdates(inBoxes[i].UserId, inBoxes[i].Message)
-				sync_client.GetSyncClient().PushToUserUpdatesData(inBoxes[i].UserId, syncUpdates.To_Updates())
-			}
-		}
-
-		glog.Infof("messages.sendMedia#c8f16791 - reply: %s", logger.JsonDebugData(reply))
-		return reply.To_Updates(), nil
-	} else {
-		channelBox := s.MessageModel.CreateChannelMessageBoxByNew(md.UserId, peer.PeerId, request.RandomId, outboxMessage.To_Message(), func(messageId int32) {
-			s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
-		})
-
-		// updates.NewUpdatesLogic()
-		syncUpdates := updates.NewUpdatesLogic(md.UserId)
-		//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-		//	Participants: channel.GetChannelParticipants().To_Channels_ChannelParticipants(),
-		//}}
-		//syncUpdates.AddUpdate(updateChatParticipants.To_Update())
-		syncUpdates.AddUpdateNewChannelMessage(outboxMessage.To_Message())
-		// syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
-		syncUpdates.AddChat(s.ChannelModel.GetChannelBySelfID(md.UserId, peer.PeerId))
-
-		state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
-		syncUpdates.PushTopUpdateMessageId(channelBox.ChannelMessageBoxId, request.RandomId)
-		//updateChannel := &mtproto.TLUpdateChannel{Data2: &mtproto.Update_Data{
-		//	ChannelId: peer.PeerId,
-		//}}
-		//syncUpdates.AddUpdate(updateChannel.To_Update())
-		syncUpdates.SetupState(state)
-
-		idList := s.ChannelModel.GetChannelParticipantIdList(peer.PeerId)
-		inboxMessage := proto.Clone(outboxMessage).(*mtproto.TLMessage)
-		for _, id := range idList {
-			if id != md.UserId {
-				s.UserModel.CreateOrUpdateByInbox(id, peer.PeerType, peer.PeerId, inboxMessage.GetId(), outboxMessage.GetMentioned())
-
-				pushUpdates := updates.NewUpdatesLogic(id)
-				pushUpdates.AddUpdateNewChannelMessage(inboxMessage.To_Message())
-				pushUpdates.AddChat(s.ChannelModel.GetChannelBySelfID(id, peer.PeerId))
-				sync_client.GetSyncClient().PushToUserUpdatesData(id, pushUpdates.ToUpdates())
-			}
-		}
-		glog.Infof("messages.sendMedia#c8f16791 - reply: %s", logger.JsonDebugData(syncUpdates.ToUpdates()))
-		return syncUpdates.ToUpdates(), nil
+		syncUpdates.SetUpdates(updateList)
+		return syncUpdates.To_Updates(), nil
 	}
+
+	syncNotMeCB := func(pts, ptsCount int32, outBox *message2.MessageBox2) (int64, *mtproto.Updates, error) {
+		updateNewMessage := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
+			Message_1: outBox.ToMessage(md.UserId),
+			Pts:       pts,
+			PtsCount:  ptsCount,
+		}}
+		syncUpdates := 	s.makeUpdatesByUpdateNewMessage(md.UserId, updateNewMessage)
+		return md.AuthId, syncUpdates.To_Updates(), nil
+	}
+
+	pushCB := func(pts, ptsCount int32, inBox *message2.MessageBox2) (*mtproto.Updates, error) {
+		updateNewMessage := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
+			Message_1: inBox.ToMessage(inBox.OwnerId),
+			Pts:       pts,
+			PtsCount:  ptsCount,
+		}}
+		pushUpdates := s.makeUpdatesByUpdateNewMessage(inBox.OwnerId, updateNewMessage)
+		return pushUpdates.To_Updates(), nil
+	}
+
+	replyUpdates, err := s.MessageModel.SendMessage(
+		md.UserId,
+		peer,
+		request.GetRandomId(),
+		outboxMessage.To_Message(),
+		resultCB,
+		syncNotMeCB,
+		pushCB)
+
+	glog.Infof("messages.sendMedia#c8f16791 - reply: %s", logger.JsonDebugData(replyUpdates))
+	return replyUpdates, err
 }

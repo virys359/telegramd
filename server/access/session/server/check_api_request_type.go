@@ -22,9 +22,9 @@ import "github.com/nebulaim/telegramd/proto/mtproto"
 func checkRpcUpdatesType(tl mtproto.TLObject) bool {
 	switch tl.(type) {
 	case *mtproto.TLAccountRegisterDevice,
-		*mtproto.TLAccountUnregisterDevice,
-		*mtproto.TLAccountRegisterDeviceLayer74,
-		*mtproto.TLAccountUnregisterDeviceLayer74:
+		*mtproto.TLAccountUnregisterDevice:
+		// *mtproto.TLAccountRegisterDeviceLayer74,
+		// *mtproto.TLAccountUnregisterDeviceLayer74:
 		// push
 
 		return false
@@ -55,9 +55,9 @@ func checkRpcUpdatesType(tl mtproto.TLObject) bool {
 func checkRpcPushType(tl mtproto.TLObject) bool {
 	switch tl.(type) {
 	case *mtproto.TLAccountRegisterDevice,
-		*mtproto.TLAccountUnregisterDevice,
-		*mtproto.TLAccountRegisterDeviceLayer74,
-		*mtproto.TLAccountUnregisterDeviceLayer74:
+		*mtproto.TLAccountUnregisterDevice:
+		// *mtproto.TLAccountRegisterDeviceLayer74,
+		// *mtproto.TLAccountUnregisterDeviceLayer74:
 		// push
 
 		return true
@@ -98,8 +98,8 @@ func checkRpcPushType(tl mtproto.TLObject) bool {
 // TL_account_getPasswordSettings
 func checkRpcWithoutLogin(tl mtproto.TLObject) bool {
 	switch tl.(type) {
-	case *mtproto.TLAuthCheckPhone,
-		*mtproto.TLAuthSendCodeLayer51,
+	case //*mtproto.TLAuthCheckPhone,
+		// *mtproto.TLAuthSendCodeLayer51,
 		*mtproto.TLAuthSendCode,
 		*mtproto.TLAuthSignIn,
 		*mtproto.TLAuthSignUp,

@@ -21,10 +21,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	photo2 "github.com/nebulaim/telegramd/biz/core/photo"
+	// photo2 "github.com/nebulaim/telegramd/biz/core/photo"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/service/document/client"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
 )
@@ -65,13 +65,13 @@ func (s *PhotosServiceImpl) PhotosUploadProfilePhoto(ctx context.Context, reques
 		Users: []*mtproto.User{},
 	}}
 
-	updateUserPhoto := &mtproto.TLUpdateUserPhoto{Data2: &mtproto.Update_Data{
-		UserId:   md.UserId,
-		Date:     int32(time.Now().Unix()),
-		Photo:    photo2.MakeUserProfilePhoto(result.PhotoId, result.SizeList),
-		Previous: mtproto.ToBool(false),
-	}}
-	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserPhoto.To_Update())
+	//updateUserPhoto := &mtproto.TLUpdateUserPhoto{Data2: &mtproto.Update_Data{
+	//	UserId:   md.UserId,
+	//	Date:     int32(time.Now().Unix()),
+	//	Photo:    photo2.MakeUserProfilePhoto(result.PhotoId, result.SizeList),
+	//	Previous: mtproto.ToBool(false),
+	//}}
+	// sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserPhoto.To_Update())
 
 	glog.Infof("photos.uploadProfilePhoto#4f32c098 - reply: %s", logger.JsonDebugData(photos))
 	return photos.To_Photos_Photo(), nil

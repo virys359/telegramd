@@ -93,6 +93,10 @@ type ContactCallback interface {
 	GetContactAndMutual(selfUserId, id int32) (bool, bool)
 }
 
+type DialogCallback interface {
+	InsertOrUpdateDialog(userId, peerType, peerId, topMessage int32, hasMentioned, isInbox bool)
+}
+
 ///*
 //	// TODO(@benqi): chat notifySetting...
 //	//if notifySettingFunc == nil {

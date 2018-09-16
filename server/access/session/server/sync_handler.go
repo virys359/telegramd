@@ -28,10 +28,12 @@ import (
 )
 
 func init() {
-	proto.RegisterType((*mtproto.ConnectToSessionServerReq)(nil), "mtproto.ConnectToSessionServerReq")
-	proto.RegisterType((*mtproto.SessionServerConnectedRsp)(nil), "mtproto.SessionServerConnectedRsp")
-	proto.RegisterType((*mtproto.PushUpdatesData)(nil), "mtproto.PushUpdatesData")
-	proto.RegisterType((*mtproto.VoidRsp)(nil), "mtproto.VoidRsp")
+	proto.RegisterType((*mtproto.TLSyncConnectToSessionServer)(nil), "mtproto.TLSyncConnectToSessionServer")
+	proto.RegisterType((*mtproto.TLSyncSessionServerConnected)(nil), "mtproto.TLSyncSessionServerConnected")
+	proto.RegisterType((*mtproto.TLSyncPushUpdatesData)(nil), "mtproto.TLSyncPushUpdatesData")
+	proto.RegisterType((*mtproto.TLSyncPushRpcResultData)(nil), "mtproto.TLSyncPushRpcResultData")
+	proto.RegisterType((*mtproto.PushData)(nil), "mtproto.PushData")
+	proto.RegisterType((*mtproto.Bool)(nil), "mtproto.Bool")
 }
 
 type syncHandler struct {
@@ -73,33 +75,56 @@ func (s *syncHandler) onSyncData(conn *net2.TcpConnection, syncData *zproto.ZPro
 	}
 
 	switch message.(type) {
-	case *mtproto.ConnectToSessionServerReq:
+	case *mtproto.TLSyncConnectToSessionServer:
 		glog.Infof("onSyncData - request(ConnectToSessionServerReq): {%v}", message)
-		return protoToSyncData(&mtproto.SessionServerConnectedRsp{
-			ServerId:   getServerID(),
-			ServerName: "session",
-		})
-	case *mtproto.PushUpdatesData:
+		return protoToSyncData(&mtproto.TLSyncSessionServerConnected{Data2: &mtproto.ServerConnected_Data{
+			SessionServerId: getServerID(),
+			ServerName:      "session",
+		}})
+	case *mtproto.PushData:
 		glog.Infof("onSyncData - request(PushUpdatesData): {%v}", message)
 
 		// TODO(@benqi): dispatch to session_client
-		pushData, _ := message.(*mtproto.PushUpdatesData)
-		dbuf := mtproto.NewDecodeBuf(pushData.GetUpdatesData())
+		pushData, _ := message.(*mtproto.PushData)
+		// dbuf := mtproto.NewDecodeBuf(pushData.GetUpdatesData())
 		mdata := &messageData{
 			confirmFlag:  true,
 			compressFlag: false,
-			obj:          dbuf.Object(),
+			// obj:          pushData.GetUpdates(),
 		}
-		if mdata.obj == nil {
-			glog.Errorf("onSyncData - recv invalid pushData: {%v}", message)
-		} else {
-			md := &zproto.ZProtoMetadata{}
+		md := &zproto.ZProtoMetadata{}
+
+		switch pushData.GetConstructor() {
+		case mtproto.TLConstructor_CRC32_sync_pushUpdatesData:
+			mdata.obj = pushData.Data2.Updates
+			if mdata.obj == nil {
+				glog.Errorf("onSyncData - recv invalid pushData: {%v}", message)
+				return protoToSyncData(mtproto.ToBool(false))
+			}
 			// push
 			// s.smgr.pushToSessionData(pushData.GetAuthKeyId(), pushData.GetSessionId(), md, mdata)
-			s.smgr.onSyncData(pushData.GetAuthKeyId(), pushData.GetSessionId(), md, mdata)
+			s.smgr.onSyncData(pushData.Data2.AuthKeyId, md, mdata)
+		case mtproto.TLConstructor_CRC32_sync_pushRpcResultData:
+			dbuf := mtproto.NewDecodeBuf(pushData.Data2.Result)
+			result := dbuf.Object()
+			glog.Info(result)
+			if result == nil {
+				glog.Errorf("onSyncData - recv invalid pushData: {%v}", message)
+				return protoToSyncData(mtproto.ToBool(false))
+			}
+			mdata.obj = &mtproto.TLRpcResult{
+				ReqMsgId: pushData.Data2.ClientReqMsgId,
+				Result:   result,
+			}
+			// push
+			// s.smgr.pushToSessionData(pushData.GetAuthKeyId(), pushData.GetSessionId(), md, mdata)
+			s.smgr.onSyncData(pushData.Data2.AuthKeyId, md, mdata)
+		default:
+			glog.Errorf("invalid pushData - ", pushData)
+			return protoToSyncData(mtproto.ToBool(false))
 		}
 
-		return protoToSyncData(&mtproto.VoidRsp{})
+		return protoToSyncData(mtproto.ToBool(true))
 	default:
 		err := fmt.Errorf("invalid register proto type: {%v}", message)
 		glog.Error(err)

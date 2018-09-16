@@ -32,7 +32,8 @@ func (s *UpdatesServiceImpl) UpdatesGetState(ctx context.Context, request *mtpro
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("updates.getState#edd4882a  - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	state, _ := sync_client.GetSyncClient().GetServerUpdatesState(md.AuthId, md.UserId)
+	state, err := sync_client.GetSyncClient().SyncGetState(md.AuthId, md.UserId)
+
 	glog.Infof("updates.getState#edd4882a  - reply: %s", logger.JsonDebugData(state))
-	return state.To_Updates_State(), nil
+	return state, err
 }

@@ -26,7 +26,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-
 // messages.migrateChat#15a3b8e3 chat_id:int = Updates;
 func (s *MessagesServiceImpl) MessagesMigrateChat(ctx context.Context, request *mtproto.TLMessagesMigrateChat) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)

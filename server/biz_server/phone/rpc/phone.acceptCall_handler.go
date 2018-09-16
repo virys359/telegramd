@@ -24,9 +24,10 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // https://core.telegram.org/api/end-to-end/voice-calls
@@ -92,7 +93,7 @@ func (s *PhoneServiceImpl) PhoneAcceptCall(ctx context.Context, request *mtproto
 	updatesData.AddUpdate(updatePhoneCall.To_Update())
 	// 3. add users
 	updatesData.AddUsers(s.UserModel.GetUsersBySelfAndIDList(callSession.AdminId, []int32{md.UserId, callSession.AdminId}))
-	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, updatesData.ToUpdates())
+	sync_client.GetSyncClient().PushUpdates(callSession.AdminId, updatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	// 2. reply

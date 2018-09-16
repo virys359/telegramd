@@ -19,10 +19,10 @@ package update
 
 import (
 	"encoding/json"
+	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/server/sync/biz/dal/dataobject"
 	"time"
-	"github.com/golang/glog"
 )
 
 /*

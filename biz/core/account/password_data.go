@@ -189,38 +189,38 @@ func (p *passwordData) getHasRecovery() *mtproto.Bool {
 
 func (p *passwordData) GetPassword() *mtproto.Account_Password {
 	switch p.state {
-	case kStatePasswordNone:
-		noPassword := &mtproto.TLAccountNoPassword{Data2: &mtproto.Account_Password_Data{
-			NewSalt:                 p.serverSalt,
-			EmailUnconfirmedPattern: "",
-		}}
-		return noPassword.To_Account_Password()
-	case kStateNoRecoveryPassword:
-		password := &mtproto.TLAccountPassword{Data2: &mtproto.Account_Password_Data{
-			NewSalt:     p.serverSalt,
-			CurrentSalt: p.salt,
-			Hint:        p.hint,
-			HasRecovery: mtproto.ToBool(false),
-			// TODO(@benqi): make pattern
-			EmailUnconfirmedPattern: "",
-		}}
-		return password.To_Account_Password()
-	case kStateEmailUnconfirmedPassword:
-		noPassword := &mtproto.TLAccountNoPassword{Data2: &mtproto.Account_Password_Data{
-			NewSalt:                 p.serverSalt,
-			EmailUnconfirmedPattern: makeEMailPattern(p.email),
-		}}
-		return noPassword.To_Account_Password()
-	case kStateConfirmedPassword:
-		password := &mtproto.TLAccountPassword{Data2: &mtproto.Account_Password_Data{
-			NewSalt:     p.serverSalt,
-			CurrentSalt: p.salt,
-			Hint:        p.hint,
-			HasRecovery: mtproto.ToBool(true),
-			// TODO(@benqi): make pattern
-			EmailUnconfirmedPattern: "",
-		}}
-		return password.To_Account_Password()
+	//case kStatePasswordNone:
+	//	noPassword := &mtproto.TLAccountNoPassword{Data2: &mtproto.Account_Password_Data{
+	//		NewSalt:                 p.serverSalt,
+	//		EmailUnconfirmedPattern: "",
+	//	}}
+	//	return noPassword.To_Account_Password()
+	//case kStateNoRecoveryPassword:
+	//	password := &mtproto.TLAccountPassword{Data2: &mtproto.Account_Password_Data{
+	//		NewSalt:     p.serverSalt,
+	//		CurrentSalt: p.salt,
+	//		Hint:        p.hint,
+	//		HasRecovery: mtproto.ToBool(false),
+	//		// TODO(@benqi): make pattern
+	//		EmailUnconfirmedPattern: "",
+	//	}}
+	//	return password.To_Account_Password()
+	//case kStateEmailUnconfirmedPassword:
+	//	noPassword := &mtproto.TLAccountNoPassword{Data2: &mtproto.Account_Password_Data{
+	//		NewSalt:                 p.serverSalt,
+	//		EmailUnconfirmedPattern: makeEMailPattern(p.email),
+	//	}}
+	//	return noPassword.To_Account_Password()
+	//case kStateConfirmedPassword:
+	//	password := &mtproto.TLAccountPassword{Data2: &mtproto.Account_Password_Data{
+	//		NewSalt:     p.serverSalt,
+	//		CurrentSalt: p.salt,
+	//		Hint:        p.hint,
+	//		HasRecovery: mtproto.ToBool(true),
+	//		// TODO(@benqi): make pattern
+	//		EmailUnconfirmedPattern: "",
+	//	}}
+	//	return password.To_Account_Password()
 	default:
 		// bug.
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_INTERNAL_SERVER_ERROR)

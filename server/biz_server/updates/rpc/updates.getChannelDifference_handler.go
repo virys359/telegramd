@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // updates.getChannelDifference#3173d78 flags:# force:flags.0?true channel:InputChannel filter:ChannelMessagesFilter pts:int limit:int = updates.ChannelDifference;
@@ -32,38 +32,38 @@ func (s *UpdatesServiceImpl) UpdatesGetChannelDifference(ctx context.Context, re
 	glog.Infof("updates.getChannelDifference#3173d78 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	var (
-		lastPts = request.GetPts()
-		//otherUpdates []*mtproto.Update
-		messages []*mtproto.Message
-		//userList []*mtproto.User
-		//chatList []*mtproto.Chat
+	// lastPts = request.GetPts()
+	//otherUpdates []*mtproto.Update
+	// messages []*mtproto.Message
+	//userList []*mtproto.User
+	//chatList []*mtproto.Chat
 	)
 
-	updateList, _ := sync_client.GetSyncClient().GetChannelUpdateListByGtPts(request.GetChannel().GetData2().GetChannelId(), lastPts)
-
-	for _, update := range updateList {
-		switch update.GetConstructor() {
-		case mtproto.TLConstructor_CRC32_updateNewChannelMessage:
-			newMessage := update.To_UpdateNewChannelMessage()
-			messages = append(messages, newMessage.GetMessage())
-			// otherUpdates = append(otherUpdates, update)
-
-		case mtproto.TLConstructor_CRC32_updateDeleteChannelMessages:
-			// readHistoryOutbox := update.To_UpdateReadHistoryOutbox()
-			// readHistoryOutbox.SetPtsCount(0)
-			// otherUpdates = append(otherUpdates, readHistoryOutbox.To_Update())
-		case mtproto.TLConstructor_CRC32_updateEditChannelMessage:
-			// readHistoryInbox := update.To_UpdateReadHistoryInbox()
-			// readHistoryInbox.SetPtsCount(0)
-			// otherUpdates = append(otherUpdates, readHistoryInbox.To_Update())
-		case mtproto.TLConstructor_CRC32_updateChannelWebPage:
-		default:
-			continue
-		}
-		if update.Data2.GetPts() > lastPts {
-			lastPts = update.Data2.GetPts()
-		}
-	}
+	//// updateList, _ := sync_client.GetSyncClient().GetChannelUpdateListByGtPts(request.GetChannel().GetData2().GetChannelId(), lastPts)
+	//
+	//for _, update := range updateList {
+	//	switch update.GetConstructor() {
+	//	case mtproto.TLConstructor_CRC32_updateNewChannelMessage:
+	//		newMessage := update.To_UpdateNewChannelMessage()
+	//		messages = append(messages, newMessage.GetMessage())
+	//		// otherUpdates = append(otherUpdates, update)
+	//
+	//	case mtproto.TLConstructor_CRC32_updateDeleteChannelMessages:
+	//		// readHistoryOutbox := update.To_UpdateReadHistoryOutbox()
+	//		// readHistoryOutbox.SetPtsCount(0)
+	//		// otherUpdates = append(otherUpdates, readHistoryOutbox.To_Update())
+	//	case mtproto.TLConstructor_CRC32_updateEditChannelMessage:
+	//		// readHistoryInbox := update.To_UpdateReadHistoryInbox()
+	//		// readHistoryInbox.SetPtsCount(0)
+	//		// otherUpdates = append(otherUpdates, readHistoryInbox.To_Update())
+	//	case mtproto.TLConstructor_CRC32_updateChannelWebPage:
+	//	default:
+	//		continue
+	//	}
+	//	if update.Data2.GetPts() > lastPts {
+	//		lastPts = update.Data2.GetPts()
+	//	}
+	//}
 
 	//otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
 	//messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
@@ -83,12 +83,12 @@ func (s *UpdatesServiceImpl) UpdatesGetChannelDifference(ctx context.Context, re
 	var difference *mtproto.Updates_ChannelDifference
 
 	//if len(updateList) == 0 {
-	pts, _ := sync_client.GetSyncClient().GetCurrentChannelPts(request.GetChannel().GetData2().GetChannelId())
+	// pts, _ := sync_client.GetSyncClient().GetCurrentChannelPts(request.GetChannel().GetData2().GetChannelId())
 	difference = &mtproto.Updates_ChannelDifference{
 		Constructor: mtproto.TLConstructor_CRC32_updates_channelDifferenceEmpty,
 		Data2: &mtproto.Updates_ChannelDifference_Data{
 			Final:   true,
-			Pts:     pts,
+			Pts:     0,
 			Timeout: 30,
 		},
 	}

@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/account"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -68,7 +68,7 @@ func (s *AccountServiceImpl) AccountSetPrivacy(ctx context.Context, request *mtp
 	}
 
 	// TODO(@benqi): handle seq
-	sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, unBlockedUpdates.ToUpdates())
+	// sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, unBlockedUpdates.ToUpdates())
 
 	glog.Infof("account.setPrivacy#c9f81ce8 - reply: %s", logger.JsonDebugData(rules))
 	return rules.To_Account_PrivacyRules(), nil

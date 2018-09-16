@@ -25,6 +25,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/service/idgen/proto"
 	"google.golang.org/grpc"
+	"fmt"
 )
 
 type RpcIDGenClient struct {
@@ -113,6 +114,10 @@ func (c *RpcIDGenClient) GetNextSeqID(key string) (int64, error) {
 		id = res.V
 	}
 	return id, err
+}
+
+func (c *RpcIDGenClient) GetNextNSeqID(key string, n int) (int64, error) {
+	return 0, fmt.Errorf("not impl RpcIDGenClient.GetNextNSeqID")
 }
 
 func init() {

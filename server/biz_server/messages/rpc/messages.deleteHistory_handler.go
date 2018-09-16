@@ -23,45 +23,127 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core"
+	"time"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
+
+/*
+ ## just_clear:
+ - affectedHistory: pts_count is size(history_messages-1) + updateLastEditMessage(messageActionHistoryClear)
+ - sync
+	- updateDeleteMessages + updateEditMessage(messageActionHistoryClear)
+
+ ##
+ */
 // messages.deleteHistory#1c015b09 flags:# just_clear:flags.0?true peer:InputPeer max_id:int = messages.AffectedHistory;
 func (s *MessagesServiceImpl) MessagesDeleteHistory(ctx context.Context, request *mtproto.TLMessagesDeleteHistory) (*mtproto.Messages_AffectedHistory, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.deleteHistory#1c015b09 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesDeleteHistory logic
+	// peer
+	var (
+		peer               *base.PeerUtil
+		err                error
+		pts, ptsCount      int32
+	)
 
-	peer := base.FromInputPeer2(md.UserId, request.GetPeer())
-	if peer.PeerType == base.PEER_SELF {
-		peer.PeerType = base.PEER_USER
-	}
-	boxIdList := s.MessageModel.GetMessageIdListByDialog(md.UserId, peer)
-	if len(boxIdList) > 0 {
-		// TOOD(@benqi): delete dialog message.
-		s.MessageModel.DeleteByMessageIdList(md.UserId, boxIdList)
-
-		updateDeleteMessages := mtproto.NewTLUpdateDeleteMessages()
-		updateDeleteMessages.SetMessages(boxIdList)
-		// updateDeleteMessages.SetMaxId(request.MaxId)
-		_, err := sync_client.GetSyncClient().SyncOneUpdateData3(md.ServerId, md.AuthId, md.SessionId, md.UserId, md.ClientMsgId, updateDeleteMessages.To_Update())
-		if err != nil {
-			glog.Error(err)
-			return nil, err
-		}
-
-		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NOTRETURN_CLIENT)
-		glog.Infof("messages.deleteHistory#1c015b09 - reply: {%v}", err)
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerEmpty {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error("messages.sendMessage#fa88427a - invalid peer", err)
 		return nil, err
-	} else {
-		affectedHistory := &mtproto.TLMessagesAffectedHistory{Data2: &mtproto.Messages_AffectedHistory_Data{
-			Pts:      0,
-			PtsCount: 0,
-			Offset:   0,
-		}}
-		glog.Infof("messages.deleteHistory#1c015b09 - reply: {%v}", affectedHistory)
-		return affectedHistory.To_Messages_AffectedHistory(), nil
 	}
+
+	// TODO(@benqi): check user or channels's access_hash
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
+		peer = &base.PeerUtil{
+			PeerType: base.PEER_USER,
+			PeerId:   md.UserId,
+		}
+	} else {
+		peer = base.FromInputPeer(request.GetPeer())
+	}
+
+	if request.GetJustClear() {
+		lastMessageBox, deleteIds := s.MessageModel.GetClearHistoryMessages(md.UserId, peer)
+
+		if lastMessageBox == nil || len(deleteIds) == 0 {
+			pts = int32(core.CurrentPtsId(md.UserId))
+			ptsCount = 0
+		} else {
+			pts = int32(core.NextNPtsId(md.UserId, len(deleteIds)))
+			ptsCount = int32(len(deleteIds))
+
+			updateDeleteMessages := &mtproto.TLUpdateDeleteMessages{Data2: &mtproto.Update_Data{
+				Messages: deleteIds,
+				Pts:      pts,
+				PtsCount: ptsCount,
+			}}
+
+			clearHistoryMessage := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
+				Out:    true,
+				Id:     int32(core.NextMessageBoxId(md.UserId)),
+				FromId: md.UserId,
+				ToId:   peer.ToPeer(),
+				Date:   lastMessageBox.Message.GetData2().GetDate(),
+				Action: mtproto.NewTLMessageActionHistoryClear().To_MessageAction(),
+			}}
+			lastMessageBox.Message = clearHistoryMessage.To_Message()
+			lastMessageBox.EditDate = clearHistoryMessage.GetDate()
+			lastMessageBox.EditMessage = ""
+			lastMessageBox.SaveMessageData()
+
+			pts = int32(core.NextPtsId(md.UserId))
+			ptsCount += 1
+			updateEditMessage := &mtproto.TLUpdateEditMessage{Data2: &mtproto.Update_Data{
+				Message_1: lastMessageBox.ToMessage(md.UserId),
+				Pts:       pts,
+				PtsCount:  1,
+			}}
+
+			syncUpdates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+				Updates: []*mtproto.Update{updateDeleteMessages.To_Update(), updateEditMessage.To_Update()},
+				Users:   s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId, peer.PeerId}),
+				Chats:   []*mtproto.Chat{},
+				Date:    int32(time.Now().Unix()),
+				Seq:     0,
+			}}
+
+			s.MessageModel.DeleteByMessageIdList(md.UserId, deleteIds)
+			sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncUpdates.To_Updates())
+		}
+	} else {
+		deleteIds := s.MessageModel.GetMessageIdListByDialog(md.UserId, peer)
+		pts = int32(core.NextNPtsId(md.UserId, len(deleteIds)))
+		ptsCount = int32(len(deleteIds))
+
+		updateDeleteMessages := &mtproto.TLUpdateDeleteMessages{Data2: &mtproto.Update_Data{
+			Messages: deleteIds,
+			Pts:      pts,
+			PtsCount: ptsCount,
+		}}
+
+		syncUpdats := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+			Updates: []*mtproto.Update{updateDeleteMessages.To_Update()},
+			Users:   []*mtproto.User{},
+			Chats:   []*mtproto.Chat{},
+			Date:    int32(time.Now().Unix()),
+			Seq:     0,
+		}}
+
+		s.MessageModel.DeleteByMessageIdList(md.UserId, deleteIds)
+		s.DialogModel.InsertOrUpdateDialog(md.UserId, peer.PeerType, peer.PeerId, 0, false, false)
+		sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncUpdats.To_Updates())
+	}
+
+	affectedHistory := &mtproto.TLMessagesAffectedHistory{Data2: &mtproto.Messages_AffectedHistory_Data{
+		Pts:      pts,
+		PtsCount: ptsCount,
+		Offset:   0,
+	}}
+
+	glog.Infof("messages.deleteHistory#1c015b09 - reply: %s", logger.JsonDebugData(affectedHistory))
+	return affectedHistory.To_Messages_AffectedHistory(), nil
 }

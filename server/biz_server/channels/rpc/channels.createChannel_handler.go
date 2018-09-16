@@ -25,8 +25,9 @@ import (
 	"github.com/nebulaim/telegramd/biz/core"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 /*
@@ -112,61 +113,44 @@ func (s *ChannelsServiceImpl) ChannelsCreateChannel(ctx context.Context, request
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("channels.createChannel#f4893d7f - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// logic.NewChatLogicByCreateChat()
-	//// TODO(@benqi): Impl MessagesCreateChat logic
-	//randomId := md.ClientMsgId
 
-	channelUserIdList := []int32{md.UserId}
-	channel := s.ChannelModel.NewChannelLogicByCreateChannel(md.UserId, channelUserIdList, request.GetTitle(), request.GetAbout())
+	// 1. 创建channel
+	channel := s.ChannelModel.NewChannelLogicByCreateChannel(md.UserId, request.GetTitle(), request.GetAbout())
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHANNEL,
 		PeerId:   channel.GetChannelId(),
 	}
-
 	createChannelMessage := channel.MakeCreateChannelMessage(md.UserId)
 	randomId := core.GetUUID()
 
-	// 1. 创建channel
 	// 2. 创建channel createChannel message
-
-	channelBox := s.MessageModel.CreateChannelMessageBoxByNew(md.UserId, channel.GetChannelId(), randomId, createChannelMessage, func(messageId int32) {
-		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
+	var boxList []*message.MessageBox2
+	s.MessageModel.SendInternalMessage(md.UserId, peer, randomId, false, createChannelMessage, func(i int32, box2 *message.MessageBox2) {
+		boxList = append(boxList, box2)
 	})
 
 	syncUpdates := update2.NewUpdatesLogic(md.UserId)
-	//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-	//	Participants: channel.GetChannelParticipants().To_Channels_ChannelParticipants(),
-	//}}
-	//syncUpdates.AddUpdate(updateChatParticipants.To_Update())
-	syncUpdates.AddUpdateNewMessage(createChannelMessage)
-	// syncUpdates.AddUsers(user.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+	pts := int32(core.NextChannelPtsId(peer.PeerId))
+	ptsCount := int32(1)
+
+	syncUpdates.AddUpdateNewMessage(pts, ptsCount, boxList[0].ToMessage(md.UserId))
 	syncUpdates.AddChat(channel.ToChannel(md.UserId))
 
-	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
-	syncUpdates.AddUpdateMessageId(channelBox.ChannelMessageBoxId, randomId)
+	sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncUpdates.ToUpdates())
+
+	resultUpdates := syncUpdates
+	resultUpdates.AddUpdateMessageId(boxList[0].MessageId, randomId)
 	updateChannel := &mtproto.TLUpdateChannel{Data2: &mtproto.Update_Data{
 		ChannelId: channel.GetChannelId(),
 	}}
-	syncUpdates.AddUpdate(updateChannel.To_Update())
-	syncUpdates.SetupState(state)
-	reply := syncUpdates.ToUpdates()
+	resultUpdates.AddUpdate(updateChannel.To_Update())
+	updateReadChannelInbox := &mtproto.TLUpdateReadChannelInbox{ Data2: &mtproto.Update_Data{
+		ChannelId: channel.GetChannelId(),
+		MaxId:     boxList[0].MessageId,
+	}}
+	resultUpdates.AddUpdate(updateReadChannelInbox.To_Update())
 
-	//inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
-	//	user.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHANNEL, peer.PeerId, messageId, false)
-	//})
-	//for _, inbox := range inboxList {
-	//	updates := update2.NewUpdatesLogic(md.UserId)
-	//	//updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-	//	//	Participants: chat.GetChatParticipants().To_ChatParticipants(),
-	//	//}}
-	//	//updates.AddUpdate(updateChatParticipants.To_Update())
-	//	updates.AddUpdateNewMessage(inbox.Message)
-	//	//updates.AddUsers(user.GetUsersBySelfAndIDList(nbox.UserId, chat.GetChatParticipantIdList()))
-	//	updates.AddChat(channel.ToChannel(inbox.UserId))
-	//	sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
-	//}
-
-	glog.Infof("channels.createChannel#f4893d7f - reply: {%v}", reply)
-	return reply, nil
+	glog.Infof("channels.createChannel#f4893d7f - reply: {%v}", resultUpdates)
+	return resultUpdates.ToUpdates(), nil
 }

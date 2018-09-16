@@ -29,19 +29,22 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/proto/zproto"
+	"github.com/nebulaim/telegramd/server/sync/biz/core/update"
 	"github.com/nebulaim/telegramd/service/idgen/client"
 	"github.com/nebulaim/telegramd/service/status/client"
 	"google.golang.org/grpc"
 	"sync"
 	"time"
-	"github.com/nebulaim/telegramd/server/sync/biz/core/update"
+	"github.com/nebulaim/telegramd/server/sync/server/rpc"
 )
 
 func init() {
-	proto.RegisterType((*mtproto.ConnectToSessionServerReq)(nil), "mtproto.ConnectToSessionServerReq")
-	proto.RegisterType((*mtproto.SessionServerConnectedRsp)(nil), "mtproto.SessionServerConnectedRsp")
-	proto.RegisterType((*mtproto.PushUpdatesData)(nil), "mtproto.PushUpdatesData")
-	proto.RegisterType((*mtproto.VoidRsp)(nil), "mtproto.VoidRsp")
+	proto.RegisterType((*mtproto.TLSyncConnectToSessionServer)(nil), "mtproto.TLSyncConnectToSessionServer")
+	proto.RegisterType((*mtproto.TLSyncSessionServerConnected)(nil), "mtproto.TLSyncSessionServerConnected")
+	proto.RegisterType((*mtproto.TLSyncPushUpdatesData)(nil), "mtproto.TLSyncPushUpdatesData")
+	proto.RegisterType((*mtproto.TLSyncPushRpcResultData)(nil), "mtproto.TLSyncPushRpcResultData")
+	proto.RegisterType((*mtproto.PushData)(nil), "mtproto.PushData")
+	proto.RegisterType((*mtproto.Bool)(nil), "mtproto.Bool")
 }
 
 type connContext struct {
@@ -50,12 +53,12 @@ type connContext struct {
 }
 
 type syncServer struct {
-	idgen      idgen.UUIDGen
+	idgen idgen.UUIDGen
 	// update     *update.UpdateModel
 	status     status_client.StatusClient
 	client     *zproto.ZProtoClient
 	server     *grpc_util.RPCServer
-	impl       *SyncServiceImpl
+	impl       *rpc.SyncServiceImpl
 	sessionMap sync.Map
 }
 
@@ -97,7 +100,7 @@ func (s *syncServer) Initialize() error {
 func (s *syncServer) RunLoop() {
 	go s.server.Serve(func(s2 *grpc.Server) {
 		updateModel := update.NewUpdateModel(Conf.ServerId, "immaster", "cache")
-		s.impl = NewSyncService(s, updateModel)
+		s.impl = rpc.NewSyncService(s, s.status, updateModel)
 		mtproto.RegisterRPCSyncServer(s2, s.impl)
 	})
 	s.client.Serve()
@@ -126,6 +129,7 @@ func (s *syncServer) newMetadata() *zproto.ZProtoMetadata {
 func protoToSyncData(m proto.Message) (*zproto.ZProtoSyncData, error) {
 	x := mtproto.NewEncodeBuf(128)
 	n := proto.MessageName(m)
+	glog.Info("message: name - ", n, ", ", m)
 	x.Int(int32(len(n)))
 	x.Bytes([]byte(n))
 	b, err := proto.Marshal(m)
@@ -137,7 +141,11 @@ func protoToSyncData(m proto.Message) (*zproto.ZProtoSyncData, error) {
 // Impl ZProtoClientCallBack
 func (s *syncServer) OnNewClient(client *net2.TcpClient) {
 	glog.Infof("OnNewConnection")
-	req, _ := protoToSyncData(&mtproto.ConnectToSessionServerReq{})
+	connectToSession := &mtproto.TLSyncConnectToSessionServer{Data2: &mtproto.ConnectToServer_Data{
+		SyncServerId: 1,
+	}}
+
+	req, _ := protoToSyncData(connectToSession)
 	zproto.SendMessageByClient(client, s.newMetadata(), req)
 }
 
@@ -161,17 +169,17 @@ func (s *syncServer) OnClientMessageArrived(client *net2.TcpClient, md *zproto.Z
 		}
 
 		switch message.(type) {
-		case *mtproto.SessionServerConnectedRsp:
+		case *mtproto.TLSyncSessionServerConnected:
 			glog.Infof("onSyncData - request(SessionServerConnectedRsp): {%v}", message)
 			// TODO(@benqi): bind server_id, server_name
-			res, _ := message.(*mtproto.SessionServerConnectedRsp)
-			res.GetServerId()
-			ctx := &connContext{serverId: res.GetServerId(), sessionId: client.GetConnection().GetConnID()}
+			res, _ := message.(*mtproto.TLSyncSessionServerConnected)
+			// res.GetServerId()
+			ctx := &connContext{serverId: res.GetData2().SessionServerId, sessionId: client.GetConnection().GetConnID()}
 			client.GetConnection().Context = ctx
 			glog.Info("store serverId: ", ctx)
 			s.sessionMap.Store(ctx.serverId, client)
 			// glog.Info("store serverId: ", ctx)
-		case *mtproto.VoidRsp:
+		case *mtproto.Bool:
 			glog.Infof("onSyncData - request(PushUpdatesData): {%v}", message)
 		default:
 			glog.Errorf("invalid register proto type: {%v}", message)
@@ -202,7 +210,7 @@ func (s *syncServer) OnClientTimer(client *net2.TcpClient) {
 	// glog.Infof("OnTimer")
 }
 
-func (s *syncServer) sendToSessionServer(serverId int, m proto.Message) {
+func (s *syncServer) SendToSessionServer(serverId int, m proto.Message) {
 	if c, ok := s.sessionMap.Load(int32(serverId)); ok {
 		client := c.(*net2.TcpClient)
 		if client != nil {

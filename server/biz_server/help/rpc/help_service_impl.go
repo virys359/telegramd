@@ -18,13 +18,15 @@
 package rpc
 
 import (
-	"github.com/BurntSushi/toml"
 	"github.com/nebulaim/telegramd/biz/core"
-	model2 "github.com/nebulaim/telegramd/server/biz_server/help/model"
+	// model2 "github.com/nebulaim/telegramd/server/biz_server/help/model"
+	"encoding/json"
+	"github.com/nebulaim/telegramd/proto/mtproto"
+	"io/ioutil"
 )
 
 const (
-	CONFIG_FILE = "./config.toml"
+	CONFIG_FILE = "/Users/wubenqi/go/src/github.com/nebulaim/telegramd/server/biz_server/config.json"
 
 	// date = 1509066502,    2017/10/27 09:08:22
 	// expires = 1509070295, 2017/10/27 10:11:35
@@ -34,11 +36,19 @@ const (
 	SUPPORT_USER_ID = 2
 )
 
-var config model2.Config
+var config mtproto.TLConfig
 
 func init() {
-	if _, err := toml.DecodeFile(CONFIG_FILE, &config); err != nil {
+	configData, err := ioutil.ReadFile(CONFIG_FILE)
+	if err != nil {
 		panic(err)
+		return
+	}
+
+	err = json.Unmarshal([]byte(configData), &config)
+	if err != nil {
+		panic(err)
+		return
 	}
 }
 

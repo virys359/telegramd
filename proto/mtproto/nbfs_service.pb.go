@@ -17,15 +17,43 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type UploadPhotoFileRequest struct {
-	OwnerId int64      `protobuf:"varint,1,opt,name=ownerId" json:"ownerId,omitempty"`
-	File    *InputFile `protobuf:"bytes,2,opt,name=file" json:"file,omitempty"`
+	OwnerId              int64      `protobuf:"varint,1,opt,name=ownerId,proto3" json:"ownerId,omitempty"`
+	File                 *InputFile `protobuf:"bytes,2,opt,name=file,proto3" json:"file,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
 }
 
-func (m *UploadPhotoFileRequest) Reset()                    { *m = UploadPhotoFileRequest{} }
-func (m *UploadPhotoFileRequest) String() string            { return proto.CompactTextString(m) }
-func (*UploadPhotoFileRequest) ProtoMessage()               {}
-func (*UploadPhotoFileRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+func (m *UploadPhotoFileRequest) Reset()         { *m = UploadPhotoFileRequest{} }
+func (m *UploadPhotoFileRequest) String() string { return proto.CompactTextString(m) }
+func (*UploadPhotoFileRequest) ProtoMessage()    {}
+func (*UploadPhotoFileRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{0}
+}
+func (m *UploadPhotoFileRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UploadPhotoFileRequest.Unmarshal(m, b)
+}
+func (m *UploadPhotoFileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UploadPhotoFileRequest.Marshal(b, m, deterministic)
+}
+func (dst *UploadPhotoFileRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UploadPhotoFileRequest.Merge(dst, src)
+}
+func (m *UploadPhotoFileRequest) XXX_Size() int {
+	return xxx_messageInfo_UploadPhotoFileRequest.Size(m)
+}
+func (m *UploadPhotoFileRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UploadPhotoFileRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UploadPhotoFileRequest proto.InternalMessageInfo
 
 func (m *UploadPhotoFileRequest) GetOwnerId() int64 {
 	if m != nil {
@@ -42,13 +70,35 @@ func (m *UploadPhotoFileRequest) GetFile() *InputFile {
 }
 
 type GetPhotoFileDataRequest struct {
-	PhotoId int64 `protobuf:"varint,1,opt,name=photo_id,json=photoId" json:"photo_id,omitempty"`
+	PhotoId              int64    `protobuf:"varint,1,opt,name=photo_id,json=photoId,proto3" json:"photo_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetPhotoFileDataRequest) Reset()                    { *m = GetPhotoFileDataRequest{} }
-func (m *GetPhotoFileDataRequest) String() string            { return proto.CompactTextString(m) }
-func (*GetPhotoFileDataRequest) ProtoMessage()               {}
-func (*GetPhotoFileDataRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+func (m *GetPhotoFileDataRequest) Reset()         { *m = GetPhotoFileDataRequest{} }
+func (m *GetPhotoFileDataRequest) String() string { return proto.CompactTextString(m) }
+func (*GetPhotoFileDataRequest) ProtoMessage()    {}
+func (*GetPhotoFileDataRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{1}
+}
+func (m *GetPhotoFileDataRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPhotoFileDataRequest.Unmarshal(m, b)
+}
+func (m *GetPhotoFileDataRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPhotoFileDataRequest.Marshal(b, m, deterministic)
+}
+func (dst *GetPhotoFileDataRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPhotoFileDataRequest.Merge(dst, src)
+}
+func (m *GetPhotoFileDataRequest) XXX_Size() int {
+	return xxx_messageInfo_GetPhotoFileDataRequest.Size(m)
+}
+func (m *GetPhotoFileDataRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPhotoFileDataRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPhotoFileDataRequest proto.InternalMessageInfo
 
 func (m *GetPhotoFileDataRequest) GetPhotoId() int64 {
 	if m != nil {
@@ -58,16 +108,38 @@ func (m *GetPhotoFileDataRequest) GetPhotoId() int64 {
 }
 
 type PhotoDataRsp struct {
-	PhotoId    int64        `protobuf:"varint,1,opt,name=photo_id,json=photoId" json:"photo_id,omitempty"`
-	AccessHash int64        `protobuf:"varint,2,opt,name=access_hash,json=accessHash" json:"access_hash,omitempty"`
-	Date       int32        `protobuf:"varint,3,opt,name=date" json:"date,omitempty"`
-	SizeList   []*PhotoSize `protobuf:"bytes,4,rep,name=size_list,json=sizeList" json:"size_list,omitempty"`
+	PhotoId              int64        `protobuf:"varint,1,opt,name=photo_id,json=photoId,proto3" json:"photo_id,omitempty"`
+	AccessHash           int64        `protobuf:"varint,2,opt,name=access_hash,json=accessHash,proto3" json:"access_hash,omitempty"`
+	Date                 int32        `protobuf:"varint,3,opt,name=date,proto3" json:"date,omitempty"`
+	SizeList             []*PhotoSize `protobuf:"bytes,4,rep,name=size_list,json=sizeList,proto3" json:"size_list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
 }
 
-func (m *PhotoDataRsp) Reset()                    { *m = PhotoDataRsp{} }
-func (m *PhotoDataRsp) String() string            { return proto.CompactTextString(m) }
-func (*PhotoDataRsp) ProtoMessage()               {}
-func (*PhotoDataRsp) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
+func (m *PhotoDataRsp) Reset()         { *m = PhotoDataRsp{} }
+func (m *PhotoDataRsp) String() string { return proto.CompactTextString(m) }
+func (*PhotoDataRsp) ProtoMessage()    {}
+func (*PhotoDataRsp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{2}
+}
+func (m *PhotoDataRsp) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PhotoDataRsp.Unmarshal(m, b)
+}
+func (m *PhotoDataRsp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PhotoDataRsp.Marshal(b, m, deterministic)
+}
+func (dst *PhotoDataRsp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PhotoDataRsp.Merge(dst, src)
+}
+func (m *PhotoDataRsp) XXX_Size() int {
+	return xxx_messageInfo_PhotoDataRsp.Size(m)
+}
+func (m *PhotoDataRsp) XXX_DiscardUnknown() {
+	xxx_messageInfo_PhotoDataRsp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PhotoDataRsp proto.InternalMessageInfo
 
 func (m *PhotoDataRsp) GetPhotoId() int64 {
 	if m != nil {
@@ -98,14 +170,36 @@ func (m *PhotoDataRsp) GetSizeList() []*PhotoSize {
 }
 
 type NbfsUploadedPhotoMedia struct {
-	OwnerId int64                      `protobuf:"varint,1,opt,name=ownerId" json:"ownerId,omitempty"`
-	Media   *TLInputMediaUploadedPhoto `protobuf:"bytes,2,opt,name=media" json:"media,omitempty"`
+	OwnerId              int64                      `protobuf:"varint,1,opt,name=ownerId,proto3" json:"ownerId,omitempty"`
+	Media                *TLInputMediaUploadedPhoto `protobuf:"bytes,2,opt,name=media,proto3" json:"media,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
 }
 
-func (m *NbfsUploadedPhotoMedia) Reset()                    { *m = NbfsUploadedPhotoMedia{} }
-func (m *NbfsUploadedPhotoMedia) String() string            { return proto.CompactTextString(m) }
-func (*NbfsUploadedPhotoMedia) ProtoMessage()               {}
-func (*NbfsUploadedPhotoMedia) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
+func (m *NbfsUploadedPhotoMedia) Reset()         { *m = NbfsUploadedPhotoMedia{} }
+func (m *NbfsUploadedPhotoMedia) String() string { return proto.CompactTextString(m) }
+func (*NbfsUploadedPhotoMedia) ProtoMessage()    {}
+func (*NbfsUploadedPhotoMedia) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{3}
+}
+func (m *NbfsUploadedPhotoMedia) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NbfsUploadedPhotoMedia.Unmarshal(m, b)
+}
+func (m *NbfsUploadedPhotoMedia) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NbfsUploadedPhotoMedia.Marshal(b, m, deterministic)
+}
+func (dst *NbfsUploadedPhotoMedia) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NbfsUploadedPhotoMedia.Merge(dst, src)
+}
+func (m *NbfsUploadedPhotoMedia) XXX_Size() int {
+	return xxx_messageInfo_NbfsUploadedPhotoMedia.Size(m)
+}
+func (m *NbfsUploadedPhotoMedia) XXX_DiscardUnknown() {
+	xxx_messageInfo_NbfsUploadedPhotoMedia.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NbfsUploadedPhotoMedia proto.InternalMessageInfo
 
 func (m *NbfsUploadedPhotoMedia) GetOwnerId() int64 {
 	if m != nil {
@@ -122,14 +216,36 @@ func (m *NbfsUploadedPhotoMedia) GetMedia() *TLInputMediaUploadedPhoto {
 }
 
 type NbfsUploadedDocumentMedia struct {
-	OwnerId int64                         `protobuf:"varint,1,opt,name=ownerId" json:"ownerId,omitempty"`
-	Media   *TLInputMediaUploadedDocument `protobuf:"bytes,2,opt,name=media" json:"media,omitempty"`
+	OwnerId              int64                         `protobuf:"varint,1,opt,name=ownerId,proto3" json:"ownerId,omitempty"`
+	Media                *TLInputMediaUploadedDocument `protobuf:"bytes,2,opt,name=media,proto3" json:"media,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
+	XXX_unrecognized     []byte                        `json:"-"`
+	XXX_sizecache        int32                         `json:"-"`
 }
 
-func (m *NbfsUploadedDocumentMedia) Reset()                    { *m = NbfsUploadedDocumentMedia{} }
-func (m *NbfsUploadedDocumentMedia) String() string            { return proto.CompactTextString(m) }
-func (*NbfsUploadedDocumentMedia) ProtoMessage()               {}
-func (*NbfsUploadedDocumentMedia) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
+func (m *NbfsUploadedDocumentMedia) Reset()         { *m = NbfsUploadedDocumentMedia{} }
+func (m *NbfsUploadedDocumentMedia) String() string { return proto.CompactTextString(m) }
+func (*NbfsUploadedDocumentMedia) ProtoMessage()    {}
+func (*NbfsUploadedDocumentMedia) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{4}
+}
+func (m *NbfsUploadedDocumentMedia) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NbfsUploadedDocumentMedia.Unmarshal(m, b)
+}
+func (m *NbfsUploadedDocumentMedia) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NbfsUploadedDocumentMedia.Marshal(b, m, deterministic)
+}
+func (dst *NbfsUploadedDocumentMedia) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NbfsUploadedDocumentMedia.Merge(dst, src)
+}
+func (m *NbfsUploadedDocumentMedia) XXX_Size() int {
+	return xxx_messageInfo_NbfsUploadedDocumentMedia.Size(m)
+}
+func (m *NbfsUploadedDocumentMedia) XXX_DiscardUnknown() {
+	xxx_messageInfo_NbfsUploadedDocumentMedia.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NbfsUploadedDocumentMedia proto.InternalMessageInfo
 
 func (m *NbfsUploadedDocumentMedia) GetOwnerId() int64 {
 	if m != nil {
@@ -146,15 +262,37 @@ func (m *NbfsUploadedDocumentMedia) GetMedia() *TLInputMediaUploadedDocument {
 }
 
 type DocumentId struct {
-	Id         int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	AccessHash int64 `protobuf:"varint,2,opt,name=access_hash,json=accessHash" json:"access_hash,omitempty"`
-	Version    int32 `protobuf:"varint,3,opt,name=version" json:"version,omitempty"`
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccessHash           int64    `protobuf:"varint,2,opt,name=access_hash,json=accessHash,proto3" json:"access_hash,omitempty"`
+	Version              int32    `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *DocumentId) Reset()                    { *m = DocumentId{} }
-func (m *DocumentId) String() string            { return proto.CompactTextString(m) }
-func (*DocumentId) ProtoMessage()               {}
-func (*DocumentId) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
+func (m *DocumentId) Reset()         { *m = DocumentId{} }
+func (m *DocumentId) String() string { return proto.CompactTextString(m) }
+func (*DocumentId) ProtoMessage()    {}
+func (*DocumentId) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{5}
+}
+func (m *DocumentId) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DocumentId.Unmarshal(m, b)
+}
+func (m *DocumentId) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DocumentId.Marshal(b, m, deterministic)
+}
+func (dst *DocumentId) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DocumentId.Merge(dst, src)
+}
+func (m *DocumentId) XXX_Size() int {
+	return xxx_messageInfo_DocumentId.Size(m)
+}
+func (m *DocumentId) XXX_DiscardUnknown() {
+	xxx_messageInfo_DocumentId.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DocumentId proto.InternalMessageInfo
 
 func (m *DocumentId) GetId() int64 {
 	if m != nil {
@@ -178,13 +316,35 @@ func (m *DocumentId) GetVersion() int32 {
 }
 
 type DocumentAttributeList struct {
-	Attributes []*DocumentAttribute `protobuf:"bytes,1,rep,name=attributes" json:"attributes,omitempty"`
+	Attributes           []*DocumentAttribute `protobuf:"bytes,1,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
-func (m *DocumentAttributeList) Reset()                    { *m = DocumentAttributeList{} }
-func (m *DocumentAttributeList) String() string            { return proto.CompactTextString(m) }
-func (*DocumentAttributeList) ProtoMessage()               {}
-func (*DocumentAttributeList) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
+func (m *DocumentAttributeList) Reset()         { *m = DocumentAttributeList{} }
+func (m *DocumentAttributeList) String() string { return proto.CompactTextString(m) }
+func (*DocumentAttributeList) ProtoMessage()    {}
+func (*DocumentAttributeList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{6}
+}
+func (m *DocumentAttributeList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DocumentAttributeList.Unmarshal(m, b)
+}
+func (m *DocumentAttributeList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DocumentAttributeList.Marshal(b, m, deterministic)
+}
+func (dst *DocumentAttributeList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DocumentAttributeList.Merge(dst, src)
+}
+func (m *DocumentAttributeList) XXX_Size() int {
+	return xxx_messageInfo_DocumentAttributeList.Size(m)
+}
+func (m *DocumentAttributeList) XXX_DiscardUnknown() {
+	xxx_messageInfo_DocumentAttributeList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DocumentAttributeList proto.InternalMessageInfo
 
 func (m *DocumentAttributeList) GetAttributes() []*DocumentAttribute {
 	if m != nil {
@@ -194,13 +354,35 @@ func (m *DocumentAttributeList) GetAttributes() []*DocumentAttribute {
 }
 
 type DocumentIdList struct {
-	IdList []int64 `protobuf:"varint,1,rep,packed,name=id_list,json=idList" json:"id_list,omitempty"`
+	IdList               []int64  `protobuf:"varint,1,rep,packed,name=id_list,json=idList,proto3" json:"id_list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *DocumentIdList) Reset()                    { *m = DocumentIdList{} }
-func (m *DocumentIdList) String() string            { return proto.CompactTextString(m) }
-func (*DocumentIdList) ProtoMessage()               {}
-func (*DocumentIdList) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
+func (m *DocumentIdList) Reset()         { *m = DocumentIdList{} }
+func (m *DocumentIdList) String() string { return proto.CompactTextString(m) }
+func (*DocumentIdList) ProtoMessage()    {}
+func (*DocumentIdList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{7}
+}
+func (m *DocumentIdList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DocumentIdList.Unmarshal(m, b)
+}
+func (m *DocumentIdList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DocumentIdList.Marshal(b, m, deterministic)
+}
+func (dst *DocumentIdList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DocumentIdList.Merge(dst, src)
+}
+func (m *DocumentIdList) XXX_Size() int {
+	return xxx_messageInfo_DocumentIdList.Size(m)
+}
+func (m *DocumentIdList) XXX_DiscardUnknown() {
+	xxx_messageInfo_DocumentIdList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DocumentIdList proto.InternalMessageInfo
 
 func (m *DocumentIdList) GetIdList() []int64 {
 	if m != nil {
@@ -210,13 +392,35 @@ func (m *DocumentIdList) GetIdList() []int64 {
 }
 
 type DocumentList struct {
-	Documents []*Document `protobuf:"bytes,1,rep,name=documents" json:"documents,omitempty"`
+	Documents            []*Document `protobuf:"bytes,1,rep,name=documents,proto3" json:"documents,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
 }
 
-func (m *DocumentList) Reset()                    { *m = DocumentList{} }
-func (m *DocumentList) String() string            { return proto.CompactTextString(m) }
-func (*DocumentList) ProtoMessage()               {}
-func (*DocumentList) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
+func (m *DocumentList) Reset()         { *m = DocumentList{} }
+func (m *DocumentList) String() string { return proto.CompactTextString(m) }
+func (*DocumentList) ProtoMessage()    {}
+func (*DocumentList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_nbfs_service_1b164656045c9a7e, []int{8}
+}
+func (m *DocumentList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DocumentList.Unmarshal(m, b)
+}
+func (m *DocumentList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DocumentList.Marshal(b, m, deterministic)
+}
+func (dst *DocumentList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DocumentList.Merge(dst, src)
+}
+func (m *DocumentList) XXX_Size() int {
+	return xxx_messageInfo_DocumentList.Size(m)
+}
+func (m *DocumentList) XXX_DiscardUnknown() {
+	xxx_messageInfo_DocumentList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DocumentList proto.InternalMessageInfo
 
 func (m *DocumentList) GetDocuments() []*Document {
 	if m != nil {
@@ -245,8 +449,9 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for RPCNbfs service
-
+// RPCNbfsClient is the client API for RPCNbfs service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type RPCNbfsClient interface {
 	NbfsUploadPhotoFile(ctx context.Context, in *UploadPhotoFileRequest, opts ...grpc.CallOption) (*PhotoDataRsp, error)
 	NbfsGetPhotoFileData(ctx context.Context, in *GetPhotoFileDataRequest, opts ...grpc.CallOption) (*PhotoDataRsp, error)
@@ -266,7 +471,7 @@ func NewRPCNbfsClient(cc *grpc.ClientConn) RPCNbfsClient {
 
 func (c *rPCNbfsClient) NbfsUploadPhotoFile(ctx context.Context, in *UploadPhotoFileRequest, opts ...grpc.CallOption) (*PhotoDataRsp, error) {
 	out := new(PhotoDataRsp)
-	err := grpc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_uploadPhotoFile", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_uploadPhotoFile", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +480,7 @@ func (c *rPCNbfsClient) NbfsUploadPhotoFile(ctx context.Context, in *UploadPhoto
 
 func (c *rPCNbfsClient) NbfsGetPhotoFileData(ctx context.Context, in *GetPhotoFileDataRequest, opts ...grpc.CallOption) (*PhotoDataRsp, error) {
 	out := new(PhotoDataRsp)
-	err := grpc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_getPhotoFileData", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_getPhotoFileData", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +489,7 @@ func (c *rPCNbfsClient) NbfsGetPhotoFileData(ctx context.Context, in *GetPhotoFi
 
 func (c *rPCNbfsClient) NbfsUploadedPhotoMedia(ctx context.Context, in *NbfsUploadedPhotoMedia, opts ...grpc.CallOption) (*TLMessageMediaPhoto, error) {
 	out := new(TLMessageMediaPhoto)
-	err := grpc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_uploadedPhotoMedia", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_uploadedPhotoMedia", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +498,7 @@ func (c *rPCNbfsClient) NbfsUploadedPhotoMedia(ctx context.Context, in *NbfsUplo
 
 func (c *rPCNbfsClient) NbfsUploadedDocumentMedia(ctx context.Context, in *NbfsUploadedDocumentMedia, opts ...grpc.CallOption) (*TLMessageMediaDocument, error) {
 	out := new(TLMessageMediaDocument)
-	err := grpc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_uploadedDocumentMedia", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_uploadedDocumentMedia", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -302,7 +507,7 @@ func (c *rPCNbfsClient) NbfsUploadedDocumentMedia(ctx context.Context, in *NbfsU
 
 func (c *rPCNbfsClient) NbfsGetDocument(ctx context.Context, in *DocumentId, opts ...grpc.CallOption) (*Document, error) {
 	out := new(Document)
-	err := grpc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_getDocument", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_getDocument", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -311,15 +516,14 @@ func (c *rPCNbfsClient) NbfsGetDocument(ctx context.Context, in *DocumentId, opt
 
 func (c *rPCNbfsClient) NbfsGetDocumentList(ctx context.Context, in *DocumentIdList, opts ...grpc.CallOption) (*DocumentList, error) {
 	out := new(DocumentList)
-	err := grpc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_getDocumentList", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCNbfs/nbfs_getDocumentList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for RPCNbfs service
-
+// RPCNbfsServer is the server API for RPCNbfs service.
 type RPCNbfsServer interface {
 	NbfsUploadPhotoFile(context.Context, *UploadPhotoFileRequest) (*PhotoDataRsp, error)
 	NbfsGetPhotoFileData(context.Context, *GetPhotoFileDataRequest) (*PhotoDataRsp, error)
@@ -474,9 +678,9 @@ var _RPCNbfs_serviceDesc = grpc.ServiceDesc{
 	Metadata: "nbfs_service.proto",
 }
 
-func init() { proto.RegisterFile("nbfs_service.proto", fileDescriptor1) }
+func init() { proto.RegisterFile("nbfs_service.proto", fileDescriptor_nbfs_service_1b164656045c9a7e) }
 
-var fileDescriptor1 = []byte{
+var fileDescriptor_nbfs_service_1b164656045c9a7e = []byte{
 	// 573 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0xdb, 0x6e, 0xd3, 0x40,
 	0x10, 0x95, 0xe3, 0xb4, 0x69, 0xa7, 0x55, 0x05, 0xdb, 0xa6, 0x71, 0x2d, 0xa1, 0x5a, 0x46, 0x54,

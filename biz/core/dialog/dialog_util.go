@@ -37,7 +37,7 @@ func makeDialogItems() *dialogItems {
 	}
 }
 
-func PickAllIDListByDialogs2(dialogs []*mtproto.Dialog) (items *dialogItems) {
+func (m *DialogModel) PickAllIDListByDialogs(dialogs []*mtproto.Dialog) (items *dialogItems) {
 	items = makeDialogItems()
 
 	for _, d := range dialogs {

@@ -18,10 +18,10 @@
 package update
 
 import (
+	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/server/sync/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/service/idgen/client"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"github.com/golang/glog"
 )
 
 type updatesDAO struct {

@@ -21,18 +21,20 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
+	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"github.com/nebulaim/telegramd/biz/base"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
+	"time"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
-// messages.toggleDialogPin#3289be6a flags:# pinned:flags.0?true peer:InputPeer = Bool;
+// messages.toggleDialogPin#a731e257 flags:# pinned:flags.0?true peer:InputDialogPeer = Bool;
 func (s *MessagesServiceImpl) MessagesToggleDialogPin(ctx context.Context, request *mtproto.TLMessagesToggleDialogPin) (*mtproto.Bool, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.toggleDialogPin#3289be6a - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	peer := base.FromInputPeer2(md.UserId, request.GetPeer())
+	peer := base.FromInputPeer2(md.UserId, request.GetPeer().GetData2().GetPeer())
 
 	if peer.PeerType == base.PEER_EMPTY {
 		glog.Error("empty peer")
@@ -45,11 +47,19 @@ func (s *MessagesServiceImpl) MessagesToggleDialogPin(ctx context.Context, reque
 
 	// sync other sessions
 	updateDialogPinned := &mtproto.TLUpdateDialogPinned{Data2: &mtproto.Update_Data{
-		Pinned: request.GetPinned(),
+		Pinned:  request.GetPinned(),
 		Peer_39: peer.ToPeer(),
 	}}
-	sync_client.GetSyncClient().SyncOneUpdateData(md.AuthId, md.SessionId, md.UserId, updateDialogPinned.To_Update())
+	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{updateDialogPinned.To_Update()},
+		Users:   []*mtproto.User{},
+		Chats:   []*mtproto.Chat{},
+		Seq:     0,
+		Date:    int32(time.Now().Unix()),
+	}}
 
-	glog.Info("messages.toggleDialogPin#3289be6a - reply {true}")
+	sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, updates.To_Updates())
+
+	glog.Info("messages.toggleDialogPin#a731e257 - reply {true}")
 	return mtproto.ToBool(true), nil
 }

@@ -21,11 +21,13 @@ import (
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/core/chat"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/message"
 )
 
 type UpdatesServiceImpl struct {
 	*user.UserModel
 	*chat.ChatModel
+	*message.MessageModel
 }
 
 func NewUpdatesServiceImpl(models []core.CoreModel) *UpdatesServiceImpl {
@@ -37,6 +39,8 @@ func NewUpdatesServiceImpl(models []core.CoreModel) *UpdatesServiceImpl {
 			impl.UserModel = m.(*user.UserModel)
 		case *chat.ChatModel:
 			impl.ChatModel = m.(*chat.ChatModel)
+		case *message.MessageModel:
+			impl.MessageModel = m.(*message.MessageModel)
 		}
 	}
 

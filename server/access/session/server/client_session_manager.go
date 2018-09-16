@@ -110,9 +110,9 @@ type sessionData struct {
 }
 
 type syncData struct {
-	sessionID int64
-	md        *zproto.ZProtoMetadata
-	data      *messageData
+	// sessionID int64
+	md   *zproto.ZProtoMetadata
+	data *messageData
 }
 
 type connData struct {
@@ -255,9 +255,9 @@ func (s *clientSessionManager) onSessionClientClosed(connID ClientConnID) error 
 	return nil
 }
 
-func (s *clientSessionManager) OnSyncDataArrived(sessionID int64, md *zproto.ZProtoMetadata, data *messageData) error {
+func (s *clientSessionManager) OnSyncDataArrived(md *zproto.ZProtoMetadata, data *messageData) error {
 	select {
-	case s.sessionDataChan <- &syncData{sessionID, md, data}:
+	case s.sessionDataChan <- &syncData{md, data}:
 		return nil
 	}
 	return nil
@@ -383,8 +383,8 @@ func (s *clientSessionManager) onTimer() {
 }
 
 func (s *clientSessionManager) onSyncData(syncMsg *syncData) {
-	glog.Infof("onSyncData - receive data: {sess: %s, session_id: %d, md: %s, data: {%v}}",
-		s, syncMsg.sessionID, syncMsg.md, syncMsg.data)
+	glog.Infof("onSyncData - receive data: {sess: %s, md: %s, data: {%v}}",
+		s, syncMsg.md, syncMsg.data)
 
 	s.updatesSession.onSyncData(syncMsg.md, syncMsg.data.obj)
 }

@@ -22,9 +22,10 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // account.updateStatus#6628562c offline:Bool = Bool;
@@ -63,7 +64,8 @@ func (s *AccountServiceImpl) AccountUpdateStatus(ctx context.Context, request *m
 	// push to other contacts.
 	contactIDList := s.UserModel.GetContactUserIDList(md.UserId)
 	for _, id := range contactIDList {
-		sync_client.GetSyncClient().PushToUserUpdatesData(id, updates.To_Updates())
+		_ = id
+		sync_client.GetSyncClient().PushUpdates(id, updates.To_Updates())
 	}
 
 	glog.Infof("account.updateStatus#6628562c - reply: {true}")

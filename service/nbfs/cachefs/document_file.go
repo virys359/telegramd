@@ -74,4 +74,3 @@ func (f *DocumentFile) Close() {
 func (f *DocumentFile) ReadData(offset int32, limit int32) ([]byte, error) {
 	return ReadFileOffsetData(f.ToFilePath(), offset, limit)
 }
-

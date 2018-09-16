@@ -21,9 +21,9 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
-	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/baselib/redis_client"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"google.golang.org/grpc"
 )
 
 type documentServer struct {

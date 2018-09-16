@@ -18,14 +18,16 @@
 package rpc
 
 import (
+	"time"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	message2 "github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
-	"time"
+	"github.com/nebulaim/telegramd/biz/base"
+	message2 "github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 func (s *MessagesServiceImpl) makeUpdateEditMessageUpdates(selfUserId int32, message *mtproto.Message) *mtproto.TLUpdates {
@@ -34,6 +36,8 @@ func (s *MessagesServiceImpl) makeUpdateEditMessageUpdates(selfUserId int32, mes
 
 	updateNew := &mtproto.TLUpdateEditMessage{Data2: &mtproto.Update_Data{
 		Message_1: message,
+		Pts:       int32(core.NextPtsId(selfUserId)),
+		PtsCount:  1,
 	}}
 	return &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
 		Updates: []*mtproto.Update{updateNew.To_Update()},
@@ -43,19 +47,15 @@ func (s *MessagesServiceImpl) makeUpdateEditMessageUpdates(selfUserId int32, mes
 	}}
 }
 
-func setEditMessageData(request *mtproto.TLMessagesEditMessage, message *mtproto.Message) {
-	// edit message data
-	data2 := message.GetData2()
-	if request.GetMessage() != "" {
-		data2.Message = request.GetMessage()
-	}
-	if request.GetReplyMarkup() != nil {
-		data2.ReplyMarkup = request.GetReplyMarkup()
-	}
-	if request.GetEntities() != nil {
-		data2.Entities = request.GetEntities()
-	}
+func setEditMessageData(request *mtproto.TLMessagesEditMessage, messageBox *message2.MessageBox2) {
+	data2 := messageBox.Message.GetData2()
+	data2.Message = request.GetMessage()
+	data2.ReplyMarkup = request.GetReplyMarkup()
+	data2.Entities = request.GetEntities()
 	data2.EditDate = int32(time.Now().Unix())
+
+	messageBox.EditDate = data2.EditDate
+	messageBox.EditMessage = request.GetMessage()
 }
 
 // messages.editMessage#5d1b8dd flags:# no_webpage:flags.1?true stop_geo_live:flags.12?true peer:InputPeer id:int message:flags.11?string reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> geo_point:flags.13?InputGeoPoint = Updates;
@@ -63,30 +63,46 @@ func (s *MessagesServiceImpl) MessagesEditMessage(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.editMessage#5d1b8dd - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// SelectDialogMessageListByMessageId
-	editOutbox := s.MessageModel.GetMessageByPeerAndMessageId(md.UserId, request.GetId())
-	// TODO(@benqi): check invalid
+	var (
+		peer               *base.PeerUtil
+		err                error
+	)
 
-	setEditMessageData(request, editOutbox)
-
-	syncUpdates := s.makeUpdateEditMessageUpdates(md.UserId, editOutbox)
-	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
-	if err != nil {
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerEmpty {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
+		glog.Error("messages.sendMessage#fa88427a - invalid peer", err)
 		return nil, err
 	}
-	SetupUpdatesState(state, syncUpdates)
-	s.MessageModel.SaveMessage(editOutbox, md.UserId, request.GetId())
 
+	// TODO(@benqi): check user or channels's access_hash
+	if request.GetPeer().GetConstructor() == mtproto.TLConstructor_CRC32_inputPeerSelf {
+		peer = &base.PeerUtil{
+			PeerType: base.PEER_USER,
+			PeerId:   md.UserId,
+		}
+	} else {
+		peer = base.FromInputPeer(request.GetPeer())
+	}
+
+	editOutbox, err := s.MessageModel.GetMessageBox2(int32(peer.PeerType), md.UserId, request.GetId())
+	// TODO(@benqi): check invalid
+
+	// Edit outbox
+	setEditMessageData(request, editOutbox)
+	syncUpdates := s.makeUpdateEditMessageUpdates(md.UserId, editOutbox.ToMessage(md.UserId))
+	sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncUpdates.To_Updates())
+
+	editOutbox.SaveMessageData()
+
+	// TODO(@benqi):
 	// push edit peer message
-	peerEditMessages := s.MessageModel.GetPeerDialogMessageListByMessageId(md.UserId, request.GetId())
-	for i := 0; i < len(peerEditMessages.UserIds); i++ {
-		editMessage := peerEditMessages.Messages[i]
-		editUserId := peerEditMessages.UserIds[i]
-
+	peerEditMessages := s.MessageModel.GetPeerMessageListByMessageDataId(md.UserId, editOutbox.MessageDataId)
+	for i := 0; i < len(peerEditMessages); i++ {
+		editMessage := peerEditMessages[i]
+		editMessage.MessageData = editOutbox.MessageData
 		setEditMessageData(request, editMessage)
-		editUpdates := s.makeUpdateEditMessageUpdates(editUserId, editMessage)
-		sync_client.GetSyncClient().PushToUserUpdatesData(editUserId, editUpdates.To_Updates())
-		s.MessageModel.SaveMessage(editMessage, editUserId, editMessage.GetData2().GetId())
+		editUpdates := s.makeUpdateEditMessageUpdates(editMessage.OwnerId, editMessage.ToMessage(editMessage.OwnerId))
+		sync_client.GetSyncClient().PushUpdates(editMessage.OwnerId, editUpdates.To_Updates())
 	}
 
 	glog.Infof("messages.editMessage#5d1b8dd - reply: %s", logger.JsonDebugData(syncUpdates))

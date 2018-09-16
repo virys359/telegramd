@@ -18,13 +18,13 @@
 package cachefs
 
 import (
-	"github.com/golang/glog"
-	"github.com/disintegration/imaging"
-	"fmt"
 	"bytes"
+	"fmt"
+	"github.com/disintegration/imaging"
+	"github.com/golang/glog"
 	"image"
-	"os"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -267,4 +267,3 @@ func DoUploadedPhotoFile(src *PhotoFile, extName string, srcData []byte, isABC b
 
 	return nil
 }
-

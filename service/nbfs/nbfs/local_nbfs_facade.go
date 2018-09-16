@@ -18,18 +18,18 @@
 package nbfs_client
 
 import (
+	"crypto/md5"
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/service/nbfs/proto"
-	"fmt"
-	"hash"
-	"crypto/md5"
-	"github.com/nebulaim/telegramd/service/nbfs/cachefs"
-	"path"
-	"strings"
 	"github.com/nebulaim/telegramd/service/idgen/client"
+	"github.com/nebulaim/telegramd/service/nbfs/cachefs"
+	"github.com/nebulaim/telegramd/service/nbfs/proto"
+	"hash"
 	"math/rand"
 	"os"
+	"path"
+	"strings"
 	"time"
 )
 
@@ -122,8 +122,8 @@ func (c *localNbfsFacade) Initialize(config string) error {
 func (c *localNbfsFacade) UploadPhotoFile(creatorId int64, file *mtproto.InputFile) (fileMDList []*nbfs.PhotoFileMetadata, err error) {
 	var (
 		inputFile = file.GetData2()
-		md5Hash hash.Hash
-		fileSize = int64(0)
+		md5Hash   hash.Hash
+		fileSize  = int64(0)
 	)
 
 	var cacheData []byte
@@ -160,7 +160,7 @@ func (c *localNbfsFacade) UploadPhotoFile(creatorId int64, file *mtproto.InputFi
 		// 有点难理解，主要是为了不在这里引入snowflake
 		// ext := getFileExtName(inputFile.GetName())
 		// extType := getStorageFileTypeConstructor(ext)
-		secretId := int64(extType) << 32 | int64(rand.Uint32())
+		secretId := int64(extType)<<32 | int64(rand.Uint32())
 
 		srcFile := cachefs.NewPhotoFile(photoId, pi.LocalId, 0)
 		dstFile := cachefs.NewPhotoFile(photoId, pi.LocalId, secretId)
@@ -192,8 +192,8 @@ func (c *localNbfsFacade) UploadPhotoFile(creatorId int64, file *mtproto.InputFi
 func (c *localNbfsFacade) UploadProfilePhotoFile(creatorId int64, file *mtproto.InputFile) (fileMDList []*nbfs.PhotoFileMetadata, err error) {
 	var (
 		inputFile = file.GetData2()
-		md5Hash hash.Hash
-		fileSize = int64(0)
+		md5Hash   hash.Hash
+		fileSize  = int64(0)
 	)
 
 	var cacheData []byte
@@ -228,7 +228,7 @@ func (c *localNbfsFacade) UploadProfilePhotoFile(creatorId int64, file *mtproto.
 
 	err = cachefs.DoUploadedPhotoFile(photoFile2, ext, cacheData, false, func(pi *cachefs.PhotoInfo) {
 		// 有点难理解，主要是为了不在这里引入snowflake
-		secretId := int64(extType) << 32 | int64(rand.Uint32())
+		secretId := int64(extType)<<32 | int64(rand.Uint32())
 
 		srcFile := cachefs.NewPhotoFile(photoId, pi.LocalId, 0)
 		dstFile := cachefs.NewPhotoFile(photoId, pi.LocalId, secretId)
@@ -259,8 +259,8 @@ func (c *localNbfsFacade) UploadProfilePhotoFile(creatorId int64, file *mtproto.
 
 func (c *localNbfsFacade) UploadDocumentFile(creatorId int64, file *mtproto.InputFile) (fileMD *nbfs.DocumentFileMetadata, err error) {
 	var (
-		inputFile = file.GetData2()
-		fileSize = int64(0)
+		inputFile    = file.GetData2()
+		fileSize     = int64(0)
 		documentFile *cachefs.DocumentFile
 	)
 
@@ -269,7 +269,7 @@ func (c *localNbfsFacade) UploadDocumentFile(creatorId int64, file *mtproto.Inpu
 	// 有点难理解，主要是为了不在这里引入snowflake
 	ext := getFileExtName(inputFile.GetName())
 	extType := getStorageFileTypeConstructor(ext)
-	accessHash := int64(extType) << 32 | int64(rand.Uint32())
+	accessHash := int64(extType)<<32 | int64(rand.Uint32())
 
 	documentFile, err = cachefs.CreateDocumentFile(documentId, accessHash)
 	if err != nil {
@@ -313,8 +313,8 @@ func (c *localNbfsFacade) DownloadFile(location *mtproto.InputFileLocation, offs
 	var (
 		// uploadFile *mtproto.Upload_File
 		// err        error
-		bytes      []byte
-		sType      int32
+		bytes []byte
+		sType int32
 	)
 
 	switch location.GetConstructor() {

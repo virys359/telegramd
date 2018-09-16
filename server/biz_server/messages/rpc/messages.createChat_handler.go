@@ -22,11 +22,11 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core/update"
 )
 
 // messages.createChat#9cb126e users:Vector<InputUser> title:string = Updates;
@@ -61,39 +61,58 @@ func (s *MessagesServiceImpl) MessagesCreateChat(ctx context.Context, request *m
 
 	createChatMessage := chat.MakeCreateChatMessage(md.UserId)
 	randomId := core.GetUUID()
-	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, createChatMessage, func(messageId int32) {
-		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
-	})
 
-	syncUpdates := update2.NewUpdatesLogic(md.UserId)
-	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-		Participants: chat.GetChatParticipants().To_ChatParticipants(),
-	}}
-	syncUpdates.AddUpdate(updateChatParticipants.To_Update())
-	syncUpdates.AddUpdateNewMessage(createChatMessage)
-	syncUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
-	syncUpdates.AddChat(chat.ToChat(md.UserId))
+	resultCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (*mtproto.Updates, error) {
+		syncUpdates := updates.NewUpdatesLogic(md.UserId)
 
-	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
-	syncUpdates.AddUpdateMessageId(outbox.MessageId, outbox.RandomId)
-	syncUpdates.SetupState(state)
-	reply := syncUpdates.ToUpdates()
-
-	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
-		s.UserModel.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHAT, peer.PeerId, messageId, false)
-	})
-	for _, inbox := range inboxList {
-		updates := update2.NewUpdatesLogic(md.UserId)
 		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
 			Participants: chat.GetChatParticipants().To_ChatParticipants(),
 		}}
-		updates.AddUpdate(updateChatParticipants.To_Update())
-		updates.AddUpdateNewMessage(inbox.Message)
-		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(inbox.UserId, chat.GetChatParticipantIdList()))
-		updates.AddChat(chat.ToChat(inbox.UserId))
-		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
+		syncUpdates.AddUpdate(updateChatParticipants.To_Update())
+		syncUpdates.AddUpdateNewMessage(pts, ptsCount, outBox.ToMessage(md.UserId))
+		syncUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+		syncUpdates.AddChat(chat.ToChat(md.UserId))
+		syncUpdates.AddUpdateMessageId(outBox.MessageId, outBox.RandomId)
+
+		return syncUpdates.ToUpdates(), nil
 	}
 
-	glog.Infof("messages.createChat#9cb126e - reply: {%v}", reply)
-	return reply, nil
+	syncNotMeCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (int64, *mtproto.Updates, error) {
+		syncUpdates := updates.NewUpdatesLogic(md.UserId)
+
+		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+			Participants: chat.GetChatParticipants().To_ChatParticipants(),
+		}}
+		syncUpdates.AddUpdate(updateChatParticipants.To_Update())
+		syncUpdates.AddUpdateNewMessage(pts, ptsCount, outBox.ToMessage(md.UserId))
+		syncUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chat.GetChatParticipantIdList()))
+		syncUpdates.AddChat(chat.ToChat(md.UserId))
+
+		return md.AuthId, syncUpdates.ToUpdates(), nil
+	}
+
+	pushCB := func(pts, ptsCount int32, inBox *message.MessageBox2) (*mtproto.Updates, error) {
+		pushUpdates := updates.NewUpdatesLogic(md.UserId)
+		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+			Participants: chat.GetChatParticipants().To_ChatParticipants(),
+		}}
+		pushUpdates.AddUpdate(updateChatParticipants.To_Update())
+		pushUpdates.AddUpdateNewMessage(pts, ptsCount, inBox.ToMessage(inBox.OwnerId))
+		pushUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(inBox.OwnerId, chat.GetChatParticipantIdList()))
+		pushUpdates.AddChat(chat.ToChat(inBox.OwnerId))
+
+		return pushUpdates.ToUpdates(), nil
+	}
+
+	replyUpdates, _ := s.MessageModel.SendMessage(
+		md.UserId,
+		peer,
+		randomId,
+		createChatMessage,
+		resultCB,
+		syncNotMeCB,
+		pushCB)
+
+	glog.Infof("messages.createChat#9cb126e - reply: {%v}", replyUpdates)
+	return replyUpdates, nil
 }

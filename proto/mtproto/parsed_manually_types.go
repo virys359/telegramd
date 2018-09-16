@@ -415,13 +415,13 @@ func (m *Vector_StickerSetCovered) Decode(dbuf *DecodeBuf) error {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//message Vector_CdnFileHash {
-//    repeated CdnFileHash datas = 1;
+//message Vector_FileHash {
+//    repeated FileHash datas = 1;
 //}
-func NewVector_CdnFileHash() *Vector_CdnFileHash {
-	return &Vector_CdnFileHash{}
+func NewVector_FileHash() *Vector_FileHash {
+	return &Vector_FileHash{}
 }
-func (m *Vector_CdnFileHash) Encode() []byte {
+func (m *Vector_FileHash) Encode() []byte {
 	x := NewEncodeBuf(512)
 	x.Int(int32(TLConstructor_CRC32_vector))
 	x.Int(int32(len(m.Datas)))
@@ -431,12 +431,12 @@ func (m *Vector_CdnFileHash) Encode() []byte {
 	return x.buf
 }
 
-func (m *Vector_CdnFileHash) Decode(dbuf *DecodeBuf) error {
+func (m *Vector_FileHash) Decode(dbuf *DecodeBuf) error {
 	dbuf.Int() // TODO(@benqi): Check crc32 invalid
 	l1 := dbuf.Int()
-	m.Datas = make([]*CdnFileHash, l1)
+	m.Datas = make([]*FileHash, l1)
 	for i := int32(0); i < l1; i++ {
-		m.Datas[i] = &CdnFileHash{}
+		m.Datas[i] = &FileHash{}
 		(*m.Datas[i]).Decode(dbuf)
 	}
 

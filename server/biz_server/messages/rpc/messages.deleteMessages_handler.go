@@ -22,8 +22,11 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core"
+	"time"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // messages.deleteMessages#e58e95d2 flags:# revoke:flags.0?true id:Vector<int> = messages.AffectedMessages;
@@ -33,21 +36,38 @@ func (s *MessagesServiceImpl) MessagesDeleteMessages(ctx context.Context, reques
 
 	var (
 		deleteIdList = request.GetId()
+		pts, ptsCount int32
 	)
+
+	pts = int32(core.NextNPtsId(md.UserId, len(request.GetId())))
+	ptsCount = int32(len(request.GetId()))
+
+	s.MessageModel.DeleteByMessageIdList(md.UserId, deleteIdList)
 
 	deleteMessages := &mtproto.TLUpdateDeleteMessages{Data2: &mtproto.Update_Data{
 		Messages: deleteIdList,
+		Pts:      pts,
+		PtsCount: ptsCount,
 	}}
 
-	state, err := sync_client.GetSyncClient().SyncOneUpdateData(md.AuthId, md.SessionId, md.UserId, deleteMessages.To_Update())
-	if err != nil {
-		return nil, err
-	}
+	syncDeleteMessagesUpdates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{deleteMessages.To_Update()},
+		Users:   []*mtproto.User{},
+		Chats:   []*mtproto.Chat{},
+		Date:    int32(time.Now().Unix()),
+		Seq:     0,
+	}}
+
+	sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncDeleteMessagesUpdates.To_Updates())
 
 	affectedMessages := &mtproto.TLMessagesAffectedMessages{Data2: &mtproto.Messages_AffectedMessages_Data{
-		Pts:      state.Pts,
-		PtsCount: state.PtsCount,
+		Pts:      pts,
+		PtsCount: ptsCount,
 	}}
+
+	s.MessageModel.DeleteByMessageIdList(md.UserId, deleteIdList)
+
+	// TODO(@benqi): 更新dialog的TopMessage
 
 	// 1. delete messages
 	// 2. updateTopMessage
@@ -56,21 +76,30 @@ func (s *MessagesServiceImpl) MessagesDeleteMessages(ctx context.Context, reques
 		deleteIdListMap := s.MessageModel.GetPeerDialogMessageIdList(md.UserId, request.GetId())
 		glog.Info("messages.deleteMessages#e58e95d2 - deleteIdListMap: ", deleteIdListMap)
 		for k, v := range deleteIdListMap {
+			pts = int32(core.NextNPtsId(k, len(v)))
+			ptsCount = int32(len(v))
+
 			deleteMessages := &mtproto.TLUpdateDeleteMessages{Data2: &mtproto.Update_Data{
 				Messages: v,
+				Pts:      pts,
+				PtsCount: ptsCount,
 			}}
-			sync_client.GetSyncClient().PushToUserOneUpdateData(k, deleteMessages.To_Update())
+
+			pushDeleteMessagesUpdates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+				Updates: []*mtproto.Update{deleteMessages.To_Update()},
+				Users:   []*mtproto.User{},
+				Chats:   []*mtproto.Chat{},
+				Date:    int32(time.Now().Unix()),
+				Seq:     0,
+			}}
+
+			sync_client.GetSyncClient().PushUpdates(k, pushDeleteMessagesUpdates.To_Updates())
 			s.MessageModel.DeleteByMessageIdList(k, v)
 		}
-		s.MessageModel.DeleteByMessageIdList(md.UserId, deleteIdList)
-		// TODO(@benqi): 更新dialog的TopMessage
-	} else {
-		// 删除消息
-		s.MessageModel.DeleteByMessageIdList(md.UserId, deleteIdList)
 
 		// TODO(@benqi): 更新dialog的TopMessage
 	}
-
+	
 	glog.Infof("messages.deleteMessages#e58e95d2 - reply: %s", logger.JsonDebugData(affectedMessages))
 	return affectedMessages.To_Messages_AffectedMessages(), nil
 }

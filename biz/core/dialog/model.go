@@ -19,12 +19,15 @@ package dialog
 
 import (
 	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
+	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"time"
 )
 
 type dialogsDAO struct {
 	*mysql_dao.UserDialogsDAO
+	*mysql_dao.DraftMessagesDAO
 }
 
 type DialogModel struct {
@@ -36,6 +39,7 @@ func (m *DialogModel) RegisterCallback(cb interface{}) {
 
 func (m *DialogModel) InstallModel() {
 	m.dao.UserDialogsDAO = dao.GetUserDialogsDAO(dao.DB_MASTER)
+	m.dao.DraftMessagesDAO = dao.GetDraftMessagesDAO(dao.DB_MASTER)
 }
 
 func (m *DialogModel) MakeDialogLogic(userId, peerType, peerId int32) *dialogLogic {
@@ -52,7 +56,7 @@ func (m *DialogModel) UpdateUnreadByPeer(userId int32, peerType int8, peerId int
 	m.dao.UserDialogsDAO.UpdateUnreadByPeer(readInboxMaxId, userId, peerType, peerId)
 }
 
-func (m *DialogModel) UpdateReadOutboxMaxIdByPeer(userId int32, peerType int8, peerId int32, topMessage int32)  {
+func (m *DialogModel) UpdateReadOutboxMaxIdByPeer(userId int32, peerType int8, peerId int32, topMessage int32) {
 	m.dao.UserDialogsDAO.UpdateReadOutboxMaxIdByPeer(topMessage, userId, peerType, peerId)
 }
 
@@ -62,6 +66,28 @@ func (m *DialogModel) GetTopMessage(userId int32, peerType int8, peerId int32) i
 		return do.TopMessage
 	}
 	return 0
+}
+
+func (m *DialogModel) InsertOrUpdateDialog(userId, peerType, peerId, topMessage int32, hasMentioned, isInbox bool) {
+	dialogDO := &dataobject.UserDialogsDO{
+		UserId:              userId,
+		PeerType:            int8(peerType),
+		PeerId:              peerId,
+		TopMessage:          topMessage,
+		Date2:               int32(time.Now().Unix()),
+		UnreadCount:         0,
+		UnreadMentionsCount: 0,
+	}
+
+	if isInbox {
+		// 收件箱mentioned才有意义
+		dialogDO.UnreadCount = 1
+		if hasMentioned {
+			dialogDO.UnreadMentionsCount = 1
+		}
+	}
+
+	m.dao.UserDialogsDAO.InsertOrUpdate(dialogDO)
 }
 
 func init() {

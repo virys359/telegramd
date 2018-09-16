@@ -23,6 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"time"
 )
 
 type syncClient struct {
@@ -48,6 +49,94 @@ func InstallSyncClient(discovery *service_discovery.ServiceDiscoveryClientConfig
 	syncInstance.client = mtproto.NewRPCSyncClient(conn)
 }
 
+// sync.syncUpdates#3a077679 flags:# layer:int user_id:int auth_key_id:long server_id:flags.1?int not_me:flags.0?true updates:Updates = Bool;
+func (c *syncClient) SyncUpdatesMe(userId int32, authKeyId int64, serverId int32, updates *mtproto.Updates) (bool, error) {
+	m := &mtproto.TLSyncSyncUpdates{
+		UserId:    userId,
+		AuthKeyId: authKeyId,
+		ServerId:  serverId,
+		Updates:   updates,
+	}
+
+	r, err := c.client.SyncSyncUpdates(context.Background(), m)
+	return mtproto.FromBool(r), err
+}
+
+// sync.syncUpdates#3a077679 flags:# layer:int user_id:int auth_key_id:long server_id:flags.1?int not_me:flags.0?true updates:Updates = Bool;
+func (c *syncClient) SyncUpdatesNotMe(userId int32, authKeyId int64, updates *mtproto.Updates) (bool, error) {
+	m := &mtproto.TLSyncSyncUpdates{
+		UserId:    userId,
+		AuthKeyId: authKeyId,
+		NotMe:     true,
+		Updates:   updates,
+	}
+
+	r, err := c.client.SyncSyncUpdates(context.Background(), m)
+	return mtproto.FromBool(r), err
+}
+
+// sync.pushUpdates#5c612649 user_id:int updates:Updates = Bool;
+func (c *syncClient) PushUpdates(userId int32, updates *mtproto.Updates) (bool, error) {
+	m := &mtproto.TLSyncPushUpdates{
+		UserId:  userId,
+		Updates: updates,
+	}
+
+	r, err := c.client.SyncPushUpdates(context.Background(), m)
+	return mtproto.FromBool(r), err
+}
+
+// sync.pushChannelUpdates#bfd3d677 channel_id:int exclude_user_id:int updates:Updates = Bool;
+func (c *syncClient) SyncPushChannelUpdates(channelId, excludeUserId int32, updates *mtproto.Updates) (bool, error) {
+	m := &mtproto.TLSyncPushChannelUpdates{
+		ChannelId:     channelId,
+		ExcludeUserId: excludeUserId,
+		Updates:       updates,
+	}
+
+	r, err := c.client.SyncPushChannelUpdates(context.Background(), m)
+	return mtproto.FromBool(r), err
+}
+
+// sync.pushRpcResult#1bf9b15e auth_key_id:long req_msg_id:long result:bytes = Bool;
+func (c *syncClient) SyncPushRpcResult(authKeyId int64, serverId int32, clientReqMsgId int64, result []byte) (bool, error) {
+	m := &mtproto.TLSyncPushRpcResult{
+		AuthKeyId: authKeyId,
+		ServerId:  serverId,
+		ReqMsgId:  clientReqMsgId,
+		Result:    result,
+	}
+
+	r, err := c.client.SyncPushRpcResult(context.Background(), m)
+	return mtproto.FromBool(r), err
+}
+
+// sync.getState auth_key_id:long user_id:int = updates.State;
+func (c *syncClient) SyncGetState(authKeyId int64, userId int32) (*mtproto.Updates_State, error) {
+	req := &mtproto.TLSyncGetState{
+		AuthKeyId: authKeyId,
+		UserId:    userId,
+	}
+
+	state, err := c.client.SyncGetState(context.Background(), req)
+	return state, err
+}
+
+// sync.getDifference flags:# auth_key_id:long user_id:int pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
+func (c *syncClient) SyncGetDifference(authKeyId int64, userId, pts int32) (*mtproto.Updates_Difference, error) {
+	req := &mtproto.TLSyncGetDifference{
+		AuthKeyId: authKeyId,
+		UserId:    userId,
+		Pts:       pts,
+		Date:      int32(time.Now().Unix()),
+		Qts:       0,
+	}
+
+	difference, err := c.client.SyncGetDifference(context.Background(), req)
+	return difference, err
+}
+
+/*
 func (c *syncClient) SyncOneUpdateData2(serverId int32, authKeyId, sessionId int64, pushUserId int32, clientMsgId int64, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {
 	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
 		Updates: []*mtproto.Update{update},
@@ -313,4 +402,4 @@ func (c *syncClient) UpdateAuthStateSeq(authKeyId int64, pts, qts int32) (err er
 	_, err = c.client.UpdateUpdatesState(context.Background(), req)
 	return
 }
-
+*/

@@ -17,16 +17,44 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 // /////////////////////////////////////////////////////////////////////////////
 // req_pq#60469778 nonce:int128 = ResPQ;
 type TLReqPq struct {
-	Nonce []byte `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *TLReqPq) Reset()                    { *m = TLReqPq{} }
-func (m *TLReqPq) String() string            { return proto.CompactTextString(m) }
-func (*TLReqPq) ProtoMessage()               {}
-func (*TLReqPq) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{0} }
+func (m *TLReqPq) Reset()         { *m = TLReqPq{} }
+func (m *TLReqPq) String() string { return proto.CompactTextString(m) }
+func (*TLReqPq) ProtoMessage()    {}
+func (*TLReqPq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_service_11d34c5846edbbec, []int{0}
+}
+func (m *TLReqPq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLReqPq.Unmarshal(m, b)
+}
+func (m *TLReqPq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLReqPq.Marshal(b, m, deterministic)
+}
+func (dst *TLReqPq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLReqPq.Merge(dst, src)
+}
+func (m *TLReqPq) XXX_Size() int {
+	return xxx_messageInfo_TLReqPq.Size(m)
+}
+func (m *TLReqPq) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLReqPq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLReqPq proto.InternalMessageInfo
 
 func (m *TLReqPq) GetNonce() []byte {
 	if m != nil {
@@ -36,20 +64,82 @@ func (m *TLReqPq) GetNonce() []byte {
 }
 
 // /////////////////////////////////////////////////////////////////////////////
-// req_DH_params#d712e4be nonce:int128 server_nonce:int128 p:string q:string public_key_fingerprint:long encrypted_data:string = Server_DH_Params;
-type TLReq_DHParams struct {
-	Nonce                []byte `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	ServerNonce          []byte `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
-	P                    string `protobuf:"bytes,3,opt,name=p" json:"p,omitempty"`
-	Q                    string `protobuf:"bytes,4,opt,name=q" json:"q,omitempty"`
-	PublicKeyFingerprint int64  `protobuf:"varint,5,opt,name=public_key_fingerprint,json=publicKeyFingerprint" json:"public_key_fingerprint,omitempty"`
-	EncryptedData        string `protobuf:"bytes,6,opt,name=encrypted_data,json=encryptedData" json:"encrypted_data,omitempty"`
+// req_pq_multi#be7e8ef1 nonce:int128 = ResPQ;
+type TLReqPqMulti struct {
+	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *TLReq_DHParams) Reset()                    { *m = TLReq_DHParams{} }
-func (m *TLReq_DHParams) String() string            { return proto.CompactTextString(m) }
-func (*TLReq_DHParams) ProtoMessage()               {}
-func (*TLReq_DHParams) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{1} }
+func (m *TLReqPqMulti) Reset()         { *m = TLReqPqMulti{} }
+func (m *TLReqPqMulti) String() string { return proto.CompactTextString(m) }
+func (*TLReqPqMulti) ProtoMessage()    {}
+func (*TLReqPqMulti) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_service_11d34c5846edbbec, []int{1}
+}
+func (m *TLReqPqMulti) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLReqPqMulti.Unmarshal(m, b)
+}
+func (m *TLReqPqMulti) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLReqPqMulti.Marshal(b, m, deterministic)
+}
+func (dst *TLReqPqMulti) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLReqPqMulti.Merge(dst, src)
+}
+func (m *TLReqPqMulti) XXX_Size() int {
+	return xxx_messageInfo_TLReqPqMulti.Size(m)
+}
+func (m *TLReqPqMulti) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLReqPqMulti.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLReqPqMulti proto.InternalMessageInfo
+
+func (m *TLReqPqMulti) GetNonce() []byte {
+	if m != nil {
+		return m.Nonce
+	}
+	return nil
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// req_DH_params#d712e4be nonce:int128 server_nonce:int128 p:string q:string public_key_fingerprint:long encrypted_data:string = Server_DH_Params;
+type TLReq_DHParams struct {
+	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	ServerNonce          []byte   `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
+	P                    string   `protobuf:"bytes,3,opt,name=p,proto3" json:"p,omitempty"`
+	Q                    string   `protobuf:"bytes,4,opt,name=q,proto3" json:"q,omitempty"`
+	PublicKeyFingerprint int64    `protobuf:"varint,5,opt,name=public_key_fingerprint,json=publicKeyFingerprint,proto3" json:"public_key_fingerprint,omitempty"`
+	EncryptedData        string   `protobuf:"bytes,6,opt,name=encrypted_data,json=encryptedData,proto3" json:"encrypted_data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TLReq_DHParams) Reset()         { *m = TLReq_DHParams{} }
+func (m *TLReq_DHParams) String() string { return proto.CompactTextString(m) }
+func (*TLReq_DHParams) ProtoMessage()    {}
+func (*TLReq_DHParams) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_service_11d34c5846edbbec, []int{2}
+}
+func (m *TLReq_DHParams) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLReq_DHParams.Unmarshal(m, b)
+}
+func (m *TLReq_DHParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLReq_DHParams.Marshal(b, m, deterministic)
+}
+func (dst *TLReq_DHParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLReq_DHParams.Merge(dst, src)
+}
+func (m *TLReq_DHParams) XXX_Size() int {
+	return xxx_messageInfo_TLReq_DHParams.Size(m)
+}
+func (m *TLReq_DHParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLReq_DHParams.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLReq_DHParams proto.InternalMessageInfo
 
 func (m *TLReq_DHParams) GetNonce() []byte {
 	if m != nil {
@@ -96,15 +186,37 @@ func (m *TLReq_DHParams) GetEncryptedData() string {
 // /////////////////////////////////////////////////////////////////////////////
 // set_client_DH_params#f5045f1f nonce:int128 server_nonce:int128 encrypted_data:string = Set_client_DH_params_answer;
 type TLSetClient_DHParams struct {
-	Nonce         []byte `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	ServerNonce   []byte `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
-	EncryptedData string `protobuf:"bytes,3,opt,name=encrypted_data,json=encryptedData" json:"encrypted_data,omitempty"`
+	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	ServerNonce          []byte   `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
+	EncryptedData        string   `protobuf:"bytes,3,opt,name=encrypted_data,json=encryptedData,proto3" json:"encrypted_data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *TLSetClient_DHParams) Reset()                    { *m = TLSetClient_DHParams{} }
-func (m *TLSetClient_DHParams) String() string            { return proto.CompactTextString(m) }
-func (*TLSetClient_DHParams) ProtoMessage()               {}
-func (*TLSetClient_DHParams) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{2} }
+func (m *TLSetClient_DHParams) Reset()         { *m = TLSetClient_DHParams{} }
+func (m *TLSetClient_DHParams) String() string { return proto.CompactTextString(m) }
+func (*TLSetClient_DHParams) ProtoMessage()    {}
+func (*TLSetClient_DHParams) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_service_11d34c5846edbbec, []int{3}
+}
+func (m *TLSetClient_DHParams) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLSetClient_DHParams.Unmarshal(m, b)
+}
+func (m *TLSetClient_DHParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLSetClient_DHParams.Marshal(b, m, deterministic)
+}
+func (dst *TLSetClient_DHParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLSetClient_DHParams.Merge(dst, src)
+}
+func (m *TLSetClient_DHParams) XXX_Size() int {
+	return xxx_messageInfo_TLSetClient_DHParams.Size(m)
+}
+func (m *TLSetClient_DHParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLSetClient_DHParams.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLSetClient_DHParams proto.InternalMessageInfo
 
 func (m *TLSetClient_DHParams) GetNonce() []byte {
 	if m != nil {
@@ -130,15 +242,38 @@ func (m *TLSetClient_DHParams) GetEncryptedData() string {
 // /////////////////////////////////////////////////////////////////////////////
 // destroy_auth_key#d1435160 = DestroyAuthKeyRes;
 type TLDestroyAuthKey struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *TLDestroyAuthKey) Reset()                    { *m = TLDestroyAuthKey{} }
-func (m *TLDestroyAuthKey) String() string            { return proto.CompactTextString(m) }
-func (*TLDestroyAuthKey) ProtoMessage()               {}
-func (*TLDestroyAuthKey) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{3} }
+func (m *TLDestroyAuthKey) Reset()         { *m = TLDestroyAuthKey{} }
+func (m *TLDestroyAuthKey) String() string { return proto.CompactTextString(m) }
+func (*TLDestroyAuthKey) ProtoMessage()    {}
+func (*TLDestroyAuthKey) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_service_11d34c5846edbbec, []int{4}
+}
+func (m *TLDestroyAuthKey) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLDestroyAuthKey.Unmarshal(m, b)
+}
+func (m *TLDestroyAuthKey) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLDestroyAuthKey.Marshal(b, m, deterministic)
+}
+func (dst *TLDestroyAuthKey) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLDestroyAuthKey.Merge(dst, src)
+}
+func (m *TLDestroyAuthKey) XXX_Size() int {
+	return xxx_messageInfo_TLDestroyAuthKey.Size(m)
+}
+func (m *TLDestroyAuthKey) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLDestroyAuthKey.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLDestroyAuthKey proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*TLReqPq)(nil), "mtproto.TL_req_pq")
+	proto.RegisterType((*TLReqPqMulti)(nil), "mtproto.TL_req_pq_multi")
 	proto.RegisterType((*TLReq_DHParams)(nil), "mtproto.TL_req_DH_params")
 	proto.RegisterType((*TLSetClient_DHParams)(nil), "mtproto.TL_set_client_DH_params")
 	proto.RegisterType((*TLDestroyAuthKey)(nil), "mtproto.TL_destroy_auth_key")
@@ -152,11 +287,14 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for RPCAuthKey service
-
+// RPCAuthKeyClient is the client API for RPCAuthKey service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type RPCAuthKeyClient interface {
 	// req_pq#60469778 nonce:int128 = ResPQ;
 	ReqPq(ctx context.Context, in *TLReqPq, opts ...grpc.CallOption) (*ResPQ, error)
+	// req_pq_multi#be7e8ef1 nonce:int128 = ResPQ;
+	ReqPqMulti(ctx context.Context, in *TLReqPqMulti, opts ...grpc.CallOption) (*ResPQ, error)
 	// req_DH_params#d712e4be nonce:int128 server_nonce:int128 p:string q:string public_key_fingerprint:long encrypted_data:string = Server_DH_Params;
 	Req_DHParams(ctx context.Context, in *TLReq_DHParams, opts ...grpc.CallOption) (*Server_DH_Params, error)
 	// set_client_DH_params#f5045f1f nonce:int128 server_nonce:int128 encrypted_data:string = Set_client_DH_params_answer;
@@ -175,7 +313,16 @@ func NewRPCAuthKeyClient(cc *grpc.ClientConn) RPCAuthKeyClient {
 
 func (c *rPCAuthKeyClient) ReqPq(ctx context.Context, in *TLReqPq, opts ...grpc.CallOption) (*ResPQ, error) {
 	out := new(ResPQ)
-	err := grpc.Invoke(ctx, "/mtproto.RPCAuthKey/req_pq", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCAuthKey/req_pq", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCAuthKeyClient) ReqPqMulti(ctx context.Context, in *TLReqPqMulti, opts ...grpc.CallOption) (*ResPQ, error) {
+	out := new(ResPQ)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCAuthKey/req_pq_multi", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +331,7 @@ func (c *rPCAuthKeyClient) ReqPq(ctx context.Context, in *TLReqPq, opts ...grpc.
 
 func (c *rPCAuthKeyClient) Req_DHParams(ctx context.Context, in *TLReq_DHParams, opts ...grpc.CallOption) (*Server_DH_Params, error) {
 	out := new(Server_DH_Params)
-	err := grpc.Invoke(ctx, "/mtproto.RPCAuthKey/req_DH_params", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCAuthKey/req_DH_params", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +340,7 @@ func (c *rPCAuthKeyClient) Req_DHParams(ctx context.Context, in *TLReq_DHParams,
 
 func (c *rPCAuthKeyClient) SetClient_DHParams(ctx context.Context, in *TLSetClient_DHParams, opts ...grpc.CallOption) (*SetClient_DHParamsAnswer, error) {
 	out := new(SetClient_DHParamsAnswer)
-	err := grpc.Invoke(ctx, "/mtproto.RPCAuthKey/set_client_DH_params", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCAuthKey/set_client_DH_params", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -202,18 +349,19 @@ func (c *rPCAuthKeyClient) SetClient_DHParams(ctx context.Context, in *TLSetClie
 
 func (c *rPCAuthKeyClient) DestroyAuthKey(ctx context.Context, in *TLDestroyAuthKey, opts ...grpc.CallOption) (*DestroyAuthKeyRes, error) {
 	out := new(DestroyAuthKeyRes)
-	err := grpc.Invoke(ctx, "/mtproto.RPCAuthKey/destroy_auth_key", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/mtproto.RPCAuthKey/destroy_auth_key", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for RPCAuthKey service
-
+// RPCAuthKeyServer is the server API for RPCAuthKey service.
 type RPCAuthKeyServer interface {
 	// req_pq#60469778 nonce:int128 = ResPQ;
 	ReqPq(context.Context, *TLReqPq) (*ResPQ, error)
+	// req_pq_multi#be7e8ef1 nonce:int128 = ResPQ;
+	ReqPqMulti(context.Context, *TLReqPqMulti) (*ResPQ, error)
 	// req_DH_params#d712e4be nonce:int128 server_nonce:int128 p:string q:string public_key_fingerprint:long encrypted_data:string = Server_DH_Params;
 	Req_DHParams(context.Context, *TLReq_DHParams) (*Server_DH_Params, error)
 	// set_client_DH_params#f5045f1f nonce:int128 server_nonce:int128 encrypted_data:string = Set_client_DH_params_answer;
@@ -240,6 +388,24 @@ func _RPCAuthKey_ReqPq_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RPCAuthKeyServer).ReqPq(ctx, req.(*TLReqPq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RPCAuthKey_ReqPqMulti_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TLReqPqMulti)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RPCAuthKeyServer).ReqPqMulti(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mtproto.RPCAuthKey/ReqPqMulti",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCAuthKeyServer).ReqPqMulti(ctx, req.(*TLReqPqMulti))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -307,6 +473,10 @@ var _RPCAuthKey_serviceDesc = grpc.ServiceDesc{
 			Handler:    _RPCAuthKey_ReqPq_Handler,
 		},
 		{
+			MethodName: "req_pq_multi",
+			Handler:    _RPCAuthKey_ReqPqMulti_Handler,
+		},
+		{
 			MethodName: "req_DH_params",
 			Handler:    _RPCAuthKey_Req_DHParams_Handler,
 		},
@@ -323,34 +493,37 @@ var _RPCAuthKey_serviceDesc = grpc.ServiceDesc{
 	Metadata: "schema.tl.handshake_service.proto",
 }
 
-func init() { proto.RegisterFile("schema.tl.handshake_service.proto", fileDescriptor6) }
+func init() {
+	proto.RegisterFile("schema.tl.handshake_service.proto", fileDescriptor_schema_tl_handshake_service_11d34c5846edbbec)
+}
 
-var fileDescriptor6 = []byte{
-	// 407 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x91, 0xd1, 0x6e, 0xd3, 0x30,
-	0x14, 0x86, 0x9b, 0x96, 0x75, 0xda, 0xa1, 0x9b, 0x26, 0x53, 0x20, 0x0b, 0x5c, 0xb4, 0x11, 0x48,
-	0xbd, 0xf2, 0x05, 0xf0, 0x02, 0x8c, 0x0a, 0x2a, 0xad, 0x4c, 0x25, 0xf4, 0xde, 0xb8, 0xc9, 0x61,
-	0x89, 0x96, 0x38, 0x8e, 0xed, 0x80, 0xf2, 0x64, 0xbc, 0x00, 0x0f, 0x86, 0x12, 0x87, 0xac, 0xb4,
-	0xb9, 0xe4, 0xce, 0xe7, 0x7c, 0xbf, 0x8f, 0xfd, 0x9f, 0x1f, 0xe6, 0x3a, 0x8c, 0x31, 0xe3, 0xd4,
-	0xa4, 0x34, 0xe6, 0x22, 0xd2, 0x31, 0xbf, 0x47, 0xa6, 0x51, 0xfd, 0x48, 0x42, 0xa4, 0x52, 0xe5,
-	0x26, 0x27, 0xa7, 0x99, 0x69, 0x0e, 0xde, 0x55, 0x8f, 0xd6, 0x6a, 0xfc, 0x39, 0x9c, 0x6d, 0xd7,
-	0x4c, 0x61, 0xc1, 0x64, 0x41, 0xa6, 0x70, 0x22, 0x72, 0x11, 0xa2, 0xeb, 0xcc, 0x9c, 0xc5, 0x24,
-	0xb0, 0x85, 0xff, 0xdb, 0x81, 0xcb, 0x56, 0xb3, 0x5c, 0x31, 0xc9, 0x15, 0xcf, 0x74, 0xbf, 0x94,
-	0xcc, 0x61, 0x52, 0x7f, 0x01, 0x15, 0xb3, 0x70, 0xd8, 0xc0, 0xc7, 0xb6, 0x77, 0xdb, 0x48, 0x26,
-	0xe0, 0x48, 0x77, 0x34, 0x73, 0x16, 0x67, 0x81, 0x23, 0xeb, 0xaa, 0x70, 0x1f, 0xd9, 0xaa, 0x20,
-	0xef, 0xe0, 0x99, 0x2c, 0x77, 0x69, 0x12, 0xb2, 0x7b, 0xac, 0xd8, 0xf7, 0x44, 0xdc, 0xa1, 0x92,
-	0x2a, 0x11, 0xc6, 0x3d, 0x99, 0x39, 0x8b, 0x51, 0x30, 0xb5, 0xf4, 0x06, 0xab, 0x8f, 0x0f, 0x8c,
-	0xbc, 0x86, 0x0b, 0x14, 0xa1, 0xaa, 0xa4, 0xc1, 0x88, 0x45, 0xdc, 0x70, 0x77, 0xdc, 0x0c, 0x3c,
-	0xef, 0xba, 0x4b, 0x6e, 0xb8, 0x5f, 0xc1, 0xf3, 0xed, 0x9a, 0x69, 0x34, 0x2c, 0x4c, 0x13, 0x14,
-	0xe6, 0x7f, 0x98, 0x39, 0x7e, 0x7a, 0xd4, 0xf7, 0xf4, 0x53, 0x78, 0xb2, 0x5d, 0xb3, 0x08, 0xb5,
-	0x51, 0x79, 0xc5, 0x78, 0x69, 0xe2, 0xda, 0xe0, 0x9b, 0x5f, 0x43, 0x80, 0x60, 0xf3, 0xe1, 0x7d,
-	0x69, 0xe2, 0x1b, 0xac, 0x08, 0x85, 0x71, 0x9b, 0x03, 0xa1, 0x6d, 0x72, 0xb4, 0xcb, 0xc6, 0xbb,
-	0xe8, 0x7a, 0x01, 0xea, 0xcd, 0x17, 0x7f, 0x40, 0x3e, 0xc1, 0xf9, 0xbf, 0x99, 0x5c, 0x1d, 0x5e,
-	0xeb, 0x90, 0xf7, 0x80, 0xbe, 0x5a, 0x4b, 0xcb, 0x15, 0xdb, 0x34, 0xc8, 0x1f, 0x90, 0x6f, 0x30,
-	0xed, 0x5d, 0xcb, 0x6c, 0x7f, 0x5e, 0x9f, 0xc2, 0x7b, 0xb5, 0x37, 0xf6, 0x18, 0x33, 0x2e, 0xf4,
-	0x4f, 0x54, 0xfe, 0x80, 0xdc, 0xc2, 0xe5, 0xa1, 0x7b, 0xf2, 0x72, 0x7f, 0xfa, 0x21, 0xf5, 0xbc,
-	0x8e, 0x2e, 0x2d, 0x6a, 0xb7, 0x14, 0xa0, 0xf6, 0x07, 0xd7, 0x0b, 0x78, 0x11, 0xe6, 0x19, 0x15,
-	0xb8, 0x2b, 0x53, 0x9e, 0x64, 0x14, 0xc5, 0x5d, 0x22, 0xf0, 0xef, 0x95, 0xeb, 0xd3, 0xcf, 0xdb,
-	0x4d, 0x7d, 0x58, 0x0d, 0x77, 0xe3, 0xa6, 0xf3, 0xf6, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x4a,
-	0xe3, 0x52, 0xef, 0x2f, 0x03, 0x00, 0x00,
+var fileDescriptor_schema_tl_handshake_service_11d34c5846edbbec = []byte{
+	// 430 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x91, 0xcf, 0x72, 0xd3, 0x30,
+	0x10, 0xc6, 0xe3, 0x84, 0xa6, 0xd3, 0x25, 0x2d, 0x1d, 0x11, 0xc0, 0x35, 0x1c, 0x12, 0x0f, 0x0c,
+	0x39, 0xe9, 0x00, 0x9c, 0xb8, 0x51, 0x32, 0x90, 0x99, 0x86, 0x4e, 0x30, 0xb9, 0x0b, 0xc5, 0x59,
+	0x6a, 0x4d, 0x6d, 0x59, 0x91, 0x64, 0x18, 0xbf, 0x1f, 0x6f, 0xc4, 0x0b, 0x30, 0xb1, 0x82, 0x9b,
+	0x3f, 0xe6, 0xd6, 0x9b, 0x76, 0x7f, 0xdf, 0xae, 0xa4, 0xef, 0x83, 0xa1, 0x89, 0x13, 0xcc, 0x38,
+	0xb5, 0x29, 0x4d, 0xb8, 0x5c, 0x9a, 0x84, 0xdf, 0x22, 0x33, 0xa8, 0x7f, 0x8a, 0x18, 0xa9, 0xd2,
+	0xb9, 0xcd, 0xc9, 0x71, 0x66, 0xab, 0x43, 0x70, 0xd1, 0xa0, 0x75, 0x9a, 0x70, 0x08, 0x27, 0xf3,
+	0x29, 0xd3, 0xb8, 0x62, 0x6a, 0x45, 0xfa, 0x70, 0x24, 0x73, 0x19, 0xa3, 0xef, 0x0d, 0xbc, 0x51,
+	0x2f, 0x72, 0x45, 0xf8, 0x1a, 0x1e, 0xd5, 0x12, 0x96, 0x15, 0xa9, 0x15, 0xff, 0x11, 0xfe, 0xf6,
+	0xe0, 0x7c, 0xa3, 0x1c, 0x4f, 0x98, 0xe2, 0x9a, 0x67, 0xa6, 0x59, 0x4a, 0x86, 0xd0, 0x5b, 0xbf,
+	0x15, 0x35, 0x73, 0xb0, 0x5d, 0xc1, 0x87, 0xae, 0x77, 0x5d, 0x49, 0x7a, 0xe0, 0x29, 0xbf, 0x33,
+	0xf0, 0x46, 0x27, 0x91, 0xa7, 0xd6, 0xd5, 0xca, 0x7f, 0xe0, 0xaa, 0x15, 0x79, 0x07, 0x4f, 0x55,
+	0xb1, 0x48, 0x45, 0xcc, 0x6e, 0xb1, 0x64, 0x3f, 0x84, 0xbc, 0x41, 0xad, 0xb4, 0x90, 0xd6, 0x3f,
+	0x1a, 0x78, 0xa3, 0x4e, 0xd4, 0x77, 0xf4, 0x0a, 0xcb, 0x4f, 0x77, 0x8c, 0xbc, 0x82, 0x33, 0x94,
+	0xb1, 0x2e, 0x95, 0xc5, 0x25, 0x5b, 0x72, 0xcb, 0xfd, 0x6e, 0xb5, 0xf0, 0xb4, 0xee, 0x8e, 0xb9,
+	0xe5, 0x61, 0x09, 0xcf, 0xe6, 0x53, 0x66, 0xd0, 0xb2, 0x38, 0x15, 0x28, 0xed, 0x7d, 0x7c, 0xe6,
+	0xf0, 0xea, 0x4e, 0xd3, 0xd5, 0x4f, 0xe0, 0xf1, 0x7c, 0xca, 0x96, 0x68, 0xac, 0xce, 0x4b, 0xc6,
+	0x0b, 0x9b, 0xac, 0x3f, 0xf8, 0xe6, 0x4f, 0x1b, 0x20, 0x9a, 0x7d, 0xfc, 0x50, 0xd8, 0xe4, 0x0a,
+	0x4b, 0x42, 0xa1, 0xbb, 0x09, 0x8c, 0xd0, 0x4d, 0xc4, 0xb4, 0x4e, 0x28, 0x38, 0xab, 0x7b, 0x11,
+	0x9a, 0xd9, 0xd7, 0xb0, 0x45, 0xde, 0x43, 0x6f, 0x27, 0x3d, 0xff, 0x70, 0xca, 0x91, 0x86, 0xd9,
+	0xcf, 0x70, 0xba, 0x9b, 0xe7, 0xc5, 0xfe, 0x70, 0x8d, 0x82, 0x3b, 0xf4, 0xcd, 0xd9, 0x31, 0x9e,
+	0xb0, 0x59, 0x85, 0xc2, 0x16, 0xf9, 0x0e, 0xfd, 0x46, 0x4b, 0x07, 0xdb, 0xfb, 0x9a, 0x14, 0xc1,
+	0xcb, 0xad, 0xb5, 0x87, 0x98, 0x71, 0x69, 0x7e, 0xa1, 0x0e, 0x5b, 0xe4, 0x1a, 0xce, 0xf7, 0x9d,
+	0x23, 0x2f, 0xb6, 0xb7, 0xef, 0xd3, 0x20, 0xa8, 0xe9, 0xd8, 0xa1, 0x8d, 0xc3, 0x11, 0x9a, 0xb0,
+	0x75, 0x39, 0x82, 0xe7, 0x71, 0x9e, 0x51, 0x89, 0x8b, 0x22, 0xe5, 0x22, 0xa3, 0x28, 0x6f, 0x84,
+	0xc4, 0x7f, 0x23, 0x97, 0xc7, 0x5f, 0xe6, 0xb3, 0xf5, 0x61, 0xd2, 0x5e, 0x74, 0xab, 0xce, 0xdb,
+	0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x21, 0xe5, 0xf5, 0x25, 0x94, 0x03, 0x00, 0x00,
 }

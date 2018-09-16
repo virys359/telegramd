@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
@@ -38,10 +39,10 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 	userIdList := []int32{md.UserId}
 	chatIdList := []int32{}
 
-	dialogs := s.UserModel.GetPeersDialogs(md.UserId, request.GetPeers())
+	// dialogs := s.UserModel.GetPeersDialogs(md.UserId, request.GetPeers())
+	dialogs := s.UserModel.GetPeersDialogs(md.UserId, nil)
 
 	for _, dialog2 := range dialogs {
-		// dialog.Peer
 		dialog := dialog2.To_Dialog()
 		messageIdList = append(messageIdList, dialog.GetTopMessage())
 		peer := base.FromPeer(dialog.GetPeer())
@@ -52,37 +53,26 @@ func (s *MessagesServiceImpl) MessagesGetPeerDialogs(ctx context.Context, reques
 			userIdList = append(userIdList, md.UserId)
 		} else if peer.PeerType == base.PEER_CHAT {
 			chatIdList = append(chatIdList, peer.PeerId)
+		} else if peer.PeerType == base.PEER_CHANNEL {
+
 		}
 		peerDialogs.Data2.Dialogs = append(peerDialogs.Data2.Dialogs, dialog.To_Dialog())
 	}
 
 	glog.Infof("messageIdList - %v", messageIdList)
 	if len(messageIdList) > 0 {
-		peerDialogs.SetMessages(s.MessageModel.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
+		peerDialogs.SetMessages(s.MessageModel.GetUserMessagesByMessageIdList(md.UserId, messageIdList))
 	}
 
 	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
 	peerDialogs.SetUsers(users)
-	//for _, user := range users {
-	//	if user.GetId() == md.UserId {
-	//		user.SetSelf(true)
-	//	} else {
-	//		user.SetSelf(false)
-	//	}
-	//	user.SetContact(true)
-	//	user.SetMutualContact(true)
-	//	peerDialogs.Data2.Users = append(peerDialogs.Data2.Users, user.To_User())
-	//}
 
 	if len(chatIdList) > 0 {
 		peerDialogs.Data2.Chats = s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
-	state, _ := sync_client.GetSyncClient().GetServerUpdatesState(md.AuthId, md.UserId)
-	sync_client.GetSyncClient().UpdateAuthStateSeq(md.AuthId, state.GetPts(), 0)
-
-	// state := update2.GetUpdatesState2(md.AuthId, md.UserId)
-	peerDialogs.SetState(state.To_Updates_State())
+	state, _ := sync_client.GetSyncClient().SyncGetState(md.AuthId, md.UserId)
+	peerDialogs.SetState(state)
 
 	glog.Infof("messages.getPeerDialogs#2d9776b9 - reply: %s", logger.JsonDebugData(peerDialogs))
 	return peerDialogs.To_Messages_PeerDialogs(), nil

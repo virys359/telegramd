@@ -23,9 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // phone.requestCall#5b95b3d4 user_id:InputUser random_id:int g_a_hash:bytes protocol:PhoneCallProtocol = phone.PhoneCall;
@@ -70,7 +70,7 @@ func (s *PhoneServiceImpl) PhoneRequestCall(ctx context.Context, request *mtprot
 	updatesData.AddUpdate(updatePhoneCall.To_Update())
 	// 3. add users
 	updatesData.AddUsers(s.UserModel.GetUsersBySelfAndIDList(participantId, []int32{md.UserId, participantId}))
-	sync_client.GetSyncClient().PushToUserUpdatesData(participantId, updatesData.ToUpdates())
+	sync_client.GetSyncClient().PushUpdates(participantId, updatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	// 2. reply

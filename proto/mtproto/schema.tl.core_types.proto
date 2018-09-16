@@ -1,8 +1,8 @@
 /*
  * WARNING! All changes made in this file will be lost!
- * Created from 'scheme.tl' by 'codegen_proto.py'
+ * Created from 'scheme.tl' by 'mtprotoc'
  *
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,24 @@ option java_outer_classname = "MTProto";
 option optimize_for = CODE_SIZE;
 
 import "schema.tl.crc32.proto";
+
+
+///////////////////////////////////////////////////////////////////////////////
+// True <--
+//  + TL_true
+//
+message True_Data {
+}
+
+message True {
+    TLConstructor constructor = 1;
+    True_Data data2 = 2;
+}
+
+// true#3fedd339 = True;
+message TL_true {
+    True_Data data2 = 2;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,24 +106,6 @@ message TL_boolFalse {
 // boolTrue#997275b5 = Bool;
 message TL_boolTrue {
     Bool_Data data2 = 2;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// True <--
-//  + TL_true
-//
-message True_Data {
-}
-
-message True {
-    TLConstructor constructor = 1;
-    True_Data data2 = 2;
-}
-
-// true#3fedd339 = True;
-message TL_true {
-    True_Data data2 = 2;
 }
 
 

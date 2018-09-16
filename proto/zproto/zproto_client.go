@@ -53,8 +53,8 @@ type ZProtoClient struct {
 
 func NewZProtoClient(protoName string, conf *ZProtoClientConfig, cb ZProtoClientCallBack) *ZProtoClient {
 	clients := map[string][]string{
-	// "session": s.config.SessionClient.AddrList,
-	// s.config.SessionClient.Name: s.config.SessionClient.AddrList,
+		// "session": s.config.SessionClient.AddrList,
+		// s.config.SessionClient.Name: s.config.SessionClient.AddrList,
 	}
 
 	c := &ZProtoClient{

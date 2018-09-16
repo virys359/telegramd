@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -73,7 +73,8 @@ func (s *ContactsServiceImpl) ContactsUnblock(ctx context.Context, request *mtpr
 		unBlockedUpdates.AddUser(s.UserModel.GetUserById(md.UserId, blockedId).To_User())
 
 		// TODO(@benqi): handle seq
-		sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, blockedId, unBlockedUpdates.ToUpdates())
+		_ = unBlockedUpdates
+		// sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, blockedId, unBlockedUpdates.ToUpdates())
 	}
 
 	glog.Infof("contacts.unblock#e54100bd - reply: {%v}", unBlocked)

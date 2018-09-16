@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table sqlname="draft_messages">
+    <operation name="InsertOrUpdate">
+        <sql>
+            INSERT INTO draft_messages
+                (user_id, draft_id, draft_type, draft_message_data)
+            VALUES
+                (:user_id, :draft_id, 2, :draft_message_data)
+            ON DUPLICATE KEY UPDATE draft_type=2, draft_message_data=VALUES(draft_message_data)
+        </sql>
+    </operation>
+
+    <operation name="ClearDraft">
+        <sql>
+            UPDATE
+                draft_messages
+            SET
+                draft_type = 0, draft_message_data = ''
+            WHERE
+                user_id = :user_id AND draft_id = :draft_id AND draft_type = 2
+        </sql>
+    </operation>
+
+    <operation name="SelectAllDraft">
+        <sql>
+            SELECT
+                user_id, draft_id, draft_type, draft_message_data
+            FROM
+                draft_messages
+            WHERE
+                user_id = :user_id AND draft_type = 2
+        </sql>
+    </operation>
+
+    <operation name="SelectDraftList">
+        <params>
+            <param name="idList" type="[]int32" />
+        </params>
+
+        <sql>
+            SELECT
+                user_id, draft_id, draft_type, draft_message_data
+            FROM
+                draft_messages
+            WHERE
+                user_id = :user_id AND draft_id IN (:idList) AND draft_type = 2
+        </sql>
+    </operation>
+
+    <operation name="SelectDraft">
+        <sql>
+            SELECT
+                user_id, draft_id, draft_type, draft_message_data
+            FROM
+                draft_messages
+            WHERE
+                user_id = :user_id AND draft_id = :draft_id AND draft_type = 2
+        </sql>
+    </operation>
+</table>

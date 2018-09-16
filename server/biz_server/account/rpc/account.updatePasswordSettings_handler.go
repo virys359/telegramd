@@ -31,16 +31,17 @@ func (s *AccountServiceImpl) AccountUpdatePasswordSettings(ctx context.Context, 
 	glog.Infof("account.updatePasswordSettings#fa7c4b86 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	passwordInputSetting := request.NewSettings.To_AccountPasswordInputSettings()
-
+	_ = passwordInputSetting
 	// TODO(@benqi): check request invalid
 
 	passwordLogic, err := s.AccountModel.MakePasswordData(md.UserId)
+	_ = passwordLogic
 	if err == nil {
-		err = passwordLogic.UpdatePasswordSetting(request.CurrentPasswordHash,
-			passwordInputSetting.GetNewSalt(),
-			passwordInputSetting.GetNewPasswordHash(),
-			passwordInputSetting.GetHint(),
-			passwordInputSetting.GetEmail())
+		//err = passwordLogic.UpdatePasswordSetting(request.CurrentPasswordHash,
+		//	passwordInputSetting.GetNewSalt(),
+		//	passwordInputSetting.GetNewPasswordHash(),
+		//	passwordInputSetting.GetHint(),
+		//	passwordInputSetting.GetEmail())
 
 		// 未注册：error_message: "EMAIL_UNCONFIRMED" [STRING],
 	}

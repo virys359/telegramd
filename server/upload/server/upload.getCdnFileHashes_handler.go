@@ -27,7 +27,7 @@ import (
 )
 
 // upload.getCdnFileHashes#f715c87b file_token:bytes offset:int = Vector<CdnFileHash>;
-func (s *UploadServiceImpl) UploadGetCdnFileHashes(ctx context.Context, request *mtproto.TLUploadGetCdnFileHashes) (*mtproto.Vector_CdnFileHash, error) {
+func (s *UploadServiceImpl) UploadGetCdnFileHashes(ctx context.Context, request *mtproto.TLUploadGetCdnFileHashes) (*mtproto.Vector_FileHash, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("UploadGetCdnFileHashes - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 

@@ -26,12 +26,25 @@ import (
 	"golang.org/x/net/context"
 )
 
-// messages.getMessages#4222fa74 id:Vector<int> = messages.Messages;
+// messages.getMessages#63c66506 id:Vector<InputMessage> = messages.Messages;
 func (s *MessagesServiceImpl) MessagesGetMessages(ctx context.Context, request *mtproto.TLMessagesGetMessages) (*mtproto.Messages_Messages, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("messages.getMessages#4222fa74 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getMessages#63c66506 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	messages := s.MessageModel.GetMessagesByPeerAndMessageIdList2(md.UserId, request.Id)
+	var idList = make([]int32, len(request.Id))
+
+	// TODO(@benqi): Read client source code.
+	for _, id := range request.GetId() {
+		switch id.GetConstructor() {
+		case mtproto.TLConstructor_CRC32_inputMessageID:
+			idList = append(idList, id.GetData2().GetId())
+		case mtproto.TLConstructor_CRC32_inputMessageReplyTo:
+			idList = append(idList, id.GetData2().GetId())
+		case mtproto.TLConstructor_CRC32_inputMessagePinned:
+			// idList = append(idList, id.GetData2().GetId())
+		}
+	}
+	messages := s.MessageModel.GetUserMessagesByMessageIdList(md.UserId, idList)
 	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
 	userList := s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
 	chatList := s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
@@ -42,6 +55,6 @@ func (s *MessagesServiceImpl) MessagesGetMessages(ctx context.Context, request *
 		Chats:    chatList,
 	}}
 
-	glog.Infof("messages.getMessages#4222fa74 - reply: %s", logger.JsonDebugData(messagesMessages))
+	glog.Infof("messages.getMessages#63c66506 - reply: %s", logger.JsonDebugData(messagesMessages))
 	return messagesMessages.To_Messages_Messages(), nil
 }

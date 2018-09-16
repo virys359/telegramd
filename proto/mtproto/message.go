@@ -281,10 +281,10 @@ func (m *EncryptedMessage2) decrypt(msgKey, authKey, data []byte) ([]byte, error
 	messageKey := make([]byte, 96)
 	switch MTPROTO_VERSION {
 	case 2:
-		t_d := make([]byte, 0, 32+dataLen)
-		t_d = append(t_d, authKey[88:88+32]...)
-		t_d = append(t_d, x[:dataLen]...)
-		copy(messageKey, crypto.Sha256Digest(t_d))
+		tmpData := make([]byte, 0, 32+dataLen)
+		tmpData = append(tmpData, authKey[88:88+32]...)
+		tmpData = append(tmpData, x[:dataLen]...)
+		copy(messageKey, crypto.Sha256Digest(tmpData))
 	default:
 		copy(messageKey[4:], crypto.Sha1Digest(x[:32 + messageLen]))
 	}

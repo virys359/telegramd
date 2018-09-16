@@ -29,6 +29,7 @@ type SeqIDGen interface {
 	Initialize(config string) error
 	GetCurrentSeqID(key string) (int64, error)
 	GetNextSeqID(key string) (int64, error)
+	GetNextNSeqID(key string, n int) (seq int64, err error)
 }
 
 type UUIDGenInstance func() UUIDGen

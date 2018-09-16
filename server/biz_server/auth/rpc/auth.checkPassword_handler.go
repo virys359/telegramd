@@ -18,6 +18,7 @@
 package rpc
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
@@ -44,14 +45,17 @@ import (
 
 // 客户端调用auth.signIn时返回SESSION_PASSWORD_NEEDED时会触发
 
-// auth.checkPassword#a63011e password_hash:bytes = auth.Authorization;
+// auth.checkPassword#d18b4d16 password:InputCheckPasswordSRP = auth.Authorization;
 func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtproto.TLAuthCheckPassword) (*mtproto.Auth_Authorization, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("auth.checkPassword#a63011e - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+/*
 	var (
 		err error
 	)
+
+	password := request.GetPassword()
 
 	if len(request.PasswordHash) == 0 {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_PASSWORD_HASH_INVALID)
@@ -79,4 +83,7 @@ func (s *AuthServiceImpl) AuthCheckPassword(ctx context.Context, request *mtprot
 
 	glog.Infof("auth.checkPassword#a63011e - reply: %s\n", logger.JsonDebugData(authAuthorization))
 	return authAuthorization.To_Auth_Authorization(), nil
+ */
+
+	return nil, fmt.Errorf("not impl auth.checkPassword#d18b4d16")
 }

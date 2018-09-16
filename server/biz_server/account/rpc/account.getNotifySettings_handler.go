@@ -40,12 +40,11 @@ func (s *AccountServiceImpl) AccountGetNotifySettings(ctx context.Context, reque
 		peer := base.FromInputNotifyPeer(request.GetPeer())
 		settings = s.AccountModel.GetNotifySettings(md.UserId, peer)
 	case mtproto.TLConstructor_CRC32_inputNotifyUsers,
-		mtproto.TLConstructor_CRC32_inputNotifyChats,
-		mtproto.TLConstructor_CRC32_inputNotifyAll:
+		mtproto.TLConstructor_CRC32_inputNotifyChats:
 
 		peerSettings := &mtproto.TLPeerNotifySettings{Data2: &mtproto.PeerNotifySettings_Data{
-			ShowPreviews: true,
-			Silent:       false,
+			ShowPreviews: mtproto.ToBool(true),
+			Silent:       mtproto.ToBool(false),
 			MuteUntil:    0,
 			Sound:        "default",
 		}}

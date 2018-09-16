@@ -73,6 +73,19 @@ func (c *RedisSeqClient) GetNextSeqID(key string) (seq int64, err error) {
 	return
 }
 
+func (c *RedisSeqClient) GetNextNSeqID(key string, n int) (seq int64, err error) {
+	conn := c.redis.Get()
+	defer conn.Close()
+
+	// 设置键
+	seq, err = redis.Int64(conn.Do("INCRBY", key, n))
+	if err != nil {
+		glog.Errorf("redis_seq_client.GetNextNSeqID - INCR {%s}, error: {%v}", key, err)
+	}
+
+	return
+}
+
 func init() {
 	SeqIDGenRegister("redis", redisSeqClientInstance)
 }

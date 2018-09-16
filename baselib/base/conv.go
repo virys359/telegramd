@@ -54,3 +54,11 @@ func BoolToInt8(b bool) int8 {
 		return 0
 	}
 }
+
+func Int8ToBool(b int8) bool {
+	if b == 1 {
+		return true
+	} else {
+		return false
+	}
+}

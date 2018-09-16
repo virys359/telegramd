@@ -25,8 +25,8 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/proto/zproto"
 	"math/rand"
-	"time"
 	"reflect"
+	"time"
 )
 
 const (

@@ -22,8 +22,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/service/document/biz/dal/dataobject"
-	"time"
 	"github.com/nebulaim/telegramd/service/nbfs/proto"
+	"time"
 )
 
 type documentData struct {
@@ -84,7 +84,7 @@ func (m *DocumentModel) makeDocumentByDO(do *dataobject.DocumentsDO) *mtproto.Do
 				Size:       do.FileSize,
 				Thumb:      thumb,
 				DcId:       2,
-				Version:    do.Version,
+				// Version:    do.Version,
 				Attributes: attributes.Attributes,
 			},
 		}

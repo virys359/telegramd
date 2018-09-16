@@ -19,8 +19,8 @@ package photo
 
 import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/service/nbfs/proto"
 	"github.com/nebulaim/telegramd/service/document/biz/dal/dataobject"
+	"github.com/nebulaim/telegramd/service/nbfs/proto"
 )
 
 const (

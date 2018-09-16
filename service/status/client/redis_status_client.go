@@ -92,7 +92,7 @@ func (c *redisStatusClient) SetSessionOnline(userId int32, serverId int32, authK
 		return
 	}
 
-	if _, err = conn.Do("EXPIRE", k, ONLINE_TIMEOUT); err != nil {
+	if _, err = conn.Do("EXPIRE", id, ONLINE_TIMEOUT); err != nil {
 		glog.Errorf("setOnline - EXPIRE {%s, %s, %s}, error: %s", id, k, v, err)
 		return
 	}

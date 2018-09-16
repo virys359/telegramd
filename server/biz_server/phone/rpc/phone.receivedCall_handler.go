@@ -24,9 +24,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // phone.receivedCall#17d54f61 peer:InputPhoneCall = Bool;
@@ -58,7 +58,7 @@ func (s *PhoneServiceImpl) PhoneReceivedCall(ctx context.Context, request *mtpro
 	// 2. add users
 	updatesData.AddUsers(s.UserModel.GetUsersBySelfAndIDList(callSession.AdminId, []int32{md.UserId, callSession.AdminId}))
 	// 3. sync
-	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, updatesData.ToUpdates())
+	sync_client.GetSyncClient().PushUpdates(callSession.AdminId, updatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	glog.Infof("phone.receivedCall#17d54f61 - reply {true}")

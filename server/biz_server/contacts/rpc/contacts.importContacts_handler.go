@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -107,7 +107,8 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	contactUser.SetContact(true)
 	selfUpdates.AddUser(contactUser.To_User())
 	// TODO(@benqi): handle seq
-	sync_client.GetSyncClient().PushToUserNotMeUpdatesData(md.AuthId, md.SessionId, md.UserId, selfUpdates.ToUpdates())
+	_ = selfUpdates
+	// sync_client.GetSyncClient().PushToUserNotMeUpdatesData(md.AuthId, md.SessionId, md.UserId, selfUpdates.ToUpdates())
 
 	// TODO(@benqi): 推给联系人逻辑需要再考虑考虑
 	if needUpdate {
@@ -123,7 +124,8 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 		myUser := s.UserModel.GetUserById(contactUser.GetId(), md.UserId)
 		contactUpdates.AddUser(myUser.To_User())
 		// TODO(@benqi): handle seq
-		sync_client.GetSyncClient().PushToUserUpdatesData(contactUser.GetId(), contactUpdates.ToUpdates())
+		_ = contactUpdates
+		// sync_client.GetSyncClient().PushToUserUpdatesData(contactUser.GetId(), contactUpdates.ToUpdates())
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////

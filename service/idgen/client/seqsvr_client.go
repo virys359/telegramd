@@ -42,6 +42,11 @@ func (c *SeqsvrClient) GetNextSeqID(key string) (int64, error) {
 	return 0, fmt.Errorf("not impl seqsvr.GetNextSeqID")
 }
 
+
+func (c *SeqsvrClient) GetNextNSeqID(key string, n int) (int64, error) {
+	return 0, fmt.Errorf("not impl seqsvr.GetNextNSeqID")
+}
+
 func init() {
 	SeqIDGenRegister("seqsvr", seqsvrClientInstance)
 }

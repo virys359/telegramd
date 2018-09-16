@@ -20,8 +20,8 @@ package server
 import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"google.golang.org/grpc"
 )
 
 type uploadServer struct {

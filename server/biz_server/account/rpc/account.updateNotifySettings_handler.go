@@ -24,7 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	updates2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -92,7 +92,7 @@ func (s *AccountServiceImpl) AccountUpdateNotifySettings(ctx context.Context, re
 	case base.PEER_CHANNEL:
 		// TODO(@benqi): impl
 	}
-	sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, notifySettingUpdates.ToUpdates())
+	// sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, notifySettingUpdates.ToUpdates())
 
 	glog.Infof("account.updateNotifySettings#84be5b93 - reply: {trur}")
 	return mtproto.ToBool(true), nil

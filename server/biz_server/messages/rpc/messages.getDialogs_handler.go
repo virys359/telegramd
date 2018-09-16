@@ -21,7 +21,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz/core/dialog"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"math"
@@ -106,25 +105,27 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 	// glog.Infof("dialogs - {%v}", dialogs)
 
 	// messageIdList, userIdList, chatIdList, channelIdList
-	dialogItems := dialog.PickAllIDListByDialogs2(dialogs)
+	dialogItems := s.DialogModel.PickAllIDListByDialogs(dialogs)
+	glog.Info(dialogItems)
+	messages := s.MessageModel.GetUserMessagesByMessageIdList(md.UserId, dialogItems.MessageIdList)
 
-	messages := s.MessageModel.GetMessagesByPeerAndMessageIdList2(md.UserId, dialogItems.MessageIdList)
-	for k, v := range dialogItems.ChannelMessageIdMap {
-		m := s.MessageModel.GetChannelMessage(k, v)
-		if m != nil {
-			messages = append(messages, m)
-		}
-	}
+	// TODO(@benqi): add channel message.
+	//for k, v := range dialogItems.ChannelMessageIdMap {
+	//	//m := s.MessageModel.GetChannelMessage(k, v)
+	//	//if m != nil {
+	//	//	messages = append(messages, m)
+	//	//}
+	//}
 
 	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, dialogItems.UserIdList)
 	chats := s.ChatModel.GetChatListBySelfAndIDList(md.UserId, dialogItems.ChatIdList)
 	chats = append(chats, s.ChannelModel.GetChannelListBySelfAndIDList(md.UserId, dialogItems.ChannelIdList)...)
 
 	messageDialogs := mtproto.TLMessagesDialogs{Data2: &mtproto.Messages_Dialogs_Data{
-		Dialogs:  dialogs,
+		Dialogs: dialogs,
 		Messages: messages,
-		Users:    users,
-		Chats:    chats,
+		Users: users,
+		Chats: chats,
 	}}
 
 	glog.Infof("messages.getDialogs#191ba9c5 - reply: %s", logger.JsonDebugData(messageDialogs))

@@ -72,4 +72,3 @@ func (m *UpdateModel) CurrentChannelPtsId(key int32) (seq int64) {
 	seq, _ = m.dao.SeqIDGen.GetNextSeqID(channelPtsUpdatesNgenId + base.Int32ToString(key))
 	return
 }
-

@@ -32,11 +32,11 @@ var (
 )
 
 type documentConfig struct {
-	ServerId      int32 // 服务器ID
-	DataPath      string
-	Redis         []redis_client.RedisConfig
-	Mysql         []mysql_client.MySQLConfig
-	RpcServer        *grpc_util.RPCServerConfig
+	ServerId  int32 // 服务器ID
+	DataPath  string
+	Redis     []redis_client.RedisConfig
+	Mysql     []mysql_client.MySQLConfig
+	RpcServer *grpc_util.RPCServerConfig
 }
 
 func (c *documentConfig) String() string {

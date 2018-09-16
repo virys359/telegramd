@@ -26,6 +26,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
+	"github.com/nebulaim/telegramd/baselib/bytes2"
 	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/baselib/net2"
@@ -35,7 +36,6 @@ import (
 	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dataobject"
 	"math/big"
 	"time"
-	"github.com/nebulaim/telegramd/baselib/bytes2"
 )
 
 const (
@@ -154,6 +154,9 @@ func (s *handshake) onHandshake(conn *net2.TcpConnection, hmsg *zproto.ZProtoHan
 	case *mtproto.TLReqPq:
 		res, err = s.onReqPq(state, mtpMessage.Object.(*mtproto.TLReqPq))
 		state.State = zproto.STATE_pq_res
+	case *mtproto.TLReqPqMulti:
+		res, err = s.onReqPqMulti(state, mtpMessage.Object.(*mtproto.TLReqPqMulti))
+		state.State = zproto.STATE_pq_res
 	case *mtproto.TLReq_DHParams:
 		res, err = s.onReq_DHParams(hmsg.State, mtpMessage.Object.(*mtproto.TLReq_DHParams))
 		state.State = zproto.STATE_DH_params_res
@@ -215,9 +218,53 @@ func (s *handshake) onReqPq(state *zproto.HandshakeState, request *mtproto.TLReq
 	}
 
 	resPQ := &mtproto.TLResPQ{Data2: &mtproto.ResPQ_Data{
-		Nonce:       request.Nonce,
-		ServerNonce: crypto.GenerateNonce(16),
-		Pq:          pq,
+		Nonce:                       request.Nonce,
+		ServerNonce:                 crypto.GenerateNonce(16),
+		Pq:                          pq,
+		ServerPublicKeyFingerprints: []int64{int64(fingerprint)},
+	}}
+	//
+	//resPQ := mtproto.NewTLResPQ()
+	//resPQ.SetNonce(make([]byte, 16))
+	//copy(resPQ.Data2.Nonce, request.GetNonce())
+	//resPQ.SetServerNonce(crypto.GenerateNonce(16))
+	//resPQ.SetPq(pq)
+	//resPQ.SetServerPublicKeyFingerprints([]int64{int64(fingerprint)})
+
+	// 缓存客户端Nonce
+	authKeyMD.Nonce = request.GetNonce()
+	authKeyMD.ServerNonce = resPQ.GetServerNonce()
+
+	state.Ctx, _ = proto.Marshal(authKeyMD)
+
+	glog.Infof("onReqPq - metadata: {%v}, reply: %s", authKeyMD, logger.JsonDebugData(resPQ))
+	return resPQ, nil
+}
+
+// req_pq#60469778 nonce:int128 = ResPQ;
+func (s *handshake) onReqPqMulti(state *zproto.HandshakeState, request *mtproto.TLReqPqMulti) (*mtproto.TLResPQ, error) {
+	authKeyMD, err := toAuthKeyMetadata(state.Ctx)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+
+	glog.Infof("onReqPq - state: %d, res_state: %d, metadata: {%v}, request: %s",
+		state.State, state.ResState, authKeyMD, logger.JsonDebugData(request))
+
+	// check State and ResState
+
+	// 检查数据是否合法
+	if request.GetNonce() == nil || len(request.GetNonce()) != 16 {
+		err := fmt.Errorf("onReqPq - invalid nonce: %v", request)
+		glog.Error(err)
+		return nil, err
+	}
+
+	resPQ := &mtproto.TLResPQ{Data2: &mtproto.ResPQ_Data{
+		Nonce:                       request.Nonce,
+		ServerNonce:                 crypto.GenerateNonce(16),
+		Pq:                          pq,
 		ServerPublicKeyFingerprints: []int64{int64(fingerprint)},
 	}}
 	//

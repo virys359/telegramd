@@ -1,7 +1,195 @@
 # lang_pack_en.toml
 
 langCode = "en"
-version = 31
+version = 69
+
+[[Strings]]
+value = "Arabic"
+key = "cloud_lng_passport_in_ar"
+
+[[Strings]]
+value = "Azerbaijani"
+key = "cloud_lng_passport_in_az"
+
+[[Strings]]
+value = "Bulgarian"
+key = "cloud_lng_passport_in_bg"
+
+[[Strings]]
+value = "Bangla"
+key = "cloud_lng_passport_in_bn"
+
+[[Strings]]
+value = "Czech"
+key = "cloud_lng_passport_in_cs"
+
+[[Strings]]
+value = "Danish"
+key = "cloud_lng_passport_in_da"
+
+[[Strings]]
+value = "German"
+key = "cloud_lng_passport_in_de"
+
+[[Strings]]
+value = "Divehi"
+key = "cloud_lng_passport_in_dv"
+
+[[Strings]]
+value = "Dzongkha"
+key = "cloud_lng_passport_in_dz"
+
+[[Strings]]
+value = "Greek"
+key = "cloud_lng_passport_in_el"
+
+[[Strings]]
+value = "English"
+key = "cloud_lng_passport_in_en"
+
+[[Strings]]
+value = "Spanish"
+key = "cloud_lng_passport_in_es"
+
+[[Strings]]
+value = "Estonian"
+key = "cloud_lng_passport_in_et"
+
+[[Strings]]
+value = "Persian"
+key = "cloud_lng_passport_in_fa"
+
+[[Strings]]
+value = "French"
+key = "cloud_lng_passport_in_fr"
+
+[[Strings]]
+value = "Hebrew"
+key = "cloud_lng_passport_in_he"
+
+[[Strings]]
+value = "Croatian"
+key = "cloud_lng_passport_in_hr"
+
+[[Strings]]
+value = "Hungarian"
+key = "cloud_lng_passport_in_hu"
+
+[[Strings]]
+value = "Armenian"
+key = "cloud_lng_passport_in_hy"
+
+[[Strings]]
+value = "Indonesian"
+key = "cloud_lng_passport_in_id"
+
+[[Strings]]
+value = "Icelandic"
+key = "cloud_lng_passport_in_is"
+
+[[Strings]]
+value = "Italian"
+key = "cloud_lng_passport_in_it"
+
+[[Strings]]
+value = "Japanese"
+key = "cloud_lng_passport_in_ja"
+
+[[Strings]]
+value = "Georgian"
+key = "cloud_lng_passport_in_ka"
+
+[[Strings]]
+value = "Khmer"
+key = "cloud_lng_passport_in_km"
+
+[[Strings]]
+value = "Korean"
+key = "cloud_lng_passport_in_ko"
+
+[[Strings]]
+value = "Lao"
+key = "cloud_lng_passport_in_lo"
+
+[[Strings]]
+value = "Lithuanian"
+key = "cloud_lng_passport_in_lt"
+
+[[Strings]]
+value = "Latvian"
+key = "cloud_lng_passport_in_lv"
+
+[[Strings]]
+value = "Macedonian"
+key = "cloud_lng_passport_in_mk"
+
+[[Strings]]
+value = "Mongolian"
+key = "cloud_lng_passport_in_mn"
+
+[[Strings]]
+value = "Malay"
+key = "cloud_lng_passport_in_ms"
+
+[[Strings]]
+value = "Burmese"
+key = "cloud_lng_passport_in_my"
+
+[[Strings]]
+value = "Nepali"
+key = "cloud_lng_passport_in_ne"
+
+[[Strings]]
+value = "Dutch"
+key = "cloud_lng_passport_in_nl"
+
+[[Strings]]
+value = "Polish"
+key = "cloud_lng_passport_in_pl"
+
+[[Strings]]
+value = "Portuguese"
+key = "cloud_lng_passport_in_pt"
+
+[[Strings]]
+value = "Romanian"
+key = "cloud_lng_passport_in_ro"
+
+[[Strings]]
+value = "Russian"
+key = "cloud_lng_passport_in_ru"
+
+[[Strings]]
+value = "Slovak"
+key = "cloud_lng_passport_in_sk"
+
+[[Strings]]
+value = "Slovenian"
+key = "cloud_lng_passport_in_sl"
+
+[[Strings]]
+value = "Thai"
+key = "cloud_lng_passport_in_th"
+
+[[Strings]]
+value = "Turkmen"
+key = "cloud_lng_passport_in_tk"
+
+[[Strings]]
+value = "Turkish"
+key = "cloud_lng_passport_in_tr"
+
+[[Strings]]
+value = "Ukrainian"
+key = "cloud_lng_passport_in_uk"
+
+[[Strings]]
+value = "Uzbek"
+key = "cloud_lng_passport_in_uz"
+
+[[Strings]]
+value = "Vietnamese"
+key = "cloud_lng_passport_in_vi"
 
 [[Strings]]
 value = "Done"
@@ -46,6 +234,10 @@ key = "lng_action_add_you"
 [[Strings]]
 value = "{from} added you to this group"
 key = "lng_action_add_you_group"
+
+[[Strings]]
+value = "You allowed this bot to message you when you logged in on {domain}."
+key = "lng_action_bot_allowed_from_domain"
 
 [[Strings]]
 value = "{from} updated group photo"
@@ -152,6 +344,34 @@ value = "Channel photo removed"
 key = "lng_action_removed_photo_channel"
 
 [[Strings]]
+value = "address"
+key = "lng_action_secure_address"
+
+[[Strings]]
+value = "email address"
+key = "lng_action_secure_email"
+
+[[Strings]]
+value = "personal details"
+key = "lng_action_secure_personal_details"
+
+[[Strings]]
+value = "phone number"
+key = "lng_action_secure_phone"
+
+[[Strings]]
+value = "proof of address"
+key = "lng_action_secure_proof_of_address"
+
+[[Strings]]
+value = "proof of identity"
+key = "lng_action_secure_proof_of_identity"
+
+[[Strings]]
+value = "{user} received the following documents: {documents}"
+key = "lng_action_secure_values_sent"
+
+[[Strings]]
 value = "{from} took a screenshot!"
 key = "lng_action_took_screenshot"
 
@@ -186,6 +406,10 @@ key = "lng_add_contact"
 [[Strings]]
 value = "New contact"
 key = "lng_add_contact_button"
+
+[[Strings]]
+value = "admin"
+key = "lng_admin_badge"
 
 [[Strings]]
 value = "What is this?"
@@ -280,7 +504,7 @@ value = "{from} changed group photo"
 key = "lng_admin_log_changed_photo_group"
 
 [[Strings]]
-value = "{from} changed group {sticker_set}"
+value = "{from} changed the group's {sticker_set}"
 key = "lng_admin_log_changed_stickers_group"
 
 [[Strings]]
@@ -362,6 +586,14 @@ key = "lng_admin_log_filter_restrictions"
 [[Strings]]
 value = "Filter"
 key = "lng_admin_log_filter_title"
+
+[[Strings]]
+value = "{from} made group history hidden for new members"
+key = "lng_admin_log_history_made_hidden"
+
+[[Strings]]
+value = "{from} made group history visible for new members"
+key = "lng_admin_log_history_made_visible"
 
 [[Strings]]
 value = "invited {user}"
@@ -464,7 +696,7 @@ value = "{from} removed group photo"
 key = "lng_admin_log_removed_photo_group"
 
 [[Strings]]
-value = "{from} removed group sticker set"
+value = "{from} removed the group's sticker set"
 key = "lng_admin_log_removed_stickers_group"
 
 [[Strings]]
@@ -508,7 +740,7 @@ value = "Allow"
 key = "lng_allow_bot"
 
 [[Strings]]
-value = "Do you allow {bot_name} to pass your Telegram name and id to the web pages you open via this bot?"
+value = "Allow {bot_name} to pass your Telegram name and ID to the web pages you open via this bot?"
 key = "lng_allow_bot_pass"
 
 [[Strings]]
@@ -548,7 +780,7 @@ value = "Phone number not registered."
 key = "lng_bad_phone_noreg"
 
 [[Strings]]
-value = "Bad image selected."
+value = "Sorry, Telegram can't process that type of image."
 key = "lng_bad_photo"
 
 [[Strings]]
@@ -600,7 +832,7 @@ value = "Unblock"
 key = "lng_blocked_list_unblock"
 
 [[Strings]]
-value = "unknown phone"
+value = "unknown phone number"
 key = "lng_blocked_list_unknown_phone"
 
 [[Strings]]
@@ -612,7 +844,7 @@ value = "No chats found"
 key = "lng_bot_chats_not_found"
 
 [[Strings]]
-value = "Select a Chat"
+value = "Select a chat"
 key = "lng_bot_choose_chat"
 
 [[Strings]]
@@ -636,11 +868,11 @@ value = "You have no groups"
 key = "lng_bot_no_groups"
 
 [[Strings]]
-value = "Sorry, the location sharing is currently unavailable in Telegram Desktop."
+value = "Sorry, location sharing is currently unavailable in Telegram Desktop."
 key = "lng_bot_share_location_unavailable"
 
 [[Strings]]
-value = "Share Phone Number?"
+value = "Do you want to share your phone number with this bot?"
 key = "lng_bot_share_phone"
 
 [[Strings]]
@@ -692,7 +924,7 @@ value = "End call"
 key = "lng_call_bar_hangup"
 
 [[Strings]]
-value = "You didn't make any calls yet."
+value = "You haven't made any Telegram calls yet."
 key = "lng_call_box_about"
 
 [[Strings]]
@@ -728,7 +960,7 @@ value = "{time}, {duration}"
 key = "lng_call_duration_info"
 
 [[Strings]]
-value = "There seems to be a problem with audio playback on your computer. Please make sure that your computer's speakers and microphone are working and try again."
+value = "There seems to be a problem with your sound card. Please make sure that your computer's speakers and microphone are working and try again."
 key = "lng_call_error_audio_io"
 
 [[Strings]]
@@ -936,8 +1168,8 @@ value = "Restricted by {user}"
 key = "lng_channel_banned_status_restricted_by"
 
 [[Strings]]
-value = "Join Channel"
-key = "lng_channel_join"
+value = "Banned users are removed from the channel.\nInvite links don't work for them."
+key = "lng_channel_blocked_list_about"
 
 [[Strings]]
 value = "Mute"
@@ -1008,15 +1240,15 @@ value = "Close"
 key = "lng_close"
 
 [[Strings]]
-value = "This password will be asked when you log in on a new device in addition to the pin code."
+value = "This password will be asked when you log in on a new device in addition to the SMS code."
 key = "lng_cloud_password_about"
 
 [[Strings]]
-value = "Warning! Are you sure you don't want to\nadd a password recovery e-mail?\n\nIf you forget your password, you will\nlose access to your Telegram account."
+value = "Warning! Are you sure you don't want to\nadd a password recovery email?\n\nIf you forget your password, you will\nlose access to your Telegram account."
 key = "lng_cloud_password_about_recover"
 
 [[Strings]]
-value = "A confirmation link was sent to the\ne-mail you provided. Two-step verification will be enabled as soon as you follow that link."
+value = "A confirmation link was sent to the\nemail address you provided. Two-step verification will be enabled for your account as soon as you open that link."
 key = "lng_cloud_password_almost"
 
 [[Strings]]
@@ -1024,7 +1256,7 @@ value = "Password and hint cannot be the same."
 key = "lng_cloud_password_bad"
 
 [[Strings]]
-value = "Incorrect e-mail, please try other."
+value = "Incorrect email, please try other."
 key = "lng_cloud_password_bad_email"
 
 [[Strings]]
@@ -1040,7 +1272,7 @@ value = "Re-enter new password"
 key = "lng_cloud_password_confirm_new"
 
 [[Strings]]
-value = "Cloud password"
+value = "Telegram password"
 key = "lng_cloud_password_create"
 
 [[Strings]]
@@ -1052,7 +1284,7 @@ value = "Change cloud password"
 key = "lng_cloud_password_edit"
 
 [[Strings]]
-value = "Enter recovery e-mail"
+value = "Enter recovery email"
 key = "lng_cloud_password_email"
 
 [[Strings]]
@@ -1068,12 +1300,16 @@ value = "Enter current password"
 key = "lng_cloud_password_enter_old"
 
 [[Strings]]
-value = "Enter password hint"
+value = "Add a password hint"
 key = "lng_cloud_password_hint"
 
 [[Strings]]
 value = "Password was not changed"
 key = "lng_cloud_password_is_same"
+
+[[Strings]]
+value = "Warning! All data saved in your Telegram Passport will be lost!"
+key = "lng_cloud_password_passport_losing"
 
 [[Strings]]
 value = "Remove cloud password"
@@ -1088,7 +1324,7 @@ value = "Enable two-step verification"
 key = "lng_cloud_password_set"
 
 [[Strings]]
-value = "Skip e-mail"
+value = "Skip email"
 key = "lng_cloud_password_skip_email"
 
 [[Strings]]
@@ -1108,7 +1344,7 @@ value = "Wrong cloud password"
 key = "lng_cloud_password_wrong"
 
 [[Strings]]
-value = "Telegram will dial your number in {minutes}:{seconds}"
+value = "Telegram will call you in {minutes}:{seconds}"
 key = "lng_code_call"
 
 [[Strings]]
@@ -1216,6 +1452,10 @@ value = "Connecting through proxy..."
 key = "lng_connection_proxy_connecting"
 
 [[Strings]]
+value = "Secret"
+key = "lng_connection_proxy_secret_ph"
+
+[[Strings]]
 value = "Save"
 key = "lng_connection_save"
 
@@ -1236,11 +1476,11 @@ value = "Username"
 key = "lng_connection_user_ph"
 
 [[Strings]]
-value = "Unfortunately {name} did not join Telegram yet, but you can send your friend an invitation.\n\nWe will notify you about any of your contacts who is joining Telegram."
+value = "Unfortunately {name} has not joined Telegram yet, but you can send them an invitation.\n\nWe will notify you about any of your contacts who join Telegram."
 key = "lng_contact_not_joined"
 
 [[Strings]]
-value = "Phone number"
+value = "Phone Number"
 key = "lng_contact_phone"
 
 [[Strings]]
@@ -1328,6 +1568,14 @@ value = "Forward Selected"
 key = "lng_context_forward_selected"
 
 [[Strings]]
+value = "Mark as read"
+key = "lng_context_mark_read"
+
+[[Strings]]
+value = "Mark as unread"
+key = "lng_context_mark_unread"
+
+[[Strings]]
 value = "Open GIF"
 key = "lng_context_open_gif"
 
@@ -1362,6 +1610,10 @@ key = "lng_context_remove_from_group"
 [[Strings]]
 value = "Reply"
 key = "lng_context_reply_msg"
+
+[[Strings]]
+value = "Report Message"
+key = "lng_context_report_msg"
 
 [[Strings]]
 value = "Restrict user"
@@ -1456,7 +1708,7 @@ value = "This link is available"
 key = "lng_create_channel_link_available"
 
 [[Strings]]
-value = "Sorry, this link has bad symbols"
+value = "Only 0-9, a-z, and underscores allowed."
 key = "lng_create_channel_link_bad_symbols"
 
 [[Strings]]
@@ -1550,6 +1802,18 @@ key = "lng_create_public_group_title"
 [[Strings]]
 value = "{date}, {duration}"
 key = "lng_date_and_duration"
+
+[[Strings]]
+value = "Day"
+key = "lng_date_input_day"
+
+[[Strings]]
+value = "Month"
+key = "lng_date_input_month"
+
+[[Strings]]
+value = "Year"
+key = "lng_date_input_year"
 
 [[Strings]]
 value = "Delete all from this user"
@@ -1664,7 +1928,7 @@ value = "Don't ask download path for each file"
 key = "lng_download_path_dont_ask"
 
 [[Strings]]
-value = "File download could not be started. It could happen because of a bad download location.\n\nYou can change download path in Settings."
+value = "File download could not be started.\n\nThis might be because the download location you've selected is invalid. Try changing the \"Download path\" in Settings."
 key = "lng_download_path_failed"
 
 [[Strings]]
@@ -1752,10 +2016,6 @@ value = "Only admins"
 key = "lng_edit_group_invites_only_admins"
 
 [[Strings]]
-value = "Edit group name"
-key = "lng_edit_group_title"
-
-[[Strings]]
 value = "Who can add members"
 key = "lng_edit_group_who_invites"
 
@@ -1792,7 +2052,7 @@ value = "Never allow"
 key = "lng_edit_privacy_calls_never_title"
 
 [[Strings]]
-value = "Phone calls privacy"
+value = "Telegram call privacy"
 key = "lng_edit_privacy_calls_title"
 
 [[Strings]]
@@ -1936,6 +2196,14 @@ value = "New Contact"
 key = "lng_enter_contact_data"
 
 [[Strings]]
+value = "Sorry, you've reached the maximum number of admins for this group."
+key = "lng_error_admin_limit"
+
+[[Strings]]
+value = "Sorry, you've reached the maximum number of admins for this channel."
+key = "lng_error_admin_limit_channel"
+
+[[Strings]]
 value = "Sorry, you can't add this user as an admin because they are not a member of this group and you are not allowed to invite them."
 key = "lng_error_cant_add_admin_invite"
 
@@ -1964,8 +2232,272 @@ value = "Unfortunately, you were banned from participating in public groups.\n{m
 key = "lng_error_public_groups_denied"
 
 [[Strings]]
-value = "You have set a local passcode, so the app can't be launched minimized. App will ask you to enter the passcode before it can start working."
+value = "You have set a local passcode, so Telegram Desktop can't be launched minimised; it will ask you to enter your passcode before it can start working."
 key = "lng_error_start_minimized_passcoded"
+
+[[Strings]]
+value = "This page lists all chats from this export."
+key = "lng_export_about_chats"
+
+[[Strings]]
+value = "If you allow access, your contacts are continuously synced with Telegram. Thanks to this, you can easily switch to Telegram without losing your existing social graph – and connect with friends across all your devices. We use data about your contacts to let you know when they join Telegram. We also use it to make sure that you see the names you have in your phone book instead of the screen names people choose for themselves.\n\nYou can disable contact syncing or delete your stored contacts in Settings > Privacy & Security on Telegram's mobile apps."
+key = "lng_export_about_contacts"
+
+[[Strings]]
+value = "Your data was successfully exported."
+key = "lng_export_about_done"
+
+[[Strings]]
+value = "This rating shows which people you are likelier to message frequently. Telegram uses this data to populate the 'People' box at the top of the Search section. This rating is also calculated for inline bots so that the app can suggest the bots you are most likely to use in the attachment menu (or when you start a new message with \"@\").\n\nTo delete this data, go to Settings > Privacy & Security and disable 'Suggest Frequent Contacts' (requires Telegram for iOS v.4.8.3 or Telegram for Android v.4.8.10 or higher)."
+key = "lng_export_about_frequent"
+
+[[Strings]]
+value = "Below are the supergroups and channels from this export that you've left or where you were banned.\n\nNote that when you leave a channel or supergroup you've created, you have the option to either delete it, or simply leave (in case you want to rejoin later, or keep the community alive despite not being a member)."
+key = "lng_export_about_left_chats"
+
+[[Strings]]
+value = "We store session info to display your connected devices in Settings > Privacy & Security > Active Sessions."
+key = "lng_export_about_sessions"
+
+[[Strings]]
+value = "Here is the data you requested. Remember: Telegram is ad free, it doesn't use your data for ad targeting and doesn’t sell it to others. Telegram only keeps the information it needs to function as a secure and feature-rich cloud service.\n\nCheck out Settings > Privacy & Security on Telegram's mobile apps for the relevant settings."
+key = "lng_export_about_telegram"
+
+[[Strings]]
+value = "We store this to display the websites where you logged in using authentication via Telegram. This information is shown in Settings > Privacy & Security > Active Sessions."
+key = "lng_export_about_web_sessions"
+
+[[Strings]]
+value = "For security reasons, you will be able to begin downloading your data in {hours}. We have notified all your devices about the export request to make sure it's authorized and give you time to react if it's not.\n\nPlease come back on {date} and repeat the request using the same device."
+key = "lng_export_delay"
+
+[[Strings]]
+value = "less than an hour"
+key = "lng_export_delay_less_than_hour"
+
+[[Strings]]
+value = "Show my data"
+key = "lng_export_done"
+
+[[Strings]]
+value = "Data export completed."
+key = "lng_export_finished"
+
+[[Strings]]
+value = "Choose export folder"
+key = "lng_export_folder"
+
+[[Strings]]
+value = "Chat export settings"
+key = "lng_export_header_chats"
+
+[[Strings]]
+value = "Location and format"
+key = "lng_export_header_format"
+
+[[Strings]]
+value = "Media export settings"
+key = "lng_export_header_media"
+
+[[Strings]]
+value = "Other"
+key = "lng_export_header_other"
+
+[[Strings]]
+value = "Sorry, you have started a new data export, so this data export is now cancelled."
+key = "lng_export_invalid"
+
+[[Strings]]
+value = "Bot chats"
+key = "lng_export_option_bot_chats"
+
+[[Strings]]
+value = "Contacts list"
+key = "lng_export_option_contacts"
+
+[[Strings]]
+value = "If you allow access, contacts are continuously synced with Telegram. You can adjust this in Settings > Privacy & Security on mobile devices."
+key = "lng_export_option_contacts_about"
+
+[[Strings]]
+value = "Files"
+key = "lng_export_option_files"
+
+[[Strings]]
+value = "Animated GIFs"
+key = "lng_export_option_gifs"
+
+[[Strings]]
+value = "Human-readable HTML"
+key = "lng_export_option_html"
+
+[[Strings]]
+value = "Account information"
+key = "lng_export_option_info"
+
+[[Strings]]
+value = "Your chosen screen name, username, phone number and profile pictures."
+key = "lng_export_option_info_about"
+
+[[Strings]]
+value = "Machine-readable JSON"
+key = "lng_export_option_json"
+
+[[Strings]]
+value = "Download path: {path}"
+key = "lng_export_option_location"
+
+[[Strings]]
+value = "Only my messages"
+key = "lng_export_option_only_my"
+
+[[Strings]]
+value = "Miscellaneous data"
+key = "lng_export_option_other"
+
+[[Strings]]
+value = "Other types of data not mentioned above (beta)."
+key = "lng_export_option_other_about"
+
+[[Strings]]
+value = "Personal chats"
+key = "lng_export_option_personal_chats"
+
+[[Strings]]
+value = "Photos"
+key = "lng_export_option_photos"
+
+[[Strings]]
+value = "Private channels"
+key = "lng_export_option_private_channels"
+
+[[Strings]]
+value = "Private groups"
+key = "lng_export_option_private_groups"
+
+[[Strings]]
+value = "Public channels"
+key = "lng_export_option_public_channels"
+
+[[Strings]]
+value = "Public groups"
+key = "lng_export_option_public_groups"
+
+[[Strings]]
+value = "Active sessions"
+key = "lng_export_option_sessions"
+
+[[Strings]]
+value = "We store this to display your connected devices in Settings > Privacy & Security > Active Sessions."
+key = "lng_export_option_sessions_about"
+
+[[Strings]]
+value = "Size limit: {size}"
+key = "lng_export_option_size_limit"
+
+[[Strings]]
+value = "Stickers"
+key = "lng_export_option_stickers"
+
+[[Strings]]
+value = "Video files"
+key = "lng_export_option_video_files"
+
+[[Strings]]
+value = "Round video messages"
+key = "lng_export_option_video_messages"
+
+[[Strings]]
+value = "Voice messages"
+key = "lng_export_option_voice_messages"
+
+[[Strings]]
+value = "You can close this window now. Please don't quit Telegram until the data export is completed."
+key = "lng_export_progress"
+
+[[Strings]]
+value = "Exporting your data"
+key = "lng_export_progress_title"
+
+[[Strings]]
+value = "Export"
+key = "lng_export_start"
+
+[[Strings]]
+value = "Chats"
+key = "lng_export_state_chats"
+
+[[Strings]]
+value = "Processing chats..."
+key = "lng_export_state_chats_list"
+
+[[Strings]]
+value = "Animated GIF"
+key = "lng_export_state_gif"
+
+[[Strings]]
+value = "Initializing..."
+key = "lng_export_state_initializing"
+
+[[Strings]]
+value = "Photo"
+key = "lng_export_state_photo"
+
+[[Strings]]
+value = "{count} / {total}"
+key = "lng_export_state_progress"
+
+[[Strings]]
+value = "Sticker"
+key = "lng_export_state_sticker"
+
+[[Strings]]
+value = "Profile pictures"
+key = "lng_export_state_userpics"
+
+[[Strings]]
+value = "Video file"
+key = "lng_export_state_video_file"
+
+[[Strings]]
+value = "Round video message"
+key = "lng_export_state_video_message"
+
+[[Strings]]
+value = "Voice message"
+key = "lng_export_state_voice_message"
+
+[[Strings]]
+value = "Stop"
+key = "lng_export_stop"
+
+[[Strings]]
+value = "Not now"
+key = "lng_export_suggest_cancel"
+
+[[Strings]]
+value = "You can now download the data you requested. Start exporting data?"
+key = "lng_export_suggest_text"
+
+[[Strings]]
+value = "Data export ready"
+key = "lng_export_suggest_title"
+
+[[Strings]]
+value = "Are you sure you want to stop exporting your data?\n\nIf you do, you'll need to start over."
+key = "lng_export_sure_stop"
+
+[[Strings]]
+value = "Export Your Data"
+key = "lng_export_title"
+
+[[Strings]]
+value = "Total files: {count}."
+key = "lng_export_total_files"
+
+[[Strings]]
+value = "Total size: {size}."
+key = "lng_export_total_size"
 
 [[Strings]]
 value = "Sorry, if a person leaves a group, only a mutual contact can bring them back (they need to have your phone number, and you need theirs)."
@@ -1980,6 +2512,10 @@ value = "Could not add user. Please try again later."
 key = "lng_failed_add_participant"
 
 [[Strings]]
+value = "Reply"
+key = "lng_fast_reply"
+
+[[Strings]]
 value = "Add to Favorites"
 key = "lng_faved_stickers_add"
 
@@ -1990,6 +2526,26 @@ key = "lng_faved_stickers_remove"
 [[Strings]]
 value = "Too many tries. Please try again later."
 key = "lng_flood_error"
+
+[[Strings]]
+value = "Create"
+key = "lng_formatting_link_create"
+
+[[Strings]]
+value = "Create link"
+key = "lng_formatting_link_create_title"
+
+[[Strings]]
+value = "Create link"
+key = "lng_formatting_link_edit_title"
+
+[[Strings]]
+value = "Text"
+key = "lng_formatting_link_text"
+
+[[Strings]]
+value = "URL"
+key = "lng_formatting_link_url"
 
 [[Strings]]
 value = "Sorry, no way to forward here :("
@@ -2076,8 +2632,16 @@ value = "Banned users are removed from the group and can only come back if invit
 key = "lng_group_blocked_list_about"
 
 [[Strings]]
+value = "Sorry, this group is full."
+key = "lng_group_full"
+
+[[Strings]]
 value = "Telegram users will be able to join\nyour group by following this link."
 key = "lng_group_invite_about"
+
+[[Strings]]
+value = "Telegram users will be able to join\nyour channel by following this link."
+key = "lng_group_invite_about_channel"
 
 [[Strings]]
 value = "Your previous link will be deactivated and we'll generate a new invite link for you."
@@ -2124,8 +2688,12 @@ value = "Choose sticker set"
 key = "lng_group_stickers_add"
 
 [[Strings]]
-value = "You can choose sticker set which will be available for every member while in the group chat."
+value = "You can choose a sticker set which will be available for every member while in the group chat."
 key = "lng_group_stickers_description"
+
+[[Strings]]
+value = "Album"
+key = "lng_in_dlg_album"
 
 [[Strings]]
 value = "Voice message"
@@ -2168,6 +2736,62 @@ value = "In reply to"
 key = "lng_in_reply_to"
 
 [[Strings]]
+value = "About"
+key = "lng_info_about_label"
+
+[[Strings]]
+value = "Add as contact"
+key = "lng_info_add_as_contact"
+
+[[Strings]]
+value = "Bio"
+key = "lng_info_bio_label"
+
+[[Strings]]
+value = "Bot Info"
+key = "lng_info_bot_title"
+
+[[Strings]]
+value = "Channel Info"
+key = "lng_info_channel_title"
+
+[[Strings]]
+value = "Delete contact"
+key = "lng_info_delete_contact"
+
+[[Strings]]
+value = "Edit contact"
+key = "lng_info_edit_contact"
+
+[[Strings]]
+value = "Group Info"
+key = "lng_info_group_title"
+
+[[Strings]]
+value = "Link"
+key = "lng_info_link_label"
+
+[[Strings]]
+value = "Mobile"
+key = "lng_info_mobile_label"
+
+[[Strings]]
+value = "Share contact"
+key = "lng_info_share_contact"
+
+[[Strings]]
+value = "Media"
+key = "lng_info_tab_media"
+
+[[Strings]]
+value = "User Info"
+key = "lng_info_user_title"
+
+[[Strings]]
+value = "Username"
+key = "lng_info_username_label"
+
+[[Strings]]
 value = "No results."
 key = "lng_inline_bot_no_results"
 
@@ -2200,7 +2824,7 @@ value = "SUBMIT"
 key = "lng_intro_submit"
 
 [[Strings]]
-value = "Sorry, you have joined too many channels and supergroups. Please leave some before joining."
+value = "Sorry, you have joined too many channels and supergroups. Please leave some before joining this one."
 key = "lng_join_channel_error"
 
 [[Strings]]
@@ -2364,12 +2988,72 @@ value = "This application can open \"{file}\"."
 key = "lng_mac_this_app_can_open"
 
 [[Strings]]
+value = "Channel Info"
+key = "lng_manage_channel_info"
+
+[[Strings]]
+value = "Manage Channel"
+key = "lng_manage_channel_title"
+
+[[Strings]]
+value = "Group Info"
+key = "lng_manage_group_info"
+
+[[Strings]]
+value = "Manage Group"
+key = "lng_manage_group_title"
+
+[[Strings]]
+value = "Hidden"
+key = "lng_manage_history_visibility_hidden"
+
+[[Strings]]
+value = "New members won't see earlier messages."
+key = "lng_manage_history_visibility_hidden_about"
+
+[[Strings]]
+value = "Visible"
+key = "lng_manage_history_visibility_shown"
+
+[[Strings]]
+value = "New members will see messages that were sent before they joined."
+key = "lng_manage_history_visibility_shown_about"
+
+[[Strings]]
+value = "Chat history for new members"
+key = "lng_manage_history_visibility_title"
+
+[[Strings]]
+value = "Administrators"
+key = "lng_manage_peer_administrators"
+
+[[Strings]]
+value = "Banned users"
+key = "lng_manage_peer_banned_users"
+
+[[Strings]]
+value = "Members"
+key = "lng_manage_peer_members"
+
+[[Strings]]
+value = "Recent Actions"
+key = "lng_manage_peer_recent_actions"
+
+[[Strings]]
+value = "Restricted users"
+key = "lng_manage_peer_restricted_users"
+
+[[Strings]]
 value = "Location"
 key = "lng_maps_point"
 
 [[Strings]]
 value = "Voice message"
 key = "lng_media_audio"
+
+[[Strings]]
+value = "No voice messages here yet"
+key = "lng_media_audio_empty"
 
 [[Strings]]
 value = "Automatic voice message download"
@@ -2408,16 +3092,40 @@ value = "Download"
 key = "lng_media_download"
 
 [[Strings]]
+value = "No files here yet"
+key = "lng_media_file_empty"
+
+[[Strings]]
+value = "No files found"
+key = "lng_media_file_empty_search"
+
+[[Strings]]
+value = "No shared links here yet"
+key = "lng_media_link_empty"
+
+[[Strings]]
+value = "No shared links found"
+key = "lng_media_link_empty_search"
+
+[[Strings]]
 value = "Open With"
 key = "lng_media_open_with"
+
+[[Strings]]
+value = "No photos here yet"
+key = "lng_media_photo_empty"
 
 [[Strings]]
 value = "{ready} of {total} {mb}"
 key = "lng_media_save_progress"
 
 [[Strings]]
-value = "Media type"
-key = "lng_media_type"
+value = "No music files here yet"
+key = "lng_media_song_empty"
+
+[[Strings]]
+value = "No music files found"
+key = "lng_media_song_empty_search"
 
 [[Strings]]
 value = "Voice messages"
@@ -2436,6 +3144,10 @@ value = "Photos"
 key = "lng_media_type_photos"
 
 [[Strings]]
+value = "Video messages"
+key = "lng_media_type_rounds"
+
+[[Strings]]
 value = "Audio files"
 key = "lng_media_type_songs"
 
@@ -2446,6 +3158,10 @@ key = "lng_media_type_videos"
 [[Strings]]
 value = "Video"
 key = "lng_media_video"
+
+[[Strings]]
+value = "No videos here yet"
+key = "lng_media_video_empty"
 
 [[Strings]]
 value = "Channel Photo"
@@ -2532,11 +3248,39 @@ value = "Contacts"
 key = "lng_menu_contacts"
 
 [[Strings]]
+value = "Formatting"
+key = "lng_menu_formatting"
+
+[[Strings]]
+value = "Bold"
+key = "lng_menu_formatting_bold"
+
+[[Strings]]
+value = "Plain text"
+key = "lng_menu_formatting_clear"
+
+[[Strings]]
+value = "Italic"
+key = "lng_menu_formatting_italic"
+
+[[Strings]]
+value = "Create link"
+key = "lng_menu_formatting_link_create"
+
+[[Strings]]
+value = "Edit link"
+key = "lng_menu_formatting_link_edit"
+
+[[Strings]]
+value = "Monospace"
+key = "lng_menu_formatting_monospace"
+
+[[Strings]]
 value = "Insert Unicode control character"
 key = "lng_menu_insert_unicode"
 
 [[Strings]]
-value = "Night mode"
+value = "Night Mode"
 key = "lng_menu_night_mode"
 
 [[Strings]]
@@ -2556,7 +3300,7 @@ value = "Write a message..."
 key = "lng_message_ph"
 
 [[Strings]]
-value = "This message is not supported by your version of Telegram Desktop. Please update to the last version in Settings or install it from {link}"
+value = "This message is not supported by your version of Telegram Desktop. Please update to the latest version in Settings, or install it from {link}"
 key = "lng_message_unsupported"
 
 [[Strings]]
@@ -2664,6 +3408,54 @@ value = "{month} {day}"
 key = "lng_month_day"
 
 [[Strings]]
+value = "January"
+key = "lng_month_day1"
+
+[[Strings]]
+value = "October"
+key = "lng_month_day10"
+
+[[Strings]]
+value = "November"
+key = "lng_month_day11"
+
+[[Strings]]
+value = "December"
+key = "lng_month_day12"
+
+[[Strings]]
+value = "February"
+key = "lng_month_day2"
+
+[[Strings]]
+value = "March"
+key = "lng_month_day3"
+
+[[Strings]]
+value = "April"
+key = "lng_month_day4"
+
+[[Strings]]
+value = "May"
+key = "lng_month_day5"
+
+[[Strings]]
+value = "June"
+key = "lng_month_day6"
+
+[[Strings]]
+value = "July"
+key = "lng_month_day7"
+
+[[Strings]]
+value = "August"
+key = "lng_month_day8"
+
+[[Strings]]
+value = "September"
+key = "lng_month_day9"
+
+[[Strings]]
 value = "{month} {day}, {year}"
 key = "lng_month_day_year"
 
@@ -2672,7 +3464,7 @@ value = "{month} {year}"
 key = "lng_month_year"
 
 [[Strings]]
-value = "Choose duration of turning off notifications from the following chat"
+value = "Choose for how long you would like to turn off notifications for the following chat"
 key = "lng_mute_box_tip"
 
 [[Strings]]
@@ -2732,7 +3524,7 @@ value = "Invite"
 key = "lng_participant_invite"
 
 [[Strings]]
-value = "When a local passcode is set, a lock icon appears at the top of your chats list. Click it to lock the app.\n\nNote: if you forget your local passcode, you'll need to relogin in Telegram Desktop."
+value = "When a local passcode is set, a lock icon appears at the top of your chats list. Click it to lock Telegram Desktop.\n\nNote: if you forget your local passcode, you'll need to log out of Telegram Desktop and log in again."
 key = "lng_passcode_about"
 
 [[Strings]]
@@ -2820,6 +3612,558 @@ value = "Wrong passcode"
 key = "lng_passcode_wrong"
 
 [[Strings]]
+value = "This password will also be required whenever\nyou log in to a new device."
+key = "lng_passport_about_password"
+
+[[Strings]]
+value = "You accept the {policy} and allow their {bot} to send you messages."
+key = "lng_passport_accept_allow"
+
+[[Strings]]
+value = "Address"
+key = "lng_passport_address"
+
+[[Strings]]
+value = "To confirm your address, please upload a scan or photo of the selected document (all pages)."
+key = "lng_passport_address_about"
+
+[[Strings]]
+value = "Tenancy agreement"
+key = "lng_passport_address_agreement"
+
+[[Strings]]
+value = "Upload a scan of your tenancy agreement"
+key = "lng_passport_address_agreement_upload"
+
+[[Strings]]
+value = "Utility bill"
+key = "lng_passport_address_bill"
+
+[[Strings]]
+value = "Upload a scan of your utility bill"
+key = "lng_passport_address_bill_upload"
+
+[[Strings]]
+value = "Upload proof of your address"
+key = "lng_passport_address_description"
+
+[[Strings]]
+value = "Please provide your address"
+key = "lng_passport_address_enter"
+
+[[Strings]]
+value = "Passport registration"
+key = "lng_passport_address_registration"
+
+[[Strings]]
+value = "Upload a scan of your passport registration page"
+key = "lng_passport_address_registration_upload"
+
+[[Strings]]
+value = "Bank statement"
+key = "lng_passport_address_statement"
+
+[[Strings]]
+value = "Upload a scan of your bank statement"
+key = "lng_passport_address_statement_upload"
+
+[[Strings]]
+value = "Temporary registration"
+key = "lng_passport_address_temporary"
+
+[[Strings]]
+value = "Upload a scan of your temporary registration"
+key = "lng_passport_address_temporary_upload"
+
+[[Strings]]
+value = "Residential address"
+key = "lng_passport_address_title"
+
+[[Strings]]
+value = "You allow {bot} to send you messages."
+key = "lng_passport_allow"
+
+[[Strings]]
+value = "Sorry, your Telegram app is out of date and can't handle this request. Please update Telegram."
+key = "lng_passport_app_out_of_date"
+
+[[Strings]]
+value = "Authorize"
+key = "lng_passport_authorize"
+
+[[Strings]]
+value = "Please use latin characters only."
+key = "lng_passport_bad_name"
+
+[[Strings]]
+value = "Date of birth"
+key = "lng_passport_birth_date"
+
+[[Strings]]
+value = "Choose scan image"
+key = "lng_passport_choose_image"
+
+[[Strings]]
+value = "City"
+key = "lng_passport_city"
+
+[[Strings]]
+value = "We've sent a confirmation code to your email {email}."
+key = "lng_passport_confirm_email"
+
+[[Strings]]
+value = "We've sent an SMS with a confirmation code to your phone {phone}."
+key = "lng_passport_confirm_phone"
+
+[[Strings]]
+value = "Citizenship"
+key = "lng_passport_country"
+
+[[Strings]]
+value = "Choose country"
+key = "lng_passport_country_choose"
+
+[[Strings]]
+value = "Please create a password which will be used\nto encrypt your personal data."
+key = "lng_passport_create_password"
+
+[[Strings]]
+value = "Delete address information"
+key = "lng_passport_delete_address"
+
+[[Strings]]
+value = "Are you sure you want to delete your address information?"
+key = "lng_passport_delete_address_sure"
+
+[[Strings]]
+value = "Delete personal details"
+key = "lng_passport_delete_details"
+
+[[Strings]]
+value = "Are you sure you want to delete your personal details?"
+key = "lng_passport_delete_details_sure"
+
+[[Strings]]
+value = "Delete document"
+key = "lng_passport_delete_document"
+
+[[Strings]]
+value = "Are you sure you want to delete this document?"
+key = "lng_passport_delete_document_sure"
+
+[[Strings]]
+value = "Delete email"
+key = "lng_passport_delete_email"
+
+[[Strings]]
+value = "Are you sure you want to delete your email address?"
+key = "lng_passport_delete_email_sure"
+
+[[Strings]]
+value = "Delete phone number"
+key = "lng_passport_delete_phone"
+
+[[Strings]]
+value = "Are you sure you want to delete your phone number?"
+key = "lng_passport_delete_phone_sure"
+
+[[Strings]]
+value = "Undo"
+key = "lng_passport_delete_scan_undo"
+
+[[Strings]]
+value = "Document details"
+key = "lng_passport_document_details"
+
+[[Strings]]
+value = "Document Number"
+key = "lng_passport_document_number"
+
+[[Strings]]
+value = "Please choose the type of your document:"
+key = "lng_passport_document_type"
+
+[[Strings]]
+value = "Enter your email address"
+key = "lng_passport_email_description"
+
+[[Strings]]
+value = "Email"
+key = "lng_passport_email_title"
+
+[[Strings]]
+value = "Sorry, this image has wrong dimensions."
+key = "lng_passport_error_bad_size"
+
+[[Strings]]
+value = "Can't read this file. Please choose an image."
+key = "lng_passport_error_cant_read"
+
+[[Strings]]
+value = "Sorry, this file is too large."
+key = "lng_passport_error_too_large"
+
+[[Strings]]
+value = "Expiry date"
+key = "lng_passport_expiry_date"
+
+[[Strings]]
+value = "First name"
+key = "lng_passport_first_name"
+
+[[Strings]]
+value = "Please correct errors."
+key = "lng_passport_fix_errors"
+
+[[Strings]]
+value = "Could not get authorization form."
+key = "lng_passport_form_error"
+
+[[Strings]]
+value = "Upload the front side of your document."
+key = "lng_passport_front_side_description"
+
+[[Strings]]
+value = "Scan"
+key = "lng_passport_front_side_name"
+
+[[Strings]]
+value = "Front side"
+key = "lng_passport_front_side_title"
+
+[[Strings]]
+value = "Gender"
+key = "lng_passport_gender"
+
+[[Strings]]
+value = "Female"
+key = "lng_passport_gender_female"
+
+[[Strings]]
+value = "Male"
+key = "lng_passport_gender_male"
+
+[[Strings]]
+value = "Requested information"
+key = "lng_passport_header"
+
+[[Strings]]
+value = "The document must contain your photograph, first and last name, date of birth, document number, country of issue, and expiry date."
+key = "lng_passport_identity_about"
+
+[[Strings]]
+value = "Identity card"
+key = "lng_passport_identity_card"
+
+[[Strings]]
+value = "Upload a scan of your identity card"
+key = "lng_passport_identity_card_upload"
+
+[[Strings]]
+value = "Upload proof of your identity"
+key = "lng_passport_identity_description"
+
+[[Strings]]
+value = "Internal passport"
+key = "lng_passport_identity_internal"
+
+[[Strings]]
+value = "Upload a scan of your internal passport"
+key = "lng_passport_identity_internal_upload"
+
+[[Strings]]
+value = "Driver's licence"
+key = "lng_passport_identity_license"
+
+[[Strings]]
+value = "Upload a scan of your driver's licence"
+key = "lng_passport_identity_license_upload"
+
+[[Strings]]
+value = "Passport"
+key = "lng_passport_identity_passport"
+
+[[Strings]]
+value = "Upload a scan of your passport"
+key = "lng_passport_identity_passport_upload"
+
+[[Strings]]
+value = "Take a selfie with your document"
+key = "lng_passport_identity_selfie"
+
+[[Strings]]
+value = "Identity document"
+key = "lng_passport_identity_title"
+
+[[Strings]]
+value = "Last name"
+key = "lng_passport_last_name"
+
+[[Strings]]
+value = "A confirmation link was sent to\n{email}"
+key = "lng_passport_link_sent"
+
+[[Strings]]
+value = "Upload a scan of the main page of your document."
+key = "lng_passport_main_page_description"
+
+[[Strings]]
+value = "Scan"
+key = "lng_passport_main_page_name"
+
+[[Strings]]
+value = "Main page"
+key = "lng_passport_main_page_title"
+
+[[Strings]]
+value = "Middle name"
+key = "lng_passport_middle_name"
+
+[[Strings]]
+value = "Your name in the language of your country of residence ({country})."
+key = "lng_passport_native_name_about"
+
+[[Strings]]
+value = "Your name in {language}"
+key = "lng_passport_native_name_language"
+
+[[Strings]]
+value = "Your name in the language of your country of residence."
+key = "lng_passport_native_name_language_about"
+
+[[Strings]]
+value = "Name in country of residence"
+key = "lng_passport_native_name_title"
+
+[[Strings]]
+value = "Or enter a new email"
+key = "lng_passport_new_email"
+
+[[Strings]]
+value = "Note: You will receive a confirmation code to the email address you provide."
+key = "lng_passport_new_email_code"
+
+[[Strings]]
+value = "Or enter a new phone number"
+key = "lng_passport_new_phone"
+
+[[Strings]]
+value = "Note: You will receive a confirmation code on the phone number you provide."
+key = "lng_passport_new_phone_code"
+
+[[Strings]]
+value = "Next"
+key = "lng_passport_next"
+
+[[Strings]]
+value = "{document} or {second_document}"
+key = "lng_passport_or_title"
+
+[[Strings]]
+value = "Create a password"
+key = "lng_passport_password_create"
+
+[[Strings]]
+value = "Your password"
+key = "lng_passport_password_placeholder"
+
+[[Strings]]
+value = "The password you entered is not valid."
+key = "lng_passport_password_wrong"
+
+[[Strings]]
+value = "Personal details"
+key = "lng_passport_personal_details"
+
+[[Strings]]
+value = "Fill in your personal details"
+key = "lng_passport_personal_details_enter"
+
+[[Strings]]
+value = "Enter your phone number"
+key = "lng_passport_phone_description"
+
+[[Strings]]
+value = "Phone number"
+key = "lng_passport_phone_title"
+
+[[Strings]]
+value = "{bot} privacy policy"
+key = "lng_passport_policy"
+
+[[Strings]]
+value = "Postcode"
+key = "lng_passport_postcode"
+
+[[Strings]]
+value = "{bot} requests access to your personal data"
+key = "lng_passport_request1"
+
+[[Strings]]
+value = "to sign you up for their services"
+key = "lng_passport_request2"
+
+[[Strings]]
+value = "Residence"
+key = "lng_passport_residence_country"
+
+[[Strings]]
+value = "Restart"
+key = "lng_passport_restart"
+
+[[Strings]]
+value = "An unexpected error has occurred. Perhaps some changes were made from a different Telegram application. Would you like to restart this authorization?"
+key = "lng_passport_restart_sure"
+
+[[Strings]]
+value = "Reupload a scan of the front side"
+key = "lng_passport_reupload_front_side"
+
+[[Strings]]
+value = "Reupload a scan of the main page"
+key = "lng_passport_reupload_main_page"
+
+[[Strings]]
+value = "Reupload a scan of the reverse side"
+key = "lng_passport_reupload_reverse_side"
+
+[[Strings]]
+value = "Reupload selfie"
+key = "lng_passport_reupload_selfie"
+
+[[Strings]]
+value = "Upload the reverse side of your document."
+key = "lng_passport_reverse_side_description"
+
+[[Strings]]
+value = "Scan"
+key = "lng_passport_reverse_side_name"
+
+[[Strings]]
+value = "Reverse side"
+key = "lng_passport_reverse_side_title"
+
+[[Strings]]
+value = "Save"
+key = "lng_passport_save_value"
+
+[[Strings]]
+value = "Saving..."
+key = "lng_passport_saving"
+
+[[Strings]]
+value = "Scan {index}"
+key = "lng_passport_scan_index"
+
+[[Strings]]
+value = "Uploaded on {date}"
+key = "lng_passport_scan_uploaded"
+
+[[Strings]]
+value = "Sorry, that's too many scans for one document."
+key = "lng_passport_scans_limit_reached"
+
+[[Strings]]
+value = "Upload a photo of yourself holding your document. Make sure the ID and your face are clearly visible."
+key = "lng_passport_selfie_description"
+
+[[Strings]]
+value = "Photo"
+key = "lng_passport_selfie_name"
+
+[[Strings]]
+value = "Selfie"
+key = "lng_passport_selfie_title"
+
+[[Strings]]
+value = "State"
+key = "lng_passport_state"
+
+[[Strings]]
+value = "Stop"
+key = "lng_passport_stop"
+
+[[Strings]]
+value = "Are you sure you want to cancel setting up your password?"
+key = "lng_passport_stop_password_sure"
+
+[[Strings]]
+value = "Are you sure you want to stop this authorization?"
+key = "lng_passport_stop_sure"
+
+[[Strings]]
+value = "Street"
+key = "lng_passport_street"
+
+[[Strings]]
+value = "Authorization successful!"
+key = "lng_passport_success"
+
+[[Strings]]
+value = "If you continue, your changes will be lost."
+key = "lng_passport_sure_cancel"
+
+[[Strings]]
+value = "Telegram Passport"
+key = "lng_passport_title"
+
+[[Strings]]
+value = "Translation"
+key = "lng_passport_translation"
+
+[[Strings]]
+value = "Add an English translation of your document"
+key = "lng_passport_translation_needed"
+
+[[Strings]]
+value = "Upload document"
+key = "lng_passport_upload_document"
+
+[[Strings]]
+value = "Upload a scan of the front side"
+key = "lng_passport_upload_front_side"
+
+[[Strings]]
+value = "Upload a scan of the main page"
+key = "lng_passport_upload_main_page"
+
+[[Strings]]
+value = "Upload additional scans"
+key = "lng_passport_upload_more"
+
+[[Strings]]
+value = "Upload a scan of the reverse side"
+key = "lng_passport_upload_reverse_side"
+
+[[Strings]]
+value = "Upload scans"
+key = "lng_passport_upload_scans"
+
+[[Strings]]
+value = "Upload selfie"
+key = "lng_passport_upload_selfie"
+
+[[Strings]]
+value = "Uploading..."
+key = "lng_passport_uploading"
+
+[[Strings]]
+value = "USE {existing}"
+key = "lng_passport_use_existing"
+
+[[Strings]]
+value = "Use the same email address as on Telegram."
+key = "lng_passport_use_existing_email"
+
+[[Strings]]
+value = "Use the same phone number as on Telegram."
+key = "lng_passport_use_existing_phone"
+
+[[Strings]]
+value = "Please wait until the file has finished uploading."
+key = "lng_passport_wait_upload"
+
+[[Strings]]
 value = "Invoice"
 key = "lng_payments_invoice_label"
 
@@ -2844,7 +4188,7 @@ value = "Test receipt"
 key = "lng_payments_receipt_label_test"
 
 [[Strings]]
-value = "Please confirm your country code and\nenter your phone number."
+value = "Please confirm your country code and\nenter your mobile phone number."
 key = "lng_phone_desc"
 
 [[Strings]]
@@ -2852,7 +4196,7 @@ value = "If you don't have a Telegram account yet,\nplease [b]sign up[/b] with {
 key = "lng_phone_notreg"
 
 [[Strings]]
-value = "Your Phone"
+value = "Your Phone Number"
 key = "lng_phone_title"
 
 [[Strings]]
@@ -2936,11 +4280,15 @@ value = "Block user"
 key = "lng_profile_block_user"
 
 [[Strings]]
-value = "Help"
+value = "Bot Help"
 key = "lng_profile_bot_help"
 
 [[Strings]]
-value = "Settings"
+value = "Bot Privacy Policy"
+key = "lng_profile_bot_privacy"
+
+[[Strings]]
+value = "Bot Settings"
 key = "lng_profile_bot_settings"
 
 [[Strings]]
@@ -3040,6 +4388,14 @@ value = "Notifications"
 key = "lng_profile_enable_notifications"
 
 [[Strings]]
+value = "Export channel history"
+key = "lng_profile_export_channel"
+
+[[Strings]]
+value = "Export chat history"
+key = "lng_profile_export_chat"
+
+[[Strings]]
 value = "Files"
 key = "lng_profile_files_header"
 
@@ -3056,8 +4412,12 @@ value = "Add to Group"
 key = "lng_profile_invite_to_group"
 
 [[Strings]]
-value = "Join"
+value = "Join Channel"
 key = "lng_profile_join_channel"
+
+[[Strings]]
+value = "Join Group"
+key = "lng_profile_join_group"
 
 [[Strings]]
 value = "Remove"
@@ -3092,11 +4452,11 @@ value = "Manage restricted users"
 key = "lng_profile_manage_restrictedlist"
 
 [[Strings]]
-value = "To get over this limit, you can upgrade your group to a supergroup."
+value = "To add more members, you can upgrade your group to a supergroup."
 key = "lng_profile_migrate_body"
 
 [[Strings]]
-value = "Upgrade to supergroup"
+value = "Convert to supergroup"
 key = "lng_profile_migrate_button"
 
 [[Strings]]
@@ -3168,6 +4528,10 @@ value = "Remove {user} from the channel?"
 key = "lng_profile_sure_kick_channel"
 
 [[Strings]]
+value = "Remove {user} from admins?"
+key = "lng_profile_sure_remove_admin"
+
+[[Strings]]
 value = "Share"
 key = "lng_profile_top_bar_share_contact"
 
@@ -3192,6 +4556,98 @@ value = "View Channel"
 key = "lng_profile_view_channel"
 
 [[Strings]]
+value = "Proxy servers may be helpful in accessing Telegram if there is no connection in a specific region."
+key = "lng_proxy_about"
+
+[[Strings]]
+value = "Add proxy"
+key = "lng_proxy_add"
+
+[[Strings]]
+value = "Socket address"
+key = "lng_proxy_address_label"
+
+[[Strings]]
+value = "available (ping: {ping}ms)"
+key = "lng_proxy_available"
+
+[[Strings]]
+value = "checking"
+key = "lng_proxy_checking"
+
+[[Strings]]
+value = "connecting"
+key = "lng_proxy_connecting"
+
+[[Strings]]
+value = "Credentials"
+key = "lng_proxy_credentials"
+
+[[Strings]]
+value = "Credentials (optional)"
+key = "lng_proxy_credentials_optional"
+
+[[Strings]]
+value = "Your saved proxy list will be here."
+key = "lng_proxy_description"
+
+[[Strings]]
+value = "Edit proxy"
+key = "lng_proxy_edit"
+
+[[Strings]]
+value = "Share"
+key = "lng_proxy_edit_share"
+
+[[Strings]]
+value = "Delete"
+key = "lng_proxy_menu_delete"
+
+[[Strings]]
+value = "Edit"
+key = "lng_proxy_menu_edit"
+
+[[Strings]]
+value = "Restore"
+key = "lng_proxy_menu_restore"
+
+[[Strings]]
+value = "online"
+key = "lng_proxy_online"
+
+[[Strings]]
+value = "Proxy settings"
+key = "lng_proxy_settings"
+
+[[Strings]]
+value = "Share"
+key = "lng_proxy_share"
+
+[[Strings]]
+value = "Proxy sponsor"
+key = "lng_proxy_sponsor"
+
+[[Strings]]
+value = "This channel is shown by your proxy server.\nTo remove this channel from your chats list,\ndisable the proxy in Telegram Settings."
+key = "lng_proxy_sponsor_about"
+
+[[Strings]]
+value = "This proxy may display a sponsored channel in your chat list. This doesn't reveal any of your Telegram traffic."
+key = "lng_proxy_sponsor_warning"
+
+[[Strings]]
+value = "not available"
+key = "lng_proxy_unavailable"
+
+[[Strings]]
+value = "Use proxy"
+key = "lng_proxy_use"
+
+[[Strings]]
+value = "Use proxy for calls"
+key = "lng_proxy_use_for_calls"
+
+[[Strings]]
 value = "Quit Telegram"
 key = "lng_quit_from_tray"
 
@@ -3212,7 +4668,7 @@ value = "Sorry, no way to reply to an old message in supergroup :("
 key = "lng_reply_cant"
 
 [[Strings]]
-value = "Sorry, no way to reply to an old message in supergroup :( Do you wish to forward it and add your comment?"
+value = "Sorry, you can't reply to a message that was sent before the group was upgraded to a supergroup. Do you wish to forward it and add your comment?"
 key = "lng_reply_cant_forward"
 
 [[Strings]]
@@ -3226,6 +4682,10 @@ key = "lng_report_button"
 [[Strings]]
 value = "Report group"
 key = "lng_report_group_title"
+
+[[Strings]]
+value = "Report message"
+key = "lng_report_message_title"
 
 [[Strings]]
 value = "Description"
@@ -3376,7 +4836,7 @@ value = "Send messages"
 key = "lng_rights_chat_send_text"
 
 [[Strings]]
-value = "Edit administrator"
+value = "Manage permissions"
 key = "lng_rights_edit_admin"
 
 [[Strings]]
@@ -3438,6 +4898,18 @@ key = "lng_save_photo"
 [[Strings]]
 value = "Save video"
 key = "lng_save_video"
+
+[[Strings]]
+value = "Forward messages here for quick access"
+key = "lng_saved_forward_here"
+
+[[Strings]]
+value = "Saved Messages"
+key = "lng_saved_messages"
+
+[[Strings]]
+value = "Save"
+key = "lng_saved_short"
 
 [[Strings]]
 value = "Global search results"
@@ -3516,8 +4988,16 @@ value = "sending a video"
 key = "lng_send_action_upload_video"
 
 [[Strings]]
+value = "Send as an album"
+key = "lng_send_album"
+
+[[Strings]]
 value = "Send"
 key = "lng_send_button"
+
+[[Strings]]
+value = "Send as a file"
+key = "lng_send_file"
 
 [[Strings]]
 value = "Could not send an empty file: {name}"
@@ -3526,6 +5006,18 @@ key = "lng_send_image_empty"
 [[Strings]]
 value = "Could not send a file, because it is larger than 1500 MB: {name}"
 key = "lng_send_image_too_large"
+
+[[Strings]]
+value = "Send as a photo"
+key = "lng_send_photo"
+
+[[Strings]]
+value = "Send as separate photos"
+key = "lng_send_separate_photos"
+
+[[Strings]]
+value = "Send as separate media"
+key = "lng_send_separate_photos_videos"
 
 [[Strings]]
 value = "Current session"
@@ -3556,7 +5048,7 @@ value = "Notifications position and count"
 key = "lng_settings_advanced_notifications"
 
 [[Strings]]
-value = "Ask"
+value = "Ask a Volunteer"
 key = "lng_settings_ask_ok"
 
 [[Strings]]
@@ -3654,6 +5146,10 @@ key = "lng_settings_empty_bio"
 [[Strings]]
 value = "Enable night mode"
 key = "lng_settings_enable_night_theme"
+
+[[Strings]]
+value = "Export Telegram data"
+key = "lng_settings_export_data"
 
 [[Strings]]
 value = "Telegram FAQ"
@@ -3804,6 +5300,14 @@ value = "Launch minimized"
 key = "lng_settings_start_min"
 
 [[Strings]]
+value = "Suggest popular stickers by emoji"
+key = "lng_settings_suggest_by_emoji"
+
+[[Strings]]
+value = "Suggest emoji replacements"
+key = "lng_settings_suggest_emoji"
+
+[[Strings]]
 value = "Update automatically"
 key = "lng_settings_update_automatically"
 
@@ -3888,11 +5392,19 @@ value = "You have entered a wrong password."
 key = "lng_signin_bad_password"
 
 [[Strings]]
-value = "If you can't restore access to the e-mail, your remaining options are either to remember your password or to reset your account."
+value = "Help"
+key = "lng_signin_banned_help"
+
+[[Strings]]
+value = "This phone number is banned."
+key = "lng_signin_banned_text"
+
+[[Strings]]
+value = "If you can't restore access to the email, your remaining options are either to remember your password or to reset your account."
 key = "lng_signin_cant_email_forgot"
 
 [[Strings]]
-value = "Code from e-mail"
+value = "Code from the email"
 key = "lng_signin_code"
 
 [[Strings]]
@@ -3904,7 +5416,7 @@ value = "Hint: {password_hint}"
 key = "lng_signin_hint"
 
 [[Strings]]
-value = "Since you haven't provided a recovery\ne-mail when setting up your password, your remaining options are either to remember your password or to reset your account."
+value = "Since you didn't provide a recovery email when setting up your password, your remaining options are either to remember your password or to reset your account."
 key = "lng_signin_no_email_forgot"
 
 [[Strings]]
@@ -3912,7 +5424,7 @@ value = "Your cloud password"
 key = "lng_signin_password"
 
 [[Strings]]
-value = "Your cloud password was disabled.\nYou can set a new one in Settings."
+value = "Your cloud password was disabled.\nYou can set up a new one in Settings."
 key = "lng_signin_password_removed"
 
 [[Strings]]
@@ -3920,11 +5432,11 @@ value = "Forgot password?"
 key = "lng_signin_recover"
 
 [[Strings]]
-value = "Please enter the code from the e-mail\n{email}"
+value = "Please enter the code from the email\n{email}"
 key = "lng_signin_recover_desc"
 
 [[Strings]]
-value = "Code was sent to {recover_email}"
+value = "We sent a code to {recover_email}"
 key = "lng_signin_recover_hint"
 
 [[Strings]]
@@ -3964,7 +5476,7 @@ value = "Cloud password check"
 key = "lng_signin_title"
 
 [[Strings]]
-value = "Having trouble accessing your e-mail?"
+value = "Having trouble accessing your email?"
 key = "lng_signin_try_password"
 
 [[Strings]]
@@ -4080,6 +5592,10 @@ value = "Trending"
 key = "lng_stickers_featured_tab"
 
 [[Strings]]
+value = "Choose from trending stickers"
+key = "lng_stickers_group_from_featured"
+
+[[Strings]]
 value = "Choose from your stickers"
 key = "lng_stickers_group_from_your"
 
@@ -4100,6 +5616,10 @@ value = "Sticker pack not found."
 key = "lng_stickers_not_found"
 
 [[Strings]]
+value = "No stickers found"
+key = "lng_stickers_nothing_found"
+
+[[Strings]]
 value = "Some of your unused stickers have been archived to make room for the sets you've activated."
 key = "lng_stickers_packs_archived"
 
@@ -4112,8 +5632,16 @@ value = "Remove «{sticker_pack}»?"
 key = "lng_stickers_remove_pack"
 
 [[Strings]]
+value = "Remove"
+key = "lng_stickers_remove_pack_confirm"
+
+[[Strings]]
 value = "Undo"
 key = "lng_stickers_return"
+
+[[Strings]]
+value = "Search sticker sets"
+key = "lng_stickers_search_sets"
 
 [[Strings]]
 value = "Share Stickers"
@@ -4128,11 +5656,15 @@ value = "This user is not a member of this group. Add them to the group and prom
 key = "lng_sure_add_admin_invite"
 
 [[Strings]]
-value = "This user is currently restricted or banned in this group. Are you sure you want to unban and promote them?"
+value = "This user is not a subscriber of this channel. Add them to the channel and promote them to admin?"
+key = "lng_sure_add_admin_invite_channel"
+
+[[Strings]]
+value = "This user is currently restricted or banned. Are you sure you want to unban and promote them?"
 key = "lng_sure_add_admin_unban"
 
 [[Strings]]
-value = "This user is an admin in this group. Are you sure you want to go ahead and restrict them?"
+value = "This user is an admin. Are you sure you want to go ahead and restrict them?"
 key = "lng_sure_ban_admin"
 
 [[Strings]]
@@ -4144,28 +5676,32 @@ value = "Do you want to remove all downloaded files from temp folder? It is done
 key = "lng_sure_clear_downloads"
 
 [[Strings]]
-value = "Are you sure, you want to delete all message history and leave «{group}»?\n\nThis action cannot be undone."
+value = "Are you sure you want to delete all message history and leave «{group}»?\n\nThis action cannot be undone."
 key = "lng_sure_delete_and_exit"
 
 [[Strings]]
-value = "Are you sure, you want to delete this channel? All members will be removed and all messages will be lost."
+value = "Are you sure you want to delete this channel? All members will be removed and all messages will be lost."
 key = "lng_sure_delete_channel"
 
 [[Strings]]
-value = "Are you sure, you want to delete {contact} from your contact list?"
+value = "Are you sure you want to delete {contact} from your contact list?"
 key = "lng_sure_delete_contact"
 
 [[Strings]]
-value = "Are you sure, you want to delete this group? All members will be removed and all messages will be lost."
+value = "Are you sure you want to delete this group? All members will be removed, and all messages will be lost."
 key = "lng_sure_delete_group"
 
 [[Strings]]
-value = "Are you sure, you want to delete all message history in «{group}»?\n\nThis action cannot be undone."
+value = "Are you sure you want to delete all message history in «{group}»?\n\nThis action cannot be undone."
 key = "lng_sure_delete_group_history"
 
 [[Strings]]
-value = "Are you sure, you want to delete all message history with {contact}?\n\nThis action cannot be undone."
+value = "Are you sure you want to delete all message history with {contact}?\n\nThis action cannot be undone."
 key = "lng_sure_delete_history"
+
+[[Strings]]
+value = "Are you sure you want to delete all your saved messages?\n\nThis action cannot be undone."
+key = "lng_sure_delete_saved_messages"
 
 [[Strings]]
 value = "Enable"
@@ -4176,11 +5712,11 @@ value = "Are you sure you want to enable this proxy?\n\nServer: {server}\nPort: 
 key = "lng_sure_enable_socks"
 
 [[Strings]]
-value = "Are you sure, you want to leave\nthis channel?"
+value = "Are you sure you want to leave\nthis channel?"
 key = "lng_sure_leave_channel"
 
 [[Strings]]
-value = "Are you sure, you want to leave\nthis group? This action cannot be undone."
+value = "Are you sure you want to leave this group?"
 key = "lng_sure_leave_group"
 
 [[Strings]]
@@ -4208,11 +5744,59 @@ value = "Continue in English"
 key = "lng_switch_to_this"
 
 [[Strings]]
+value = "Agree & Continue"
+key = "lng_terms_agree"
+
+[[Strings]]
+value = "Please agree and proceed to {bot}."
+key = "lng_terms_agree_to_proceed"
+
+[[Strings]]
+value = "Back"
+key = "lng_terms_back"
+
+[[Strings]]
+value = "Decline"
+key = "lng_terms_decline"
+
+[[Strings]]
+value = "Decline & Delete"
+key = "lng_terms_decline_and_delete"
+
+[[Strings]]
+value = "Delete now"
+key = "lng_terms_delete_now"
+
+[[Strings]]
+value = "Warning, this will irreversibly delete your Telegram account along with all the data you store in the Telegram cloud.\n\nImportant: You can Cancel now and export your data before deleting your account instead of losing it all. (To do this, open the latest version of Telegram Desktop and go to Settings > Export Telegram Data.)"
+key = "lng_terms_delete_warning"
+
+[[Strings]]
+value = "Terms of Service"
+key = "lng_terms_header"
+
+[[Strings]]
+value = "By signing up,\nyou agree to the {link}."
+key = "lng_terms_signup"
+
+[[Strings]]
+value = "Terms of Service"
+key = "lng_terms_signup_link"
+
+[[Strings]]
+value = "We're very sorry, but this means you can't sign up for Telegram.\n\nUnlike others, we don't use your data for ad targeting or other commercial purposes. Telegram only stores the information it needs to function as a secure and feature-rich cloud service. You can adjust how we use your data in the Privacy & Security settings.\n\nBut if you're generally not OK with Telegram's modest requirements, it won't be possible for us to provide you with this service."
+key = "lng_terms_signup_sorry"
+
+[[Strings]]
+value = "We're very sorry, but this means we must part ways here. Unlike others, we don't use your data for ad targeting or other commercial purposes. Telegram only stores the information it needs to function as a secure and feature-rich cloud service. You can adjust how we use your data in Privacy & Security settings.\n\nBut if you're generally not OK with Telegram's modest requirements, it won't be possible for us to provide you with this service. You can delete your account now — or look around some more and delete it later if you feel you're not happy with the way we use your data."
+key = "lng_terms_update_sorry"
+
+[[Strings]]
 value = "Background image"
 key = "lng_theme_editor_background_image"
 
 [[Strings]]
-value = "You can not apply new themes while you're editing the color palette. Please close the theme editor first."
+value = "You can't apply a new theme while you're editing the colour palette. Please close the theme editor first."
 key = "lng_theme_editor_cant_change_theme"
 
 [[Strings]]
@@ -4292,7 +5876,7 @@ value = "Revert"
 key = "lng_theme_revert"
 
 [[Strings]]
-value = "Keep this color theme?"
+value = "Keep this theme?"
 key = "lng_theme_sure_keep"
 
 [[Strings]]
@@ -4300,7 +5884,7 @@ value = "Telegram is still running here,\nyou can change this from settings page
 key = "lng_tray_icon_text"
 
 [[Strings]]
-value = "Try other"
+value = "Try someone else"
 key = "lng_try_other_contact"
 
 [[Strings]]
@@ -4388,7 +5972,7 @@ value = "This username is available."
 key = "lng_username_available"
 
 [[Strings]]
-value = "This username has bad symbols."
+value = "Only a-z, 0-9, and underscores allowed."
 key = "lng_username_bad_symbols"
 
 [[Strings]]
@@ -4408,11 +5992,11 @@ value = "This link opens a chat with you:"
 key = "lng_username_link"
 
 [[Strings]]
-value = "Such link will open a chat with you:"
+value = "This link will open a chat with you:"
 key = "lng_username_link_willbe"
 
 [[Strings]]
-value = "User @{user} not found."
+value = "Username @{user} not found."
 key = "lng_username_not_found"
 
 [[Strings]]
@@ -4484,7 +6068,7 @@ value = "Undo"
 key = "lng_wnd_menu_undo"
 
 [[Strings]]
-value = "Members will not be notified when you post"
+value = "Members will receive a silent notification"
 key = "lng_wont_be_notified"
 
 [[StringPluralizeds]]
@@ -4678,6 +6262,15 @@ key = "lng_error_pinned_max"
 
 [[StringPluralizeds]]
 fewValue = ""
+oneValue = "{count} hour"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} hours"
+twoValue = ""
+key = "lng_export_delay_hours"
+
+[[StringPluralizeds]]
+fewValue = ""
 oneValue = "{count} forwarded message"
 manyValue = ""
 zeroValue = ""
@@ -4720,6 +6313,60 @@ zeroValue = ""
 otherValue = "{count} people are typing"
 twoValue = ""
 key = "lng_many_typing"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} Voice message"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} Voice messages"
+twoValue = ""
+key = "lng_media_selected_audio"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} File"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} Files"
+twoValue = ""
+key = "lng_media_selected_file"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} Shared link"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} Shared links"
+twoValue = ""
+key = "lng_media_selected_link"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} Photo"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} Photos"
+twoValue = ""
+key = "lng_media_selected_photo"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} Audio file"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} Audio files"
+twoValue = ""
+key = "lng_media_selected_song"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} Video"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} Videos"
+twoValue = ""
+key = "lng_media_selected_video"
 
 [[StringPluralizeds]]
 fewValue = ""
@@ -4903,10 +6550,10 @@ key = "lng_self_destruct_years"
 
 [[StringPluralizeds]]
 fewValue = ""
-oneValue = "Send {count} file"
+oneValue = "Send as {count} file"
 manyValue = ""
 zeroValue = ""
-otherValue = "Send {count} files"
+otherValue = "Send as {count} files"
 twoValue = ""
 key = "lng_send_files"
 
@@ -4921,15 +6568,6 @@ key = "lng_send_files_selected"
 
 [[StringPluralizeds]]
 fewValue = ""
-oneValue = "Compress image"
-manyValue = ""
-zeroValue = ""
-otherValue = "Compress images"
-twoValue = ""
-key = "lng_send_images_compress"
-
-[[StringPluralizeds]]
-fewValue = ""
 oneValue = "{count} image selected"
 manyValue = ""
 zeroValue = ""
@@ -4939,10 +6577,10 @@ key = "lng_send_images_selected"
 
 [[StringPluralizeds]]
 fewValue = ""
-oneValue = "Send {count} photo"
+oneValue = "Send as {count} photo"
 manyValue = ""
 zeroValue = ""
-otherValue = "Send {count} photos"
+otherValue = "Send as {count} photos"
 twoValue = ""
 key = "lng_send_photos"
 
@@ -5020,10 +6658,19 @@ key = "lng_stickers_count"
 
 [[StringPluralizeds]]
 fewValue = ""
-oneValue = "Reverting to the old color theme in {count} second."
+oneValue = "I confirm that I am {count} or over"
 manyValue = ""
 zeroValue = ""
-otherValue = "Reverting to the old color theme in {count} seconds."
+otherValue = "I confirm that I am {count} or over"
+twoValue = ""
+key = "lng_terms_age"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "Reverting to the old theme in {count} second."
+manyValue = ""
+zeroValue = ""
+otherValue = "Reverting to the old theme in {count} seconds."
 twoValue = ""
 key = "lng_theme_reverting"
 

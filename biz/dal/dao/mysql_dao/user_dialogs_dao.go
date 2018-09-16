@@ -33,10 +33,10 @@ func NewUserDialogsDAO(db *sqlx.DB) *UserDialogsDAO {
 	return &UserDialogsDAO{db}
 }
 
-// insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, draft_message_data, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :draft_message_data, :date2, :created_at)
+// insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, unread_mentions_count, draft_message_data, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :unread_mentions_count, :draft_message_data, :date2, :created_at)
 // TODO(@benqi): sqlmap
 func (dao *UserDialogsDAO) Insert(do *dataobject.UserDialogsDO) int64 {
-	var query = "insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, draft_message_data, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :draft_message_data, :date2, :created_at)"
+	var query = "insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, unread_mentions_count, draft_message_data, date2, created_at) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :unread_mentions_count, :draft_message_data, :date2, :created_at)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -47,6 +47,26 @@ func (dao *UserDialogsDAO) Insert(do *dataobject.UserDialogsDO) int64 {
 	id, err := r.LastInsertId()
 	if err != nil {
 		errDesc := fmt.Sprintf("LastInsertId in Insert(%v)_error: %v", do, err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+	return id
+}
+
+// insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, unread_mentions_count, draft_message_data, date2) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :unread_mentions_count, '', :date2) on duplicate key update top_message = values(top_message), unread_count = unread_count + values(unread_count), unread_mentions_count = unread_mentions_count + values(unread_mentions_count), date2 = values(date2)
+// TODO(@benqi): sqlmap
+func (dao *UserDialogsDAO) InsertOrUpdate(do *dataobject.UserDialogsDO) int64 {
+	var query = "insert into user_dialogs(user_id, peer_type, peer_id, top_message, unread_count, unread_mentions_count, draft_message_data, date2) values (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :unread_mentions_count, '', :date2) on duplicate key update top_message = values(top_message), unread_count = unread_count + values(unread_count), unread_mentions_count = unread_mentions_count + values(unread_mentions_count), date2 = values(date2)"
+	r, err := dao.db.NamedExec(query, do)
+	if err != nil {
+		errDesc := fmt.Sprintf("NamedExec in InsertOrUpdate(%v), error: %v", do, err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	id, err := r.LastInsertId()
+	if err != nil {
+		errDesc := fmt.Sprintf("LastInsertId in InsertOrUpdate(%v)_error: %v", do, err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -513,6 +533,28 @@ func (dao *UserDialogsDAO) SaveDraft(draft_message_data string, user_id int32, p
 	return rows
 }
 
+// update user_dialogs set draft_type = 0, draft_message_data = '' where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id
+// TODO(@benqi): sqlmap
+func (dao *UserDialogsDAO) ClearDraft(user_id int32, peer_type int8, peer_id int32) int64 {
+	var query = "update user_dialogs set draft_type = 0, draft_message_data = '' where user_id = ? and peer_type = ? and peer_id = ?"
+	r, err := dao.db.Exec(query, user_id, peer_type, peer_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in ClearDraft(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in ClearDraft(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
 // update user_dialogs set is_pinned = :is_pinned where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id
 // TODO(@benqi): sqlmap
 func (dao *UserDialogsDAO) UpdatePinned(is_pinned int8, user_id int32, peer_type int8, peer_id int32) int64 {
@@ -528,6 +570,28 @@ func (dao *UserDialogsDAO) UpdatePinned(is_pinned int8, user_id int32, peer_type
 	rows, err := r.RowsAffected()
 	if err != nil {
 		errDesc := fmt.Sprintf("RowsAffected in UpdatePinned(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update user_dialogs set top_message = :top_message, unread_count = unread_count + unreadCount, unread_mentions_count = unread_mentions_count + unreadMentionCount where user_id = :user_id and peer_type = :peer_type and peer_id = :peer_id
+// TODO(@benqi): sqlmap
+func (dao *UserDialogsDAO) UpdateDialog(top_message int32, user_id int32, peer_type int8, peer_id int32) int64 {
+	var query = "update user_dialogs set top_message = ?, unread_count = unread_count + unreadCount, unread_mentions_count = unread_mentions_count + unreadMentionCount where user_id = ? and peer_type = ? and peer_id = ?"
+	r, err := dao.db.Exec(query, top_message, user_id, peer_type, peer_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateDialog(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateDialog(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

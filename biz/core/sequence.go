@@ -18,15 +18,20 @@
 package core
 
 import (
+	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/service/idgen/client"
-	"github.com/golang/glog"
 )
 
 const (
 	// TODO(@benqi): 使用更紧凑的前缀
+	messageDataNgenId       = "message_data_ngen_"
 	boxUpdatesNgenId        = "message_box_ngen_"
 	channelBoxUpdatesNgenId = "channel_message_box_ngen_"
+	seqUpdatesNgenId        = "seq_updates_ngen_"
+	ptsUpdatesNgenId        = "pts_updates_ngen_"
+	qtsUpdatesNgenId        = "qts_updates_ngen_"
+	channelPtsUpdatesNgenId = "channel_pts_updates_ngen_"
 )
 
 var seqIDGen idgen.SeqIDGen
@@ -49,6 +54,11 @@ func CurrentMessageBoxId(key int32) (seq int64) {
 	return
 }
 
+func NextMessageDataId(key int64) (seq int64) {
+	seq, _ = seqIDGen.GetNextSeqID(messageDataNgenId + base.Int64ToString(key))
+	return
+}
+
 func NextChannelMessageBoxId(key int32) (seq int64) {
 	seq, _ = seqIDGen.GetNextSeqID(channelBoxUpdatesNgenId + base.Int32ToString(key))
 	return
@@ -56,5 +66,55 @@ func NextChannelMessageBoxId(key int32) (seq int64) {
 
 func CurrentChannelMessageBoxId(key int32) (seq int64) {
 	seq, _ = seqIDGen.GetCurrentSeqID(channelBoxUpdatesNgenId + base.Int32ToString(key))
+	return
+}
+
+func NextSeqId(key int32) (seq int64) {
+	seq, _ = seqIDGen.GetNextSeqID(seqUpdatesNgenId + base.Int32ToString(key))
+	return
+}
+
+func CurrentSeqId(key int32) (seq int64) {
+	var err error
+	seq, _ = seqIDGen.GetCurrentSeqID(seqUpdatesNgenId + base.Int32ToString(key))
+
+	if err != nil {
+		seq = -1
+	}
+	return
+}
+
+func NextPtsId(key int32) (seq int64) {
+	seq, _ = seqIDGen.GetNextSeqID(ptsUpdatesNgenId + base.Int32ToString(key))
+	return
+}
+
+func NextNPtsId(key int32, n int) (seq int64) {
+	seq, _ = seqIDGen.GetNextNSeqID(ptsUpdatesNgenId + base.Int32ToString(key), n)
+	return
+}
+
+func CurrentPtsId(key int32) (seq int64) {
+	seq, _ = seqIDGen.GetCurrentSeqID(ptsUpdatesNgenId + base.Int32ToString(key))
+	return
+}
+
+func NextQtsId(key int32) (seq int64) {
+	seq, _ = seqIDGen.GetNextSeqID(qtsUpdatesNgenId + base.Int32ToString(key))
+	return
+}
+
+func CurrentQtsId(key int32) (seq int64) {
+	seq, _ = seqIDGen.GetNextSeqID(qtsUpdatesNgenId + base.Int32ToString(key))
+	return
+}
+
+func NextChannelPtsId(key int32) (seq int64) {
+	seq, _ = seqIDGen.GetNextSeqID(channelPtsUpdatesNgenId + base.Int32ToString(key))
+	return
+}
+
+func CurrentChannelPtsId(key int32) (seq int64) {
+	seq, _ = seqIDGen.GetNextSeqID(channelPtsUpdatesNgenId + base.Int32ToString(key))
 	return
 }

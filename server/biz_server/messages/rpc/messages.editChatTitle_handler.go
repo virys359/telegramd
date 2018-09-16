@@ -22,11 +22,11 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core"
-	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"github.com/nebulaim/telegramd/biz/core"
 )
 
 // messages.editChatTitle#dc452855 chat_id:int title:string = Updates;
@@ -44,6 +44,7 @@ func (s *MessagesServiceImpl) MessagesEditChatTitle(ctx context.Context, request
 		PeerType: base.PEER_CHAT,
 		PeerId:   chatLogic.GetChatId(),
 	}
+	_ = peer
 
 	err = chatLogic.EditChatTitle(md.UserId, request.Title)
 	if err != nil {
@@ -52,39 +53,60 @@ func (s *MessagesServiceImpl) MessagesEditChatTitle(ctx context.Context, request
 	}
 
 	chatEditMessage := chatLogic.MakeChatEditTitleMessage(md.UserId, request.Title)
-
 	randomId := core.GetUUID()
-	outbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomId, chatEditMessage, func(messageId int32) {
-		s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, false, false)
-	})
 
-	syncUpdates := update2.NewUpdatesLogic(md.UserId)
-	updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
-		Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
-	}}
-	syncUpdates.AddUpdate(updateChatParticipants.To_Update())
-	syncUpdates.AddUpdateNewMessage(chatEditMessage)
-	syncUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, []int32{md.UserId}))
-	syncUpdates.AddChat(chatLogic.ToChat(md.UserId))
+	resultCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (*mtproto.Updates, error) {
+		syncUpdates := updates.NewUpdatesLogic(md.UserId)
 
-	state, _ := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.ToUpdates())
-	syncUpdates.PushTopUpdateMessageId(outbox.MessageId, outbox.RandomId)
-	syncUpdates.SetupState(state)
+		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+			Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
+		}}
+		syncUpdates.AddUpdate(updateChatParticipants.To_Update())
+		syncUpdates.AddUpdateNewMessage(pts, ptsCount, outBox.ToMessage(outBox.OwnerId))
+		syncUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chatLogic.GetChatParticipantIdList()))
+		syncUpdates.AddChat(chatLogic.ToChat(md.UserId))
 
-	replyUpdates := syncUpdates.ToUpdates()
+		syncUpdates.AddUpdateMessageId(outBox.MessageId, outBox.RandomId)
 
-	inboxList, _ := outbox.InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
-		s.UserModel.CreateOrUpdateByInbox(inBoxUserId, base.PEER_CHAT, peer.PeerId, messageId, false)
-	})
-
-	for _, inbox := range inboxList {
-		updates := update2.NewUpdatesLogic(md.UserId)
-		updates.AddUpdate(updateChatParticipants.To_Update())
-		updates.AddUpdateNewMessage(inbox.Message)
-		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(inbox.UserId, []int32{md.UserId}))
-		updates.AddChat(chatLogic.ToChat(inbox.UserId))
-		sync_client.GetSyncClient().PushToUserUpdatesData(inbox.UserId, updates.ToUpdates())
+		return syncUpdates.ToUpdates(), nil
 	}
+
+	syncNotMeCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (int64, *mtproto.Updates, error) {
+		syncUpdates := updates.NewUpdatesLogic(md.UserId)
+
+		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+			Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
+		}}
+		syncUpdates.AddUpdate(updateChatParticipants.To_Update())
+		syncUpdates.AddUpdateNewMessage(pts, ptsCount, outBox.ToMessage(outBox.OwnerId))
+		syncUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(md.UserId, chatLogic.GetChatParticipantIdList()))
+		syncUpdates.AddChat(chatLogic.ToChat(md.UserId))
+
+		return md.AuthId, syncUpdates.ToUpdates(), nil
+	}
+
+	pushCB := func(pts, ptsCount int32, inBox *message.MessageBox2) (*mtproto.Updates, error) {
+		pushUpdates := updates.NewUpdatesLogic(md.UserId)
+
+		updateChatParticipants := &mtproto.TLUpdateChatParticipants{Data2: &mtproto.Update_Data{
+			Participants: chatLogic.GetChatParticipants().To_ChatParticipants(),
+		}}
+		pushUpdates.AddUpdate(updateChatParticipants.To_Update())
+		pushUpdates.AddUpdateNewMessage(pts, ptsCount, inBox.ToMessage(inBox.OwnerId))
+		pushUpdates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(inBox.OwnerId, chatLogic.GetChatParticipantIdList()))
+		pushUpdates.AddChat(chatLogic.ToChat(inBox.OwnerId))
+
+		return pushUpdates.ToUpdates(), nil
+	}
+
+	replyUpdates, _ := s.MessageModel.SendMessage(
+		md.UserId,
+		peer,
+		randomId,
+		chatEditMessage,
+		resultCB,
+		syncNotMeCB,
+		pushCB)
 
 	glog.Infof("messages.editChatTitle#dc452855 - reply: {%v}", replyUpdates)
 	return replyUpdates, nil

@@ -23,14 +23,22 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/biz/core"
+	"time"
 )
 
 // messages.readHistory#e306d3a peer:InputPeer max_id:int = messages.AffectedMessages;
 func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *mtproto.TLMessagesReadHistory) (*mtproto.Messages_AffectedMessages, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.readHistory#e306d3a - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+
+	var (
+		updates *mtproto.TLUpdates
+		pts, ptsCount int32
+	)
 
 	peer := base.FromInputPeer(request.GetPeer())
 	if peer.PeerType == base.PEER_SELF {
@@ -43,32 +51,59 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 	// 1. inbox，设置unread_count为0以及read_inbox_max_id
 	s.DialogModel.UpdateUnreadByPeer(md.UserId, int8(peer.PeerType), peer.PeerId, request.GetMaxId())
 
-	updateReadHistoryInbox := mtproto.NewTLUpdateReadHistoryInbox()
-	updateReadHistoryInbox.SetPeer(peer.ToPeer())
-	updateReadHistoryInbox.SetMaxId(request.MaxId)
+	pts = int32(core.NextPtsId(md.UserId))
+	ptsCount = 1
 
-	_, err := sync_client.GetSyncClient().SyncOneUpdateData2(md.ServerId, md.AuthId, md.SessionId, md.UserId, md.ClientMsgId, updateReadHistoryInbox.To_Update())
+	updateReadHistoryInbox := &mtproto.TLUpdateReadHistoryInbox{Data2: &mtproto.Update_Data{
+		Peer_39:  peer.ToPeer(),
+		MaxId:    request.MaxId,
+		Pts:      pts,
+		PtsCount: ptsCount,
+	}}
+	updates = &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+		Updates: []*mtproto.Update{updateReadHistoryInbox.To_Update()},
+		Users:   []*mtproto.User{},
+		Chats:   []*mtproto.Chat{},
+		Date:    int32(time.Now().Unix()),
+		Seq:     0,
+	}}
+
+	// sync
+	_, err := sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, updates.To_Updates())
 	if err != nil {
+		glog.Error(err)
 		return nil, err
 	}
 
-	//affected := mtproto.NewTLMessagesAffectedMessages()
-	//affected.SetPts(int32(state.Pts))
-	//affected.SetPtsCount(state.PtsCount)
+	// result
+	affected := &mtproto.TLMessagesAffectedMessages{Data2: &mtproto.Messages_AffectedMessages_Data{
+		Pts:      pts,
+		PtsCount: ptsCount,
+	}}
 
 	// 2. outbox, 设置read_outbox_max_id
 	if peer.PeerType == base.PEER_USER {
 		outboxTopMessage := s.DialogModel.GetTopMessage(peer.PeerId, int8(peer.PeerType), md.UserId)
 		s.DialogModel.UpdateReadOutboxMaxIdByPeer(peer.PeerId, int8(peer.PeerType), md.UserId, outboxTopMessage)
 
-		updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
 		outboxPeer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
 			UserId: md.UserId,
 		}}
-		updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
-		updateReadHistoryOutbox.SetMaxId(outboxTopMessage)
+		updateReadHistoryOutbox := &mtproto.TLUpdateReadHistoryOutbox{Data2: &mtproto.Update_Data{
+			Peer_39:  outboxPeer.To_Peer(),
+			MaxId:    outboxTopMessage,
+			Pts:      int32(core.NextPtsId(peer.PeerId)),
+			PtsCount: 1,
+		}}
 
-		sync_client.GetSyncClient().PushToUserOneUpdateData(peer.PeerId, updateReadHistoryOutbox.To_Update())
+		updates = &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+			Updates: []*mtproto.Update{updateReadHistoryOutbox.To_Update()},
+			Users:   []*mtproto.User{},
+			Chats:   []*mtproto.Chat{},
+			Date:    int32(time.Now().Unix()),
+			Seq:     0,
+		}}
+		sync_client.GetSyncClient().PushUpdates(peer.PeerId, updates.To_Updates())
 	} else {
 		chatLogic, _ := s.ChatModel.NewChatLogicById(peer.PeerId)
 		chatParticipants := chatLogic.GetChatParticipantList()
@@ -79,19 +114,27 @@ func (s *MessagesServiceImpl) MessagesReadHistory(ctx context.Context, request *
 			outboxTopMessage := s.DialogModel.GetTopMessage(participant.GetData2().GetUserId(), int8(peer.PeerType), peer.PeerId)
 			s.DialogModel.UpdateReadOutboxMaxIdByPeer(participant.GetData2().GetUserId(), int8(peer.PeerType), peer.PeerId, outboxTopMessage)
 
-			updateReadHistoryOutbox := mtproto.NewTLUpdateReadHistoryOutbox()
 			outboxPeer := &mtproto.TLPeerChat{Data2: &mtproto.Peer_Data{
 				ChatId: peer.PeerId,
 			}}
-			updateReadHistoryOutbox.SetPeer(outboxPeer.To_Peer())
-			updateReadHistoryOutbox.SetMaxId(outboxTopMessage)
+			updateReadHistoryOutbox := &mtproto.TLUpdateReadHistoryOutbox{Data2: &mtproto.Update_Data{
+				Peer_39:  outboxPeer.To_Peer(),
+				MaxId:    outboxTopMessage,
+				Pts:      int32(core.NextPtsId(participant.GetData2().GetUserId())),
+				PtsCount: 1,
+			}}
 
-			sync_client.GetSyncClient().PushToUserOneUpdateData(participant.GetData2().GetUserId(), updateReadHistoryOutbox.To_Update())
+			updates = &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
+				Updates: []*mtproto.Update{updateReadHistoryOutbox.To_Update()},
+				Users:   []*mtproto.User{},
+				Chats:   []*mtproto.Chat{},
+				Date:    int32(time.Now().Unix()),
+				Seq:     0,
+			}}
+			sync_client.GetSyncClient().PushUpdates(participant.GetData2().GetUserId(), updates.To_Updates())
 		}
 	}
 
-	err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NOTRETURN_CLIENT)
-	glog.Infof("messages.readHistory#e306d3a - reply: {%v}", err)
-	return nil, err
-	// affected.To_Messages_AffectedMessages(), nil
+	glog.Infof("messages.readHistory#e306d3a - reply: {%s}", logger.JsonDebugData(affected))
+	return affected.To_Messages_AffectedMessages(), err
 }

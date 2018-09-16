@@ -46,6 +46,21 @@ func NewMTProtoAbridgedCodec(conn *net2.BufferedConn) *MTProtoAbridgedCodec {
 }
 
 func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
+	// minus padding
+	//size := len(x.buf) / 4 - 1
+	//
+	//if size < 127 {
+	//	x.buf[3] = byte(size)
+	//	x.buf = x.buf[3:]
+	//} else {
+	//	binary.LittleEndian.PutUint32(x.buf, uint32(size << 8 | 127))
+	//}
+	//_, err := m.conn.Write(x.buf)
+	//if err != nil {
+	//	return err
+	//}
+
+
 	var size int
 	var n int
 	var err error

@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -73,7 +73,8 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 		LastName:  user.GetLastName(),
 		Username:  request.Username,
 	}}
-	sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserName.To_Update())
+	_ = updateUserName
+	// sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserName.To_Update())
 
 	// TODO(@benqi): push to other contacts
 

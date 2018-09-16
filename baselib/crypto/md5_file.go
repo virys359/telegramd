@@ -18,11 +18,11 @@
 package crypto
 
 import (
-	"github.com/golang/glog"
 	"crypto/md5"
 	"fmt"
-	"os"
+	"github.com/golang/glog"
 	"io"
+	"os"
 )
 
 // TODO(@benqi): remove to baselib

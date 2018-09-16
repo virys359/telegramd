@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"regexp"
 )
 
 // updateShortMessage#914fbf11 flags:# out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true silent:flags.13?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from:flags.2?MessageFwdHeader via_bot_id:flags.11?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
@@ -216,45 +217,98 @@ func PickAllIDListByMessages(messageList []*mtproto.Message) (userIdList, chatId
 		chatIdList = make([]int32, 0, len(messageList))
 		channelIdList = make([]int32, 0, len(messageList))
 
+		AppendID := func (idList []int32, id int32) []int32 {
+			for _, i := range idList {
+				if i == id {
+					return idList
+				}
+			}
+			idList = append(idList, id)
+			return idList
+		}
+
 		for _, m := range messageList {
 			switch m.GetConstructor() {
 			case mtproto.TLConstructor_CRC32_message:
 				m2 := m.To_Message()
-				userIdList = append(userIdList, m2.GetFromId())
+				userIdList = AppendID(userIdList, m2.GetFromId())
 
 				p := m2.GetToId()
 				switch p.GetConstructor() {
 				case mtproto.TLConstructor_CRC32_peerUser:
-					userIdList = append(userIdList, p.GetData2().GetUserId())
+					userIdList = AppendID(userIdList, p.GetData2().GetUserId())
 				case mtproto.TLConstructor_CRC32_peerChat:
-					chatIdList = append(chatIdList, p.GetData2().GetChatId())
+					chatIdList = AppendID(chatIdList, p.GetData2().GetChatId())
 					if p.GetData2().GetChatId() == 0 {
 						glog.Info("chat_id = 0: ", m)
 						continue
 					}
 				case mtproto.TLConstructor_CRC32_peerChannel:
-					channelIdList = append(chatIdList, p.GetData2().GetChannelId())
+					channelIdList = AppendID(chatIdList, p.GetData2().GetChannelId())
 				}
 			case mtproto.TLConstructor_CRC32_messageService:
 				m2 := m.To_MessageService()
-				userIdList = append(userIdList, m2.GetFromId())
+				userIdList = AppendID(userIdList, m2.GetFromId())
 
 				p := m2.GetToId()
 				switch p.GetConstructor() {
 				case mtproto.TLConstructor_CRC32_peerUser:
-					userIdList = append(userIdList, p.GetData2().GetUserId())
+					userIdList = AppendID(userIdList, p.GetData2().GetUserId())
 				case mtproto.TLConstructor_CRC32_peerChat:
 					if p.GetData2().GetChatId() == 0 {
 						glog.Info("chat_id = 0: ", m)
 						continue
 					}
-					chatIdList = append(chatIdList, p.GetData2().GetChatId())
+					chatIdList = AppendID(chatIdList, p.GetData2().GetChatId())
 				case mtproto.TLConstructor_CRC32_peerChannel:
-					channelIdList = append(chatIdList, p.GetData2().GetChannelId())
+					channelIdList = AppendID(chatIdList, p.GetData2().GetChannelId())
 				}
 			case mtproto.TLConstructor_CRC32_messageEmpty:
 			}
 		}
 	}
 	return
+}
+
+/*
+  message: "@XXXXXXXX XXX @XXX 11111111" [STRING],
+  ...
+  entities: [ vector<0x0>
+	{ inputMessageEntityMentionName
+	  offset: 10 [INT],
+	  length: 3 [INT],
+	  user_id: { inputUser
+		user_id: 607858518 [INT],
+		access_hash: 17343137402047930393 [LONG],
+	  },
+	},
+  ],
+*/
+func (m *MessageModel) ParseMentions(message string, mentions []*mtproto.MessageEntity) []int32 {
+	mIdList := []int32{}
+
+	for _, m := range mentions {
+		switch m.GetConstructor() {
+		// case mtproto.TLConstructor_CRC32_messageEntityMention:
+		// case mtproto.TLConstructor_CRC32_messageEntityMentionName:
+		case mtproto.TLConstructor_CRC32_inputMessageEntityMentionName:
+			mention := m.To_InputMessageEntityMentionName()
+			if mention.GetUserId().GetConstructor() == mtproto.TLConstructor_CRC32_inputUser {
+				// TODO(@benqi): check access_hash
+				mIdList = append(mIdList, mention.GetUserId().GetData2().GetUserId())
+			}
+		default:
+		}
+	}
+
+	// TODO(@benqi):
+	matches := regexp.MustCompile("@[0-9]+\\s*\\([^()@]+\\)").FindStringSubmatch(message)
+	for _, m := range matches {
+
+		_ = m
+		//
+	}
+	// val mentionRegex = Regex("@[0-9]+\\s*\\([^()@]+\\)")
+
+	return mIdList
 }

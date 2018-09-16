@@ -21,9 +21,9 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	updates2 "github.com/nebulaim/telegramd/biz/core/update"
+	// updates2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -63,17 +63,17 @@ func (s *ContactsServiceImpl) ContactsBlock(ctx context.Context, request *mtprot
 
 	if blocked {
 		// Sync unblocked: updateUserBlocked
-		updateUserBlocked := &mtproto.TLUpdateUserBlocked{Data2: &mtproto.Update_Data{
-			UserId:  blockId,
-			Blocked: mtproto.ToBool(true),
-		}}
-
-		blockedUpdates := updates2.NewUpdatesLogic(md.UserId)
-		blockedUpdates.AddUpdate(updateUserBlocked.To_Update())
-		blockedUpdates.AddUser(s.UserModel.GetUserById(md.UserId, blockId).To_User())
+		//updateUserBlocked := &mtproto.TLUpdateUserBlocked{Data2: &mtproto.Update_Data{
+		//	UserId:  blockId,
+		//	Blocked: mtproto.ToBool(true),
+		//}}
+		//
+		//blockedUpdates := updates2.NewUpdatesLogic(md.UserId)
+		//blockedUpdates.AddUpdate(updateUserBlocked.To_Update())
+		//blockedUpdates.AddUser(s.UserModel.GetUserById(md.UserId, blockId).To_User())
 
 		// TODO(@benqi): handle seq
-		sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, blockId, blockedUpdates.ToUpdates())
+		// sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, blockId, blockedUpdates.ToUpdates())
 	}
 
 	// Blocked会影响收件箱

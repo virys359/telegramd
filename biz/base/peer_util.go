@@ -30,7 +30,7 @@ const (
 	PEER_CHANNEL = 4
 	PEER_USERS   = 5
 	PEER_CHATS   = 6
-	PEER_ALL     = 7
+	// PEER_ALL     = 7
 	PEER_UNKNOWN = -1
 )
 
@@ -57,12 +57,12 @@ func (p PeerUtil) String() (s string) {
 		return fmt.Sprintf("PEER_USERS: {peer_id: %d, access_hash: %d", p.PeerId, p.AccessHash)
 	case PEER_CHATS:
 		return fmt.Sprintf("PEER_CHATS: {peer_id: %d, access_hash: %d", p.PeerId, p.AccessHash)
-	case PEER_ALL:
-		return fmt.Sprintf("PEER_ALL: {peer_id: %d, access_hash: %d", p.PeerId, p.AccessHash)
+	//case PEER_ALL:
+	//	return fmt.Sprintf("PEER_ALL: {peer_id: %d, access_hash: %d", p.PeerId, p.AccessHash)
 	default:
 		return fmt.Sprintf("PEER_UNKNOWN: {peer_id: %d, access_hash: %d", p.PeerId, p.AccessHash)
 	}
-	return
+	// return
 }
 
 func FromInputPeer(peer *mtproto.InputPeer) (p *PeerUtil) {
@@ -222,8 +222,8 @@ func FromInputNotifyPeer(peer *mtproto.InputNotifyPeer) (p *PeerUtil) {
 		p.PeerType = PEER_USERS
 	case mtproto.TLConstructor_CRC32_inputNotifyChats:
 		p.PeerType = PEER_CHATS
-	case mtproto.TLConstructor_CRC32_inputNotifyAll:
-		p.PeerType = PEER_ALL
+	//case mtproto.TLConstructor_CRC32_inputNotifyAll:
+	//	p.PeerType = PEER_ALL
 	default:
 		panic(fmt.Sprintf("FromInputNotifyPeer(%v) error!", p))
 	}
@@ -249,11 +249,11 @@ func (p *PeerUtil) ToInputNotifyPeer(peer *mtproto.InputNotifyPeer) {
 			Constructor: mtproto.TLConstructor_CRC32_inputNotifyChats,
 			Data2:       &mtproto.InputNotifyPeer_Data{},
 		}
-	case PEER_ALL:
-		peer = &mtproto.InputNotifyPeer{
-			Constructor: mtproto.TLConstructor_CRC32_inputNotifyAll,
-			Data2:       &mtproto.InputNotifyPeer_Data{},
-		}
+	//case PEER_ALL:
+	//	peer = &mtproto.InputNotifyPeer{
+	//		Constructor: mtproto.TLConstructor_CRC32_inputNotifyAll,
+	//		Data2:       &mtproto.InputNotifyPeer_Data{},
+	//	}
 	default:
 		panic(fmt.Sprintf("ToInputNotifyPeer(%v) error!", p))
 	}
@@ -269,8 +269,8 @@ func FromNotifyPeer(peer *mtproto.NotifyPeer) (p *PeerUtil) {
 		p.PeerType = PEER_USERS
 	case mtproto.TLConstructor_CRC32_notifyChats:
 		p.PeerType = PEER_CHATS
-	case mtproto.TLConstructor_CRC32_notifyAll:
-		p.PeerType = PEER_ALL
+	//case mtproto.TLConstructor_CRC32_notifyAll:
+	//	p.PeerType = PEER_ALL
 	default:
 		panic(fmt.Sprintf("FromNotifyPeer(%v) error!", p))
 	}
@@ -296,11 +296,11 @@ func (p *PeerUtil) ToNotifyPeer() (peer *mtproto.NotifyPeer) {
 			Constructor: mtproto.TLConstructor_CRC32_notifyChats,
 			Data2:       &mtproto.NotifyPeer_Data{},
 		}
-	case PEER_ALL:
-		peer = &mtproto.NotifyPeer{
-			Constructor: mtproto.TLConstructor_CRC32_notifyAll,
-			Data2:       &mtproto.NotifyPeer_Data{},
-		}
+	//case PEER_ALL:
+	//	peer = &mtproto.NotifyPeer{
+	//		Constructor: mtproto.TLConstructor_CRC32_notifyAll,
+	//		Data2:       &mtproto.NotifyPeer_Data{},
+	//	}
 	default:
 		panic(fmt.Sprintf("ToNotifyPeer(%v) error!", p))
 	}

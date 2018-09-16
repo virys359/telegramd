@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
@@ -57,30 +58,18 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 
 	glog.Infof("messageIdList - %v", messageIdList)
 	if len(messageIdList) > 0 {
-		peerDialogs.SetMessages(s.MessageModel.GetMessagesByPeerAndMessageIdList2(md.UserId, messageIdList))
+		peerDialogs.SetMessages(s.MessageModel.GetUserMessagesByMessageIdList(md.UserId, messageIdList))
 	}
 
 	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
 	peerDialogs.SetUsers(users)
-	//for _, user := range users {
-	//	if user.GetId() == md.UserId {
-	//		user.SetSelf(true)
-	//	} else {
-	//		user.SetSelf(false)
-	//	}
-	//	user.SetContact(true)
-	//	user.SetMutualContact(true)
-	//	peerDialogs.Data2.Users = append(peerDialogs.Data2.Users, user.To_User())
-	//}
 
 	if len(chatIdList) > 0 {
 		peerDialogs.Data2.Chats = s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
 	}
 
-	state, _ := sync_client.GetSyncClient().GetServerUpdatesState(md.AuthId, md.UserId)
-	sync_client.GetSyncClient().UpdateAuthStateSeq(md.AuthId, state.GetPts(), 0)
-
-	peerDialogs.SetState(state.To_Updates_State())
+	state, _ := sync_client.GetSyncClient().SyncGetState(md.AuthId, md.UserId)
+	peerDialogs.SetState(state)
 
 	glog.Infof("MessagesGetPinnedDialogs - reply: %s", logger.JsonDebugData(peerDialogs))
 	return peerDialogs.To_Messages_PeerDialogs(), nil

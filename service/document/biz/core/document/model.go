@@ -18,12 +18,12 @@
 package document
 
 import (
-	"github.com/nebulaim/telegramd/service/idgen/client"
-	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/base"
-	"github.com/nebulaim/telegramd/service/document/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/service/document/biz/core"
+	"github.com/nebulaim/telegramd/service/document/biz/dal/dao/mysql_dao"
+	"github.com/nebulaim/telegramd/service/idgen/client"
 )
 
 type documentsDAO struct {
@@ -36,7 +36,7 @@ type documentsDAO struct {
 type DocumentModel struct {
 	// nbfsDataPath string
 	dao *documentsDAO
-	cb core.PhotoCallback
+	cb  core.PhotoCallback
 }
 
 func NewDocumentModel(serverId int32, dbName, redisName string, cb core.PhotoCallback) *DocumentModel {

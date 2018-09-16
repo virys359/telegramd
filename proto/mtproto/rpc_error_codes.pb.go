@@ -12,6 +12,12 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type TLRpcErrorCodes int32
 
 const (
@@ -431,15 +437,19 @@ var TLRpcErrorCodes_value = map[string]int32{
 func (x TLRpcErrorCodes) String() string {
 	return proto.EnumName(TLRpcErrorCodes_name, int32(x))
 }
-func (TLRpcErrorCodes) EnumDescriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
+func (TLRpcErrorCodes) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_rpc_error_codes_e4f378e5fc1015fa, []int{0}
+}
 
 func init() {
 	proto.RegisterEnum("mtproto.TLRpcErrorCodes", TLRpcErrorCodes_name, TLRpcErrorCodes_value)
 }
 
-func init() { proto.RegisterFile("rpc_error_codes.proto", fileDescriptor2) }
+func init() {
+	proto.RegisterFile("rpc_error_codes.proto", fileDescriptor_rpc_error_codes_e4f378e5fc1015fa)
+}
 
-var fileDescriptor2 = []byte{
+var fileDescriptor_rpc_error_codes_e4f378e5fc1015fa = []byte{
 	// 949 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x55, 0xcb, 0x8f, 0x1b, 0xc5,
 	0x13, 0xfe, 0x29, 0xfe, 0x25, 0x21, 0x9d, 0xdd, 0x6c, 0x6d, 0x27, 0x9b, 0x4c, 0x48, 0xc8, 0x01,

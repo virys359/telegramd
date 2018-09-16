@@ -22,9 +22,10 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	"github.com/nebulaim/telegramd/service/document/client"
 	"golang.org/x/net/context"
 	"time"
-	"github.com/nebulaim/telegramd/service/document/client"
+	"github.com/nebulaim/telegramd/biz/base"
 )
 
 // users.getFullUser#ca30a5b1 id:InputUser = UserFull;
@@ -32,7 +33,28 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("users.getFullUser#ca30a5b1 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	var user *mtproto.User
+	var (
+		user *mtproto.User
+		peer *base.PeerUtil
+	)
+
+	id := request.GetId()
+	switch id.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_inputUserSelf:
+		peer = &base.PeerUtil{
+			PeerType: base.PEER_USER,
+			PeerId:   md.UserId,
+		}
+	case mtproto.TLConstructor_CRC32_inputUser:
+		peer = &base.PeerUtil{
+			PeerType:   base.PEER_USER,
+			PeerId:     id.GetData2().GetUserId(),
+			AccessHash: id.GetData2().GetAccessHash(),
+		}
+	default:
+
+	}
+
 	fullUser := mtproto.NewTLUserFull()
 	fullUser.SetPhoneCallsAvailable(true)
 	fullUser.SetPhoneCallsPrivate(false)
@@ -70,13 +92,8 @@ func (s *UsersServiceImpl) UsersGetFullUser(ctx context.Context, request *mtprot
 	}
 
 	// NotifySettings
-	peerNotifySettings := &mtproto.TLPeerNotifySettings{Data2: &mtproto.PeerNotifySettings_Data{
-		ShowPreviews: true,
-		MuteUntil:    0,
-		Sound:        "default",
-	}}
-
-	fullUser.SetNotifySettings(peerNotifySettings.To_PeerNotifySettings())
+	peerNotifySettings := s.AccountModel.GetNotifySettings(md.UserId, peer)
+	fullUser.SetNotifySettings(peerNotifySettings)
 
 	photoId := user.GetData2().GetPhoto().GetData2().GetPhotoId()
 	sizes, _ := document_client.GetPhotoSizeList(photoId)

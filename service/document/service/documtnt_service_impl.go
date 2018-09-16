@@ -21,14 +21,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	document2 "github.com/nebulaim/telegramd/service/document/biz/core/document"
 	photo2 "github.com/nebulaim/telegramd/service/document/biz/core/photo"
-	"time"
-	"github.com/nebulaim/telegramd/service/nbfs/nbfs"
 	"github.com/nebulaim/telegramd/service/nbfs/cachefs"
-	"github.com/nebulaim/telegramd/baselib/base"
+	"github.com/nebulaim/telegramd/service/nbfs/nbfs"
+	"time"
 )
 
 type DocumentServiceImpl struct {
@@ -58,7 +58,7 @@ func (s *DocumentServiceImpl) NbfsUploadPhotoFile(ctx context.Context, request *
 	glog.Infof("nbfs.uploadPhotoFile - request: %s", logger.JsonDebugData(request))
 
 	var (
-		reply *mtproto.PhotoDataRsp
+		reply     *mtproto.PhotoDataRsp
 		inputFile = request.GetFile()
 	)
 
@@ -109,7 +109,6 @@ func (s *DocumentServiceImpl) NbfsGetPhotoFileData(ctx context.Context, request 
 func (s *DocumentServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, request *mtproto.NbfsUploadedPhotoMedia) (*mtproto.TLMessageMediaPhoto, error) {
 	glog.Infof("nbfs.uploadedPhotoMedia - request: %s", logger.JsonDebugData(request))
 
-
 	var (
 		inputFile = request.GetMedia().GetFile()
 	)
@@ -137,7 +136,7 @@ func (s *DocumentServiceImpl) NbfsUploadedPhotoMedia(ctx context.Context, reques
 	// photo:flags.0?Photo caption:flags.1?string ttl_seconds:flags.2?int
 	var reply = &mtproto.TLMessageMediaPhoto{Data2: &mtproto.MessageMedia_Data{
 		Photo_1:    photo.To_Photo(),
-		Caption:    request.GetMedia().GetCaption(),
+		// Caption:    request.GetMedia().GetCaption(),
 		TtlSeconds: request.GetMedia().GetTtlSeconds(),
 	}}
 
@@ -150,11 +149,11 @@ func (s *DocumentServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, req
 	glog.Infof("nbfs.uploadedDocumentMedia - request: %s", logger.JsonDebugData(request))
 
 	var (
-		inputFile = request.GetMedia().GetFile()
+		inputFile  = request.GetMedia().GetFile()
 		inputThumb = request.GetMedia().GetThumb()
-		media = request.GetMedia()
-		thumb *mtproto.PhotoSize
-		thumbId int64
+		media      = request.GetMedia()
+		thumb      *mtproto.PhotoSize
+		thumbId    int64
 	)
 
 	if media.GetThumb() != nil {
@@ -208,14 +207,14 @@ func (s *DocumentServiceImpl) NbfsUploadedDocumentMedia(ctx context.Context, req
 		Size:       int32(data.FileSize),
 		Thumb:      thumb,
 		DcId:       fileMD.DcId,
-		Version:    0,
+		// Version:    0,
 		Attributes: media.GetAttributes(),
 	}}
 
 	// messageMediaDocument#7c4414d3 flags:# document:flags.0?Document caption:flags.1?string ttl_seconds:flags.2?int = MessageMedia;
 	var reply = &mtproto.TLMessageMediaDocument{Data2: &mtproto.MessageMedia_Data{
 		Document:   document.To_Document(),
-		Caption:    request.GetMedia().GetCaption(),
+		// Caption:    request.GetMedia().GetCaption(),
 		TtlSeconds: request.GetMedia().GetTtlSeconds(),
 	}}
 

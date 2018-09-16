@@ -30,9 +30,9 @@ var (
 )
 
 type uploadConfig struct {
-	ServerId      int32 // 服务器ID
-	DataPath      string
-	RpcServer        *grpc_util.RPCServerConfig
+	ServerId  int32 // 服务器ID
+	DataPath  string
+	RpcServer *grpc_util.RPCServerConfig
 }
 
 func (c *uploadConfig) String() string {

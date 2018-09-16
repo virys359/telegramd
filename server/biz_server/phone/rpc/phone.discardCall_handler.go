@@ -22,12 +22,12 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
-	"github.com/nebulaim/telegramd/biz/core"
+	// "github.com/nebulaim/telegramd/biz/core"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
-	"time"
+	// "time"
 )
 
 // phone.discardCall#78d413a6 peer:InputPhoneCall duration:int reason:PhoneCallDiscardReason connection_id:long = Updates;
@@ -79,27 +79,31 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 		Reason:   request.GetReason(),
 		Duration: request.GetDuration(),
 	}}
+	_ = action
 	peer2 := &base.PeerUtil{
 		PeerType: base.PEER_USER,
 		PeerId:   callSession.ParticipantId,
 	}
-	message := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
-		Out:    true,
-		Date:   int32(time.Now().Unix()),
-		FromId: callSession.AdminId,
-		ToId:   peer2.ToPeer(),
-		Action: action.To_MessageAction(),
-	}}
-	randomId := core.GetUUID()
-	outbox := s.MessageModel.CreateMessageOutboxByNew(callSession.AdminId, peer2, randomId, message.To_Message(), func(messageId int32) {
-		s.UserModel.CreateOrUpdateByOutbox(callSession.AdminId, peer2.PeerType, peer2.PeerId, messageId, false, false)
-	})
-	inboxList, _ := outbox.InsertMessageToInbox(callSession.AdminId, peer2, func(inBoxUserId, messageId int32) {
-		s.UserModel.CreateOrUpdateByInbox(inBoxUserId, base.PEER_USER, peer2.PeerId, messageId, false)
-	})
 
-	adminUpdatesData.AddUpdateNewMessage(outbox.Message)
-	participantUpdatesData.AddUpdateNewMessage(inboxList[0].Message)
+	_ = peer2
+	// message := &mtproto.TLMessageService{Data2: &mtproto.Message_Data{
+	//	Out:    true,
+	//	Date:   int32(time.Now().Unix()),
+	//	FromId: callSession.AdminId,
+	//	ToId:   peer2.ToPeer(),
+	//	Action: action.To_MessageAction(),
+	//}}
+
+	//randomId := core.GetUUID()
+	//outbox := s.MessageModel.CreateMessageOutboxByNew(callSession.AdminId, peer2, randomId, message.To_Message(), func(messageId int32) {
+	//	s.UserModel.CreateOrUpdateByOutbox(callSession.AdminId, peer2.PeerType, peer2.PeerId, messageId, false, false)
+	//})
+	//inboxList, _ := outbox.InsertMessageToInbox(callSession.AdminId, peer2, func(inBoxUserId, messageId int32) {
+	//	s.UserModel.CreateOrUpdateByInbox(inBoxUserId, base.PEER_USER, peer2.PeerId, messageId, false)
+	//})
+	//
+	//adminUpdatesData.AddUpdateNewMessage(outbox.Message)
+	//participantUpdatesData.AddUpdateNewMessage(inboxList[0].Message)
 
 	// 2. add users
 	adminUpdatesData.AddUsers(s.UserModel.GetUsersBySelfAndIDList(callSession.AdminId, []int32{callSession.AdminId, callSession.ParticipantId}))
@@ -108,8 +112,8 @@ func (s *PhoneServiceImpl) PhoneDiscardCall(ctx context.Context, request *mtprot
 	// TODO(@benqi): Add updateReadHistoryInbox
 	// 3. sync
 	//sync_client.GetSyncClient().PushToUserUpdatesData(toId, updatesData.ToUpdates())
-	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, adminUpdatesData.ToUpdates())
-	sync_client.GetSyncClient().PushToUserUpdatesData(callSession.ParticipantId, participantUpdatesData.ToUpdates())
+	// sync_client.GetSyncClient().PushToUserUpdatesData(callSession.AdminId, adminUpdatesData.ToUpdates())
+	// sync_client.GetSyncClient().PushToUserUpdatesData(callSession.ParticipantId, participantUpdatesData.ToUpdates())
 
 	/////////////////////////////////////////////////////////////////////////////////
 	replyUpdatesData := update2.NewUpdatesLogic(md.UserId)

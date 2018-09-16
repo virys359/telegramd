@@ -30,18 +30,18 @@ func (s *AccountServiceImpl) AccountGetPasswordSettings(ctx context.Context, req
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.getPasswordSettings#bc8d11bb - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	passwordLogic, err := s.AccountModel.MakePasswordData(md.UserId)
-	if err != nil {
-		glog.Error("account.getPassword#548a30f5 - error: ", err)
-		return nil, err
-	}
-
-	settings, err := passwordLogic.GetPasswordSetting(request.GetCurrentPasswordHash())
-	if err != nil {
-		glog.Error("account.getPassword#548a30f5 - error: ", err)
-		return nil, err
-	}
-
-	glog.Infof("account.getPasswordSettings#bc8d11bb - reply: %s", logger.JsonDebugData(settings))
-	return settings, nil
+	//passwordLogic, err := s.AccountModel.MakePasswordData(md.UserId)
+	//if err != nil {
+	//	glog.Error("account.getPassword#548a30f5 - error: ", err)
+	//	return nil, err
+	//}
+	//
+	//settings, err := passwordLogic.GetPasswordSetting(request.GetCurrentPasswordHash())
+	//if err != nil {
+	//	glog.Error("account.getPassword#548a30f5 - error: ", err)
+	//	return nil, err
+	//}
+	//
+	//glog.Infof("account.getPasswordSettings#bc8d11bb - reply: %s", logger.JsonDebugData(settings))
+	return nil, nil
 }

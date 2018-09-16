@@ -23,9 +23,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	"time"
-	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/message"
+	"fmt"
 )
 
 // updates.getDifference#25939651 flags:# pts:int pts_total_limit:flags.0?int date:int qts:int = updates.Difference;
@@ -33,63 +33,27 @@ func (s *UpdatesServiceImpl) UpdatesGetDifference(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("updates.getDifference#25939651 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	var (
-		lastPts      = request.GetPts()
-		otherUpdates []*mtproto.Update
-		messages     []*mtproto.Message
-		userList     []*mtproto.User
-		chatList     []*mtproto.Chat
-	)
-
-	updateList, _ := sync_client.GetSyncClient().GetUpdateListByGtPts(md.UserId, lastPts)
-
-	for _, update := range updateList {
-		switch update.GetConstructor() {
-		case mtproto.TLConstructor_CRC32_updateNewMessage:
-			newMessage := update.To_UpdateNewMessage()
-			messages = append(messages, newMessage.GetMessage())
-			// otherUpdates = append(otherUpdates, update)
-
-		case mtproto.TLConstructor_CRC32_updateReadHistoryOutbox:
-			readHistoryOutbox := update.To_UpdateReadHistoryOutbox()
-			readHistoryOutbox.SetPtsCount(0)
-			otherUpdates = append(otherUpdates, readHistoryOutbox.To_Update())
-		case mtproto.TLConstructor_CRC32_updateReadHistoryInbox:
-			readHistoryInbox := update.To_UpdateReadHistoryInbox()
-			readHistoryInbox.SetPtsCount(0)
-			otherUpdates = append(otherUpdates, readHistoryInbox.To_Update())
-		default:
-			continue
-		}
-		if update.Data2.GetPts() > lastPts {
-			lastPts = update.Data2.GetPts()
-		}
+	difference, err := sync_client.GetSyncClient().SyncGetDifference(md.AuthId, md.UserId, request.GetPts())
+	if err != nil {
+		glog.Error("sync.getDifference error - ", err)
+		return nil, err
 	}
 
-	//otherUpdates, boxIDList, lastPts := model.GetUpdatesModel().GetUpdatesByGtPts(md.UserId, request.GetPts())
-	//messages := model.GetMessageModel().GetMessagesByPeerAndMessageIdList2(md.UserId, boxIDList)
-	userIdList, chatIdList, _ := message.PickAllIDListByMessages(messages)
-	userList = s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
-	chatList = s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+	switch difference.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_updates_differenceEmpty:
+	case mtproto.TLConstructor_CRC32_updates_difference:
+		diff := difference.To_UpdatesDifference()
 
-	state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
-		Pts:         lastPts,
-		Date:        int32(time.Now().Unix()),
-		UnreadCount: 0,
-		// Seq:         int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))),
-		Seq: 0,
-	}}
-	difference := &mtproto.TLUpdatesDifference{Data2: &mtproto.Updates_Difference_Data{
-		NewMessages:  messages,
-		OtherUpdates: otherUpdates,
-		Users:        userList,
-		Chats:        chatList,
-		State:        state.To_Updates_State(),
-	}}
+		userIdList, chatIdList, _ := message.PickAllIDListByMessages(diff.GetNewMessages())
+		userList := s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
+		chatList := s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
+		diff.SetUsers(userList)
+		diff.SetChats(chatList)
 
-	// TODO(@benqi): remove to received ack handler.
-	sync_client.GetSyncClient().UpdateAuthStateSeq(md.AuthId, lastPts, 0)
+	default:
+		err = fmt.Errorf("not impl")
+	}
 
 	glog.Infof("updates.getDifference#25939651 - reply: %s", logger.JsonDebugData(difference))
-	return difference.To_Updates_Difference(), nil
+	return difference, nil
 }

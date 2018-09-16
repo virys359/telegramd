@@ -18,9 +18,9 @@
 package server
 
 import (
-	"github.com/nebulaim/telegramd/service/nbfs/nbfs"
 	"github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/service/nbfs/cachefs"
+	"github.com/nebulaim/telegramd/service/nbfs/nbfs"
 )
 
 type UploadServiceImpl struct {

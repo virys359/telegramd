@@ -1,8 +1,8 @@
 /*
  * WARNING! All changes made in this file will be lost!
- * Created from 'scheme.tl' by 'codegen_proto.py'
+ * Created from 'scheme.tl' by 'mtprotoc'
  *
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,12 +26,18 @@ option java_package = "com.nebulaim.engine.mtproto";
 option java_outer_classname = "MTProto";
 option optimize_for = CODE_SIZE;
 
-// import "schema.tl.core_types.proto";
 import "schema.tl.handshake.proto";
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // req_pq#60469778 nonce:int128 = ResPQ;
 message TL_req_pq {
+    bytes nonce = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// req_pq_multi#be7e8ef1 nonce:int128 = ResPQ;
+message TL_req_pq_multi {
     bytes nonce = 1;
 }
 
@@ -65,6 +71,9 @@ message TL_destroy_auth_key {
 service RPCAuthKey {
     // req_pq#60469778 nonce:int128 = ResPQ;
     rpc req_pq(TL_req_pq) returns (ResPQ) {}
+
+    // req_pq_multi#be7e8ef1 nonce:int128 = ResPQ;
+    rpc req_pq_multi(TL_req_pq_multi) returns (ResPQ) {}
 
     // req_DH_params#d712e4be nonce:int128 server_nonce:int128 p:string q:string public_key_fingerprint:long encrypted_data:string = Server_DH_Params;
     rpc req_DH_params(TL_req_DH_params) returns (Server_DH_Params) {}

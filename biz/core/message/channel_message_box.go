@@ -17,6 +17,7 @@
 
 package message
 
+/*
 import (
 	"encoding/json"
 	"fmt"
@@ -167,3 +168,4 @@ func (m *MessageModel) GetChannelMessageList(channelId int32, idList []int32) (m
 	}
 	return
 }
+*/

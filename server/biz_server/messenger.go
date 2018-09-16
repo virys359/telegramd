@@ -46,8 +46,8 @@ import (
 	updates "github.com/nebulaim/telegramd/server/biz_server/updates/rpc"
 	users "github.com/nebulaim/telegramd/server/biz_server/users/rpc"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
-	"google.golang.org/grpc"
 	"github.com/nebulaim/telegramd/service/document/client"
+	"google.golang.org/grpc"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ type messengerConfig struct {
 func init() {
 	flag.Set("alsologtostderr", "true")
 	flag.Set("log_dir", "false")
-	flag.StringVar(&confPath, "conf", "./biz_server.toml", "config path")
+	flag.StringVar(&confPath, "conf", "/Users/wubenqi/go/src/github.com/nebulaim/telegramd/server/biz_server/biz_server.toml", "config path")
 }
 
 func InitializeConfig() (err error) {

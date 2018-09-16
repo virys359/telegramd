@@ -23,18 +23,17 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core"
-	message2 "github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 	"time"
+	"github.com/nebulaim/telegramd/biz/core/message"
 )
 
-func (s *MessagesServiceImpl) makeOutboxMessageBySendMultiMedia(authKeyId int64, fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMultiMedia) ([]*mtproto.TLMessage, []int64) {
+func (s *MessagesServiceImpl) makeOutboxMessageBySendMultiMedia(authKeyId int64, fromId int32, peer *base.PeerUtil, request *mtproto.TLMessagesSendMultiMedia) ([]*mtproto.Message, []int64) {
 	multi_media := request.GetMultiMedia()
-	messages := make([]*mtproto.TLMessage, 0, len(multi_media))
+	messages := make([]*mtproto.Message, 0, len(multi_media))
 	randomIdList := make([]int64, 0, len(multi_media))
-	grouped_id := core.GetUUID()
+	groupedId := core.GetUUID()
 	for _, media := range multi_media {
 		message := &mtproto.TLMessage{Data2: &mtproto.Message_Data{
 			Out:          true,
@@ -43,35 +42,43 @@ func (s *MessagesServiceImpl) makeOutboxMessageBySendMultiMedia(authKeyId int64,
 			ToId:         peer.ToPeer(),
 			ReplyToMsgId: request.GetReplyToMsgId(),
 			Media:        s.makeMediaByInputMedia(authKeyId, media.GetData2().GetMedia()),
-			// Entities:     media.GetData2()
+			// Entities:    media.GetData2()
 			// ReplyMarkup: media.GetData2().GetReplyMarkup(),
-			Date:      int32(time.Now().Unix()),
-			GroupedId: grouped_id,
+			Date:         int32(time.Now().Unix()),
+			GroupedId:    groupedId,
 		}}
 
-		messages = append(messages, message)
+		messages = append(messages, message.To_Message())
 		randomIdList = append(randomIdList, media.GetData2().GetRandomId())
 	}
 
 	return messages, randomIdList
 }
 
-func (s *MessagesServiceImpl) makeUpdateNewMessageListUpdates(selfUserId int32, boxList message2.MessageBoxList) *mtproto.TLUpdates {
-	var messages []*mtproto.Message = make([]*mtproto.Message, 0, len(boxList))
+func (s *MessagesServiceImpl) makeUpdateNewMessageListUpdates(selfUserId, pts, ptsCount int32, boxList []*message.MessageBox2) *mtproto.TLUpdates {
+	var (
+		messages = make([]*mtproto.Message, 0, len(boxList))
+	)
+
+	pts = pts - ptsCount
 	for _, box := range boxList {
-		messages = append(messages, box.Message)
+		messages = append(messages, box.ToMessage(selfUserId))
 	}
 
-	userIdList, _, _ := message2.PickAllIDListByMessages(messages)
+	userIdList, _, _ := message.PickAllIDListByMessages(messages)
 	userList := s.UserModel.GetUsersBySelfAndIDList(selfUserId, userIdList)
 	updateNewList := make([]*mtproto.Update, 0, len(messages))
 	for _, m := range messages {
-		updateNewList = append(updateNewList, &mtproto.Update{
-			Constructor: mtproto.TLConstructor_CRC32_updateNewMessage,
-			Data2: &mtproto.Update_Data{
-				Message_1: m,
-			}})
+		// pts += 1
+		updateNewMessage := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
+			Message_1: m,
+			Pts:       pts,
+			PtsCount:  1,
+		}}
+		pts += 1
+		updateNewList = append(updateNewList, updateNewMessage.To_Update())
 	}
+
 	return &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
 		Updates: updateNewList,
 		Users:   userList,
@@ -115,71 +122,51 @@ func (s *MessagesServiceImpl) MessagesSendMultiMedia(ctx context.Context, reques
 		peer = base.FromInputPeer(request.GetPeer())
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////
-	// 发件箱
-	// sendMessageToOutbox
+	// 1. draft
+	if request.GetClearDraft() {
+		s.DoClearDraft(md.UserId, md.AuthId, peer)
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	//// 发件箱
 	outboxMessages, randomIdList := s.makeOutboxMessageBySendMultiMedia(md.AuthId, md.UserId, peer, request)
-	var messageOutboxList message2.MessageBoxList
-	for i := 0; i < len(outboxMessages); i++ {
-		messageOutbox := s.MessageModel.CreateMessageOutboxByNew(md.UserId, peer, randomIdList[i], outboxMessages[i].To_Message(), func(messageId int32) {
-			// 更新会话信息
-			s.UserModel.CreateOrUpdateByOutbox(md.UserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetMentioned(), request.GetClearDraft())
-		})
-		messageOutboxList = append(messageOutboxList, messageOutbox)
-	}
 
-	syncUpdates := s.makeUpdateNewMessageListUpdates(md.UserId, messageOutboxList)
-	state, err := sync_client.GetSyncClient().SyncUpdatesData(md.AuthId, md.SessionId, md.UserId, syncUpdates.To_Updates())
-	if err != nil {
-		return nil, err
-	}
+	resultCB := func(pts, ptsCount int32, outBoxList []*message.MessageBox2) (*mtproto.Updates, error) {
+		resultUpdates := s.makeUpdateNewMessageListUpdates(md.UserId, pts, ptsCount, outBoxList)
 
-	reply := SetupUpdatesState(state, syncUpdates)
-	updateList := []*mtproto.Update{}
-	for i := 0; i < len(messageOutboxList); i++ {
-		updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
-			Id_4:     messageOutboxList[i].MessageId,
-			RandomId: randomIdList[i],
-		}}
-		updateList = append(updateList, updateMessageID.To_Update())
-	}
-	updateList = append(updateList, reply.GetUpdates()...)
-
-	reply.SetUpdates(updateList)
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	// 收件箱
-	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerSelf {
-		// var inBoxes message2.MessageBoxList
-		var inBoxeMap = map[int32][]*message2.MessageBox{}
-		for i := 0; i < len(outboxMessages); i++ {
-			inBoxes, _ := messageOutboxList[i].InsertMessageToInbox(md.UserId, peer, func(inBoxUserId, messageId int32) {
-				// 更新会话信息
-				switch peer.PeerType {
-				case base.PEER_USER:
-					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, md.UserId, messageId, outboxMessages[i].GetMentioned())
-				case base.PEER_CHAT, base.PEER_CHANNEL:
-					s.UserModel.CreateOrUpdateByInbox(inBoxUserId, peer.PeerType, peer.PeerId, messageId, outboxMessages[i].GetMentioned())
-				}
-			})
-
-			for j := 0; j < len(inBoxes); j++ {
-				if boxList, ok := inBoxeMap[inBoxes[j].UserId]; !ok {
-					inBoxeMap[inBoxes[j].UserId] = []*message2.MessageBox{inBoxes[j]}
-				} else {
-					boxList = append(boxList, inBoxes[j])
-					inBoxeMap[inBoxes[j].UserId] = boxList
-				}
-			}
+		updateList := make([]*mtproto.Update, 0)
+		for i := 0; i < len(outBoxList); i++ {
+			updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
+				Id_4:     outBoxList[i].MessageId,
+				RandomId: outBoxList[i].RandomId,
+			}}
+			updateList = append(updateList, updateMessageID.To_Update())
 		}
+		updateList = append(updateList, resultUpdates.GetUpdates()...)
+		resultUpdates.SetUpdates(updateList)
 
-		for k, v := range inBoxeMap {
-
-			syncUpdates = s.makeUpdateNewMessageListUpdates(k, v)
-			sync_client.GetSyncClient().PushToUserUpdatesData(k, syncUpdates.To_Updates())
-		}
+		return resultUpdates.To_Updates(), nil
 	}
 
-	glog.Infof("messages.sendMultiMedia#2095512f - reply: %s", logger.JsonDebugData(reply))
-	return reply.To_Updates(), nil
+	syncNotMeCB := func(pts, ptsCount int32, outBoxList []*message.MessageBox2) (int64, *mtproto.Updates, error) {
+		syncUpdates := s.makeUpdateNewMessageListUpdates(md.UserId, pts, ptsCount, outBoxList)
+		return md.AuthId, syncUpdates.To_Updates(), nil
+	}
+
+	pushCB := func(userId, pts, ptsCount int32, inBoxList []*message.MessageBox2) (*mtproto.Updates, error) {
+		pushUpdates := s.makeUpdateNewMessageListUpdates(userId, pts, ptsCount, inBoxList)
+		return pushUpdates.To_Updates(), nil
+	}
+
+	resultUpdates, err := s.MessageModel.SendMultiMessage(
+		md.UserId,
+		peer,
+		randomIdList,
+		outboxMessages,
+		resultCB,
+		syncNotMeCB,
+		pushCB)
+
+	glog.Infof("messages.sendMultiMedia#2095512f - reply: %s", logger.JsonDebugData(resultUpdates))
+	return resultUpdates, nil
 }

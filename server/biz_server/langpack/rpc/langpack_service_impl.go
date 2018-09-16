@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	LANG_PACK_EN_FILE = "./lang_pack_en.toml"
+	LANG_PACK_EN_FILE = "/Users/wubenqi/go/src/github.com/nebulaim/telegramd/server/biz_server/lang_pack_en.toml"
 )
 
 var langs model2.LangPacks

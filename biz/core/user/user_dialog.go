@@ -18,7 +18,6 @@
 package user
 
 import (
-	"encoding/json"
 	"github.com/golang/glog"
 	base2 "github.com/nebulaim/telegramd/baselib/base"
 	"github.com/nebulaim/telegramd/biz/base"
@@ -47,20 +46,34 @@ func dialogDOToDialog(dialogDO *dataobject.UserDialogsDO) *mtproto.TLDialog {
 	dialog.SetUnreadCount(dialogDO.UnreadCount)
 	dialog.SetUnreadMentionsCount(dialogDO.UnreadMentionsCount)
 
-	if dialogDO.DraftType == 2 {
-		draft := &mtproto.DraftMessage{}
-		err := json.Unmarshal([]byte(dialogDO.DraftMessageData), &draft)
-		if err == nil {
-			dialog.SetDraft(draft)
-		}
-	}
+	// TODO(@benqi): draft message.
+	dialog.SetDraft(mtproto.NewTLDraftMessageEmpty().To_DraftMessage())
+	//if dialogDO.DraftType == 2 {
+	//	draft := &mtproto.DraftMessage{}
+	//	err := json.Unmarshal([]byte(dialogDO.DraftMessageData), &draft)
+	//	if err == nil {
+	//		dialog.SetDraft(draft)
+	//	}
+	//}
 
 	// NotifySettings
 	peerNotifySettings := mtproto.NewTLPeerNotifySettings()
-	peerNotifySettings.SetShowPreviews(dialogDO.ShowPreviews == 1)
-	peerNotifySettings.SetSilent(dialogDO.Silent == 1)
-	peerNotifySettings.SetMuteUntil(dialogDO.MuteUntil)
-	peerNotifySettings.SetSound(dialogDO.Sound)
+	if dialogDO.ShowPreviews == 1 {
+		peerNotifySettings.SetShowPreviews(mtproto.ToBool(true))
+	}
+	if dialogDO.Silent == 1 {
+		peerNotifySettings.SetSilent(mtproto.ToBool(true))
+	}
+	if dialogDO.MuteUntil == 0 {
+		peerNotifySettings.SetMuteUntil(1)
+	} else {
+		peerNotifySettings.SetMuteUntil(dialogDO.MuteUntil)
+	}
+	if dialogDO.Sound == "" {
+		peerNotifySettings.SetSound("default")
+	} else {
+		peerNotifySettings.SetSound(dialogDO.Sound)
+	}
 	dialog.SetNotifySettings(peerNotifySettings.To_PeerNotifySettings())
 	return dialog
 }
@@ -202,7 +215,14 @@ func (m *UserModel) CreateOrUpdateByInbox(userId, peerType int32, peerId int32, 
 	return
 }
 
-func (m *UserModel) SaveDraftMessage(userId int32, peerType int32, peerId int32, message *mtproto.DraftMessage) {
-	draft, _ := json.Marshal(message)
-	m.dao.UserDialogsDAO.SaveDraft(string(draft), userId, int8(peerType), peerId)
-}
+//func (m *UserModel) SaveDraftMessage(userId int32, peerType int32, peerId int32, message *mtproto.DraftMessage) {
+//	draft, _ := json.Marshal(message)
+//	m.dao.UserDialogsDAO.SaveDraft(string(draft), userId, int8(peerType), peerId)
+//}
+
+//func (m *UserModel) ClearDraftMessage(userId int32, peerType int32, peerId int32) bool {
+//	// draft, _ := json.Marshal(message)
+//	// m.dao.UserDialogsDAO.SaveDraft(string(draft), userId, int8(peerType), peerId)
+//	affectedRows := m.dao.UserDialogsDAO.ClearDraft(userId, int8(peerType), peerId)
+//	return affectedRows > 0
+//}

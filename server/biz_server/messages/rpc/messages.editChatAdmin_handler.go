@@ -23,7 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	update2 "github.com/nebulaim/telegramd/biz/core/update"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
 )
 
@@ -70,7 +70,7 @@ func (s *MessagesServiceImpl) MessagesEditChatAdmin(ctx context.Context, request
 		updates.AddUpdate(updateChatParticipants.To_Update())
 		updates.AddUsers(s.UserModel.GetUsersBySelfAndIDList(id, idList))
 		updates.AddChat(chatLogic.ToChat(md.UserId))
-		sync_client.GetSyncClient().PushToUserUpdatesData(id, updates.ToUpdates())
+		// sync_client.GetSyncClient().PushToUserUpdatesData(id, updates.ToUpdates())
 	}
 
 	glog.Infof("messages.editChatAdmin#a9e69f2e - reply: {true}")

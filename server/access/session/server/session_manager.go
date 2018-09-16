@@ -100,10 +100,9 @@ func (s *sessionManager) onSessionClientClosed(clientConnID uint64, md *zproto.Z
 	return sessList.onSessionClientClosed(makeClientConnID(sessData.ConnType, clientConnID, sessData.SessionId))
 }
 
-func (s *sessionManager) onSyncData(authKeyId, sessionId int64, md *zproto.ZProtoMetadata, data *messageData) error {
-	glog.Infof("onSyncData - receive data: {auth_key_id: %d, session_id: %d, md: %s, data: %s}",
+func (s *sessionManager) onSyncData(authKeyId int64, md *zproto.ZProtoMetadata, data *messageData) error {
+	glog.Infof("onSyncData - receive data: {auth_key_id: %d, md: %s, data: %s}",
 		authKeyId,
-		sessionId,
 		md,
 		data)
 
@@ -117,7 +116,7 @@ func (s *sessionManager) onSyncData(authKeyId, sessionId int64, md *zproto.ZProt
 		sessList, _ = vv.(*clientSessionManager)
 	}
 
-	return sessList.OnSyncDataArrived(sessionId, md, data)
+	return sessList.OnSyncDataArrived(md, data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

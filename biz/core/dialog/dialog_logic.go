@@ -17,7 +17,11 @@
 
 package dialog
 
-import "github.com/nebulaim/telegramd/baselib/base"
+import (
+	"github.com/nebulaim/telegramd/baselib/base"
+	// "github.com/nebulaim/telegramd/biz/core/peer"
+	// "github.com/nebulaim/telegramd/biz/dal/dataobject"
+)
 
 type dialogLogic struct {
 	selfUserId int32
