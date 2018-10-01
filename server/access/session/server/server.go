@@ -33,14 +33,15 @@ import (
 )
 
 type SessionServer struct {
-	idgen          idgen.UUIDGen
-	status         status_client.StatusClient
-	server         *zproto.ZProtoServer
-	bizRpcClient   *grpc_util.RPCClient
-	nbfsRpcClient  *grpc_util.RPCClient
-	syncRpcClient  mtproto.RPCSyncClient
-	sessionManager *sessionManager
-	syncHandler    *syncHandler
+	idgen                idgen.UUIDGen
+	status               status_client.StatusClient
+	server               *zproto.ZProtoServer
+	bizRpcClient         *grpc_util.RPCClient
+	nbfsRpcClient        *grpc_util.RPCClient
+	syncRpcClient        mtproto.RPCSyncClient
+	authSessionRpcClient mtproto.RPCSessionClient
+	sessionManager       *sessionManager
+	syncHandler          *syncHandler
 }
 
 func NewSessionServer() *SessionServer {
@@ -67,7 +68,7 @@ func (s *SessionServer) Initialize() error {
 	// 初始化redis_dao、mysql_dao
 	dao.InstallRedisDAOManager(redis_client.GetRedisClientManager())
 	// TODO(@benqi): config cap
-	InitCacheAuthManager(1024*1024, &Conf.AuthKeyRpcClient)
+	InitCacheAuthManager(1024*1024, &Conf.AuthSessionRpcClient)
 
 	s.sessionManager = newSessionManager()
 	s.syncHandler = newSyncHandler(s.sessionManager)
@@ -82,8 +83,14 @@ func (s *SessionServer) RunLoop() {
 
 	s.bizRpcClient, _ = grpc_util.NewRPCClient(&Conf.BizRpcClient)
 	s.nbfsRpcClient, _ = grpc_util.NewRPCClient(&Conf.NbfsRpcClient)
+
+	// sync
 	c, _ := grpc_util.NewRPCClient(&Conf.SyncRpcClient)
 	s.syncRpcClient = mtproto.NewRPCSyncClient(c.GetClientConn())
+
+	// auth_session
+	c, _ = grpc_util.NewRPCClient(&Conf.AuthSessionRpcClient)
+	s.authSessionRpcClient = mtproto.NewRPCSessionClient(c.GetClientConn())
 
 	s.server.Serve()
 }

@@ -27,15 +27,16 @@ import (
 // sync.syncUpdates#3a077679 flags:# layer:int user_id:int auth_key_id:long server_id:flags.1?int not_me:flags.0?true updates:Updates = Bool;
 func (s *SyncServiceImpl) SyncSyncUpdates(ctx context.Context, request *mtproto.TLSyncSyncUpdates) (*mtproto.Bool, error) {
     glog.Infof("sync.syncUpdates#3a077679 - request: {%s}", logger.JsonDebugData(request))
-    pushData := &mtproto.PushData{
-        Constructor: mtproto.TLConstructor_CRC32_sync_pushUpdatesData,
-        Data2:       &mtproto.PushData_Data{AuthKeyId: request.GetAuthKeyId(), Updates: request.GetUpdates()},
-    }
 
     err := s.processUpdatesRequest(request.GetUserId(), request.GetUpdates())
     if err == nil {
-    	if request.GetNotMe() {
-			s.pushUpdatesToSession(syncTypeUserNotMe, request.GetUserId(), pushData, request.GetServerId())
+		pushData := &mtproto.PushData{
+			Constructor: mtproto.TLConstructor_CRC32_sync_pushUpdatesData,
+			Data2:       &mtproto.PushData_Data{AuthKeyId: request.GetAuthKeyId(), Updates: request.GetUpdates()},
+		}
+
+		if request.GetServerId() == 0 {
+			s.pushUpdatesToSession(syncTypeUserNotMe, request.GetUserId(), pushData, 0)
 		} else {
 			s.pushUpdatesToSession(syncTypeUserMe, request.GetUserId(), pushData, request.GetServerId())
 		}
@@ -43,5 +44,7 @@ func (s *SyncServiceImpl) SyncSyncUpdates(ctx context.Context, request *mtproto.
         glog.Error(err)
         return mtproto.ToBool(false), nil
     }
-    return mtproto.ToBool(true), nil
+
+	glog.Infof("sync.syncUpdates#3a077679 - reply: {true}",)
+	return mtproto.ToBool(true), nil
 }

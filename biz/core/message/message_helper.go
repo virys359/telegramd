@@ -101,18 +101,7 @@ func (m *MessageBox2) Insert() (lastInsertId int64) {
 			}
 		}
 	case MESSAGE_BOX_TYPE_CHANNEL:
-		//boxDO := &dataobject.ChannelMessageBoxesDO{
-		//	//UserId:           m.OwnerId,
-		//	//UserMessageBoxId: int32(core.NextMessageBoxId(m.OwnerId)),
-		//	//DialogId:         m.DialogId,
-		//	//DialogMessageId:  m.DialogMessageId,
-		//	//MessageBoxType:   m.MessageBoxType,
-		//	//Date2:            int32(time.Now().Unix()),
-		//	//Deleted:          0,
-		//}
-		//// m.dao.MessageBoxesDAO.Insert(boxDO)
-	default:
-		//
+		// channel_message inserted.
 	}
 	return
 }
@@ -125,7 +114,8 @@ func (m *MessageBox2) ToMessage(toUserId int32) *mtproto.Message {
 		message.Data2.Message = m.EditMessage
 		message.Data2.EditDate = m.EditDate
 	}
-	if m.Views != 1 {
+
+	if m.Views != 0 {
 		message.Data2.Views = m.Views
 	}
 
@@ -199,6 +189,7 @@ func (m *MessageModel) MakeMessageData(senderUserId int32, peer *base.PeerUtil, 
 		RandomId:        clientRandomId,
 		Message:         message,
 		HasMediaUnread:  hasMediaUnread,
+		Views:           message.GetData2().GetViews(),
 		dao:             m.dao,
 	}
 }
@@ -244,6 +235,7 @@ func (m *MessageData) Insert() (lastInsertId int64) {
 			MessageType:      int8(mtype),
 			MessageData:      string(mdata),
 			HasMediaUnread:   base2.BoolToInt8(m.HasMediaUnread),
+			Views:            m.Views,
 			Date:             int32(time.Now().Unix()),
 			Deleted:          0,
 		}
@@ -355,7 +347,7 @@ func (m *MessageModel) SendInternalMessage(senderUserId int32,
 	case base.PEER_CHANNEL:
 		// 发给Channel
 		channelBox := MakeChannelMessageBox(peer.PeerId, messageData)
-		channelBox.Insert()
+		// channelBox.Insert()
 		if cb != nil {
 			cb(senderUserId, channelBox)
 		}
@@ -646,3 +638,39 @@ func (m *MessageModel) SendMultiMessage(sendUserId int32,
 	return replyUpdates, nil
 }
 
+func (m *MessageModel) SendChannelMessage(sendUserId int32,
+	peer *base.PeerUtil,
+	randomId int64,
+	outboxMessage *mtproto.Message,
+	resultCB func(pts, ptsCount int32, channelBox *MessageBox2) (*mtproto.Updates),
+	syncNotMeCB func(pts, ptsCount int32, channelBox *MessageBox2) ([]int32, int64, *mtproto.Updates, error),
+	pushCB func(userId, pts, ptsCount int32, channelBox *MessageBox2) (*mtproto.Updates, error)) (*mtproto.Updates, error) {
+
+	// TODO(@benqi): rollback
+	defer func() {
+
+	}()
+
+	var channelBox *MessageBox2
+	err := m.SendInternalMessage(sendUserId, peer, randomId, false, outboxMessage, func(ownerId int32, box2 *MessageBox2) {
+		channelBox = box2
+	})
+
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+
+	pts := int32(core.NextChannelPtsId(channelBox.OwnerId))
+	ptsCount := int32(1)
+
+	idList, authKeyId, syncUpdates, err := syncNotMeCB(pts, ptsCount, channelBox)
+	sync_client.GetSyncClient().SyncChannelUpdatesNotMe(channelBox.OwnerId, sendUserId, authKeyId, syncUpdates)
+
+	for _, id := range idList {
+		pushUpdates, _ := pushCB(id, pts, ptsCount, channelBox)
+		sync_client.GetSyncClient().PushChannelUpdates(channelBox.OwnerId, id, pushUpdates)
+	}
+
+	return resultCB(pts, ptsCount, channelBox), nil
+}

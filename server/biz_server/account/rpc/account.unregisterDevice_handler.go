@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,36 +18,20 @@
 package rpc
 
 import (
-	"github.com/golang/glog"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
-	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz/core"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"golang.org/x/net/context"
+    "github.com/golang/glog"
+    "github.com/nebulaim/telegramd/proto/mtproto"
+    "golang.org/x/net/context"
+    "fmt"
+    "github.com/nebulaim/telegramd/baselib/grpc_util"
+    "github.com/nebulaim/telegramd/baselib/logger"
 )
 
-// account.unregisterDevice#65c55b40 token_type:int token:string = Bool;
+// account.unregisterDevice#3076c4bf token_type:int token:string other_uids:Vector<int> = Bool;
 func (s *AccountServiceImpl) AccountUnregisterDevice(ctx context.Context, request *mtproto.TLAccountUnregisterDevice) (*mtproto.Bool, error) {
-	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("account.unregisterDevice#65c55b40 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+    md := grpc_util.RpcMetadataFromIncoming(ctx)
+    glog.Infof("account.unregisterDevice#3076c4bf - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// Check token invalid
-	// TODO(@benqi): check token format by token_type
-	if request.Token == "" {
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
-		glog.Error(err)
-		return nil, err
-	}
+    // TODO(@benqi): Impl AccountUnregisterDevice logic
 
-	// Check token format by token_type
-	if request.TokenType < core.TOKEN_TYPE_APNS || request.TokenType > core.TOKEN_TYPE_INTERNAL_PUSH {
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
-		glog.Error(err)
-		return nil, err
-	}
-
-	unregistered := s.AccountModel.UnRegisterDevice(int8(request.TokenType), request.Token)
-
-	glog.Infof("account.unregisterDevice#65c55b40 - reply: {%v}\n", unregistered)
-	return mtproto.ToBool(unregistered), nil
+    return nil, fmt.Errorf("not impl AccountUnregisterDevice")
 }

@@ -24,14 +24,16 @@ import (
     "github.com/nebulaim/telegramd/baselib/logger"
 )
 
-// sync.pushRpcResult#1bf9b15e server_id:int auth_key_id:long req_msg_id:long result:bytes = Bool;
+// sync.pushRpcResult server_id:int auth_key_id:long req_msg_id:long result:bytes = Bool;
 func (s *SyncServiceImpl) SyncPushRpcResult(ctx context.Context, request *mtproto.TLSyncPushRpcResult) (*mtproto.Bool, error) {
-    glog.Infof("sync.pushRpcResult#1bf9b15e - request: {%s}", logger.JsonDebugData(request))
+    glog.Infof("sync.pushRpcResult - request: {%s}", logger.JsonDebugData(request))
     pushData := &mtproto.PushData{
         Constructor: mtproto.TLConstructor_CRC32_sync_pushRpcResultData,
         Data2:       &mtproto.PushData_Data{AuthKeyId: request.GetAuthKeyId(), ClientReqMsgId: request.GetReqMsgId(), Result: request.GetResult()},
     }
 
     s.pushUpdatesToSession(syncTypeRpcResult, 0, pushData, request.GetServerId())
+    glog.Infof("sync.pushRpcResult#1bf9b15e - reply: {true}",)
     return mtproto.ToBool(true), nil
 }
+

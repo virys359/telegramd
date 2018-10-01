@@ -23,6 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/service/auth_session/client"
 )
 
 // auth.logOut#5717da40 = Bool;
@@ -30,7 +31,8 @@ func (s *AuthServiceImpl) AuthLogOut(ctx context.Context, request *mtproto.TLAut
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("auth.logOut#5717da40 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl AuthLogOut logic
+	// unbind auth_key and user_id
+	auth_session_client.UnbindAuthKeyUser(md.AuthId, md.UserId)
 
 	glog.Info("auth.logOut#5717da40 - reply: {true}")
 	return mtproto.ToBool(true), nil

@@ -30,6 +30,7 @@ func (s *UploadServiceImpl) UploadGetFile(ctx context.Context, request *mtproto.
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("upload.getFile#e3a6cfb5 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
+
 	uploadFile, err := s.NbfsFacade.DownloadFile(request.GetLocation(), request.GetOffset(), request.GetLimit())
 	if err != nil {
 		glog.Error(err)

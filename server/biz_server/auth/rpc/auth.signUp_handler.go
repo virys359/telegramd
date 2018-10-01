@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/service/auth_session/client"
 )
 
 /*
@@ -107,7 +108,10 @@ func (s *AuthServiceImpl) AuthSignUp(ctx context.Context, request *mtproto.TLAut
 	}
 
 	user := s.UserModel.CreateNewUser(phoneNumber, pnumber.GetRegionCode(), request.FirstName, request.LastName)
-	s.AuthModel.BindAuthKeyAndUser(md.AuthId, user.GetId())
+
+	// bind auth_key and user_id
+	auth_session_client.BindAuthKeyUser(md.AuthId, user.GetId())
+
 	// TODO(@benqi): check and set authKeyId state
 	// TODO(@benqi): 修改那些将我的phoneNumber加到他们的联系人列表里的联系人的状态
 

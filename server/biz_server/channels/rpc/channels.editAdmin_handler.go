@@ -18,12 +18,14 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/biz/core/channel"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // channels.editAdmin#20b88214 channel:InputChannel user_id:InputUser admin_rights:ChannelAdminRights = Updates;
@@ -31,7 +33,29 @@ func (s *ChannelsServiceImpl) ChannelsEditAdmin(ctx context.Context, request *mt
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("ChannelsEditAdmin - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ChannelsEditAdmin logic
+	// TODO(@benqi): check channel_id and access_hash
 
-	return nil, fmt.Errorf("Not impl ChannelsEditAdmin")
+	channelId := request.GetChannel().GetData2().GetChannelId()
+	editAdminUserId := request.GetUserId().GetData2().GetUserId()
+
+	channelLogic, _ := s.ChannelModel.NewChannelLogicById(channelId)
+	err := channelLogic.EditAdminRights(md.UserId, request.GetUserId().GetData2().GetUserId(), request.GetAdminRights())
+	if err != nil {
+		glog.Errorf("channels.editTitle#566decd0 - error: %s", err)
+		return nil, err
+	}
+
+	// reply
+	replyUpdates := updates.NewUpdatesLogic(md.UserId)
+	replyUpdates.AddChat(channelLogic.ToChannel(md.UserId))
+
+	// push
+	pushUpdates := updates.NewUpdatesLogic(editAdminUserId)
+	pushUpdates.AddUpdate(channel.MakeUpdateChannel(channelId))
+	pushUpdates.AddChat(channelLogic.ToChannel(editAdminUserId))
+	sync_client.GetSyncClient().PushChannelUpdates(channelId, editAdminUserId, pushUpdates.ToUpdates())
+
+	reply := replyUpdates.ToUpdates()
+	glog.Infof("channels.editTitle#566decd0 - reply: {%s}", logger.JsonDebugData(reply))
+	return reply, nil
 }

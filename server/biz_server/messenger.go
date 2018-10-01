@@ -48,6 +48,7 @@ import (
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 	"github.com/nebulaim/telegramd/service/document/client"
 	"google.golang.org/grpc"
+	"github.com/nebulaim/telegramd/service/auth_session/client"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,20 +59,21 @@ var (
 )
 
 type messengerConfig struct {
-	ServerId       int32 // 服务器ID
-	RelayIp        string
-	RpcServer      *grpc_util.RPCServerConfig
-	Mysql          []mysql_client.MySQLConfig
-	Redis          []redis_client.RedisConfig
-	NbfsRpcClient  *service_discovery.ServiceDiscoveryClientConfig
-	SyncRpcClient1 *service_discovery.ServiceDiscoveryClientConfig
-	SyncRpcClient2 *service_discovery.ServiceDiscoveryClientConfig
+	ServerId             int32 // 服务器ID
+	RelayIp              string
+	RpcServer            *grpc_util.RPCServerConfig
+	Mysql                []mysql_client.MySQLConfig
+	Redis                []redis_client.RedisConfig
+	NbfsRpcClient        *service_discovery.ServiceDiscoveryClientConfig
+	SyncRpcClient1       *service_discovery.ServiceDiscoveryClientConfig
+	SyncRpcClient2       *service_discovery.ServiceDiscoveryClientConfig
+	AuthSessionRpcClient *service_discovery.ServiceDiscoveryClientConfig
 }
 
 func init() {
 	flag.Set("alsologtostderr", "true")
 	flag.Set("log_dir", "false")
-	flag.StringVar(&confPath, "conf", "/Users/wubenqi/go/src/github.com/nebulaim/telegramd/server/biz_server/biz_server.toml", "config path")
+	flag.StringVar(&confPath, "conf", "./biz_server.toml", "config path")
 }
 
 func InitializeConfig() (err error) {
@@ -115,6 +117,7 @@ func (s *messengerServer) Initialize() error {
 
 		document_client.InstallNbfsClient(Conf.NbfsRpcClient)
 		sync_client.InstallSyncClient(Conf.SyncRpcClient2)
+		auth_session_client.InstallAuthSessionClient(Conf.AuthSessionRpcClient)
 	})
 
 	s.rpcServer = grpc_util.NewRpcServer(Conf.RpcServer.Addr, &Conf.RpcServer.RpcDiscovery)

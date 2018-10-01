@@ -42,6 +42,10 @@ func (m *TLInvokeAfterMsgExt) Encode() []byte {
 	return nil
 }
 
+func (m *TLInvokeAfterMsgExt) EncodeToLayer(int) []byte {
+	return m.Encode()
+}
+
 func (m *TLInvokeAfterMsgExt) Decode(dbuf *mtproto.DecodeBuf) error {
 	return nil
 }
@@ -68,6 +72,10 @@ func NewInvokeAfterMsgsExt(invokeAfterMsgs *mtproto.TLInvokeAfterMsgs) *TLInvoke
 
 func (m *TLInvokeAfterMsgsExt) Encode() []byte {
 	return nil
+}
+
+func (m *TLInvokeAfterMsgsExt) EncodeToLayer(int) []byte {
+	return m.Encode()
 }
 
 func (m *TLInvokeAfterMsgsExt) Decode(dbuf *mtproto.DecodeBuf) error {
@@ -114,6 +122,10 @@ func (m *TLInitConnectionExt) Decode(dbuf *mtproto.DecodeBuf) error {
 	return nil
 }
 
+func (m *TLInitConnectionExt) EncodeToLayer(int) []byte {
+	return m.Encode()
+}
+
 func (m *TLInitConnectionExt) String() string {
 	return fmt.Sprintf("{api_id: %d, device_mode: %s, system_version: %s, app_version: %s, system_lang_code: %s, lang_pack: %s, lang_code: %s, query: {%v}}",
 		m.ApiId, m.DeviceMode, m.SystemVersion, m.AppVersion, m.SystemLangCode, m.LangCode, m.LangPack, m.Query)
@@ -136,6 +148,10 @@ func NewInvokeWithLayerExt(invokeWithLayer *mtproto.TLInvokeWithLayer) *TLInvoke
 
 func (m *TLInvokeWithLayerExt) Encode() []byte {
 	return nil
+}
+
+func (m *TLInvokeWithLayerExt) EncodeToLayer(int) []byte {
+	return m.Encode()
 }
 
 func (m *TLInvokeWithLayerExt) Decode(dbuf *mtproto.DecodeBuf) error {
@@ -162,6 +178,10 @@ func NewInvokeWithoutUpdatesExt(invokeWithoutUpdates *mtproto.TLInvokeWithoutUpd
 
 func (m *TLInvokeWithoutUpdatesExt) Encode() []byte {
 	return nil
+}
+
+func (m *TLInvokeWithoutUpdatesExt) EncodeToLayer(int) []byte {
+	return m.Encode()
 }
 
 func (m *TLInvokeWithoutUpdatesExt) Decode(dbuf *mtproto.DecodeBuf) error {

@@ -128,6 +128,13 @@ $ go get
 $ go build
 ```
 
+### build auth_key
+```
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/service/auth_session
+$ go get
+$ go build
+```
+
 ### build sync
 ```
 $ cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
@@ -182,6 +189,9 @@ $ ./frontend
 
 $ cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
 $ ./auth_key
+
+$ cd $GOPATH/src/github.com/nebulaim/telegramd/service/auth_session
+$ ./auth_session
 
 $ cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
 $ ./sync

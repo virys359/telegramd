@@ -33,10 +33,10 @@ func NewChannelParticipantsDAO(db *sqlx.DB) *ChannelParticipantsDAO {
 	return &ChannelParticipantsDAO{db}
 }
 
-// insert into channel_participants(channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state) values (:channel_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state)
+// insert into channel_participants(channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, kicked_by, banned_rights, banned_until_date, banned_at) values (:channel_id, :user_id, :is_creator, :inviter_user_id, :invited_at, :joined_at, :promoted_by, :admin_rights, :promoted_at, :kicked_by, :banned_rights, :banned_until_date, :banned_at)
 // TODO(@benqi): sqlmap
 func (dao *ChannelParticipantsDAO) Insert(do *dataobject.ChannelParticipantsDO) int64 {
-	var query = "insert into channel_participants(channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state) values (:channel_id, :user_id, :participant_type, :inviter_user_id, :invited_at, :joined_at, :state)"
+	var query = "insert into channel_participants(channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, kicked_by, banned_rights, banned_until_date, banned_at) values (:channel_id, :user_id, :is_creator, :inviter_user_id, :invited_at, :joined_at, :promoted_by, :admin_rights, :promoted_at, :kicked_by, :banned_rights, :banned_until_date, :banned_at)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,30 @@ func (dao *ChannelParticipantsDAO) Insert(do *dataobject.ChannelParticipantsDO) 
 	return id
 }
 
-// select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = :channel_id
+// insert into channel_participants(channel_id, user_id, inviter_user_id, invited_at, joined_at) values (:channel_id, :user_id, :inviter_user_id, :invited_at, :joined_at) on duplicate key update participant_type = values(participant_type), inviter_user_id = values(inviter_user_id), invited_at = values(inviter_user_id), joined_at = values(joined_at), promoted_by = 0, admin_rights = 0, promoted_at = 0, is_left = 0, left_at = 0, kicked_by = 0, banned_rights = 0, banned_until_date = 0, banned_at = 0
+// TODO(@benqi): sqlmap
+func (dao *ChannelParticipantsDAO) InsertOrUpdate(do *dataobject.ChannelParticipantsDO) int64 {
+	var query = "insert into channel_participants(channel_id, user_id, inviter_user_id, invited_at, joined_at) values (:channel_id, :user_id, :inviter_user_id, :invited_at, :joined_at) on duplicate key update participant_type = values(participant_type), inviter_user_id = values(inviter_user_id), invited_at = values(inviter_user_id), joined_at = values(joined_at), promoted_by = 0, admin_rights = 0, promoted_at = 0, is_left = 0, left_at = 0, kicked_by = 0, banned_rights = 0, banned_until_date = 0, banned_at = 0"
+	r, err := dao.db.NamedExec(query, do)
+	if err != nil {
+		errDesc := fmt.Sprintf("NamedExec in InsertOrUpdate(%v), error: %v", do, err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	id, err := r.LastInsertId()
+	if err != nil {
+		errDesc := fmt.Sprintf("LastInsertId in InsertOrUpdate(%v)_error: %v", do, err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+	return id
+}
+
+// select channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, is_left, left_at, kicked_by, banned_rights, banned_until_date, banned_at from channel_participants where channel_id = :channel_id
 // TODO(@benqi): sqlmap
 func (dao *ChannelParticipantsDAO) SelectByChannelId(channel_id int32) []dataobject.ChannelParticipantsDO {
-	var query = "select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = ?"
+	var query = "select channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, is_left, left_at, kicked_by, banned_rights, banned_until_date, banned_at from channel_participants where channel_id = ?"
 	rows, err := dao.db.Queryx(query, channel_id)
 
 	if err != nil {
@@ -91,10 +111,10 @@ func (dao *ChannelParticipantsDAO) SelectByChannelId(channel_id int32) []dataobj
 	return values
 }
 
-// select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = :channel_id and user_id in (:idList)
+// select channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, is_left, left_at, kicked_by, banned_rights, banned_until_date, banned_at from channel_participants where channel_id = :channel_id and user_id in (:idList)
 // TODO(@benqi): sqlmap
 func (dao *ChannelParticipantsDAO) SelectByUserIdList(channel_id int32, idList []int32) []dataobject.ChannelParticipantsDO {
-	var q = "select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = ? and user_id in (?)"
+	var q = "select channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, is_left, left_at, kicked_by, banned_rights, banned_until_date, banned_at from channel_participants where channel_id = ? and user_id in (?)"
 	query, a, err := sqlx.In(q, channel_id, idList)
 	rows, err := dao.db.Queryx(query, a...)
 
@@ -130,10 +150,10 @@ func (dao *ChannelParticipantsDAO) SelectByUserIdList(channel_id int32, idList [
 	return values
 }
 
-// select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = :channel_id and user_id = :user_id
+// select channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, is_left, left_at, kicked_by, banned_rights, banned_until_date, banned_at from channel_participants where channel_id = :channel_id and user_id = :user_id
 // TODO(@benqi): sqlmap
 func (dao *ChannelParticipantsDAO) SelectByUserId(channel_id int32, user_id int32) *dataobject.ChannelParticipantsDO {
-	var query = "select id, channel_id, user_id, participant_type, inviter_user_id, invited_at, joined_at, state from channel_participants where channel_id = ? and user_id = ?"
+	var query = "select channel_id, user_id, is_creator, inviter_user_id, invited_at, joined_at, promoted_by, admin_rights, promoted_at, is_left, left_at, kicked_by, banned_rights, banned_until_date, banned_at from channel_participants where channel_id = ? and user_id = ?"
 	rows, err := dao.db.Queryx(query, channel_id, user_id)
 
 	if err != nil {
@@ -166,21 +186,21 @@ func (dao *ChannelParticipantsDAO) SelectByUserId(channel_id int32, user_id int3
 	return do
 }
 
-// update channel_participants set state = 1 where id = :id
+// update channel_participants set banned_rights = :banned_rights, banned_until_date = :banned_until_date where channel_id = :channel_id and user_id = :user_id
 // TODO(@benqi): sqlmap
-func (dao *ChannelParticipantsDAO) DeleteChannelUser(id int32) int64 {
-	var query = "update channel_participants set state = 1 where id = ?"
-	r, err := dao.db.Exec(query, id)
+func (dao *ChannelParticipantsDAO) UpdateBannedRights(banned_rights int32, banned_until_date int32, channel_id int32, user_id int32) int64 {
+	var query = "update channel_participants set banned_rights = ?, banned_until_date = ? where channel_id = ? and user_id = ?"
+	r, err := dao.db.Exec(query, banned_rights, banned_until_date, channel_id, user_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in DeleteChannelUser(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdateBannedRights(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in DeleteChannelUser(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdateBannedRights(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -188,21 +208,21 @@ func (dao *ChannelParticipantsDAO) DeleteChannelUser(id int32) int64 {
 	return rows
 }
 
-// update channel_participants set inviter_user_id = :inviter_user_id, invited_at = :invited_at, joined_at = :joined_at, state = 0 where id = :id
+// update channel_participants set admin_rights = :admin_rights where channel_id = :channel_id and user_id = :user_id
 // TODO(@benqi): sqlmap
-func (dao *ChannelParticipantsDAO) Update(inviter_user_id int32, invited_at int32, joined_at int32, id int32) int64 {
-	var query = "update channel_participants set inviter_user_id = ?, invited_at = ?, joined_at = ?, state = 0 where id = ?"
-	r, err := dao.db.Exec(query, inviter_user_id, invited_at, joined_at, id)
+func (dao *ChannelParticipantsDAO) UpdateAdminRights(admin_rights int32, channel_id int32, user_id int32) int64 {
+	var query = "update channel_participants set admin_rights = ? where channel_id = ? and user_id = ?"
+	r, err := dao.db.Exec(query, admin_rights, channel_id, user_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in Update(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdateAdminRights(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in Update(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdateAdminRights(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
@@ -210,21 +230,65 @@ func (dao *ChannelParticipantsDAO) Update(inviter_user_id int32, invited_at int3
 	return rows
 }
 
-// update channel_participants set participant_type = :participant_type where id = :id
+// update channel_participants set is_left = 1, left_at = :left_at where channel_id = :channel_id and user_id = :user_id
 // TODO(@benqi): sqlmap
-func (dao *ChannelParticipantsDAO) UpdateParticipantType(participant_type int8, id int32) int64 {
-	var query = "update channel_participants set participant_type = ? where id = ?"
-	r, err := dao.db.Exec(query, participant_type, id)
+func (dao *ChannelParticipantsDAO) UpdateLeave(left_at int32, channel_id int32, user_id int32) int64 {
+	var query = "update channel_participants set is_left = 1, left_at = ? where channel_id = ? and user_id = ?"
+	r, err := dao.db.Exec(query, left_at, channel_id, user_id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in UpdateParticipantType(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdateLeave(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in UpdateParticipantType(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdateLeave(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update channel_participants set read_inbox_max_id = :read_inbox_max_id where channel_id = :channel_id and user_id = :user_id
+// TODO(@benqi): sqlmap
+func (dao *ChannelParticipantsDAO) UpdateReadInboxMaxId(read_inbox_max_id int32, channel_id int32, user_id int32) int64 {
+	var query = "update channel_participants set read_inbox_max_id = ? where channel_id = ? and user_id = ?"
+	r, err := dao.db.Exec(query, read_inbox_max_id, channel_id, user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateReadInboxMaxId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateReadInboxMaxId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update channel_participants set read_outbox_max_id = :read_inbox_max_id where channel_id = :channel_id and user_id = :user_id
+// TODO(@benqi): sqlmap
+func (dao *ChannelParticipantsDAO) UpdateReadOutboxMaxId(read_inbox_max_id int32, channel_id int32, user_id int32) int64 {
+	var query = "update channel_participants set read_outbox_max_id = ? where channel_id = ? and user_id = ?"
+	r, err := dao.db.Exec(query, read_inbox_max_id, channel_id, user_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateReadOutboxMaxId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateReadOutboxMaxId(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

@@ -21,10 +21,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
@@ -33,43 +31,32 @@ func (s *MessagesServiceImpl) MessagesGetPinnedDialogs(ctx context.Context, requ
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("MessagesGetPinnedDialogs - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	dialogs := s.UserModel.GetPinnedDialogs(md.UserId)
-	peerDialogs := mtproto.NewTLMessagesPeerDialogs()
+	dialogs := s.DialogModel.GetPinnedDialogs(md.UserId)
 
-	messageIdList := []int32{}
-	userIdList := []int32{md.UserId}
-	chatIdList := []int32{}
+	dialogItems := s.DialogModel.PickAllIDListByDialogs(dialogs)
+	glog.Info(dialogItems)
+	messages := s.MessageModel.GetUserMessagesByMessageIdList(md.UserId, dialogItems.MessageIdList)
 
-	for _, dialog2 := range dialogs {
-		// dialog.Peer
-		dialog := dialog2.To_Dialog()
-		messageIdList = append(messageIdList, dialog.GetTopMessage())
-		peer := base.FromPeer(dialog.GetPeer())
-		// TODO(@benqi): 先假设只有PEER_USER
-		if peer.PeerType == base.PEER_USER {
-			userIdList = append(userIdList, peer.PeerId)
-		} else if peer.PeerType == base.PEER_SELF {
-			userIdList = append(userIdList, md.UserId)
-		} else if peer.PeerType == base.PEER_CHAT {
-			chatIdList = append(chatIdList, peer.PeerId)
+	// TODO(@benqi): add channel message.
+	for k, v := range dialogItems.ChannelMessageIdMap {
+		m := s.MessageModel.GetChannelMessage(md.UserId, k, v)
+		if m != nil {
+			messages = append(messages, m)
 		}
-		peerDialogs.Data2.Dialogs = append(peerDialogs.Data2.Dialogs, dialog.To_Dialog())
 	}
 
-	glog.Infof("messageIdList - %v", messageIdList)
-	if len(messageIdList) > 0 {
-		peerDialogs.SetMessages(s.MessageModel.GetUserMessagesByMessageIdList(md.UserId, messageIdList))
-	}
-
-	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, userIdList)
-	peerDialogs.SetUsers(users)
-
-	if len(chatIdList) > 0 {
-		peerDialogs.Data2.Chats = s.ChatModel.GetChatListBySelfAndIDList(md.UserId, chatIdList)
-	}
-
+	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, dialogItems.UserIdList)
+	chats := s.ChatModel.GetChatListBySelfAndIDList(md.UserId, dialogItems.ChatIdList)
+	chats = append(chats, s.ChannelModel.GetChannelListBySelfAndIDList(md.UserId, dialogItems.ChannelIdList)...)
 	state, _ := sync_client.GetSyncClient().SyncGetState(md.AuthId, md.UserId)
-	peerDialogs.SetState(state)
+
+	peerDialogs := &mtproto.TLMessagesPeerDialogs{Data2: &mtproto.Messages_PeerDialogs_Data{
+		Dialogs:  dialogs,
+		Messages: messages,
+		Users:    users,
+		Chats:    chats,
+		State:    state,
+	}}
 
 	glog.Infof("MessagesGetPinnedDialogs - reply: %s", logger.JsonDebugData(peerDialogs))
 	return peerDialogs.To_Messages_PeerDialogs(), nil

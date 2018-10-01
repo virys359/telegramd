@@ -75,8 +75,6 @@ type MysqlDAOList struct {
 	ChannelMessagesDAO     *mysql_dao.ChannelMessagesDAO
 	MessageDatasDAO        *mysql_dao.MessageDatasDAO
 
-	DraftMessagesDAO *mysql_dao.DraftMessagesDAO
-
 	UnregisteredContactsDAO *mysql_dao.UnregisteredContactsDAO
 	PopularContactsDAO      *mysql_dao.PopularContactsDAO
 
@@ -141,8 +139,6 @@ func InstallMysqlDAOManager(clients sync.Map /*map[string]*sqlx.DB*/) {
 
 		daoList.UnregisteredContactsDAO = mysql_dao.NewUnregisteredContactsDAO(v)
 		daoList.PopularContactsDAO = mysql_dao.NewPopularContactsDAO(v)
-
-		daoList.DraftMessagesDAO = mysql_dao.NewDraftMessagesDAO(v)
 
 		daoList.UsernameDAO = mysql_dao.NewUsernameDAO(v)
 
@@ -483,15 +479,6 @@ func GetPopularContactsDAO(dbName string) (dao *mysql_dao.PopularContactsDAO) {
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.PopularContactsDAO
-	}
-	return
-}
-
-func GetDraftMessagesDAO(dbName string) (dao *mysql_dao.DraftMessagesDAO) {
-	daoList := GetMysqlDAOList(dbName)
-	// err := mysqlDAOManager.daoListMap[dbName]
-	if daoList != nil {
-		dao = daoList.DraftMessagesDAO
 	}
 	return
 }

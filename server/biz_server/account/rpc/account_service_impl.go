@@ -21,11 +21,13 @@ import (
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/core/account"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/username"
 )
 
 type AccountServiceImpl struct {
 	*user.UserModel
 	*account.AccountModel
+	*username.UsernameModel
 }
 
 func NewAccountServiceImpl(models []core.CoreModel) *AccountServiceImpl {
@@ -37,6 +39,8 @@ func NewAccountServiceImpl(models []core.CoreModel) *AccountServiceImpl {
 			impl.UserModel = m.(*user.UserModel)
 		case *account.AccountModel:
 			impl.AccountModel = m.(*account.AccountModel)
+		case *username.UsernameModel:
+			impl.UsernameModel = m.(*username.UsernameModel)
 		}
 	}
 

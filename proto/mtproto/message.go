@@ -81,6 +81,11 @@ func (m *UnencryptedMessage) Encode() []byte {
 	return buf
 }
 
+func (m *UnencryptedMessage) EncodeToLayer(int) []byte {
+	buf, _ := m.encode()
+	return buf
+}
+
 func (m *UnencryptedMessage) encode() ([]byte, error) {
 	x := NewEncodeBuf(512)
 	x.Long(0)
@@ -170,6 +175,48 @@ func (m *EncryptedMessage2) MessageType() int {
 func (m *EncryptedMessage2) Encode(authKeyId int64, authKey []byte) ([]byte, error) {
 	buf, err := m.encode(authKeyId, authKey)
 	return buf, err
+}
+
+func (m *EncryptedMessage2) EncodeToLayer(authKeyId int64, authKey []byte, layer int) ([]byte, error) {
+	buf, err := m.encodeToLayer(authKeyId, authKey, layer)
+	return buf, err
+}
+
+func (m *EncryptedMessage2) encodeToLayer(authKeyId int64, authKey []byte, layer int) ([]byte, error) {
+	objData := m.Object.EncodeToLayer(layer)
+	var additionalSize = (32 + len(objData)) % 16
+	if additionalSize != 0 {
+		additionalSize = 16 - additionalSize
+	}
+	if MTPROTO_VERSION == 2 && additionalSize < 12 {
+		additionalSize += 16
+	}
+
+	x := NewEncodeBuf(32 + len(objData) + additionalSize)
+	// x.Long(authKeyId)
+	// msgKey := make([]byte, 16)
+	// x.Bytes(msgKey)
+	x.Long(m.Salt)
+	x.Long(m.SessionId)
+	if m.MessageId == 0 {
+		m.MessageId = GenerateMessageId()
+	}
+	x.Long(m.MessageId)
+	x.Int(m.SeqNo)
+	x.Int(int32(len(objData)))
+	x.Bytes(objData)
+	x.Bytes(crypto.GenerateNonce(additionalSize))
+
+	// glog.Info("Encode object: ", m.Object)
+
+	encryptedData, _ := m.encrypt(authKey, x.buf, len(objData))
+	x2 := NewEncodeBuf(56 + len(objData) + additionalSize)
+	x2.Long(authKeyId)
+	x2.Bytes(m.msgKey)
+	x2.Bytes(encryptedData)
+
+	// glog.Info(x2.buf)
+	return x2.buf, nil
 }
 
 func (m *EncryptedMessage2) encode(authKeyId int64, authKey []byte) ([]byte, error) {
@@ -286,7 +333,7 @@ func (m *EncryptedMessage2) decrypt(msgKey, authKey, data []byte) ([]byte, error
 		tmpData = append(tmpData, x[:dataLen]...)
 		copy(messageKey, crypto.Sha256Digest(tmpData))
 	default:
-		copy(messageKey[4:], crypto.Sha1Digest(x[:32 + messageLen]))
+		copy(messageKey[4:], crypto.Sha1Digest(x[:32+messageLen]))
 	}
 
 	if !bytes.Equal(messageKey[8:8+16], msgKey[:16]) {

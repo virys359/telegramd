@@ -66,13 +66,14 @@ func (c *rpcStatusClient) Initialize(config string) error {
 	return err
 }
 
-func (c *rpcStatusClient) SetSessionOnline(userId int32, serverId int32, authKeyId int64) error {
+func (c *rpcStatusClient) SetSessionOnline(userId int32, authKeyId int64, serverId, layer int32) error {
 	cli := status.NewRPCStatusClient(c.conn)
 	session := &status.SessionEntry{
 		UserId:    userId,
 		ServerId:  serverId,
 		AuthKeyId: authKeyId,
 		Expired:   time.Now().Unix() + 120,
+		Layer:     layer,
 	}
 	_, err := cli.SetSessionOnline(context.Background(), session)
 	return err
@@ -92,7 +93,7 @@ func (c *rpcStatusClient) SetSessionOffline(userId int32, serverId int32, authKe
 
 func (c *rpcStatusClient) GetUserOnlineSessions(userId int32) (*status.SessionEntryList, error) {
 	cli := status.NewRPCStatusClient(c.conn)
-	return cli.GetUserOnlineSessions(context.Background(), &status.Int32{userId})
+	return cli.GetUserOnlineSessions(context.Background(), &status.Int32{V: userId})
 }
 
 func (c *rpcStatusClient) GetUsersOnlineSessionsList(userIdList []int32) (*status.UsersSessionEntryList, error) {

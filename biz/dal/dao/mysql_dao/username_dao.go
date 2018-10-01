@@ -89,6 +89,78 @@ func (dao *UsernameDAO) SelectByPeer(peer_type int8, peer_id int32) *dataobject.
 	return do
 }
 
+// select peer_type, peer_id, username from username where peer_type = 2 and peer_id = :peer_id
+// TODO(@benqi): sqlmap
+func (dao *UsernameDAO) SelectByUserId(peer_id int32) *dataobject.UsernameDO {
+	var query = "select peer_type, peer_id, username from username where peer_type = 2 and peer_id = ?"
+	rows, err := dao.db.Queryx(query, peer_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.UsernameDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByUserId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByUserId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return do
+}
+
+// select peer_type, peer_id, username from username where peer_type = 4 and peer_id = :peer_id
+// TODO(@benqi): sqlmap
+func (dao *UsernameDAO) SelectByChannelId(peer_id int32) *dataobject.UsernameDO {
+	var query = "select peer_type, peer_id, username from username where peer_type = 4 and peer_id = ?"
+	rows, err := dao.db.Queryx(query, peer_id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByChannelId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.UsernameDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByChannelId(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByChannelId(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return do
+}
+
 // select peer_type, peer_id, username from username where username = :username
 // TODO(@benqi): sqlmap
 func (dao *UsernameDAO) SelectByUsername(username string) *dataobject.UsernameDO {

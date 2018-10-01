@@ -8,6 +8,11 @@ name = "handshake"
 protoName = "zproto"
 addr = "0.0.0.0:10005"
 
+[authSessionRpcClient]
+serviceName = "auth_session"
+etcdAddrs = ["http://127.0.0.1:2379"]
+balancer = "round_robin"
+
 [server.discovery]
 serviceName = "handshake"
 nodeID = "node1"

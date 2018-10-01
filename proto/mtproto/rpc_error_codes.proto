@@ -53,6 +53,8 @@ enum TLRpcErrorCodes {
     // Protobuf3 enum first is 0
     ERROR_CODE_OK = 0;
 
+    // 303 ERROR_SEE_OTHER
+    //
     // The request must be repeated, but directed to a different data center.
     //
     // FILE_MIGRATE_X: the file to be accessed is currently stored in a different data center.
@@ -72,6 +74,8 @@ enum TLRpcErrorCodes {
 
     ERROR_SEE_OTHER = 303;
 
+    // 400 BAD_REQUEST
+    //
     // The query contains errors. In the event that a request was created using a form
     // and contains user generated data,
     // the user should be notified that the data must be corrected before the query is repeated.
@@ -119,14 +123,22 @@ enum TLRpcErrorCodes {
     FIELD_NAME_EMPTY = 400017;
     MSG_WAIT_FAILED = 400018;
     // PHONE_NUMBER_BANNED = 4000;
-
     // android client code:
     //    if (error.code == 400 && "PARTICIPANT_VERSION_OUTDATED".equals(error.text)) {
     //        callFailed(VoIPController.ERROR_PEER_OUTDATED);
     PARTICIPANT_VERSION_OUTDATED = 400019;
+    USER_RESTRICTED = 400020;
+    NAME_NOT_MODIFIED = 400021;
+    USER_NOT_MUTUAL_CONTACT = 400022;
+    BOT_GROUPS_BLOCKED = 400023;
+
+
+    FILE_REFERENCE_X = 400500;
+    FILE_TOKEN_INVALID = 400501;
+    REQUEST_TOKEN_INVALID = 400502;
 
     //
-    PHONE_CODE_INVALID = 400020;
+    PHONE_CODE_INVALID = 400025;
     PHONE_NUMBER_BANNED = 400030;
     SESSION_PASSWORD_NEEDED = 400040;
 
@@ -142,14 +154,50 @@ enum TLRpcErrorCodes {
     USERNAME_INVALID = 400060;
     USERNAME_OCCUPIED = 400061;
     USERNAMES_UNAVAILABLE = 400062;
+    USERNAME_NOT_MODIFIED = 400063;
 
     // chat
     CHAT_ID_INVALID = 400070;
     CHAT_NOT_MODIFIED = 400071;
     PARTICIPANT_NOT_EXISTS = 400072;
     NO_EDIT_CHAT_PERMISSION = 400073;
+    CHAT_TITLE_NOT_MODIFIED = 400074;
+    NO_CHAT_TITLE = 400075;
+    CHAT_ABOUT_NOT_MODIFIED = 400076;
+    CHAT_ADMIN_REQUIRED = 400077;
+    PARTICIPANT_EXISTED = 400078;
 
-    //
+    // channel
+    CHANNEL_PRIVATE = 400080;
+    CHANNEL_PUBLIC_GROUP_NA = 400081;
+    USER_BANNED_IN_CHANNEL = 400082;
+    CHANNELS_ADMIN_PUBLIC_TOO_MUCH = 40083;
+    CHANNELS_TOO_MUCH = 400084;
+    NO_INVITE_CHANNEL_PERMISSION = 400085;
+
+    // invite, user banned.
+    INVITE_HASH_EXPIRED = 400090;
+
+    // access
+    ACCESS_HASH_INVALID = 400200;
+    INPUT_CHANNEL_EMPTY = 400201;
+    USER_NOT_PARTICIPANT = 400202;
+    PEER_ID_INVALID = 400203;
+    CHANNEL_ID_INVALID = 400204;
+
+    // message
+    MESSAGE_ID_INVALID = 400210;
+    MESSAGE_EDIT_TIME_EXPIRED = 400211;
+    MESSAGE_NOT_MODIFIED = 400212;
+    MESSAGE_EMPTY = 400213;
+
+    // USER_PRIVACY_RESTRICTED = 400300;
+    // PARTICIPANT_VERSION_OUTDATED = 400301;
+
+    USER_LEFT_CHAT = 400300;
+    USER_KICKED = 400301;
+    USER_ALREADY_PARTICIPANT = 400302;
+
     BAD_REQUEST = 400;
 
     // There was an unauthorized attempt to use functionality available only to authorized users.
@@ -191,7 +239,8 @@ enum TLRpcErrorCodes {
     // android client code:
     //    } else if(error.code==403 && "USER_PRIVACY_RESTRICTED".equals(error.text)){
     //        callFailed(VoIPController.ERROR_PRIVACY);
-    USER_PRIVACY_RESTRICTED = 403000;
+    USER_PRIVACY_RESTRICTED = 403001;
+    CALL_PROTOCOL_LAYER_INVALID = 403002;
 
     FORBIDDEN = 403;
 

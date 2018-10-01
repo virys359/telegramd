@@ -23,6 +23,8 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // channels.readHistory#cc104937 channel:InputChannel max_id:int = Bool;
@@ -30,7 +32,24 @@ func (s *ChannelsServiceImpl) ChannelsReadHistory(ctx context.Context, request *
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("channels.readHistory#cc104937 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ChannelsReadHistory logic
+	if request.GetChannel().GetConstructor() == mtproto.TLConstructor_CRC32_inputChannelEmpty {
+		glog.Infof("channels.readHistory#cc104937 - reply: {false}")
+		return mtproto.ToBool(false), nil
+	}
+
+	// TODO(@benqi): check access_hash
+	channelId := request.GetChannel().GetData2().GetChannelId()
+
+	channelLogic, _ := s.ChannelModel.NewChannelLogicById(channelId)
+	channelLogic.ReadOutboxHistory(md.UserId, request.GetMaxId())
+
+	syncUpdates := updates.NewUpdatesLogic(md.UserId)
+	updateReadChannelInbox := &mtproto.TLUpdateReadChannelInbox{Data2: &mtproto.Update_Data{
+		ChannelId: channelId,
+		MaxId:     request.GetMaxId(),
+	}}
+	syncUpdates.AddUpdate(updateReadChannelInbox.To_Update())
+	sync_client.GetSyncClient().SyncChannelUpdatesNotMe(channelId, md.UserId, md.AuthId, syncUpdates.ToUpdates())
 
 	glog.Infof("channels.readHistory#cc104937 - reply: {true}")
 	return mtproto.ToBool(true), nil

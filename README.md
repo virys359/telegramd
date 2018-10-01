@@ -46,6 +46,11 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
         cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
         go get
         go build
+
+    编译auth_session
+        cd $GOPATH/src/github.com/nebulaim/telegramd/service/auth_session
+        go get
+        go build
         
     编译sync
         cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
@@ -78,6 +83,9 @@ Go语言非官方开源telegram服务端，包括但不限于如下一些特色�
     cd $GOPATH/src/github.com/nebulaim/telegramd/server/access/auth_key
     ./auth_key
 
+    cd $GOPATH/src/github.com/nebulaim/telegramd/service/auth_session
+    ./auth_session
+    
     cd $GOPATH/src/github.com/nebulaim/telegramd/server/sync
     ./sync
     

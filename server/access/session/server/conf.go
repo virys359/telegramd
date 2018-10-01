@@ -32,14 +32,15 @@ var (
 )
 
 type sessionConfig struct {
-	ServerId         int32 // 服务器ID
-	Redis            []redis_client.RedisConfig
-	SaltCache        redis_client.RedisConfig
-	AuthKeyRpcClient service_discovery.ServiceDiscoveryClientConfig
-	BizRpcClient     service_discovery.ServiceDiscoveryClientConfig
-	NbfsRpcClient    service_discovery.ServiceDiscoveryClientConfig
-	SyncRpcClient    service_discovery.ServiceDiscoveryClientConfig
-	Server           *zproto.ZProtoServerConfig
+	ServerId             int32 // 服务器ID
+	Redis                []redis_client.RedisConfig
+	SaltCache            redis_client.RedisConfig
+	// AuthKeyRpcClient     service_discovery.ServiceDiscoveryClientConfig
+	BizRpcClient         service_discovery.ServiceDiscoveryClientConfig
+	NbfsRpcClient        service_discovery.ServiceDiscoveryClientConfig
+	SyncRpcClient        service_discovery.ServiceDiscoveryClientConfig
+	AuthSessionRpcClient service_discovery.ServiceDiscoveryClientConfig
+	Server               *zproto.ZProtoServerConfig
 }
 
 func init() {

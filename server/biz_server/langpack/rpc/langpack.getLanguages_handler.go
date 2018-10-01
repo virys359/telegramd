@@ -85,10 +85,12 @@ LangCode = "uk"
 
 **************************************************/
 
-// langpack.getLanguages#800fd57d = Vector<LangPackLanguage>;
+// langpack.getLanguages#42c6978f lang_pack:string = Vector<LangPackLanguage>;
 func (s *LangpackServiceImpl) LangpackGetLanguages(ctx context.Context, request *mtproto.TLLangpackGetLanguages) (*mtproto.Vector_LangPackLanguage, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("langpack.getLanguages#800fd57d - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("langpack.getLanguages#42c6978f - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+
+	// TODO(@benqi): hand lang_pack.
 
 	// TODO(@benqi): Add other language
 	language := &mtproto.TLLangPackLanguage{Data2: &mtproto.LangPackLanguage_Data{
@@ -100,6 +102,6 @@ func (s *LangpackServiceImpl) LangpackGetLanguages(ctx context.Context, request 
 	languages := &mtproto.Vector_LangPackLanguage{}
 	languages.Datas = append(languages.Datas, language.To_LangPackLanguage())
 
-	glog.Infof("langpack.getLanguages#800fd57d - reply: %s", logger.JsonDebugData(languages))
+	glog.Infof("langpack.getLanguages#42c6978f - reply: %s", logger.JsonDebugData(languages))
 	return languages, nil
 }

@@ -67,7 +67,6 @@ func (c *syncClient) SyncUpdatesNotMe(userId int32, authKeyId int64, updates *mt
 	m := &mtproto.TLSyncSyncUpdates{
 		UserId:    userId,
 		AuthKeyId: authKeyId,
-		NotMe:     true,
 		Updates:   updates,
 	}
 
@@ -86,17 +85,54 @@ func (c *syncClient) PushUpdates(userId int32, updates *mtproto.Updates) (bool, 
 	return mtproto.FromBool(r), err
 }
 
-// sync.pushChannelUpdates#bfd3d677 channel_id:int exclude_user_id:int updates:Updates = Bool;
-func (c *syncClient) SyncPushChannelUpdates(channelId, excludeUserId int32, updates *mtproto.Updates) (bool, error) {
+func (c *syncClient) SyncChannelUpdatesMe(channelId int32, participantId int32, authKeyId int64, serverId int32, updates *mtproto.Updates) (bool, error) {
+	m := &mtproto.TLSyncSyncChannelUpdates{
+		ChannelId: channelId,
+		UserId:    participantId,
+		AuthKeyId: authKeyId,
+		ServerId:  serverId,
+		Updates:   updates,
+	}
+
+	r, err := c.client.SyncSyncChannelUpdates(context.Background(), m)
+	return mtproto.FromBool(r), err
+}
+
+func (c *syncClient) SyncChannelUpdatesNotMe(channelId int32, participantId int32, authKeyId int64, updates *mtproto.Updates) (bool, error) {
+	m := &mtproto.TLSyncSyncChannelUpdates{
+		ChannelId: channelId,
+		UserId:    participantId,
+		AuthKeyId: authKeyId,
+		Updates:   updates,
+	}
+
+	r, err := c.client.SyncSyncChannelUpdates(context.Background(), m)
+	return mtproto.FromBool(r), err
+}
+
+func (c *syncClient) PushChannelUpdates(channelId, userId int32, updates *mtproto.Updates) (bool, error) {
 	m := &mtproto.TLSyncPushChannelUpdates{
-		ChannelId:     channelId,
-		ExcludeUserId: excludeUserId,
-		Updates:       updates,
+		ChannelId: channelId,
+		UserId:    userId,
+		Updates:   updates,
 	}
 
 	r, err := c.client.SyncPushChannelUpdates(context.Background(), m)
 	return mtproto.FromBool(r), err
 }
+
+//
+//// sync.pushChannelUpdates#bfd3d677 channel_id:int exclude_user_id:int updates:Updates = Bool;
+//func (c *syncClient) PushChannelUpdates(channelId int32, channelParticipantIds []int32, updates *mtproto.Updates) (bool, error) {
+//	m := &mtproto.TLSyncPushChannelUpdates{
+//		ChannelId:             channelId,
+//		ChannelParticipantIds: channelParticipantIds,
+//		Updates:               updates,
+//	}
+//
+//	r, err := c.client.SyncPushChannelUpdates(context.Background(), m)
+//	return mtproto.FromBool(r), err
+//}
 
 // sync.pushRpcResult#1bf9b15e auth_key_id:long req_msg_id:long result:bytes = Bool;
 func (c *syncClient) SyncPushRpcResult(authKeyId int64, serverId int32, clientReqMsgId int64, result []byte) (bool, error) {
@@ -135,6 +171,21 @@ func (c *syncClient) SyncGetDifference(authKeyId int64, userId, pts int32) (*mtp
 	difference, err := c.client.SyncGetDifference(context.Background(), req)
 	return difference, err
 }
+
+
+func (c *syncClient) SyncGetChannelDifference(authKeyId int64, userId, pts int32) (*mtproto.Updates_ChannelDifference, error) {
+	req := &mtproto.TLSyncGetChannelDifference{
+		AuthKeyId: authKeyId,
+		UserId:    userId,
+		Pts:       pts,
+		// Date:      int32(time.Now().Unix()),
+		// Qts:       0,
+	}
+
+	difference, err := c.client.SyncGetChannelDifference(context.Background(), req)
+	return difference, err
+}
+
 
 /*
 func (c *syncClient) SyncOneUpdateData2(serverId int32, authKeyId, sessionId int64, pushUserId int32, clientMsgId int64, update *mtproto.Update) (reply *mtproto.ClientUpdatesState, err error) {

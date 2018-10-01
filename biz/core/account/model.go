@@ -33,6 +33,7 @@ type accountsDAO struct {
 	*mysql_dao.UserPrivacysDAO
 	*mysql_dao.ReportsDAO
 	*mysql_dao.WallPapersDAO
+	*mysql_dao.UsernameDAO
 }
 
 type AccountModel struct {
@@ -48,6 +49,7 @@ func (m *AccountModel) InstallModel() {
 	m.dao.UserPrivacysDAO = dao.GetUserPrivacysDAO(dao.DB_MASTER)
 	m.dao.ReportsDAO = dao.GetReportsDAO(dao.DB_MASTER)
 	m.dao.WallPapersDAO = dao.GetWallPapersDAO(dao.DB_MASTER)
+	m.dao.UsernameDAO = dao.GetUsernameDAO(dao.DB_MASTER)
 }
 
 func (m *AccountModel) RegisterCallback(cb interface{}) {

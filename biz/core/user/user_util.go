@@ -66,9 +66,9 @@ func (m *UserModel) makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *user
 		} else {
 			status = m.GetUserStatus(do.Id)
 			contact, mutualContact = m.contactCallback.GetContactAndMutual(selfId, do.Id)
-			if contact {
-				phone = do.Phone
-			}
+			// if contact {
+			phone = do.Phone
+			// }
 		}
 
 		photoId := m.GetDefaultUserPhotoID(do.Id)
@@ -88,7 +88,7 @@ func (m *UserModel) makeUserDataByDO(selfId int32, do *dataobject.UsersDO) *user
 			AccessHash:    do.AccessHash,
 			FirstName:     do.FirstName,
 			LastName:      do.LastName,
-			Username:      do.Username,
+			Username:      m.usernameCallback.GetAccountUsername(do.Id),
 			Phone:         phone,
 			Photo:         photo,
 			Status:        status,

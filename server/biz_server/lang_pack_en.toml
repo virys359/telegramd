@@ -1,7 +1,7 @@
 # lang_pack_en.toml
 
 langCode = "en"
-version = 69
+version = 77
 
 [[Strings]]
 value = "Arabic"

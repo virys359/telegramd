@@ -37,6 +37,6 @@ func (s *ContactsServiceImpl) ContactsGetTopPeers(ctx context.Context, request *
 		Users:      []*mtproto.User{},
 	}}
 
-	glog.Info("contacts.getTopPeers#d4982db5 - reply: not impl ContactsGetTopPeers")
+	glog.Infof("contacts.getTopPeers#d4982db5 - reply: %s", logger.JsonDebugData(topPeers))
 	return topPeers.To_Contacts_TopPeers(), nil
 }

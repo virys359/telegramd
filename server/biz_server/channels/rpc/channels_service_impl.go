@@ -22,12 +22,16 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/channel"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/dialog"
+	"github.com/nebulaim/telegramd/biz/core/username"
 )
 
 type ChannelsServiceImpl struct {
 	*channel.ChannelModel
 	*user.UserModel
 	*message.MessageModel
+	*dialog.DialogModel
+	*username.UsernameModel
 }
 
 func NewChannelsServiceImpl(models []core.CoreModel) *ChannelsServiceImpl {
@@ -41,6 +45,10 @@ func NewChannelsServiceImpl(models []core.CoreModel) *ChannelsServiceImpl {
 			impl.UserModel = m.(*user.UserModel)
 		case *message.MessageModel:
 			impl.MessageModel = m.(*message.MessageModel)
+		case *dialog.DialogModel:
+			impl.DialogModel = m.(*dialog.DialogModel)
+		case *username.UsernameModel:
+			impl.UsernameModel = m.(*username.UsernameModel)
 		}
 	}
 

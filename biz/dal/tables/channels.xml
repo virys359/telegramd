@@ -3,15 +3,15 @@
     <operation name="Insert">
         <sql>
             INSERT INTO channels
-                (creator_user_id, access_hash, random_id, participant_count, title, about, date)
+                (creator_user_id, access_hash, random_id, participant_count, title, about, broadcast, megagroup, democracy, signatures, date)
             VALUES
-                (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :date)
+                (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :broadcast, :megagroup, :democracy, :signatures, :date)
         </sql>
     </operation>
     <operation name="Select">
         <sql>
             SELECT
-                id, creator_user_id, access_hash, participant_count, title, about, link, photo_id, admins_enabled, deactivated, version, date
+                id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, date
             FROM
                 channels
             WHERE
@@ -54,7 +54,7 @@
         </params>
         <sql>
             SELECT
-                id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, date
+                id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, date
             FROM
                 channels
             WHERE
@@ -66,7 +66,7 @@
             UPDATE
                 channels
             SET
-                participant_count=:participant_count, date=:date, version=version+1
+                participant_count = :participant_count, date=:date, version=version+1
             WHERE
                 id=:id
         </sql>
@@ -77,6 +77,16 @@
                 channels
             SET
                 photo_id=:photo_id, date=:date, version=version+1
+            WHERE
+                id=:id
+        </sql>
+    </operation>
+    <operation name="UpdateTopMessage">
+        <sql>
+            UPDATE
+                channels
+            SET
+                top_message = :top_message
             WHERE
                 id=:id
         </sql>
@@ -102,4 +112,27 @@
                 id=:id
         </sql>
     </operation>
+
+    <operation name="UpdateDemocracy	">
+        <sql>
+            UPDATE
+                channels
+            SET
+                democracy=:democracy, date=:date, version=version+1
+            WHERE
+                id=:id
+        </sql>
+    </operation>
+
+    <operation name="UpdateSignatures">
+        <sql>
+            UPDATE
+                channels
+            SET
+                signatures=:signatures, date=:date, version=version+1
+            WHERE
+            id=:id
+        </sql>
+    </operation>
+
 </table>

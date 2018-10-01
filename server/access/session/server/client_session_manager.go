@@ -335,7 +335,6 @@ func (s *clientSessionManager) onSessionData(sessionMsg *sessionData) {
 	var messages = &messageListWrapper{[]*mtproto.TLMessage2{}}
 	extractClientMessage(message.MessageId, message.SeqNo, message.Object, messages, func(layer int32) {
 		s.Layer = layer
-
 		// TODO(@benqi): clear session_manager
 	})
 
@@ -422,22 +421,26 @@ func (s *clientSessionManager) onRpcRequest(requests *rpcApiMessages) {
 
 	for i := 0; i < len(requests.rpcMessages); i++ {
 		var (
-			rpcMetadata = &grpc_util.RpcMetadata{}
 			err         error
 			rpcResult   mtproto.TLObject
 		)
 
 		// 初始化metadata
-		rpcMetadata.ServerId = 1
-		rpcMetadata.NetlibSessionId = int64(requests.connID.clientConnID)
-		rpcMetadata.AuthId = s.authKeyId
-		rpcMetadata.SessionId = requests.sessionId
-		// rpcMetadata.ClientAddr = request.md.ClientAddr
-		rpcMetadata.TraceId = requests.md.TraceId
-		rpcMetadata.SpanId = getUUID()
-		rpcMetadata.ReceiveTime = time.Now().Unix()
-		rpcMetadata.UserId = s.AuthUserId
-		rpcMetadata.ClientMsgId = requests.rpcMessages[i].rpcRequest.MsgId
+		rpcMetadata := &grpc_util.RpcMetadata{
+			ServerId:        getServerID(),
+			NetlibSessionId: int64(requests.connID.clientConnID),
+			AuthId:          s.authKeyId,
+			SessionId:       requests.sessionId,
+			TraceId:         requests.md.TraceId,
+			SpanId:          getUUID(),
+			ReceiveTime:     time.Now().Unix(),
+			UserId:          s.AuthUserId,
+			ClientMsgId:     requests.rpcMessages[i].rpcRequest.MsgId,
+		}
+
+		if s.Layer == 0 {
+			s.Layer = getCacheApiLayer(s.authKeyId)
+		}
 		rpcMetadata.Layer = s.Layer
 
 		// TODO(@benqi): change state.
@@ -461,11 +464,8 @@ func (s *clientSessionManager) onRpcRequest(requests *rpcApiMessages) {
 			rpcErr, _ := err.(*mtproto.TLRpcError)
 			if rpcErr.GetErrorCode() == int32(mtproto.TLRpcErrorCodes_NOTRETURN_CLIENT) {
 				continue
-				// return
 			}
 			reply.Result = rpcErr
-			// err.(*mtproto.TLRpcError)
-
 		} else {
 			// glog.Infof("OnMessage - rpc_result: {%v}\n", rpcResult)
 			reply.Result = rpcResult
@@ -490,19 +490,7 @@ func (s *clientSessionManager) setUserOnline(sessionId int64, connID ClientConnI
 		}
 	}()
 
-	setOnline(s.AuthUserId, getServerID(), s.authKeyId)
-	// userId int32, serverId int32, authKeyId int64)
-	//
-	//status := &user.SessionStatus{
-	//	ServerId:        getServerID(),
-	//	UserId:          s.AuthUserId,
-	//	AuthKeyId:       s.authKeyId,
-	//	SessionId:       int64(sessionId),
-	//	NetlibSessionId: int64(connID.clientConnID),
-	//	Now:             time.Now().Unix(),
-	//}
-	//
-	//user.SetOnline(status)
+	setOnline(s.AuthUserId, s.authKeyId, getServerID(), s.Layer)
 }
 
 //==================================================================================================

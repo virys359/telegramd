@@ -40,9 +40,8 @@ func (s *SyncServiceImpl) SyncGetDifference(ctx context.Context, request *mtprot
 
     updateList := s.UpdateModel.GetUpdateListByGtPts(request.GetUserId(), request.GetPts())
     if len(updateList) == 0 {
-        difference2 := &mtproto.TLUpdatesDifference{Data2: &mtproto.Updates_Difference_Data{
+        difference2 := &mtproto.TLUpdatesDifferenceEmpty{Data2: &mtproto.Updates_Difference_Data{
             Date: int32(time.Now().Unix()),
-            Pts:  request.GetPts(),
             Seq:  0,
         }}
         difference = difference2.To_Updates_Difference()
@@ -69,7 +68,9 @@ func (s *SyncServiceImpl) SyncGetDifference(ctx context.Context, request *mtprot
                 lastPts = update.Data2.GetPts()
             }
         }
-
+        if lastPts <= request.GetPts() {
+            lastPts = 0
+        }
         state := &mtproto.TLUpdatesState{Data2: &mtproto.Updates_State_Data{
             Pts:         lastPts,
             Date:        int32(time.Now().Unix()),

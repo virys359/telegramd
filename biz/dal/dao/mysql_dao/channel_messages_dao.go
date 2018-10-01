@@ -128,6 +128,68 @@ func (dao *ChannelMessagesDAO) SelectByMessageId(channel_id int32, channel_messa
 	return do
 }
 
+// select channel_message_id, views from channel_messages where channel_id = :channel_id and channel_message_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *ChannelMessagesDAO) SelectMessagesViews(channel_id int32, idList []int32) []dataobject.ChannelMessagesDO {
+	var q = "select channel_message_id, views from channel_messages where channel_id = ? and channel_message_id in (?)"
+	query, a, err := sqlx.In(q, channel_id, idList)
+	rows, err := dao.db.Queryx(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectMessagesViews(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.ChannelMessagesDO
+	for rows.Next() {
+		v := dataobject.ChannelMessagesDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectMessagesViews(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectMessagesViews(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return values
+}
+
+// update channel_messages set views = views + 1 where channel_id = :channel_id and channel_message_id in (:idList)
+// TODO(@benqi): sqlmap
+func (dao *ChannelMessagesDAO) UpdateMessagesViews(channel_id int32, idList []int32) int64 {
+	var q = "update channel_messages set views = views + 1 where channel_id = ? and channel_message_id in (?)"
+	query, a, err := sqlx.In(q, channel_id, idList)
+	r, err := dao.db.Exec(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateMessagesViews(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateMessagesViews(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
 // select channel_id, channel_message_id, sender_user_id, random_id, message_data_id, message_type, message_data, has_media_unread, edit_message, edit_date, views, `date` from channel_messages where sender_user_id = :sender_user_id and random_id = :random_id
 // TODO(@benqi): sqlmap
 func (dao *ChannelMessagesDAO) SelectByRandomId(sender_user_id int32, random_id int64) *dataobject.ChannelMessagesDO {

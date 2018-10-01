@@ -17,17 +17,38 @@
 
 package account
 
+import (
+	"github.com/nebulaim/telegramd/biz/dal/dataobject"
+	"github.com/golang/glog"
+)
+
 // not found, return 0
-func (m *AccountModel) GetUserIdByUserName(name string) int32 {
-	do := m.dao.UsersDAO.SelectByUsername(name)
+func (m *AccountModel) CheckUsername(username string) int32 {
+	do := m.dao.UsernameDAO.SelectByUsername(username)
 	if do == nil {
 		return 0
 	}
-	return do.Id
+	return do.PeerId
 }
 
-func (m *AccountModel) ChangeUserNameByUserId(id int32, name string) int64 {
-	return m.dao.UsersDAO.UpdateUsername(name, id)
+func (m *AccountModel) UpdateUsernameByUserId(id int32, username string) bool {
+	usernameDO := m.dao.UsernameDAO.SelectByUsername(username)
+	if usernameDO == nil {
+		usernameDO = &dataobject.UsernameDO{
+			PeerType: 4,
+			PeerId:   id,
+			Username: username,
+		}
+		m.dao.UsernameDAO.Insert(usernameDO)
+	} else {
+		if usernameDO.PeerType == 2 && usernameDO.PeerId == id {
+			m.dao.UsernameDAO.UpdateUsername(username, int8(2), id)
+		} else {
+			glog.Error("username existed.")
+			return false
+		}
+	}
+	return true
 }
 
 func (m *AccountModel) UpdateFirstAndLastName(id int32, firstName, lastName string) int64 {

@@ -19,13 +19,10 @@ package channel
 
 import (
 	"github.com/golang/glog"
-	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
-	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/dal/dao"
 	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	// "github.com/nebulaim/telegramd/server/nbfs/nbfs_client"
 	"fmt"
 )
 
@@ -34,12 +31,15 @@ type channelsDAO struct {
 	*mysql_dao.UsersDAO
 	*mysql_dao.ChannelsDAO
 	*mysql_dao.ChannelParticipantsDAO
+	*mysql_dao.UsernameDAO
 }
 
 type ChannelModel struct {
-	dao           *channelsDAO
-	photoCallback core.PhotoCallback
-	notifySetting core.NotifySettingCallback
+	dao                   *channelsDAO
+	photoCallback         core.PhotoCallback
+	notifySettingCallback core.NotifySettingCallback
+	dialogCallback        core.DialogCallback
+	usernameCallback      core.UsernameCallback
 }
 
 func (m *ChannelModel) InstallModel() {
@@ -47,16 +47,23 @@ func (m *ChannelModel) InstallModel() {
 	m.dao.UsersDAO = dao.GetUsersDAO(dao.DB_MASTER)
 	m.dao.ChannelsDAO = dao.GetChannelsDAO(dao.DB_MASTER)
 	m.dao.ChannelParticipantsDAO = dao.GetChannelParticipantsDAO(dao.DB_MASTER)
+	m.dao.UsernameDAO = dao.GetUsernameDAO(dao.DB_MASTER)
 }
 
 func (m *ChannelModel) RegisterCallback(cb interface{}) {
 	switch cb.(type) {
 	case core.PhotoCallback:
-		glog.Info("chatModel - register core.PhotoCallback")
+		glog.Info("channelModel - register core.PhotoCallback")
 		m.photoCallback = cb.(core.PhotoCallback)
 	case core.NotifySettingCallback:
-		glog.Info("chatModel - register core.NotifySettingCallback")
-		m.notifySetting = cb.(core.NotifySettingCallback)
+		glog.Info("channelModel - register core.NotifySettingCallback")
+		m.notifySettingCallback = cb.(core.NotifySettingCallback)
+	case core.DialogCallback:
+		glog.Info("channelModel - register core.DialogCallback")
+		m.dialogCallback = cb.(core.DialogCallback)
+	case core.UsernameCallback:
+		glog.Info("channelModel - register core.UsernameCallback")
+		m.usernameCallback = cb.(core.UsernameCallback)
 	}
 }
 
@@ -85,19 +92,28 @@ func (m *ChannelModel) GetChannelListBySelfAndIDList(selfUserId int32, idList []
 	return
 }
 
-func (m *ChannelModel) CheckChannelUserName(id int32, userName string) bool {
-	do := m.dao.UsersDAO.SelectByUsername(userName)
-	if do == nil {
-		return false
-	}
+/////////////////////////////////////////////////////////////////////////////////////////////
+//func (m *ChannelModel) CheckUserName(channelId int32, userName string) bool {
+//	do := m.dao.UsernameDAO.SelectByUsername(userName)
+//	return do == nil
+//}
+//
+//func (m *ChannelModel) UpdateUsername(channelId int32, username string) error {
+//	usernameDO := m.dao.UsernameDAO.SelectByUsername(username)
+//	if usernameDO == nil {
+//		usernameDO = &dataobject.UsernameDO{
+//			PeerType: 4,
+//			PeerId:   channelId,
+//			Username: username,
+//		}
+//		m.dao.UsernameDAO.Insert(usernameDO)
+//	} else {
+//		m.dao.UsernameDAO.UpdateChannelUsername(username, channelId)
+//	}
+//	return nil
+//}
 
-	params := map[string]interface{}{
-		"channel_id": id,
-		"user_id":    do.Id,
-	}
-	return m.dao.CommonDAO.CheckExists("channel_participants", params)
-}
-
+///////////////////////////////////////////////////////////////////////////////////////////
 func (m *ChannelModel) GetChannelBySelfID(selfUserId, channelId int32) (chat *mtproto.Chat) {
 	channelData, err := m.NewChannelLogicById(channelId)
 	if err != nil {
@@ -124,78 +140,6 @@ func (m *ChannelModel) GetChannelParticipantIdList(channelId int32) []int32 {
 	return idList
 }
 
-func (m *ChannelModel) GetChannelFullBySelfId(selfUserId int32, channelData *channelLogicData) *mtproto.TLChannelFull {
-	// TODO(@benqi): nbfs_client
-	var photo *mtproto.Photo
-
-	// TODO(@benqi):
-	if channelData.GetPhotoId() == 0 {
-		photoEmpty := &mtproto.TLPhotoEmpty{Data2: &mtproto.Photo_Data{
-			Id: 0,
-		}}
-		photo = photoEmpty.To_Photo()
-	} else {
-		// sizes, _ := nbfs_client.GetPhotoSizeList(channelData.channel.PhotoId)
-		// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
-		//channelPhoto := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
-		//	Id:          channelData.channel.PhotoId,
-		//	HasStickers: false,
-		//	AccessHash:  channelData.channel.PhotoId, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
-		//	Date:        int32(time.Now().Unix()),
-		//	Sizes:       sizes,
-		//}}
-		photo = m.photoCallback.GetPhoto(channelData.channel.PhotoId)
-		// channelPhoto.To_Photo()
-	}
-
-	peer := &base.PeerUtil{
-		PeerType: base.PEER_CHANNEL,
-		PeerId:   channelData.GetChannelId(),
-	}
-
-	// var notifySettings *mtproto.PeerNotifySettings
-
-	// TODO(@benqi): chat notifySetting...
-	//if notifySettingFunc == nil {
-	//	notifySettings = &mtproto.PeerNotifySettings{
-	//		Constructor: mtproto.TLConstructor_CRC32_peerNotifySettings,
-	//		Data2: &mtproto.PeerNotifySettings_Data{
-	//			ShowPreviews: true,
-	//			Silent:       false,
-	//			MuteUntil:    0,
-	//			Sound:        "default",
-	//		},
-	//	}
-	//} else {
-	notifySettings := m.notifySetting.GetNotifySettings(selfUserId, peer)
-	//}
-
-	channelFull := &mtproto.TLChannelFull{Data2: &mtproto.ChatFull_Data{
-		// CanViewParticipants:
-		Id:                channelData.channel.Id,
-		About:             channelData.channel.Title,
-		ParticipantsCount: channelData.channel.ParticipantCount,
-		AdminsCount:       1, // TODO(@benqi): calc adminscount
-		ChatPhoto:         photo,
-		NotifySettings:    notifySettings,
-		// ExportedInvite:    mtproto.NewTLChatInviteEmpty().To_ExportedChatInvite(), // TODO(@benqi):
-		BotInfo: []*mtproto.BotInfo{},
-	}}
-
-	isAdmin := channelData.checkUserIsAdministrator(selfUserId)
-	if isAdmin {
-		channelFull.SetCanViewParticipants(true)
-		channelFull.SetCanSetUsername(true)
-	}
-
-	exportedInvite := &mtproto.TLChatInviteExported{Data2: &mtproto.ExportedChatInvite_Data{
-		Link: channelData.channel.Link,
-	}}
-
-	channelFull.SetExportedInvite(exportedInvite.To_ExportedChatInvite())
-	return channelFull
-}
-
 func (m *ChannelModel) GetChannelParticipant(channelId, userId int32) *mtproto.ChannelParticipant {
 	do := m.dao.ChannelParticipantsDAO.SelectByUserId(channelId, userId)
 	if do == nil {
@@ -204,7 +148,21 @@ func (m *ChannelModel) GetChannelParticipant(channelId, userId int32) *mtproto.C
 		return nil
 	}
 
-	return MakeChannelParticipant2ByDO(userId, do)
+	channelParticipantData := channelParticipantData{do}
+	return channelParticipantData.ToChannelParticipant()
+}
+
+func (m *ChannelModel) GetTopMessageListByIdList(idList []int32) (topMessages map[int32]int32) {
+	topMessages = make(map[int32]int32)
+
+	if len(idList) > 0 {
+		doList := m.dao.ChannelsDAO.SelectByIdList(idList)
+		for i := 0; i < len(doList); i++ {
+			topMessages[doList[i].Id] = doList[i].TopMessage
+		}
+	}
+
+	return
 }
 
 func init() {

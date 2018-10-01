@@ -28,6 +28,7 @@ import (
 	"time"
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"fmt"
+	"github.com/nebulaim/telegramd/biz/core/update"
 )
 
 func makeMessageBySendMessage(fromId, peerType, peerId int32, request *mtproto.TLMessagesSendMessage) (message *mtproto.TLMessage) {
@@ -46,6 +47,7 @@ func makeMessageBySendMessage(fromId, peerType, peerId int32, request *mtproto.T
 	// TODO(@benqi): check channel or super chat
 	if peerType == base.PEER_CHANNEL {
 		message.SetPost(true)
+		message.SetViews(1)
 	}
 
 	//// TODO(@benqi):
@@ -60,7 +62,7 @@ func makeMessageBySendMessage(fromId, peerType, peerId int32, request *mtproto.T
 }
 
 func (s *MessagesServiceImpl) DoClearDraft(userId int32, authKeyId int64, peer *base.PeerUtil) {
-	hasClearDraft := s.DialogModel.ClearDraft(userId, peer.PeerType, peer.PeerId)
+	hasClearDraft := s.DialogModel.ClearDraftMessage(userId, peer.PeerType, peer.PeerId)
 
 	// ClearDraft
 	if hasClearDraft {
@@ -119,69 +121,124 @@ func (s *MessagesServiceImpl) MessagesSendMessage(ctx context.Context, request *
 
 	outboxMessage := makeMessageBySendMessage(md.UserId, peer.PeerType, peer.PeerId, request)
 
-	resultCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (*mtproto.Updates, error) {
-		sentMessage := message.MessageToUpdateShortSentMessage(outBox.ToMessage(md.UserId))
-		sentMessage.SetPts(pts)
-		sentMessage.SetPtsCount(ptsCount)
-		return sentMessage.To_Updates(), nil
-	}
-
-	syncNotMeCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (int64, *mtproto.Updates, error) {
-		var syncUpdates *mtproto.Updates
-		switch peer.PeerType {
-		case base.PEER_USER:
-			syncShortMessage := message.MessageToUpdateShortMessage(outBox.ToMessage(md.UserId))
-			syncShortMessage.SetPts(pts)
-			syncShortMessage.SetPtsCount(ptsCount)
-			syncUpdates = syncShortMessage.To_Updates()
-		case base.PEER_CHAT:
-			syncShortMessage := message.MessageToUpdateShortChatMessage(outBox.ToMessage(md.UserId))
-			syncShortMessage.SetPts(pts)
-			syncShortMessage.SetPtsCount(ptsCount)
-			syncUpdates = syncShortMessage.To_Updates()
-		case base.PEER_CHANNEL:
-			err = fmt.Errorf("peer_channel not impl")
-		default:
-			err = fmt.Errorf("invalid peer_type")
+	if peer.PeerType != base.PEER_CHANNEL {
+		resultCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (*mtproto.Updates, error) {
+			sentMessage := message.MessageToUpdateShortSentMessage(outBox.ToMessage(md.UserId))
+			sentMessage.SetPts(pts)
+			sentMessage.SetPtsCount(ptsCount)
+			return sentMessage.To_Updates(), nil
 		}
-		return md.AuthId, syncUpdates, nil
-	}
 
-	pushCB := func(pts, ptsCount int32, inBox *message.MessageBox2) (*mtproto.Updates, error) {
-		var (
-			updates *mtproto.Updates
-			err error
-		)
-
-		glog.Info(inBox)
-		switch peer.PeerType {
-		case base.PEER_USER:
-			shortMessage := message.MessageToUpdateShortMessage(inBox.ToMessage(inBox.OwnerId))
-			shortMessage.SetPts(pts)
-			shortMessage.SetPtsCount(ptsCount)
-			updates = shortMessage.To_Updates()
-		case base.PEER_CHAT:
-			shortMessage := message.MessageToUpdateShortChatMessage(inBox.ToMessage(inBox.OwnerId))
-			shortMessage.SetPts(pts)
-			shortMessage.SetPtsCount(ptsCount)
-			updates = shortMessage.To_Updates()
-		case base.PEER_CHANNEL:
-			err = fmt.Errorf("peer_channel not impl")
-		default:
-			err = fmt.Errorf("invalid peer_type")
+		syncNotMeCB := func(pts, ptsCount int32, outBox *message.MessageBox2) (int64, *mtproto.Updates, error) {
+			var syncUpdates *mtproto.Updates
+			switch peer.PeerType {
+			case base.PEER_USER:
+				syncShortMessage := message.MessageToUpdateShortMessage(outBox.ToMessage(md.UserId))
+				syncShortMessage.SetPts(pts)
+				syncShortMessage.SetPtsCount(ptsCount)
+				syncUpdates = syncShortMessage.To_Updates()
+			case base.PEER_CHAT:
+				syncShortMessage := message.MessageToUpdateShortChatMessage(outBox.ToMessage(md.UserId))
+				syncShortMessage.SetPts(pts)
+				syncShortMessage.SetPtsCount(ptsCount)
+				syncUpdates = syncShortMessage.To_Updates()
+			case base.PEER_CHANNEL:
+				err = fmt.Errorf("peer_channel not impl")
+			default:
+				err = fmt.Errorf("invalid peer_type")
+			}
+			return md.AuthId, syncUpdates, nil
 		}
-		return updates, err
+
+		pushCB := func(pts, ptsCount int32, inBox *message.MessageBox2) (*mtproto.Updates, error) {
+			var (
+				updates *mtproto.Updates
+				err error
+			)
+
+			glog.Info(inBox)
+			switch peer.PeerType {
+			case base.PEER_USER:
+				shortMessage := message.MessageToUpdateShortMessage(inBox.ToMessage(inBox.OwnerId))
+				shortMessage.SetPts(pts)
+				shortMessage.SetPtsCount(ptsCount)
+				updates = shortMessage.To_Updates()
+			case base.PEER_CHAT:
+				shortMessage := message.MessageToUpdateShortChatMessage(inBox.ToMessage(inBox.OwnerId))
+				shortMessage.SetPts(pts)
+				shortMessage.SetPtsCount(ptsCount)
+				updates = shortMessage.To_Updates()
+			case base.PEER_CHANNEL:
+				err = fmt.Errorf("peer_channel not impl")
+			default:
+				err = fmt.Errorf("invalid peer_type")
+			}
+			return updates, err
+		}
+
+		replyUpdates, err := s.MessageModel.SendMessage(
+			md.UserId,
+			peer,
+			request.GetRandomId(),
+			outboxMessage.To_Message(),
+			resultCB,
+			syncNotMeCB,
+			pushCB)
+
+		glog.Infof("messages.sendMessage#fa88427a - reply: %s", logger.JsonDebugData(replyUpdates))
+		return replyUpdates, err
+	} else {
+		channelLogic, _ := s.ChannelModel.NewChannelLogicById(peer.PeerId)
+		resultCB := func(pts, ptsCount int32, channelBox *message.MessageBox2) *mtproto.Updates {
+			replyUpdates := updates.NewUpdatesLogic(md.UserId)
+			channelLogic.SetTopMessage(channelBox.MessageId)
+
+			replyUpdates.AddUpdateMessageId(channelBox.MessageId, channelBox.RandomId)
+			updateReadChannelInbox := &mtproto.TLUpdateReadChannelInbox{ Data2: &mtproto.Update_Data{
+				ChannelId: channelBox.OwnerId,
+				MaxId:     channelBox.MessageId,
+			}}
+			replyUpdates.AddUpdate(updateReadChannelInbox.To_Update())
+			replyUpdates.AddUpdateNewChannelMessage(pts, ptsCount, channelBox.ToMessage(md.UserId))
+			replyUpdates.AddChat(channelLogic.ToChannel(md.UserId))
+
+			return replyUpdates.ToUpdates()
+		}
+
+		syncNotMeCB := func(pts, ptsCount int32, channelBox *message.MessageBox2) ([]int32, int64, *mtproto.Updates, error) {
+			syncUpdates := updates.NewUpdatesLogic(md.UserId)
+
+			updateReadChannelInbox := &mtproto.TLUpdateReadChannelInbox{ Data2: &mtproto.Update_Data{
+				ChannelId: channelBox.OwnerId,
+				MaxId:     channelBox.MessageId,
+			}}
+			syncUpdates.AddUpdate(updateReadChannelInbox.To_Update())
+			syncUpdates.AddUpdateNewChannelMessage(pts, ptsCount, channelBox.ToMessage(md.UserId))
+			syncUpdates.AddChat(channelLogic.ToChannel(md.UserId))
+
+			idList := channelLogic.GetChannelParticipantIdList(md.UserId)
+			return idList, md.AuthId, syncUpdates.ToUpdates(), nil
+		}
+
+		pushCB := func(userId, pts, ptsCount int32, channelBox *message.MessageBox2) (*mtproto.Updates, error) {
+			pushUpdates := updates.NewUpdatesLogic(userId)
+
+			pushUpdates.AddUpdateNewChannelMessage(pts, ptsCount, channelBox.ToMessage(userId))
+			pushUpdates.AddChat(channelLogic.ToChannel(userId))
+
+			return pushUpdates.ToUpdates(), nil
+		}
+
+		replyUpdates, err := s.MessageModel.SendChannelMessage(
+			md.UserId,
+			peer,
+			request.GetRandomId(),
+			outboxMessage.To_Message(),
+			resultCB,
+			syncNotMeCB,
+			pushCB)
+
+		glog.Infof("messages.sendMessage#fa88427a - reply: %s", logger.JsonDebugData(replyUpdates))
+		return replyUpdates, err
 	}
-
-	replyUpdates, err := s.MessageModel.SendMessage(
-		md.UserId,
-		peer,
-		request.GetRandomId(),
-		outboxMessage.To_Message(),
-		resultCB,
-		syncNotMeCB,
-		pushCB)
-
-	glog.Infof("messages.sendMessage#fa88427a - reply: %s", logger.JsonDebugData(replyUpdates))
-	return replyUpdates, err
 }

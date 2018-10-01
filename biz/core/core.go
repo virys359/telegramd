@@ -95,6 +95,29 @@ type ContactCallback interface {
 
 type DialogCallback interface {
 	InsertOrUpdateDialog(userId, peerType, peerId, topMessage int32, hasMentioned, isInbox bool)
+	InsertOrChannelUpdateDialog(userId, peerType, peerId int32)
+}
+
+type UsernameCallback interface {
+	GetAccountUsername(userId int32) string
+	GetChannelUsername(channelId int32) string
+}
+
+// dialog#e4def5db flags:#
+// 	pinned:flags.2?true
+// 	unread_mark:flags.3?true
+// 	peer:Peer
+// 	top_message:int
+// 	read_inbox_max_id:int
+// 	read_outbox_max_id:int
+// 	unread_count:int
+// 	unread_mentions_count:int
+// 	notify_settings:PeerNotifySettings
+// 	pts:flags.0?int
+// 	draft:flags.1?DraftMessage = Dialog;
+//
+type ChannelCallback interface {
+	GetTopMessageListByIdList(idList []int32) (topMessages map[int32]int32)
 }
 
 ///*

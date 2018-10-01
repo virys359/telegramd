@@ -46,6 +46,7 @@ message SessionEntry {
     int32 server_id = 2;
     int64 auth_key_id = 3;
     int64 expired = 4;
+    int32 layer = 5;
 }
 
 message SessionEntryList {

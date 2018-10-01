@@ -148,11 +148,9 @@ func genCacheSaltKey(id int64) string {
 func GetOrInsertSaltList(keyId int64, size int) ([]*mtproto.TLFutureSalt, error) {
 	var (
 		salts = make([]*mtproto.TLFutureSalt, size)
-		// saltKey =
 
 		date           = int32(time.Now().Unix())
 		lastValidUntil = date
-
 		// ok = false
 		saltsData []*mtproto.FutureSalt_Data
 	)

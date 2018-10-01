@@ -21,9 +21,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/mysql_client"
 	"github.com/nebulaim/telegramd/proto/zproto"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/service_discovery"
 )
 
 var (
@@ -32,10 +32,11 @@ var (
 )
 
 type authKeyConfig struct {
-	ServerId  int32 // 服务器ID
-	Mysql     []mysql_client.MySQLConfig
-	Server    *zproto.ZProtoServerConfig
-	RpcServer *grpc_util.RPCServerConfig
+	ServerId             int32 // 服务器ID
+	Mysql                []mysql_client.MySQLConfig
+	Server               *zproto.ZProtoServerConfig
+	AuthSessionRpcClient service_discovery.ServiceDiscoveryClientConfig
+	// RpcServer *grpc_util.RPCServerConfig
 }
 
 func init() {

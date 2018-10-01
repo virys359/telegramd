@@ -27,17 +27,20 @@ import (
 // sync.pushUpdates#5c612649 user_id:int updates:Updates = Bool;
 func (s *SyncServiceImpl) SyncPushUpdates(ctx context.Context, request *mtproto.TLSyncPushUpdates) (*mtproto.Bool, error) {
     glog.Infof("sync.pushUpdates#5c612649 - request: {%s}", logger.JsonDebugData(request))
-    pushData := &mtproto.PushData{
-        Constructor: mtproto.TLConstructor_CRC32_sync_pushUpdatesData,
-        Data2:       &mtproto.PushData_Data{Updates: request.GetUpdates()},
-    }
 
     err := s.processUpdatesRequest(request.GetUserId(), request.GetUpdates())
     if err == nil {
+        pushData := &mtproto.PushData{
+            Constructor: mtproto.TLConstructor_CRC32_sync_pushUpdatesData,
+            Data2:       &mtproto.PushData_Data{Updates: request.GetUpdates()},
+        }
+
         s.pushUpdatesToSession(syncTypeUser, request.GetUserId(), pushData, 0)
     } else {
         glog.Error(err)
         return mtproto.ToBool(false), nil
     }
+
+    glog.Infof("sync.pushUpdates#5c612649 - reply: {true}",)
     return mtproto.ToBool(true), nil
 }

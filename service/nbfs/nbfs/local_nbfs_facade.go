@@ -144,9 +144,11 @@ func (c *localNbfsFacade) UploadPhotoFile(creatorId int64, file *mtproto.InputFi
 		return nil, err
 	}
 
-	if fmt.Sprintf("%x", md5Hash.Sum(nil)) != inputFile.GetMd5Checksum() {
-		err = fmt.Errorf("invalid md5")
-		return nil, err
+	if md5Hash != nil {
+		if fmt.Sprintf("%x", md5Hash.Sum(nil)) != inputFile.GetMd5Checksum() {
+			err = fmt.Errorf("invalid md5")
+			return nil, err
+		}
 	}
 
 	photoId, _ := c.UUIDGen.GetUUID()
@@ -214,9 +216,11 @@ func (c *localNbfsFacade) UploadProfilePhotoFile(creatorId int64, file *mtproto.
 		return nil, err
 	}
 
-	if fmt.Sprintf("%x", md5Hash.Sum(nil)) != inputFile.GetMd5Checksum() {
-		err = fmt.Errorf("invalid md5")
-		return nil, err
+	if md5Hash != nil {
+		if fmt.Sprintf("%x", md5Hash.Sum(nil)) != inputFile.GetMd5Checksum() {
+			err = fmt.Errorf("invalid md5")
+			return nil, err
+		}
 	}
 
 	photoId, _ := c.UUIDGen.GetUUID()
@@ -323,6 +327,11 @@ func (c *localNbfsFacade) DownloadFile(location *mtproto.InputFileLocation, offs
 		file := cachefs.NewPhotoFile(fileLocation.GetVolumeId(), fileLocation.GetLocalId(), fileLocation.GetSecret())
 		bytes, err = file.ReadData(offset, limit)
 		sType = int32(fileLocation.GetSecret() >> 32)
+	case mtproto.TLConstructor_CRC32_inputFileLocationLayer86:
+		fileLocation := location.To_InputFileLocationLayer86()
+		file := cachefs.NewPhotoFile(fileLocation.GetVolumeId(), fileLocation.GetLocalId(), fileLocation.GetSecret())
+		bytes, err = file.ReadData(offset, limit)
+		sType = int32(fileLocation.GetSecret() >> 32)
 	case mtproto.TLConstructor_CRC32_inputEncryptedFileLocation:
 	case mtproto.TLConstructor_CRC32_inputDocumentFileLocation:
 		fileLocation := location.To_InputDocumentFileLocation()
@@ -331,6 +340,11 @@ func (c *localNbfsFacade) DownloadFile(location *mtproto.InputFileLocation, offs
 		sType = int32(fileLocation.GetAccessHash() >> 32)
 	case mtproto.TLConstructor_CRC32_inputDocumentFileLocationLayer11:
 		fileLocation := location.To_InputDocumentFileLocation()
+		file := cachefs.NewDocumentFile(fileLocation.GetId(), fileLocation.GetAccessHash())
+		bytes, err = file.ReadData(offset, limit)
+		sType = int32(fileLocation.GetAccessHash() >> 32)
+	case mtproto.TLConstructor_CRC32_inputDocumentFileLocationLayer86:
+		fileLocation := location.To_InputDocumentFileLocationLayer86()
 		file := cachefs.NewDocumentFile(fileLocation.GetId(), fileLocation.GetAccessHash())
 		bytes, err = file.ReadData(offset, limit)
 		sType = int32(fileLocation.GetAccessHash() >> 32)

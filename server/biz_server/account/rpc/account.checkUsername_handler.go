@@ -24,10 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-)
-
-const (
-	kMinimumUserNameLen = 5
+	"github.com/nebulaim/telegramd/biz/core/username"
 )
 
 // account.checkUsername#2714d86c username:string = Bool;
@@ -44,15 +41,13 @@ func (s *AccountServiceImpl) AccountCheckUsername(ctx context.Context, request *
 	// You can use a-z, 0-9 and underscores.
 	// Minimum length is 5 characters.";
 	//
-	if len(request.Username) < kMinimumUserNameLen || !base.IsAlNumString(request.Username) || base.IsNumber(request.Username[0]) {
+	if len(request.Username) < username.MIN_USERNAME_LEN || !base.IsAlNumString(request.Username) || base.IsNumber(request.Username[0]) {
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
 		glog.Error("account.checkUsername#2714d86c - format error: ", err)
 		return nil, err
 	} else {
-		// userId == 0 为username不存在
-		userId := s.AccountModel.GetUserIdByUserName(request.Username)
-		// username不存在或者不是自身
-		if userId > 0 && userId != md.UserId {
+		existed := s.UsernameModel.CheckAccountUsername(md.UserId, request.GetUsername())
+		if existed == username.USERNAME_EXISTED_NOTME {
 			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_OCCUPIED)
 			glog.Error("account.checkUsername#2714d86c - exists username: ", err)
 			return nil, err

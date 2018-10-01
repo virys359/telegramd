@@ -20,10 +20,8 @@ package server
 import (
 	"bytes"
 	"crypto/sha1"
-	"encoding/base64"
 	"encoding/binary"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
 	"github.com/nebulaim/telegramd/baselib/bytes2"
@@ -32,10 +30,9 @@ import (
 	"github.com/nebulaim/telegramd/baselib/net2"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/proto/zproto"
-	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
-	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dataobject"
 	"math/big"
 	"time"
+	"context"
 )
 
 const (
@@ -114,24 +111,22 @@ var (
 )
 
 type handshake struct {
-	rsa *crypto.RSACryptor
-
-	// TODO(@benqi): 使用map管理多个g和p
-	dh2048p []byte
-	dh2048g []byte
-
-	// cache dh2048p和dh2048p
-	bigIntDH2048G *big.Int
-	bigIntDH2048P *big.Int
+	rsa                  *crypto.RSACryptor
+	dh2048p              []byte
+	dh2048g              []byte
+	bigIntDH2048G        *big.Int
+	bigIntDH2048P        *big.Int
+	authSessionRpcClient mtproto.RPCSessionClient
 }
 
-func newHandshake() *handshake {
+func newHandshake(c mtproto.RPCSessionClient) *handshake {
 	s := &handshake{
-		rsa:           crypto.NewRSACryptor(),
-		dh2048p:       dh2048_p,
-		dh2048g:       dh2048_g,
-		bigIntDH2048P: new(big.Int).SetBytes(dh2048_p),
-		bigIntDH2048G: new(big.Int).SetBytes(dh2048_g),
+		rsa:                  crypto.NewRSACryptor(),
+		dh2048p:              dh2048_p,
+		dh2048g:              dh2048_g,
+		bigIntDH2048P:        new(big.Int).SetBytes(dh2048_p),
+		bigIntDH2048G:        new(big.Int).SetBytes(dh2048_g),
+		authSessionRpcClient: c,
 	}
 	return s
 }
@@ -564,6 +559,7 @@ func (s *handshake) onSetClient_DHParams(state *zproto.HandshakeState, request *
 
 	// TODO(@benqi): dhGenRetry and dhGenFail
 	copy(authKey[256-len(authKeyNum.Bytes()):], authKeyNum.Bytes())
+
 	authKeyAuxHash := make([]byte, len(authKeyMD.NewNonce))
 	copy(authKeyAuxHash, authKeyMD.NewNonce)
 	authKeyAuxHash = append(authKeyAuxHash, byte(0x01))
@@ -578,50 +574,32 @@ func (s *handshake) onSetClient_DHParams(state *zproto.HandshakeState, request *
 	// TODO(@benqi): authKeyId生成后要检查在数据库里是否已经存在，有非常小的概率会碰撞
 	// 如果碰撞让客户端重新再来一轮
 
-	dhGenOk := &mtproto.TLDhGenOk{Data2: &mtproto.SetClient_DHParamsAnswer_Data{
-		Nonce:         authKeyMD.Nonce,
-		ServerNonce:   authKeyMD.ServerNonce,
-		NewNonceHash1: authKeyAuxHash[len(authKeyAuxHash)-16 : len(authKeyAuxHash)],
-	}}
-
 	authKeyMD.AuthKeyId = authKeyId
 	authKeyMD.AuthKey = authKey
 
-	// TODO(@benqi): error 处理
-	do := &dataobject.AuthKeysDO{
-		AuthId: authKeyId,
-		Body:   base64.RawStdEncoding.EncodeToString(authKey),
-	}
-
-	_, err = dao.GetAuthKeysDAO(dao.DB_MASTER).Insert(do)
-	if err != nil {
-		glog.Error("store auth_key error: ", err)
-		if dbErr, ok := err.(*mysql.MySQLError); ok {
-			if dbErr.Number == 1062 {
-				// glog.Error("duplicate store auth_key: ", err)
-			}
-		} else {
-			// return DBERR, err
-		}
-		return nil, err
-	}
-
-	/*
-	 // TODO(@benqi): gen handshake server salt
-	 handshakeServerSalt = new TL_future_salt();
-	 handshakeServerSalt->valid_since = currentTime + timeDifference - 5;
-	 handshakeServerSalt->valid_until = handshakeServerSalt->valid_since + 30 * 60;
-	 for (int32_t a = 7; a >= 0; a--) {
-	 	handshakeServerSalt->salt <<= 8;
-	 	handshakeServerSalt->salt |= (authNewNonce->bytes[a] ^ authServerNonce->bytes[a]);
-	 }
-	*/
-
-	glog.Infof("onSetClient_DHParams - metadata: {%v}, reply: %s", authKeyMD, logger.JsonDebugData(dhGenOk))
-
-	// s.authKeyMetadataToTrailer(ctx, authKeyMD)
 	state.Ctx, _ = proto.Marshal(authKeyMD)
-	return dhGenOk.To_SetClient_DHParamsAnswer(), nil
+
+	if s.saveAuthKeyInfo(authKeyMD) {
+		dhGenOk := &mtproto.TLDhGenOk{Data2: &mtproto.SetClient_DHParamsAnswer_Data{
+			Nonce:         authKeyMD.Nonce,
+			ServerNonce:   authKeyMD.ServerNonce,
+			NewNonceHash1: calcNewNonceHash(authKeyMD.NewNonce, authKey, 0x01),
+		}}
+
+		glog.Infof("onSetClient_DHParams - metadata: {%v}, reply: %s", authKeyMD, logger.JsonDebugData(dhGenOk))
+		return dhGenOk.To_SetClient_DHParamsAnswer(), nil
+	} else {
+		// TODO(@benqi): dhGenFail
+		dhGenRetry := &mtproto.TLDhGenRetry{Data2: &mtproto.SetClient_DHParamsAnswer_Data{
+			Nonce:         authKeyMD.Nonce,
+			ServerNonce:   authKeyMD.ServerNonce,
+			// NewNonceHash1: authKeyAuxHash[len(authKeyAuxHash)-16 : len(authKeyAuxHash)],
+			NewNonceHash2: calcNewNonceHash(authKeyMD.NewNonce, authKey, 0x02),
+		}}
+
+		glog.Infof("onSetClient_DHParams - metadata: {%v}, reply: %s", authKeyMD, logger.JsonDebugData(dhGenRetry))
+		return dhGenRetry.To_SetClient_DHParamsAnswer(), nil
+	}
 }
 
 // msgs_ack#62d6b459 msg_ids:Vector<long> = MsgsAck;
@@ -641,4 +619,56 @@ func (s *handshake) onMsgsAck(state *zproto.HandshakeState, request *mtproto.TLM
 		return fmt.Errorf("invalid state: %v", state)
 	}
 	return nil
+}
+
+func (s *handshake) saveAuthKeyInfo(md *mtproto.AuthKeyMetadata) bool {
+	var (
+		salt = int64(0)
+		serverSalt *mtproto.TLFutureSalt
+		now = int32(time.Now().Unix())
+	)
+
+	for a := 7; a >= 0; a-- {
+		salt <<= 8
+		salt |= int64(md.NewNonce[a] ^ md.ServerNonce[a])
+	}
+
+
+	serverSalt = &mtproto.TLFutureSalt{Data2: &mtproto.FutureSalt_Data{
+		ValidSince: now,
+		ValidUntil: now + 30*60,
+		Salt:       salt,
+	}}
+
+	authKeyInfo := &mtproto.TLAuthKeyInfo{Data2: &mtproto.AuthKeyInfo_Data{
+		AuthKeyId:  md.AuthKeyId,
+		AuthKey:    md.AuthKey,
+		FutureSalt: serverSalt.To_FutureSalt(),
+	}}
+
+	request := &mtproto.TLSessionSetAuthKey{
+		AuthKey: authKeyInfo.To_AuthKeyInfo(),
+	}
+	r, err := s.authSessionRpcClient.SessionSetAuthKey(context.Background(), request)
+
+	if err != nil {
+		glog.Error(err)
+	}
+
+	if !mtproto.FromBool(r) {
+		glog.Error("saveAuthKeyInfo not successful - ", md.AuthKeyId)
+	}
+
+	return true
+}
+
+func calcNewNonceHash(newNonce, authKey []byte, b byte) []byte {
+	authKeyAuxHash := make([]byte, len(newNonce))
+	copy(authKeyAuxHash, newNonce)
+	authKeyAuxHash = append(authKeyAuxHash, b)
+	sha1D := sha1.Sum(authKey)
+	authKeyAuxHash = append(authKeyAuxHash, sha1D[:]...)
+	sha1E := sha1.Sum(authKeyAuxHash[:len(authKeyAuxHash)-12])
+	authKeyAuxHash = append(authKeyAuxHash, sha1E[:]...)
+	return authKeyAuxHash[len(authKeyAuxHash)-16 : len(authKeyAuxHash)]
 }

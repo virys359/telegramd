@@ -24,6 +24,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/base"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/service/auth_session/client"
 )
 
 /*
@@ -85,7 +86,9 @@ func (s *AuthServiceImpl) AuthSignIn(ctx context.Context, request *mtproto.TLAut
 	// do signIn...
 	user := s.UserModel.GetMyUserByPhoneNumber(phoneNumber)
 	// Bind authKeyId and userId
-	s.AuthModel.BindAuthKeyAndUser(md.AuthId, user.GetId())
+
+	auth_session_client.BindAuthKeyUser(md.AuthId, user.GetId())
+	// s.AuthModel.BindAuthKeyAndUser(md.AuthId, user.GetId())
 	// TODO(@benqi): check and set authKeyId state
 
 	// Check SESSION_PASSWORD_NEEDED

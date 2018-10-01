@@ -17,6 +17,8 @@
 
 package mtproto
 
+// import "github.com/nebulaim/mtprotoc/codegen/out2"
+
 // import "time"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +33,17 @@ func ToBool(b bool) *Bool {
 func FromBool(b *Bool) bool {
 	return TLConstructor_CRC32_boolTrue == b.GetConstructor()
 }
+
+//func ToInt32(v int32) *Int32 {
+//	i := &mtproto.TLInt32{Data2: &mtproto.Int32_Data{
+//		V: v,
+//	}}
+//	return i.To_Int32()
+//}
+//
+//func FromInt32(i *Int32) int32 {
+//	return i.GetData2().GetV()
+//}
 
 /*
 //////////////////////////////////////////////////////////////////////////////////

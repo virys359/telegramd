@@ -186,7 +186,7 @@ func (s *FrontendServer) OnServerMessageDataArrived(conn *net2.TcpConnection, ms
 
 func (s *FrontendServer) OnServerConnectionClosed(conn *net2.TcpConnection) {
 	glog.Infof("onServerConnectionClosed - {peer: %s}", conn)
-	s.sendClientClosed(conn)
+	// s.sendClientClosed(conn)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -337,7 +337,7 @@ func (s *FrontendServer) onServerEncryptedRawMessage(ctx *connContext, conn *net
 	}
 
 	return s.client.SendKetamaMessage("session", base.Int64ToString(mmsg.AuthKeyId()), md, sessData, func(addr string) {
-		s.checkAndSendClientNew(ctx, conn, addr, mmsg.AuthKeyId(), md)
+		// s.checkAndSendClientNew(ctx, conn, addr, mmsg.AuthKeyId(), md)
 	})
 }
 

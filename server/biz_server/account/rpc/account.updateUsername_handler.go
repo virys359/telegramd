@@ -23,8 +23,11 @@ import (
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
-	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/biz/core/username"
+	base2 "github.com/nebulaim/telegramd/biz/base"
 )
 
 // account.updateUsername#3e0bdd7c username:string = User;
@@ -32,38 +35,29 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("account.updateUsername#3e0bdd7c - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): wrapper checkUserName func
 
-	// Check username format
-	// You can choose a username on Telegram.
-	// If you do, other people will be able to find
-	// you by this username and contact you
-	// without knowing your phone number.
-	//
-	// You can use a-z, 0-9 and underscores.
-	// Minimum length is 5 characters.";
-	//
-	if len(request.Username) < kMinimumUserNameLen || !base.IsAlNumString(request.Username) || base.IsNumber(request.Username[0]) {
-		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
-		glog.Error("account.updateUsername#3e0bdd7c - format error: ", err)
-		return nil, err
-	} else {
-		// userId == 0 为username不存在
-		userId := s.AccountModel.GetUserIdByUserName(request.Username)
-		// username不存在或者不是自身
-		if userId > 0 && userId != md.UserId {
+	username2 := request.GetUsername()
+	if username2 != "" {
+		if len(request.Username) < username.MIN_USERNAME_LEN || !base.IsAlNumString(request.Username) || base.IsNumber(request.Username[0]) {
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
+			glog.Error("account.updateUsername#3e0bdd7c - format error: ", err)
+			return nil, err
+		}
+
+		existed := s.UsernameModel.CheckAccountUsername(md.UserId, request.Username)
+		if existed == username.USERNAME_EXISTED_NOTME {
 			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_OCCUPIED)
-			glog.Error("account.updateUsername#3e0bdd7c - exists username: ", err)
+			glog.Error("account.updateUsername#3e0bdd7c - format error: ", err)
 			return nil, err
 		}
 	}
 
 	// affected
-	s.AccountModel.ChangeUserNameByUserId(md.UserId, request.Username)
+	s.UsernameModel.UpdateUsernameByPeer(base2.PEER_USER, md.GetUserId(), request.GetUsername())
 
 	user := s.UserModel.GetUserById(md.UserId, md.UserId)
 	// 要考虑到数据库主从同步问题
-	user.SetUsername(request.Username)
+	user.SetUsername(request.GetUsername())
 
 	// sync to other sessions
 	// updateUserName#a7332b73 user_id:int first_name:string last_name:string username:string = Update;
@@ -71,10 +65,14 @@ func (s *AccountServiceImpl) AccountUpdateUsername(ctx context.Context, request 
 		UserId:    md.UserId,
 		FirstName: user.GetFirstName(),
 		LastName:  user.GetLastName(),
-		Username:  request.Username,
+		Username:  request.GetUsername(),
 	}}
-	_ = updateUserName
-	// sync_client.GetSyncClient().PushToUserUpdateShortData(md.UserId, updateUserName.To_Update())
+
+	syncUpdates := updates.NewUpdatesLogicByUpdate(md.UserId, updateUserName.To_Update())
+	sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncUpdates.ToUpdateShort())
+
+	//pushUpdates := syncUpdates
+	//sync_client.GetSyncClient().PushUpdates(md.UserId, updateUserName.To_Update())
 
 	// TODO(@benqi): push to other contacts
 

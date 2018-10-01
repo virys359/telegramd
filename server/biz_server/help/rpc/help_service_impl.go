@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	CONFIG_FILE = "/Users/wubenqi/go/src/github.com/nebulaim/telegramd/server/biz_server/config.json"
+	CONFIG_FILE = "./config.json"
 
 	// date = 1509066502,    2017/10/27 09:08:22
 	// expires = 1509070295, 2017/10/27 10:11:35

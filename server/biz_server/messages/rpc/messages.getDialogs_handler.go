@@ -101,7 +101,7 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 		offsetId = math.MaxInt32
 	}
 
-	dialogs := s.UserModel.GetDialogsByOffsetId(md.UserId, false, offsetId, request.GetLimit())
+	dialogs := s.DialogModel.GetDialogsByOffsetId(md.UserId, false, offsetId, request.GetLimit())
 	// glog.Infof("dialogs - {%v}", dialogs)
 
 	// messageIdList, userIdList, chatIdList, channelIdList
@@ -110,12 +110,12 @@ func (s *MessagesServiceImpl) MessagesGetDialogs(ctx context.Context, request *m
 	messages := s.MessageModel.GetUserMessagesByMessageIdList(md.UserId, dialogItems.MessageIdList)
 
 	// TODO(@benqi): add channel message.
-	//for k, v := range dialogItems.ChannelMessageIdMap {
-	//	//m := s.MessageModel.GetChannelMessage(k, v)
-	//	//if m != nil {
-	//	//	messages = append(messages, m)
-	//	//}
-	//}
+	for k, v := range dialogItems.ChannelMessageIdMap {
+		m := s.MessageModel.GetChannelMessage(md.UserId, k, v)
+		if m != nil {
+			messages = append(messages, m)
+		}
+	}
 
 	users := s.UserModel.GetUsersBySelfAndIDList(md.UserId, dialogItems.UserIdList)
 	chats := s.ChatModel.GetChatListBySelfAndIDList(md.UserId, dialogItems.ChatIdList)

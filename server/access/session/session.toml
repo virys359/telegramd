@@ -17,8 +17,8 @@ etcdAddrs = ["http://127.0.0.1:2379"]
 interval = "2s"
 tTL = "10s"
 
-[authKeyRpcClient]
-serviceName = "auth_key"
+[authSessionRpcClient]
+serviceName = "auth_session"
 etcdAddrs = ["http://127.0.0.1:2379"]
 balancer = "round_robin"
 

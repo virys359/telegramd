@@ -18,7 +18,13 @@ echo "build auth_key ..."
 cd ${telegramd}/server/access/auth_key
 go get
 go build
-.//auth_key &
+./auth_key &
+
+echo "build auth_session ..."
+cd ${telegramd}/server/access/auth_session
+go get
+go build
+./auth_session &
 
 echo "build sync ..."
 cd ${telegramd}/server/sync

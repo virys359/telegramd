@@ -47,3 +47,4 @@ proto/zproto/examples/client/client
 proto/mtproto/schemas/schema.tl.crc32_tool
 server/upload/upload
 service/document/document
+service/auth_session/auth_session

@@ -44,7 +44,6 @@ func (s *MessagesServiceImpl) MessagesEditChatTitle(ctx context.Context, request
 		PeerType: base.PEER_CHAT,
 		PeerId:   chatLogic.GetChatId(),
 	}
-	_ = peer
 
 	err = chatLogic.EditChatTitle(md.UserId, request.Title)
 	if err != nil {

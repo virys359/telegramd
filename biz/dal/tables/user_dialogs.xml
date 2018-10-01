@@ -2,7 +2,7 @@
 <table sqlname="user_dialogs">
     <operation name="Insert">
         <sql>
-            INSERT INTO user_dialogs
+            INSERT IGNORE INTO user_dialogs
                 (user_id, peer_type, peer_id, top_message, unread_count, unread_mentions_count, draft_message_data, date2, created_at)
             VALUES
                 (:user_id, :peer_type, :peer_id, :top_message, :unread_count, :unread_mentions_count, :draft_message_data, :date2, :created_at)

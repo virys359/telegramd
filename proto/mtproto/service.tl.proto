@@ -28,7 +28,57 @@ option optimize_for = CODE_SIZE;
 
 import "schema.tl.crc32.proto";
 import "schema.tl.core_types.proto";
+import "schema.tl.transport.proto";
 import "schema.tl.sync.proto";
+
+
+///////////////////////////////////////////////////////////////////////////////
+// AuthKeyInfo <--
+//  + TL_authKeyInfo
+//
+message AuthKeyInfo_Data {
+    int64 auth_key_id = 1;
+    bytes auth_key = 2;
+    FutureSalt future_salt = 3;
+}
+
+message AuthKeyInfo {
+    TLConstructor constructor = 1;
+    AuthKeyInfo_Data data2 = 2;
+}
+
+// authKeyInfo flags:# auth_key_id:long auth_key:bytes future_salt:flags.0?FutureSalt= AuthKeyInfo;
+message TL_authKeyInfo {
+    AuthKeyInfo_Data data2 = 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ClientSession <--
+//  + TL_clientSessionInfo
+//
+message ClientSession_Data {
+    int64 auth_key_id = 1;
+    string ip = 2;
+    int32 layer = 3;
+    int32 api_id = 4;
+    string device_model = 5;
+    string system_version = 6;
+    string app_version = 7;
+    string system_lang_code = 8;
+    string lang_pack = 9;
+    string lang_code = 10;
+}
+
+message ClientSession {
+    TLConstructor constructor = 1;
+    ClientSession_Data data2 = 2;
+}
+
+// clientSessionInfo auth_key_id:long ip:string layer:int api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string = ClientSession;
+message TL_clientSessionInfo {
+    ClientSession_Data data2 = 2;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,16 +148,110 @@ message TL_sync_pushRpcResultData {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// Int32 <--
+//  + TL_int32
+//
+message Int32_Data {
+    int32 v = 1;
+}
+
+message Int32 {
+    TLConstructor constructor = 1;
+    Int32_Data data2 = 2;
+}
+
+// int32 v:int = Int32;
+message TL_int32 {
+    Int32_Data data2 = 2;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// sync.syncUpdates flags:# user_id:int auth_key_id:long server_id:flags.0?int not_me:flags.1?true updates:Updates = Bool;
+// Int64 <--
+//  + TL_long
+//
+message Int64_Data {
+    int64 v = 1;
+}
+
+message Int64 {
+    TLConstructor constructor = 1;
+    Int64_Data data2 = 2;
+}
+
+// long v:long = Int64;
+message TL_long {
+    Int64_Data data2 = 2;
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// session.setClientSessionInfo session:ClientSession = Bool;
+message TL_session_setClientSessionInfo {
+    ClientSession session = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.getAuthorizations user_id:int = account.Authorizations;
+message TL_session_getAuthorizations {
+    int32 user_id = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.resetAuthorization user_id:int hash:long = Bool;
+message TL_session_resetAuthorization {
+    int32 user_id = 1;
+    int64 hash = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.getLayer auth_key_id:long = Int32;
+message TL_session_getLayer {
+    int64 auth_key_id = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.getUserId auth_key_id:long = Int32;
+message TL_session_getUserId {
+    int64 auth_key_id = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.queryAuthKey auth_key_id:long = AuthKeyInfo;
+message TL_session_queryAuthKey {
+    int64 auth_key_id = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.setAuthKey auth_key:AuthKeyInfo = Bool;
+message TL_session_setAuthKey {
+    AuthKeyInfo auth_key = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.bindAuthKeyUser auth_key_id:long user_id:int = Bool;
+message TL_session_bindAuthKeyUser {
+    int64 auth_key_id = 1;
+    int32 user_id = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// session.unbindAuthKeyUser auth_key_id:long user_id:int = Bool;
+message TL_session_unbindAuthKeyUser {
+    int64 auth_key_id = 1;
+    int32 user_id = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sync.syncUpdates flags:# user_id:int auth_key_id:long server_id:flags.0?int updates:Updates = Bool;
 message TL_sync_syncUpdates {
     int32 user_id = 2;
     int64 auth_key_id = 3;
     int32 server_id = 4;
-    bool not_me = 5;
-    Updates updates = 6;
+    Updates updates = 5;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -118,10 +262,20 @@ message TL_sync_pushUpdates {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// sync.pushChannelUpdates channel_id:int exclude_user_id:int updates:Updates = Bool;
+// sync.syncChannelUpdates flags:# channel_id:int user_id:int auth_key_id:long server_id:flags.0?int updates:Updates = Bool;
+message TL_sync_syncChannelUpdates {
+    int32 channel_id = 2;
+    int32 user_id = 3;
+    int64 auth_key_id = 4;
+    int32 server_id = 5;
+    Updates updates = 6;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// sync.pushChannelUpdates channel_id:int user_id:int updates:Updates = Bool;
 message TL_sync_pushChannelUpdates {
     int32 channel_id = 1;
-    int32 exclude_user_id = 2;
+    int32 user_id = 2;
     Updates updates = 3;
 }
 
@@ -172,12 +326,35 @@ message TL_sync_getChannelDifference {
 ///////////////////////////////////////////////////////////////////////////////
 // rpc
 
+service RPCSession {
+    // session.setClientSessionInfo session:ClientSession = Bool;
+    rpc session_setClientSessionInfo(TL_session_setClientSessionInfo) returns (Bool) {}
+    // session.getAuthorizations user_id:int = account.Authorizations;
+    rpc session_getAuthorizations(TL_session_getAuthorizations) returns (account_Authorizations) {}
+    // session.resetAuthorization user_id:int hash:long = Bool;
+    rpc session_resetAuthorization(TL_session_resetAuthorization) returns (Bool) {}
+    // session.getLayer auth_key_id:long = Int32;
+    rpc session_getLayer(TL_session_getLayer) returns (Int32) {}
+    // session.getUserId auth_key_id:long = Int32;
+    rpc session_getUserId(TL_session_getUserId) returns (Int32) {}
+    // session.queryAuthKey auth_key_id:long = AuthKeyInfo;
+    rpc session_queryAuthKey(TL_session_queryAuthKey) returns (AuthKeyInfo) {}
+    // session.setAuthKey auth_key:AuthKeyInfo = Bool;
+    rpc session_setAuthKey(TL_session_setAuthKey) returns (Bool) {}
+    // session.bindAuthKeyUser auth_key_id:long user_id:int = Bool;
+    rpc session_bindAuthKeyUser(TL_session_bindAuthKeyUser) returns (Bool) {}
+    // session.unbindAuthKeyUser auth_key_id:long user_id:int = Bool;
+    rpc session_unbindAuthKeyUser(TL_session_unbindAuthKeyUser) returns (Bool) {}
+}
+
 service RPCSync {
-    // sync.syncUpdates flags:# user_id:int auth_key_id:long server_id:flags.0?int not_me:flags.1?true updates:Updates = Bool;
+    // sync.syncUpdates flags:# user_id:int auth_key_id:long server_id:flags.0?int updates:Updates = Bool;
     rpc sync_syncUpdates(TL_sync_syncUpdates) returns (Bool) {}
     // sync.pushUpdates user_id:int updates:Updates = Bool;
     rpc sync_pushUpdates(TL_sync_pushUpdates) returns (Bool) {}
-    // sync.pushChannelUpdates channel_id:int exclude_user_id:int updates:Updates = Bool;
+    // sync.syncChannelUpdates flags:# channel_id:int user_id:int auth_key_id:long server_id:flags.0?int updates:Updates = Bool;
+    rpc sync_syncChannelUpdates(TL_sync_syncChannelUpdates) returns (Bool) {}
+    // sync.pushChannelUpdates channel_id:int user_id:int updates:Updates = Bool;
     rpc sync_pushChannelUpdates(TL_sync_pushChannelUpdates) returns (Bool) {}
     // sync.pushRpcResult server_id:int auth_key_id:long req_msg_id:long result:bytes = Bool;
     rpc sync_pushRpcResult(TL_sync_pushRpcResult) returns (Bool) {}

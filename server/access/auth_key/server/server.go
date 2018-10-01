@@ -26,14 +26,13 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"github.com/nebulaim/telegramd/proto/zproto"
 	"github.com/nebulaim/telegramd/server/access/auth_key/dal/dao"
-	"google.golang.org/grpc"
 	"time"
 )
 
 type AuthKeyServer struct {
-	handshake *handshake
-	server    *zproto.ZProtoServer
-	rpcServer *grpc_util.RPCServer
+	handshake            *handshake
+	server               *zproto.ZProtoServer
+	authSessionRpcClient mtproto.RPCSessionClient
 }
 
 func NewAuthKeyServer() *AuthKeyServer {
@@ -55,25 +54,24 @@ func (s *AuthKeyServer) Initialize() error {
 	// 初始化redis_dao、mysql_dao
 	dao.InstallMysqlDAOManager(mysql_client.GetMysqlClientManager())
 
-	s.handshake = newHandshake()
 	s.server = zproto.NewZProtoServer(Conf.Server, s)
-	s.rpcServer = grpc_util.NewRpcServer(Conf.RpcServer.Addr, &Conf.RpcServer.RpcDiscovery)
+	// s.rpcServer = grpc_util.NewRpcServer(Conf.RpcServer.Addr, &Conf.RpcServer.RpcDiscovery)
 
 	return nil
 }
 
 func (s *AuthKeyServer) RunLoop() {
-	// TODO(@benqi): check error
+	c, _ := grpc_util.NewRPCClient(&Conf.AuthSessionRpcClient)
+	s.authSessionRpcClient = mtproto.NewRPCSessionClient(c.GetClientConn())
+	s.handshake = newHandshake(s.authSessionRpcClient)
+
 	go s.server.Serve()
-	go s.rpcServer.Serve(func(s2 *grpc.Server) {
-		mtproto.RegisterZRPCAuthKeyServer(s2, new(AuthKeyServiceImpl))
-	})
 }
 
 func (s *AuthKeyServer) Destroy() {
 	glog.Infof("sessionServer - destroy...")
 	s.server.Stop()
-	s.rpcServer.Stop()
+	// s.rpcServer.Stop()
 	time.Sleep(1 * time.Second)
 }
 

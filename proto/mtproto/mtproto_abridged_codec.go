@@ -60,7 +60,6 @@ func (c *MTProtoAbridgedCodec) Receive() (interface{}, error) {
 	//	return err
 	//}
 
-
 	var size int
 	var n int
 	var err error

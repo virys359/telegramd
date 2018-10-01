@@ -115,7 +115,8 @@ func checkRpcWithoutLogin(tl mtproto.TLObject) bool {
 		return true
 
 	case *mtproto.TLHelpGetConfig,
-		*mtproto.TLHelpGetCdnConfig:
+		*mtproto.TLHelpGetCdnConfig,
+		*mtproto.TLHelpGetNearestDc:
 
 		return true
 

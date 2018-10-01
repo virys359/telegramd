@@ -1,7 +1,7 @@
 {
   "data2": {
     "phonecalls_enabled": true,
-    "default_p2p_contacts": false,
+    "default_p2p_contacts": true,
     "preload_featured_stickers": false,
     "ignore_phone_entities": false,
     "revoke_pm_inbox": false,
@@ -49,7 +49,7 @@
     "call_ring_timeout_ms": 90000,
     "call_connect_timeout_ms": 30000,
     "call_packet_timeout_ms": 10000,
-    "me_url_prefix": "https://t.me/",
+    "me_url_prefix": "https://nebula.im/",
     "autoupdate_url_prefix": "",
     "gif_search_username": "gif",
     "venue_search_username": "foursquare",
@@ -59,6 +59,6 @@
     "message_length_max": 4096,
     "webfile_dc_id": 4,
     "suggested_lang_code": "en",
-    "lang_pack_version": 69
+    "lang_pack_version": 77
   }
 }

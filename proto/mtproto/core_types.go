@@ -23,6 +23,7 @@ const (
 
 type TLObject interface {
 	Encode() []byte
+	EncodeToLayer(layer int) []byte
 	Decode(dbuf *DecodeBuf) error
 	String() string
 }

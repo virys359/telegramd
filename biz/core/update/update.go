@@ -36,6 +36,9 @@ type UpdatesLogic struct {
 func NewUpdatesLogic(userId int32) *UpdatesLogic {
 	return &UpdatesLogic{
 		ownerUserId: userId,
+		updates:     make([]*mtproto.Update, 0),
+		users:       make([]*mtproto.User, 0),
+		chats:       make([]*mtproto.Chat, 0),
 		date:        int32(time.Now().Unix()),
 	}
 }
@@ -124,79 +127,81 @@ func messageToUpdateShortSentMessage(message2 *mtproto.Message) (sentMessage *mt
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-func (this *UpdatesLogic) ToUpdateTooLong() *mtproto.Updates {
+func (m *UpdatesLogic) ToUpdateTooLong() *mtproto.Updates {
 	return mtproto.NewTLUpdatesTooLong().To_Updates()
 }
 
-func (this *UpdatesLogic) ToUpdateShortMessage() *mtproto.Updates {
-	if this.message == nil {
+func (m *UpdatesLogic) ToUpdateShortMessage() *mtproto.Updates {
+	if m.message == nil {
 		// TODO(@benqi): panic
 	}
 
-	shortMessage := messageToUpdateShortMessage(this.message)
+	shortMessage := messageToUpdateShortMessage(m.message)
 	return shortMessage.To_Updates()
 }
 
-func (this *UpdatesLogic) ToUpdateShortChatMessage() *mtproto.Updates {
-	if this.message == nil {
+func (m *UpdatesLogic) ToUpdateShortChatMessage() *mtproto.Updates {
+	if m.message == nil {
 		// TODO(@benqi): panic
 	}
 
-	shortMessage := messageToUpdateShortChatMessage(this.message)
+	shortMessage := messageToUpdateShortChatMessage(m.message)
 	return shortMessage.To_Updates()
 }
 
-func (this *UpdatesLogic) ToUpdateShort() *mtproto.Updates {
-	if len(this.updates) != 1 {
+func (m *UpdatesLogic) ToUpdateShort() *mtproto.Updates {
+	if len(m.updates) != 1 {
 		// TODO(@benqi): panic
 	}
 
 	updateShort := &mtproto.TLUpdateShort{Data2: &mtproto.Updates_Data{
-		Update: this.updates[0],
-		Date:   this.date,
+		Update: m.updates[0],
+		Date:   m.date,
 	}}
 	return updateShort.To_Updates()
 }
 
-func (this *UpdatesLogic) ToUpdatesCombined() *mtproto.Updates {
+func (m *UpdatesLogic) ToUpdatesCombined() *mtproto.Updates {
 	updatesCombined := mtproto.NewTLUpdatesCombined()
 	return updatesCombined.To_Updates()
 }
 
-func (this *UpdatesLogic) ToUpdates() *mtproto.Updates {
+func (m *UpdatesLogic) ToUpdates() *mtproto.Updates {
 	updates := &mtproto.TLUpdates{Data2: &mtproto.Updates_Data{
-		Updates: this.updates,
-		Users:   this.users,
-		Chats:   this.chats,
-		Date:    this.date,
+		Updates: m.updates,
+		Users:   m.users,
+		Chats:   m.chats,
+		Date:    m.date,
 	}}
 	return updates.To_Updates()
 }
 
-func (this *UpdatesLogic) ToUpdateShortSentMessage() *mtproto.Updates {
-	if this.message == nil {
+func (m *UpdatesLogic) ToUpdateShortSentMessage() *mtproto.Updates {
+	if m.message == nil {
 		// TODO(@benqi): panic
 	}
 
-	sentMessage := messageToUpdateShortSentMessage(this.message)
+	sentMessage := messageToUpdateShortSentMessage(m.message)
 	return sentMessage.To_Updates()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-func (this *UpdatesLogic) AddUpdateNewMessage(pts, ptsCount int32, message *mtproto.Message) {
+func (m *UpdatesLogic) AddUpdateNewMessage(pts, ptsCount int32, message *mtproto.Message) {
 	updateNewMessage := &mtproto.TLUpdateNewMessage{Data2: &mtproto.Update_Data{
 		Message_1: message,
 		Pts:       pts,
 		PtsCount:  ptsCount,
 	}}
-	this.updates = append(this.updates, updateNewMessage.To_Update())
+	m.updates = append(m.updates, updateNewMessage.To_Update())
 }
 
-func (this *UpdatesLogic) AddUpdateNewChannelMessage(message *mtproto.Message) {
+func (m *UpdatesLogic) AddUpdateNewChannelMessage(pts, ptsCount int32, message *mtproto.Message) {
 	updateNewChannelMessage := &mtproto.TLUpdateNewChannelMessage{Data2: &mtproto.Update_Data{
 		Message_1: message,
+		Pts:       pts,
+		PtsCount:  ptsCount,
 	}}
-	this.updates = append(this.updates, updateNewChannelMessage.To_Update())
+	m.updates = append(m.updates, updateNewChannelMessage.To_Update())
 }
 
 //
@@ -225,51 +230,52 @@ func (this *UpdatesLogic) AddUpdateNewChannelMessage(message *mtproto.Message) {
 //}
 //
 
-func (this *UpdatesLogic) AddUpdateMessageId(messageId int32, randomId int64) {
+func (m *UpdatesLogic) AddUpdateMessageId(messageId int32, randomId int64) {
 	updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
 		Id_4:     messageId,
 		RandomId: randomId,
 	}}
 
-	this.updates = append(this.updates, updateMessageID.To_Update())
+	updates := []*mtproto.Update{updateMessageID.To_Update()}
+	m.updates = append(updates, m.updates...)
 }
 
-func (this *UpdatesLogic) PushTopUpdateMessageId(messageId int32, randomId int64) {
+func (m *UpdatesLogic) PushTopUpdateMessageId(messageId int32, randomId int64) {
 	updateMessageID := &mtproto.TLUpdateMessageID{Data2: &mtproto.Update_Data{
 		Id_4:     messageId,
 		RandomId: randomId,
 	}}
 
-	updates2 := make([]*mtproto.Update, 0, 1+len(this.updates))
+	updates2 := make([]*mtproto.Update, 0, 1+len(m.updates))
 	updates2 = append(updates2, updateMessageID.To_Update())
-	this.updates = append(updates2, this.updates...)
+	m.updates = append(updates2, m.updates...)
 	// this.updates = updates2
 	// this.updates = append(this.updates, updateMessageID.To_Update())
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-func (this *UpdatesLogic) AddUpdates(updateList []*mtproto.Update) {
-	this.updates = append(this.updates, updateList...)
+func (m *UpdatesLogic) AddUpdates(updateList []*mtproto.Update) {
+	m.updates = append(m.updates, updateList...)
 }
 
-func (this *UpdatesLogic) AddUpdate(update *mtproto.Update) {
-	this.updates = append(this.updates, update)
+func (m *UpdatesLogic) AddUpdate(update *mtproto.Update) {
+	m.updates = append(m.updates, update)
 }
 
-func (this *UpdatesLogic) AddChats(chatList []*mtproto.Chat) {
-	this.chats = append(this.chats, chatList...)
+func (m *UpdatesLogic) AddChats(chatList []*mtproto.Chat) {
+	m.chats = append(m.chats, chatList...)
 }
 
-func (this *UpdatesLogic) AddChat(chat *mtproto.Chat) {
-	this.chats = append(this.chats, chat)
+func (m *UpdatesLogic) AddChat(chat *mtproto.Chat) {
+	m.chats = append(m.chats, chat)
 }
 
-func (this *UpdatesLogic) AddUsers(userList []*mtproto.User) {
-	this.users = append(this.users, userList...)
+func (m *UpdatesLogic) AddUsers(userList []*mtproto.User) {
+	m.users = append(m.users, userList...)
 }
 
-func (this *UpdatesLogic) AddUser(user *mtproto.User) {
-	this.users = append(this.users, user)
+func (m *UpdatesLogic) AddUser(user *mtproto.User) {
+	m.users = append(m.users, user)
 }
 
 /*

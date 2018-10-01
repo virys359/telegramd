@@ -44,6 +44,6 @@ func (s *ContactsServiceImpl) ContactsImportCard(ctx context.Context, request *m
 	user := mtproto.NewTLUserEmpty()
 
 	// userEmpty#200250ba id:int = User;
-	glog.Info("contacts.importCard#4fe196fe - reply: not impl ContactsImportCard")
+	glog.Info("contacts.importCard#4fe196fe - reply: %s", logger.JsonDebugData(user))
 	return user.To_User(), nil
 }

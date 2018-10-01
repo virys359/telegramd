@@ -19,8 +19,6 @@ package dialog
 
 import (
 	"github.com/nebulaim/telegramd/baselib/base"
-	// "github.com/nebulaim/telegramd/biz/core/peer"
-	// "github.com/nebulaim/telegramd/biz/dal/dataobject"
 )
 
 type dialogLogic struct {
@@ -28,6 +26,15 @@ type dialogLogic struct {
 	peerType   int32
 	peerId     int32
 	dao        *dialogsDAO
+}
+
+func (m *DialogModel) MakeDialogLogic(userId, peerType, peerId int32) *dialogLogic {
+	return &dialogLogic{
+		selfUserId: userId,
+		peerType:   peerType,
+		peerId:     peerId,
+		dao:        m.dao,
+	}
 }
 
 func (d *dialogLogic) ToggleDialogPin(pinned bool) error {

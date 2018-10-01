@@ -33,10 +33,10 @@ func NewChannelsDAO(db *sqlx.DB) *ChannelsDAO {
 	return &ChannelsDAO{db}
 }
 
-// insert into channels(creator_user_id, access_hash, random_id, participant_count, title, about, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :date)
+// insert into channels(creator_user_id, access_hash, random_id, participant_count, title, about, broadcast, megagroup, democracy, signatures, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :broadcast, :megagroup, :democracy, :signatures, :date)
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) Insert(do *dataobject.ChannelsDO) int64 {
-	var query = "insert into channels(creator_user_id, access_hash, random_id, participant_count, title, about, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :date)"
+	var query = "insert into channels(creator_user_id, access_hash, random_id, participant_count, title, about, broadcast, megagroup, democracy, signatures, `date`) values (:creator_user_id, :access_hash, :random_id, :participant_count, :title, :about, :broadcast, :megagroup, :democracy, :signatures, :date)"
 	r, err := dao.db.NamedExec(query, do)
 	if err != nil {
 		errDesc := fmt.Sprintf("NamedExec in Insert(%v), error: %v", do, err)
@@ -53,10 +53,10 @@ func (dao *ChannelsDAO) Insert(do *dataobject.ChannelsDO) int64 {
 	return id
 }
 
-// select id, creator_user_id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id = :id
+// select id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, `date` from channels where id = :id
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) Select(id int32) *dataobject.ChannelsDO {
-	var query = "select id, creator_user_id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id = ?"
+	var query = "select id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, `date` from channels where id = ?"
 	rows, err := dao.db.Queryx(query, id)
 
 	if err != nil {
@@ -155,10 +155,10 @@ func (dao *ChannelsDAO) UpdateLink(link string, date int32, id int32) int64 {
 	return rows
 }
 
-// select id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id in (:idList)
+// select id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, `date` from channels where id in (:idList)
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) SelectByIdList(idList []int32) []dataobject.ChannelsDO {
-	var q = "select id, access_hash, participant_count, title, about, photo_id, admins_enabled, deactivated, version, `date` from channels where id in (?)"
+	var q = "select id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, `date` from channels where id in (?)"
 	query, a, err := sqlx.In(q, idList)
 	rows, err := dao.db.Queryx(query, a...)
 
@@ -238,6 +238,28 @@ func (dao *ChannelsDAO) UpdatePhotoId(photo_id int64, date int32, id int32) int6
 	return rows
 }
 
+// update channels set top_message = :top_message where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChannelsDAO) UpdateTopMessage(top_message int32, id int32) int64 {
+	var query = "update channels set top_message = ? where id = ?"
+	r, err := dao.db.Exec(query, top_message, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateTopMessage(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateTopMessage(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
 // update channels set admins_enabled = :admins_enabled, `date` = :date, version = version + 1 where id = :id
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) UpdateAdminsEnabled(admins_enabled int8, date int32, id int32) int64 {
@@ -275,6 +297,50 @@ func (dao *ChannelsDAO) UpdateVersion(date int32, id int32) int64 {
 	rows, err := r.RowsAffected()
 	if err != nil {
 		errDesc := fmt.Sprintf("RowsAffected in UpdateVersion(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update channels set democracy = :democracy, `date` = :date, version = version + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChannelsDAO) UpdateDemocracy(democracy int8, date int32, id int32) int64 {
+	var query = "update channels set democracy = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, democracy, date, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateDemocracy	(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateDemocracy	(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return rows
+}
+
+// update channels set signatures = :signatures, `date` = :date, version = version + 1 where id = :id
+// TODO(@benqi): sqlmap
+func (dao *ChannelsDAO) UpdateSignatures(signatures int8, date int32, id int32) int64 {
+	var query = "update channels set signatures = ?, `date` = ?, version = version + 1 where id = ?"
+	r, err := dao.db.Exec(query, signatures, date, id)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Exec in UpdateSignatures(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	rows, err := r.RowsAffected()
+	if err != nil {
+		errDesc := fmt.Sprintf("RowsAffected in UpdateSignatures(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}

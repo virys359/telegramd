@@ -47,7 +47,7 @@ func (s *ChannelsServiceImpl) ChannelsGetFullChannel(ctx context.Context, reques
 
 	// idList := channelLogic.GetChannelParticipantIdList()
 	messagesChatFull := &mtproto.TLMessagesChatFull{Data2: &mtproto.Messages_ChatFull_Data{
-		FullChat: s.ChannelModel.GetChannelFullBySelfId(md.UserId, channelLogic).To_ChatFull(),
+		FullChat: channelLogic.ToChannelFull(md.UserId),
 		Chats:    []*mtproto.Chat{channelLogic.ToChannel(md.UserId)},
 		Users:    []*mtproto.User{},
 	}}

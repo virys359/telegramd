@@ -18,20 +18,36 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/biz/core/channel"
 )
 
 // channels.toggleSignatures#1f69b606 channel:InputChannel enabled:Bool = Updates;
 func (s *ChannelsServiceImpl) ChannelsToggleSignatures(ctx context.Context, request *mtproto.TLChannelsToggleSignatures) (*mtproto.Updates, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("ChannelsToggleSignatures - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("channels.toggleSignatures#1f69b606 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ChannelsToggleSignatures logic
+	// TODO(@benqi): check channel_id and access_hash
+	channelId := request.GetChannel().GetData2().ChannelId
+	channelLogic, _ := s.ChannelModel.NewChannelLogicById(channelId)
+	channelLogic.ToggleSignatures(md.UserId, mtproto.FromBool(request.GetEnabled()))
 
-	return nil, fmt.Errorf("Not impl ChannelsToggleSignatures")
+	replyUpdates := updates.NewUpdatesLogic(md.UserId)
+	replyUpdates.AddChat(channelLogic.ToChannel(md.UserId))
+
+	syncUpdates := updates.NewUpdatesLogicByUpdate(md.UserId, channel.MakeUpdateChannel(channelId))
+	syncUpdates.AddChat(channelLogic.ToChannel(md.UserId))
+
+	// TODO(@benqi): push other has sender??
+	sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncUpdates.ToUpdates())
+
+	reply := replyUpdates.ToUpdates()
+	glog.Infof("channels.toggleSignatures#1f69b606 - reply: {%s}", logger.JsonDebugData(reply))
+	return reply, nil
 }

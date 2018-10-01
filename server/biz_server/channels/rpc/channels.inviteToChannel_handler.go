@@ -25,6 +25,7 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
 	"github.com/nebulaim/telegramd/server/sync/sync_client"
+	"github.com/nebulaim/telegramd/biz/base"
 )
 
 // channels.inviteToChannel#199f3a6c channel:InputChannel users:Vector<InputUser> = Updates;
@@ -55,18 +56,20 @@ func (s *ChannelsServiceImpl) ChannelsInviteToChannel(ctx context.Context, reque
 			// TODO(@benqi): handle inputUserSelf
 			continue
 		}
-		channelLogic.AddChannelUser(md.UserId, u.GetData2().GetUserId())
+		channelLogic.InviteToChannel(md.UserId, u.GetData2().GetUserId())
+		s.DialogModel.InsertOrChannelUpdateDialog(u.GetData2().GetUserId(), base.PEER_CHANNEL, channelLogic.GetChannelId())
 
 		psuhUpdates := update2.NewUpdatesLogic(u.GetData2().GetUserId())
 		psuhUpdates.AddUpdate(updateChannel.To_Update())
 		psuhUpdates.AddChat(channelLogic.ToChannel(u.GetData2().GetUserId()))
-		sync_client.GetSyncClient().PushUpdates(u.GetData2().GetUserId(), psuhUpdates.ToUpdates())
+
+		sync_client.GetSyncClient().PushChannelUpdates(channelLogic.GetChannelId(), u.GetData2().GetUserId(), psuhUpdates.ToUpdates())
 	}
 
 	replyUpdates := update2.NewUpdatesLogic(md.UserId)
-	replyUpdates.AddUpdate(updateChannel.To_Update())
 	replyUpdates.AddChat(channelLogic.ToChannel(md.UserId))
 
-	glog.Infof("channels.inviteToChannel#199f3a6c - reply: {%v}", replyUpdates)
-	return replyUpdates.ToUpdates(), nil
+	reply := replyUpdates.ToUpdates()
+	glog.Infof("channels.inviteToChannel#199f3a6c - reply: %s", logger.JsonDebugData(reply))
+	return reply, nil
 }

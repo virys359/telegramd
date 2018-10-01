@@ -149,7 +149,8 @@ func (c *clientSessionHandler) encodeMessage(authKeyId int64, authKey []byte, me
 		SessionId: c.sessionId,
 		Object:    tl,
 	}
-	return message.Encode(authKeyId, authKey)
+	return message.EncodeToLayer(authKeyId, authKey, int(c.manager.Layer))
+	// return message.Encode(authKeyId, authKey)
 }
 
 func (c *clientSessionHandler) generateMessageSeqNo(increment bool) int32 {
@@ -200,7 +201,8 @@ func (c *clientSessionHandler) sendPendingMessagesToClient(connID ClientConnID, 
 			message2 := mtproto.TLMessage2{
 				MsgId:  msgId,
 				Seqno:  c.generateMessageSeqNo(m.confirm),
-				Bytes:  int32(len(m.tl.Encode())),
+				Bytes:  int32(len(m.tl.EncodeToLayer(int(c.manager.Layer)))),
+				// Bytes:  int32(len(m.tl.Encode())),
 				Object: m.tl,
 			}
 			msgContainer.Messages = append(msgContainer.Messages, message2)
@@ -227,6 +229,8 @@ func (c *clientSessionHandler) CheckBadServerSalt(connID ClientConnID, md *zprot
 			BadMsgSeqno:   seqNo,
 			NewServerSalt: c.salt,
 		}}
+
+		glog.Infof("invalid salt: %d, send badServerSalt: {%v}", salt, badServerSalt)
 		c.sendToClient(connID, md, 0, false, badServerSalt.To_BadMsgNotification())
 		return false
 	}
@@ -737,7 +741,8 @@ func (c *clientSessionHandler) onInitConnectionEx(connID ClientConnID, md *zprot
 		seqNo,
 		request)
 	// glog.Infof("onInitConnection - request: %s", request.String())
-
+	// auth_session_client.BindAuthKeyUser()
+	uploadInitConnection(c.manager.authKeyId, c.manager.Layer, md.ClientAddr, request)
 	return c.onRpcRequest(connID, md, msgId, seqNo, request.Query)
 }
 

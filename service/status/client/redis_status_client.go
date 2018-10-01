@@ -43,7 +43,7 @@ func makeSessionEntry(userId int32, k, v string) (sess *status.SessionEntry, err
 	}
 
 	vals := strings.Split(v, "@")
-	if len(vals) != 2 {
+	if len(vals) != 3 {
 		err = fmt.Errorf("makeSessionEntry(%d, %s, %s) - Invalid value: %s", userId, k, v, v)
 		return
 	}
@@ -52,6 +52,9 @@ func makeSessionEntry(userId int32, k, v string) (sess *status.SessionEntry, err
 		return
 	}
 	if sess.Expired, err = base.StringToInt64(vals[1]); err != nil {
+		return
+	}
+	if sess.Layer, err = base.StringToInt32(vals[2]); err != nil {
 		return
 	}
 
@@ -80,13 +83,13 @@ func (c *redisStatusClient) Initialize(config string) error {
 	return nil
 }
 
-func (c *redisStatusClient) SetSessionOnline(userId int32, serverId int32, authKeyId int64) (err error) {
+func (c *redisStatusClient) SetSessionOnline(userId int32, authKeyId int64, serverId, layer int32) (err error) {
 	conn := c.redis.Get()
 	defer conn.Close()
 
 	id := fmt.Sprintf("%s_%d", onlineKeyPrefix, userId)
 	k := base.Int64ToString(authKeyId)
-	v := fmt.Sprintf("%d@%d", serverId, time.Now().Unix())
+	v := fmt.Sprintf("%d@%d@%d", serverId, time.Now().Unix(), layer)
 	if _, err = conn.Do("HSET", id, k, v); err != nil {
 		glog.Errorf("setOnline - HSET {%s, %s, %s}, error: %s", id, k, v, err)
 		return

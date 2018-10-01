@@ -246,6 +246,30 @@ func (s *SyncServiceImpl) processUpdatesRequest(userId int32, ups *mtproto.Updat
 	return nil
 }
 
+func (s *SyncServiceImpl) processChannelUpdatesRequest(channelId int32, ups *mtproto.Updates) error {
+	switch ups.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_updates:
+		updates2 := ups.To_Updates()
+		for _, update := range updates2.GetUpdates() {
+			switch update.GetConstructor() {
+			case mtproto.TLConstructor_CRC32_updateNewChannelMessage:
+				s.UpdateModel.AddToChannelPtsQueue(channelId, update.Data2.Pts, update.Data2.PtsCount, update)
+			case mtproto.TLConstructor_CRC32_updateDeleteChannelMessages:
+				s.UpdateModel.AddToChannelPtsQueue(channelId, update.Data2.Pts, update.Data2.PtsCount, update)
+			case mtproto.TLConstructor_CRC32_updateEditChannelMessage:
+				s.UpdateModel.AddToChannelPtsQueue(channelId, update.Data2.Pts, update.Data2.PtsCount, update)
+			case mtproto.TLConstructor_CRC32_updateChannelWebPage:
+				s.UpdateModel.AddToChannelPtsQueue(channelId, update.Data2.Pts, update.Data2.PtsCount, update)
+			}
+		}
+	default:
+		err := fmt.Errorf("invalid updates data: {%d}", ups.GetConstructor())
+		// glog.Error(err)
+		return err
+	}
+	return nil
+}
+
 func (s *SyncServiceImpl) pushUpdatesToSession(syncType SyncType, userId int32, pushData *mtproto.PushData, hasServerId int32) {
 	if (syncType == syncTypeUserMe || syncType == syncTypeRpcResult) && hasServerId > 0 {
 		glog.Infof("pushUpdatesToSession - phshData: {server_id: %d, auth_key_id: %d}", hasServerId, pushData.Data2.GetAuthKeyId())

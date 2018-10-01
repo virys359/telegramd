@@ -250,6 +250,32 @@ func (m *MessageModel) GetClearHistoryMessages(userId int32, peer *base.PeerUtil
 	return
 }
 
+func (m *MessageModel) GetChannelMessagesViews(channelId int32, idList []int32, increment bool) ([]int32) {
+	viewsDOList := m.dao.ChannelMessagesDAO.SelectMessagesViews(channelId, idList)
+	viewsList := make([]int32, 0, len(idList))
+
+	for _, id := range idList {
+		views := int32(1)
+		for i := 0; i < len(viewsDOList); i++ {
+			if viewsDOList[i].ChannelMessageId == id {
+				if increment {
+					views = viewsDOList[i].Views + 1
+				} else {
+					views = viewsDOList[i].Views
+				}
+				break
+			}
+		}
+		viewsList = append(viewsList, views)
+	}
+
+	return viewsList
+}
+
+func (m *MessageModel) IncrementChannelMessagesViews(channelId int32, idList []int32) {
+	m.dao.ChannelMessagesDAO.UpdateMessagesViews(channelId, idList)
+}
+
 /*
 func (m *MessageModel) GetMessageByPeerAndMessageId(userId int32, messageId int32) (message *mtproto.Message) {
 	do := m.dao.MessagesDAO.SelectByMessageId(userId, messageId)

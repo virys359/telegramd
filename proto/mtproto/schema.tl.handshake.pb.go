@@ -19,324 +19,6 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 // /////////////////////////////////////////////////////////////////////////////
-// Server_DH_inner_data <--
-//  + TL_server_DH_inner_data
-//
-type Server_DHInnerData_Data struct {
-	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	ServerNonce          []byte   `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
-	G                    int32    `protobuf:"varint,3,opt,name=g,proto3" json:"g,omitempty"`
-	DhPrime              string   `protobuf:"bytes,4,opt,name=dh_prime,json=dhPrime,proto3" json:"dh_prime,omitempty"`
-	GA                   string   `protobuf:"bytes,5,opt,name=g_a,json=gA,proto3" json:"g_a,omitempty"`
-	ServerTime           int32    `protobuf:"varint,6,opt,name=server_time,json=serverTime,proto3" json:"server_time,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Server_DHInnerData_Data) Reset()         { *m = Server_DHInnerData_Data{} }
-func (m *Server_DHInnerData_Data) String() string { return proto.CompactTextString(m) }
-func (*Server_DHInnerData_Data) ProtoMessage()    {}
-func (*Server_DHInnerData_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{0}
-}
-func (m *Server_DHInnerData_Data) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Server_DHInnerData_Data.Unmarshal(m, b)
-}
-func (m *Server_DHInnerData_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Server_DHInnerData_Data.Marshal(b, m, deterministic)
-}
-func (dst *Server_DHInnerData_Data) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Server_DHInnerData_Data.Merge(dst, src)
-}
-func (m *Server_DHInnerData_Data) XXX_Size() int {
-	return xxx_messageInfo_Server_DHInnerData_Data.Size(m)
-}
-func (m *Server_DHInnerData_Data) XXX_DiscardUnknown() {
-	xxx_messageInfo_Server_DHInnerData_Data.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Server_DHInnerData_Data proto.InternalMessageInfo
-
-func (m *Server_DHInnerData_Data) GetNonce() []byte {
-	if m != nil {
-		return m.Nonce
-	}
-	return nil
-}
-
-func (m *Server_DHInnerData_Data) GetServerNonce() []byte {
-	if m != nil {
-		return m.ServerNonce
-	}
-	return nil
-}
-
-func (m *Server_DHInnerData_Data) GetG() int32 {
-	if m != nil {
-		return m.G
-	}
-	return 0
-}
-
-func (m *Server_DHInnerData_Data) GetDhPrime() string {
-	if m != nil {
-		return m.DhPrime
-	}
-	return ""
-}
-
-func (m *Server_DHInnerData_Data) GetGA() string {
-	if m != nil {
-		return m.GA
-	}
-	return ""
-}
-
-func (m *Server_DHInnerData_Data) GetServerTime() int32 {
-	if m != nil {
-		return m.ServerTime
-	}
-	return 0
-}
-
-type Server_DHInnerData struct {
-	Constructor          TLConstructor            `protobuf:"varint,1,opt,name=constructor,proto3,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2                *Server_DHInnerData_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
-	XXX_unrecognized     []byte                   `json:"-"`
-	XXX_sizecache        int32                    `json:"-"`
-}
-
-func (m *Server_DHInnerData) Reset()         { *m = Server_DHInnerData{} }
-func (m *Server_DHInnerData) String() string { return proto.CompactTextString(m) }
-func (*Server_DHInnerData) ProtoMessage()    {}
-func (*Server_DHInnerData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{1}
-}
-func (m *Server_DHInnerData) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Server_DHInnerData.Unmarshal(m, b)
-}
-func (m *Server_DHInnerData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Server_DHInnerData.Marshal(b, m, deterministic)
-}
-func (dst *Server_DHInnerData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Server_DHInnerData.Merge(dst, src)
-}
-func (m *Server_DHInnerData) XXX_Size() int {
-	return xxx_messageInfo_Server_DHInnerData.Size(m)
-}
-func (m *Server_DHInnerData) XXX_DiscardUnknown() {
-	xxx_messageInfo_Server_DHInnerData.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Server_DHInnerData proto.InternalMessageInfo
-
-func (m *Server_DHInnerData) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *Server_DHInnerData) GetData2() *Server_DHInnerData_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// server_DH_inner_data#b5890dba nonce:int128 server_nonce:int128 g:int dh_prime:string g_a:string server_time:int = Server_DH_inner_data;
-type TLServer_DHInnerData struct {
-	Data2                *Server_DHInnerData_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
-	XXX_unrecognized     []byte                   `json:"-"`
-	XXX_sizecache        int32                    `json:"-"`
-}
-
-func (m *TLServer_DHInnerData) Reset()         { *m = TLServer_DHInnerData{} }
-func (m *TLServer_DHInnerData) String() string { return proto.CompactTextString(m) }
-func (*TLServer_DHInnerData) ProtoMessage()    {}
-func (*TLServer_DHInnerData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{2}
-}
-func (m *TLServer_DHInnerData) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TLServer_DHInnerData.Unmarshal(m, b)
-}
-func (m *TLServer_DHInnerData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TLServer_DHInnerData.Marshal(b, m, deterministic)
-}
-func (dst *TLServer_DHInnerData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TLServer_DHInnerData.Merge(dst, src)
-}
-func (m *TLServer_DHInnerData) XXX_Size() int {
-	return xxx_messageInfo_TLServer_DHInnerData.Size(m)
-}
-func (m *TLServer_DHInnerData) XXX_DiscardUnknown() {
-	xxx_messageInfo_TLServer_DHInnerData.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TLServer_DHInnerData proto.InternalMessageInfo
-
-func (m *TLServer_DHInnerData) GetData2() *Server_DHInnerData_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
-// Client_DH_Inner_Data <--
-//  + TL_client_DH_inner_data
-//
-type Client_DH_Inner_Data_Data struct {
-	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	ServerNonce          []byte   `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
-	RetryId              int64    `protobuf:"varint,3,opt,name=retry_id,json=retryId,proto3" json:"retry_id,omitempty"`
-	GB                   string   `protobuf:"bytes,4,opt,name=g_b,json=gB,proto3" json:"g_b,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Client_DH_Inner_Data_Data) Reset()         { *m = Client_DH_Inner_Data_Data{} }
-func (m *Client_DH_Inner_Data_Data) String() string { return proto.CompactTextString(m) }
-func (*Client_DH_Inner_Data_Data) ProtoMessage()    {}
-func (*Client_DH_Inner_Data_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{3}
-}
-func (m *Client_DH_Inner_Data_Data) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Client_DH_Inner_Data_Data.Unmarshal(m, b)
-}
-func (m *Client_DH_Inner_Data_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Client_DH_Inner_Data_Data.Marshal(b, m, deterministic)
-}
-func (dst *Client_DH_Inner_Data_Data) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Client_DH_Inner_Data_Data.Merge(dst, src)
-}
-func (m *Client_DH_Inner_Data_Data) XXX_Size() int {
-	return xxx_messageInfo_Client_DH_Inner_Data_Data.Size(m)
-}
-func (m *Client_DH_Inner_Data_Data) XXX_DiscardUnknown() {
-	xxx_messageInfo_Client_DH_Inner_Data_Data.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Client_DH_Inner_Data_Data proto.InternalMessageInfo
-
-func (m *Client_DH_Inner_Data_Data) GetNonce() []byte {
-	if m != nil {
-		return m.Nonce
-	}
-	return nil
-}
-
-func (m *Client_DH_Inner_Data_Data) GetServerNonce() []byte {
-	if m != nil {
-		return m.ServerNonce
-	}
-	return nil
-}
-
-func (m *Client_DH_Inner_Data_Data) GetRetryId() int64 {
-	if m != nil {
-		return m.RetryId
-	}
-	return 0
-}
-
-func (m *Client_DH_Inner_Data_Data) GetGB() string {
-	if m != nil {
-		return m.GB
-	}
-	return ""
-}
-
-type Client_DH_Inner_Data struct {
-	Constructor          TLConstructor              `protobuf:"varint,1,opt,name=constructor,proto3,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
-	Data2                *Client_DH_Inner_Data_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
-	XXX_unrecognized     []byte                     `json:"-"`
-	XXX_sizecache        int32                      `json:"-"`
-}
-
-func (m *Client_DH_Inner_Data) Reset()         { *m = Client_DH_Inner_Data{} }
-func (m *Client_DH_Inner_Data) String() string { return proto.CompactTextString(m) }
-func (*Client_DH_Inner_Data) ProtoMessage()    {}
-func (*Client_DH_Inner_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{4}
-}
-func (m *Client_DH_Inner_Data) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Client_DH_Inner_Data.Unmarshal(m, b)
-}
-func (m *Client_DH_Inner_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Client_DH_Inner_Data.Marshal(b, m, deterministic)
-}
-func (dst *Client_DH_Inner_Data) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Client_DH_Inner_Data.Merge(dst, src)
-}
-func (m *Client_DH_Inner_Data) XXX_Size() int {
-	return xxx_messageInfo_Client_DH_Inner_Data.Size(m)
-}
-func (m *Client_DH_Inner_Data) XXX_DiscardUnknown() {
-	xxx_messageInfo_Client_DH_Inner_Data.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Client_DH_Inner_Data proto.InternalMessageInfo
-
-func (m *Client_DH_Inner_Data) GetConstructor() TLConstructor {
-	if m != nil {
-		return m.Constructor
-	}
-	return TLConstructor_CRC32_UNKNOWN
-}
-
-func (m *Client_DH_Inner_Data) GetData2() *Client_DH_Inner_Data_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// client_DH_inner_data#6643b654 nonce:int128 server_nonce:int128 retry_id:long g_b:string = Client_DH_Inner_Data;
-type TLClient_DHInnerData struct {
-	Data2                *Client_DH_Inner_Data_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
-	XXX_unrecognized     []byte                     `json:"-"`
-	XXX_sizecache        int32                      `json:"-"`
-}
-
-func (m *TLClient_DHInnerData) Reset()         { *m = TLClient_DHInnerData{} }
-func (m *TLClient_DHInnerData) String() string { return proto.CompactTextString(m) }
-func (*TLClient_DHInnerData) ProtoMessage()    {}
-func (*TLClient_DHInnerData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{5}
-}
-func (m *TLClient_DHInnerData) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TLClient_DHInnerData.Unmarshal(m, b)
-}
-func (m *TLClient_DHInnerData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TLClient_DHInnerData.Marshal(b, m, deterministic)
-}
-func (dst *TLClient_DHInnerData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TLClient_DHInnerData.Merge(dst, src)
-}
-func (m *TLClient_DHInnerData) XXX_Size() int {
-	return xxx_messageInfo_TLClient_DHInnerData.Size(m)
-}
-func (m *TLClient_DHInnerData) XXX_DiscardUnknown() {
-	xxx_messageInfo_TLClient_DHInnerData.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TLClient_DHInnerData proto.InternalMessageInfo
-
-func (m *TLClient_DHInnerData) GetData2() *Client_DH_Inner_Data_Data {
-	if m != nil {
-		return m.Data2
-	}
-	return nil
-}
-
-// /////////////////////////////////////////////////////////////////////////////
 // Set_client_DH_params_answer <--
 //  + TL_dh_gen_ok
 //  + TL_dh_gen_retry
@@ -357,7 +39,7 @@ func (m *SetClient_DHParamsAnswer_Data) Reset()         { *m = SetClient_DHParam
 func (m *SetClient_DHParamsAnswer_Data) String() string { return proto.CompactTextString(m) }
 func (*SetClient_DHParamsAnswer_Data) ProtoMessage()    {}
 func (*SetClient_DHParamsAnswer_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{6}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{0}
 }
 func (m *SetClient_DHParamsAnswer_Data) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SetClient_DHParamsAnswer_Data.Unmarshal(m, b)
@@ -424,7 +106,7 @@ func (m *SetClient_DHParamsAnswer) Reset()         { *m = SetClient_DHParamsAnsw
 func (m *SetClient_DHParamsAnswer) String() string { return proto.CompactTextString(m) }
 func (*SetClient_DHParamsAnswer) ProtoMessage()    {}
 func (*SetClient_DHParamsAnswer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{7}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{1}
 }
 func (m *SetClient_DHParamsAnswer) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SetClient_DHParamsAnswer.Unmarshal(m, b)
@@ -470,7 +152,7 @@ func (m *TLDhGenOk) Reset()         { *m = TLDhGenOk{} }
 func (m *TLDhGenOk) String() string { return proto.CompactTextString(m) }
 func (*TLDhGenOk) ProtoMessage()    {}
 func (*TLDhGenOk) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{8}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{2}
 }
 func (m *TLDhGenOk) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLDhGenOk.Unmarshal(m, b)
@@ -509,7 +191,7 @@ func (m *TLDhGenRetry) Reset()         { *m = TLDhGenRetry{} }
 func (m *TLDhGenRetry) String() string { return proto.CompactTextString(m) }
 func (*TLDhGenRetry) ProtoMessage()    {}
 func (*TLDhGenRetry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{9}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{3}
 }
 func (m *TLDhGenRetry) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLDhGenRetry.Unmarshal(m, b)
@@ -548,7 +230,7 @@ func (m *TLDhGenFail) Reset()         { *m = TLDhGenFail{} }
 func (m *TLDhGenFail) String() string { return proto.CompactTextString(m) }
 func (*TLDhGenFail) ProtoMessage()    {}
 func (*TLDhGenFail) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{10}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{4}
 }
 func (m *TLDhGenFail) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLDhGenFail.Unmarshal(m, b)
@@ -591,7 +273,7 @@ func (m *DestroyAuthKeyRes_Data) Reset()         { *m = DestroyAuthKeyRes_Data{}
 func (m *DestroyAuthKeyRes_Data) String() string { return proto.CompactTextString(m) }
 func (*DestroyAuthKeyRes_Data) ProtoMessage()    {}
 func (*DestroyAuthKeyRes_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{11}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{5}
 }
 func (m *DestroyAuthKeyRes_Data) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DestroyAuthKeyRes_Data.Unmarshal(m, b)
@@ -623,7 +305,7 @@ func (m *DestroyAuthKeyRes) Reset()         { *m = DestroyAuthKeyRes{} }
 func (m *DestroyAuthKeyRes) String() string { return proto.CompactTextString(m) }
 func (*DestroyAuthKeyRes) ProtoMessage()    {}
 func (*DestroyAuthKeyRes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{12}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{6}
 }
 func (m *DestroyAuthKeyRes) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DestroyAuthKeyRes.Unmarshal(m, b)
@@ -669,7 +351,7 @@ func (m *TLDestroyAuthKeyOk) Reset()         { *m = TLDestroyAuthKeyOk{} }
 func (m *TLDestroyAuthKeyOk) String() string { return proto.CompactTextString(m) }
 func (*TLDestroyAuthKeyOk) ProtoMessage()    {}
 func (*TLDestroyAuthKeyOk) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{13}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{7}
 }
 func (m *TLDestroyAuthKeyOk) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLDestroyAuthKeyOk.Unmarshal(m, b)
@@ -708,7 +390,7 @@ func (m *TLDestroyAuthKeyNone) Reset()         { *m = TLDestroyAuthKeyNone{} }
 func (m *TLDestroyAuthKeyNone) String() string { return proto.CompactTextString(m) }
 func (*TLDestroyAuthKeyNone) ProtoMessage()    {}
 func (*TLDestroyAuthKeyNone) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{14}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{8}
 }
 func (m *TLDestroyAuthKeyNone) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLDestroyAuthKeyNone.Unmarshal(m, b)
@@ -747,7 +429,7 @@ func (m *TLDestroyAuthKeyFail) Reset()         { *m = TLDestroyAuthKeyFail{} }
 func (m *TLDestroyAuthKeyFail) String() string { return proto.CompactTextString(m) }
 func (*TLDestroyAuthKeyFail) ProtoMessage()    {}
 func (*TLDestroyAuthKeyFail) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{15}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{9}
 }
 func (m *TLDestroyAuthKeyFail) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLDestroyAuthKeyFail.Unmarshal(m, b)
@@ -792,7 +474,7 @@ func (m *ResPQ_Data) Reset()         { *m = ResPQ_Data{} }
 func (m *ResPQ_Data) String() string { return proto.CompactTextString(m) }
 func (*ResPQ_Data) ProtoMessage()    {}
 func (*ResPQ_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{16}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{10}
 }
 func (m *ResPQ_Data) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResPQ_Data.Unmarshal(m, b)
@@ -852,7 +534,7 @@ func (m *ResPQ) Reset()         { *m = ResPQ{} }
 func (m *ResPQ) String() string { return proto.CompactTextString(m) }
 func (*ResPQ) ProtoMessage()    {}
 func (*ResPQ) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{17}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{11}
 }
 func (m *ResPQ) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResPQ.Unmarshal(m, b)
@@ -898,7 +580,7 @@ func (m *TLResPQ) Reset()         { *m = TLResPQ{} }
 func (m *TLResPQ) String() string { return proto.CompactTextString(m) }
 func (*TLResPQ) ProtoMessage()    {}
 func (*TLResPQ) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{18}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{12}
 }
 func (m *TLResPQ) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLResPQ.Unmarshal(m, b)
@@ -950,7 +632,7 @@ func (m *P_QInnerData_Data) Reset()         { *m = P_QInnerData_Data{} }
 func (m *P_QInnerData_Data) String() string { return proto.CompactTextString(m) }
 func (*P_QInnerData_Data) ProtoMessage()    {}
 func (*P_QInnerData_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{19}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{13}
 }
 func (m *P_QInnerData_Data) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_P_QInnerData_Data.Unmarshal(m, b)
@@ -1038,7 +720,7 @@ func (m *P_QInnerData) Reset()         { *m = P_QInnerData{} }
 func (m *P_QInnerData) String() string { return proto.CompactTextString(m) }
 func (*P_QInnerData) ProtoMessage()    {}
 func (*P_QInnerData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{20}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{14}
 }
 func (m *P_QInnerData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_P_QInnerData.Unmarshal(m, b)
@@ -1084,7 +766,7 @@ func (m *TLPQInnerData) Reset()         { *m = TLPQInnerData{} }
 func (m *TLPQInnerData) String() string { return proto.CompactTextString(m) }
 func (*TLPQInnerData) ProtoMessage()    {}
 func (*TLPQInnerData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{21}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{15}
 }
 func (m *TLPQInnerData) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLPQInnerData.Unmarshal(m, b)
@@ -1123,7 +805,7 @@ func (m *TLPQInnerDataDc) Reset()         { *m = TLPQInnerDataDc{} }
 func (m *TLPQInnerDataDc) String() string { return proto.CompactTextString(m) }
 func (*TLPQInnerDataDc) ProtoMessage()    {}
 func (*TLPQInnerDataDc) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{22}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{16}
 }
 func (m *TLPQInnerDataDc) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLPQInnerDataDc.Unmarshal(m, b)
@@ -1162,7 +844,7 @@ func (m *TLPQInnerDataTemp) Reset()         { *m = TLPQInnerDataTemp{} }
 func (m *TLPQInnerDataTemp) String() string { return proto.CompactTextString(m) }
 func (*TLPQInnerDataTemp) ProtoMessage()    {}
 func (*TLPQInnerDataTemp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{23}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{17}
 }
 func (m *TLPQInnerDataTemp) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLPQInnerDataTemp.Unmarshal(m, b)
@@ -1201,7 +883,7 @@ func (m *TLPQInnerDataTempDc) Reset()         { *m = TLPQInnerDataTempDc{} }
 func (m *TLPQInnerDataTempDc) String() string { return proto.CompactTextString(m) }
 func (*TLPQInnerDataTempDc) ProtoMessage()    {}
 func (*TLPQInnerDataTempDc) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{24}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{18}
 }
 func (m *TLPQInnerDataTempDc) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLPQInnerDataTempDc.Unmarshal(m, b)
@@ -1247,7 +929,7 @@ func (m *Server_DH_Params_Data) Reset()         { *m = Server_DH_Params_Data{} }
 func (m *Server_DH_Params_Data) String() string { return proto.CompactTextString(m) }
 func (*Server_DH_Params_Data) ProtoMessage()    {}
 func (*Server_DH_Params_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{25}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{19}
 }
 func (m *Server_DH_Params_Data) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Server_DH_Params_Data.Unmarshal(m, b)
@@ -1307,7 +989,7 @@ func (m *Server_DH_Params) Reset()         { *m = Server_DH_Params{} }
 func (m *Server_DH_Params) String() string { return proto.CompactTextString(m) }
 func (*Server_DH_Params) ProtoMessage()    {}
 func (*Server_DH_Params) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{26}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{20}
 }
 func (m *Server_DH_Params) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Server_DH_Params.Unmarshal(m, b)
@@ -1353,7 +1035,7 @@ func (m *TLServer_DHParamsFail) Reset()         { *m = TLServer_DHParamsFail{} }
 func (m *TLServer_DHParamsFail) String() string { return proto.CompactTextString(m) }
 func (*TLServer_DHParamsFail) ProtoMessage()    {}
 func (*TLServer_DHParamsFail) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{27}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{21}
 }
 func (m *TLServer_DHParamsFail) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLServer_DHParamsFail.Unmarshal(m, b)
@@ -1392,7 +1074,7 @@ func (m *TLServer_DHParamsOk) Reset()         { *m = TLServer_DHParamsOk{} }
 func (m *TLServer_DHParamsOk) String() string { return proto.CompactTextString(m) }
 func (*TLServer_DHParamsOk) ProtoMessage()    {}
 func (*TLServer_DHParamsOk) Descriptor() ([]byte, []int) {
-	return fileDescriptor_schema_tl_handshake_63492258cb17bf2b, []int{28}
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{22}
 }
 func (m *TLServer_DHParamsOk) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TLServer_DHParamsOk.Unmarshal(m, b)
@@ -1419,13 +1101,325 @@ func (m *TLServer_DHParamsOk) GetData2() *Server_DH_Params_Data {
 	return nil
 }
 
+// /////////////////////////////////////////////////////////////////////////////
+// Server_DH_inner_data <--
+//  + TL_server_DH_inner_data
+//
+type Server_DHInnerData_Data struct {
+	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	ServerNonce          []byte   `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
+	G                    int32    `protobuf:"varint,3,opt,name=g,proto3" json:"g,omitempty"`
+	DhPrime              string   `protobuf:"bytes,4,opt,name=dh_prime,json=dhPrime,proto3" json:"dh_prime,omitempty"`
+	GA                   string   `protobuf:"bytes,5,opt,name=g_a,json=gA,proto3" json:"g_a,omitempty"`
+	ServerTime           int32    `protobuf:"varint,6,opt,name=server_time,json=serverTime,proto3" json:"server_time,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Server_DHInnerData_Data) Reset()         { *m = Server_DHInnerData_Data{} }
+func (m *Server_DHInnerData_Data) String() string { return proto.CompactTextString(m) }
+func (*Server_DHInnerData_Data) ProtoMessage()    {}
+func (*Server_DHInnerData_Data) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{23}
+}
+func (m *Server_DHInnerData_Data) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Server_DHInnerData_Data.Unmarshal(m, b)
+}
+func (m *Server_DHInnerData_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Server_DHInnerData_Data.Marshal(b, m, deterministic)
+}
+func (dst *Server_DHInnerData_Data) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Server_DHInnerData_Data.Merge(dst, src)
+}
+func (m *Server_DHInnerData_Data) XXX_Size() int {
+	return xxx_messageInfo_Server_DHInnerData_Data.Size(m)
+}
+func (m *Server_DHInnerData_Data) XXX_DiscardUnknown() {
+	xxx_messageInfo_Server_DHInnerData_Data.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Server_DHInnerData_Data proto.InternalMessageInfo
+
+func (m *Server_DHInnerData_Data) GetNonce() []byte {
+	if m != nil {
+		return m.Nonce
+	}
+	return nil
+}
+
+func (m *Server_DHInnerData_Data) GetServerNonce() []byte {
+	if m != nil {
+		return m.ServerNonce
+	}
+	return nil
+}
+
+func (m *Server_DHInnerData_Data) GetG() int32 {
+	if m != nil {
+		return m.G
+	}
+	return 0
+}
+
+func (m *Server_DHInnerData_Data) GetDhPrime() string {
+	if m != nil {
+		return m.DhPrime
+	}
+	return ""
+}
+
+func (m *Server_DHInnerData_Data) GetGA() string {
+	if m != nil {
+		return m.GA
+	}
+	return ""
+}
+
+func (m *Server_DHInnerData_Data) GetServerTime() int32 {
+	if m != nil {
+		return m.ServerTime
+	}
+	return 0
+}
+
+type Server_DHInnerData struct {
+	Constructor          TLConstructor            `protobuf:"varint,1,opt,name=constructor,proto3,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2                *Server_DHInnerData_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
+	XXX_unrecognized     []byte                   `json:"-"`
+	XXX_sizecache        int32                    `json:"-"`
+}
+
+func (m *Server_DHInnerData) Reset()         { *m = Server_DHInnerData{} }
+func (m *Server_DHInnerData) String() string { return proto.CompactTextString(m) }
+func (*Server_DHInnerData) ProtoMessage()    {}
+func (*Server_DHInnerData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{24}
+}
+func (m *Server_DHInnerData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Server_DHInnerData.Unmarshal(m, b)
+}
+func (m *Server_DHInnerData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Server_DHInnerData.Marshal(b, m, deterministic)
+}
+func (dst *Server_DHInnerData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Server_DHInnerData.Merge(dst, src)
+}
+func (m *Server_DHInnerData) XXX_Size() int {
+	return xxx_messageInfo_Server_DHInnerData.Size(m)
+}
+func (m *Server_DHInnerData) XXX_DiscardUnknown() {
+	xxx_messageInfo_Server_DHInnerData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Server_DHInnerData proto.InternalMessageInfo
+
+func (m *Server_DHInnerData) GetConstructor() TLConstructor {
+	if m != nil {
+		return m.Constructor
+	}
+	return TLConstructor_CRC32_UNKNOWN
+}
+
+func (m *Server_DHInnerData) GetData2() *Server_DHInnerData_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// server_DH_inner_data#b5890dba nonce:int128 server_nonce:int128 g:int dh_prime:string g_a:string server_time:int = Server_DH_inner_data;
+type TLServer_DHInnerData struct {
+	Data2                *Server_DHInnerData_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
+	XXX_unrecognized     []byte                   `json:"-"`
+	XXX_sizecache        int32                    `json:"-"`
+}
+
+func (m *TLServer_DHInnerData) Reset()         { *m = TLServer_DHInnerData{} }
+func (m *TLServer_DHInnerData) String() string { return proto.CompactTextString(m) }
+func (*TLServer_DHInnerData) ProtoMessage()    {}
+func (*TLServer_DHInnerData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{25}
+}
+func (m *TLServer_DHInnerData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLServer_DHInnerData.Unmarshal(m, b)
+}
+func (m *TLServer_DHInnerData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLServer_DHInnerData.Marshal(b, m, deterministic)
+}
+func (dst *TLServer_DHInnerData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLServer_DHInnerData.Merge(dst, src)
+}
+func (m *TLServer_DHInnerData) XXX_Size() int {
+	return xxx_messageInfo_TLServer_DHInnerData.Size(m)
+}
+func (m *TLServer_DHInnerData) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLServer_DHInnerData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLServer_DHInnerData proto.InternalMessageInfo
+
+func (m *TLServer_DHInnerData) GetData2() *Server_DHInnerData_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+// Client_DH_Inner_Data <--
+//  + TL_client_DH_inner_data
+//
+type Client_DH_Inner_Data_Data struct {
+	Nonce                []byte   `protobuf:"bytes,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	ServerNonce          []byte   `protobuf:"bytes,2,opt,name=server_nonce,json=serverNonce,proto3" json:"server_nonce,omitempty"`
+	RetryId              int64    `protobuf:"varint,3,opt,name=retry_id,json=retryId,proto3" json:"retry_id,omitempty"`
+	GB                   string   `protobuf:"bytes,4,opt,name=g_b,json=gB,proto3" json:"g_b,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Client_DH_Inner_Data_Data) Reset()         { *m = Client_DH_Inner_Data_Data{} }
+func (m *Client_DH_Inner_Data_Data) String() string { return proto.CompactTextString(m) }
+func (*Client_DH_Inner_Data_Data) ProtoMessage()    {}
+func (*Client_DH_Inner_Data_Data) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{26}
+}
+func (m *Client_DH_Inner_Data_Data) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Client_DH_Inner_Data_Data.Unmarshal(m, b)
+}
+func (m *Client_DH_Inner_Data_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Client_DH_Inner_Data_Data.Marshal(b, m, deterministic)
+}
+func (dst *Client_DH_Inner_Data_Data) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Client_DH_Inner_Data_Data.Merge(dst, src)
+}
+func (m *Client_DH_Inner_Data_Data) XXX_Size() int {
+	return xxx_messageInfo_Client_DH_Inner_Data_Data.Size(m)
+}
+func (m *Client_DH_Inner_Data_Data) XXX_DiscardUnknown() {
+	xxx_messageInfo_Client_DH_Inner_Data_Data.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Client_DH_Inner_Data_Data proto.InternalMessageInfo
+
+func (m *Client_DH_Inner_Data_Data) GetNonce() []byte {
+	if m != nil {
+		return m.Nonce
+	}
+	return nil
+}
+
+func (m *Client_DH_Inner_Data_Data) GetServerNonce() []byte {
+	if m != nil {
+		return m.ServerNonce
+	}
+	return nil
+}
+
+func (m *Client_DH_Inner_Data_Data) GetRetryId() int64 {
+	if m != nil {
+		return m.RetryId
+	}
+	return 0
+}
+
+func (m *Client_DH_Inner_Data_Data) GetGB() string {
+	if m != nil {
+		return m.GB
+	}
+	return ""
+}
+
+type Client_DH_Inner_Data struct {
+	Constructor          TLConstructor              `protobuf:"varint,1,opt,name=constructor,proto3,enum=mtproto.TLConstructor" json:"constructor,omitempty"`
+	Data2                *Client_DH_Inner_Data_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *Client_DH_Inner_Data) Reset()         { *m = Client_DH_Inner_Data{} }
+func (m *Client_DH_Inner_Data) String() string { return proto.CompactTextString(m) }
+func (*Client_DH_Inner_Data) ProtoMessage()    {}
+func (*Client_DH_Inner_Data) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{27}
+}
+func (m *Client_DH_Inner_Data) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Client_DH_Inner_Data.Unmarshal(m, b)
+}
+func (m *Client_DH_Inner_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Client_DH_Inner_Data.Marshal(b, m, deterministic)
+}
+func (dst *Client_DH_Inner_Data) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Client_DH_Inner_Data.Merge(dst, src)
+}
+func (m *Client_DH_Inner_Data) XXX_Size() int {
+	return xxx_messageInfo_Client_DH_Inner_Data.Size(m)
+}
+func (m *Client_DH_Inner_Data) XXX_DiscardUnknown() {
+	xxx_messageInfo_Client_DH_Inner_Data.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Client_DH_Inner_Data proto.InternalMessageInfo
+
+func (m *Client_DH_Inner_Data) GetConstructor() TLConstructor {
+	if m != nil {
+		return m.Constructor
+	}
+	return TLConstructor_CRC32_UNKNOWN
+}
+
+func (m *Client_DH_Inner_Data) GetData2() *Client_DH_Inner_Data_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
+// client_DH_inner_data#6643b654 nonce:int128 server_nonce:int128 retry_id:long g_b:string = Client_DH_Inner_Data;
+type TLClient_DHInnerData struct {
+	Data2                *Client_DH_Inner_Data_Data `protobuf:"bytes,2,opt,name=data2,proto3" json:"data2,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *TLClient_DHInnerData) Reset()         { *m = TLClient_DHInnerData{} }
+func (m *TLClient_DHInnerData) String() string { return proto.CompactTextString(m) }
+func (*TLClient_DHInnerData) ProtoMessage()    {}
+func (*TLClient_DHInnerData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_schema_tl_handshake_48b66c9527610044, []int{28}
+}
+func (m *TLClient_DHInnerData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TLClient_DHInnerData.Unmarshal(m, b)
+}
+func (m *TLClient_DHInnerData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TLClient_DHInnerData.Marshal(b, m, deterministic)
+}
+func (dst *TLClient_DHInnerData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TLClient_DHInnerData.Merge(dst, src)
+}
+func (m *TLClient_DHInnerData) XXX_Size() int {
+	return xxx_messageInfo_TLClient_DHInnerData.Size(m)
+}
+func (m *TLClient_DHInnerData) XXX_DiscardUnknown() {
+	xxx_messageInfo_TLClient_DHInnerData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TLClient_DHInnerData proto.InternalMessageInfo
+
+func (m *TLClient_DHInnerData) GetData2() *Client_DH_Inner_Data_Data {
+	if m != nil {
+		return m.Data2
+	}
+	return nil
+}
+
 func init() {
-	proto.RegisterType((*Server_DHInnerData_Data)(nil), "mtproto.Server_DH_inner_data_Data")
-	proto.RegisterType((*Server_DHInnerData)(nil), "mtproto.Server_DH_inner_data")
-	proto.RegisterType((*TLServer_DHInnerData)(nil), "mtproto.TL_server_DH_inner_data")
-	proto.RegisterType((*Client_DH_Inner_Data_Data)(nil), "mtproto.Client_DH_Inner_Data_Data")
-	proto.RegisterType((*Client_DH_Inner_Data)(nil), "mtproto.Client_DH_Inner_Data")
-	proto.RegisterType((*TLClient_DHInnerData)(nil), "mtproto.TL_client_DH_inner_data")
 	proto.RegisterType((*SetClient_DHParamsAnswer_Data)(nil), "mtproto.Set_client_DH_params_answer_Data")
 	proto.RegisterType((*SetClient_DHParamsAnswer)(nil), "mtproto.Set_client_DH_params_answer")
 	proto.RegisterType((*TLDhGenOk)(nil), "mtproto.TL_dh_gen_ok")
@@ -1449,67 +1443,73 @@ func init() {
 	proto.RegisterType((*Server_DH_Params)(nil), "mtproto.Server_DH_Params")
 	proto.RegisterType((*TLServer_DHParamsFail)(nil), "mtproto.TL_server_DH_params_fail")
 	proto.RegisterType((*TLServer_DHParamsOk)(nil), "mtproto.TL_server_DH_params_ok")
+	proto.RegisterType((*Server_DHInnerData_Data)(nil), "mtproto.Server_DH_inner_data_Data")
+	proto.RegisterType((*Server_DHInnerData)(nil), "mtproto.Server_DH_inner_data")
+	proto.RegisterType((*TLServer_DHInnerData)(nil), "mtproto.TL_server_DH_inner_data")
+	proto.RegisterType((*Client_DH_Inner_Data_Data)(nil), "mtproto.Client_DH_Inner_Data_Data")
+	proto.RegisterType((*Client_DH_Inner_Data)(nil), "mtproto.Client_DH_Inner_Data")
+	proto.RegisterType((*TLClient_DHInnerData)(nil), "mtproto.TL_client_DH_inner_data")
 }
 
 func init() {
-	proto.RegisterFile("schema.tl.handshake.proto", fileDescriptor_schema_tl_handshake_63492258cb17bf2b)
+	proto.RegisterFile("schema.tl.handshake.proto", fileDescriptor_schema_tl_handshake_48b66c9527610044)
 }
 
-var fileDescriptor_schema_tl_handshake_63492258cb17bf2b = []byte{
-	// 872 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xdd, 0x6e, 0xe3, 0x44,
-	0x14, 0xd6, 0x24, 0xcd, 0x26, 0x39, 0x0d, 0xe9, 0xae, 0xb7, 0x5b, 0x1c, 0x0a, 0xbb, 0xc1, 0x42,
-	0x28, 0xbd, 0x89, 0x44, 0xca, 0x4a, 0x7b, 0x87, 0xfa, 0x23, 0x68, 0xd9, 0xb0, 0x9b, 0xba, 0xb9,
-	0x1f, 0xb9, 0xf6, 0x60, 0x5b, 0x8d, 0xc7, 0xee, 0x78, 0x42, 0xc9, 0x0d, 0x42, 0x88, 0x2b, 0x9e,
-	0x00, 0x71, 0xc7, 0x13, 0xf0, 0x16, 0xbc, 0x00, 0x2f, 0x84, 0x7c, 0xfc, 0x17, 0x37, 0x6e, 0x01,
-	0x9b, 0xbd, 0xf3, 0x9c, 0xf9, 0xce, 0xe7, 0x73, 0xbe, 0x33, 0x73, 0xe6, 0xc0, 0x20, 0x34, 0x1d,
-	0xe6, 0x19, 0x63, 0xb9, 0x18, 0x3b, 0x06, 0xb7, 0x42, 0xc7, 0xb8, 0x66, 0xe3, 0x40, 0xf8, 0xd2,
-	0x57, 0xda, 0x9e, 0xc4, 0x8f, 0x0f, 0x9e, 0xe5, 0x18, 0x53, 0x98, 0x87, 0x93, 0x78, 0x5f, 0xfb,
-	0x83, 0xc0, 0xe0, 0x92, 0x89, 0xef, 0x98, 0xa0, 0xa7, 0x67, 0xd4, 0xe5, 0x9c, 0x09, 0x6a, 0x19,
-	0xd2, 0xa0, 0xa7, 0x86, 0x34, 0x94, 0x5d, 0x68, 0x71, 0x9f, 0x9b, 0x4c, 0x25, 0x43, 0x32, 0xea,
-	0xe9, 0xf1, 0x42, 0xf9, 0x18, 0x7a, 0x61, 0xec, 0x12, 0x6f, 0x36, 0x70, 0x73, 0x3b, 0xb6, 0xbd,
-	0x41, 0x48, 0x0f, 0x88, 0xad, 0x36, 0x87, 0x64, 0xd4, 0xd2, 0x89, 0xad, 0x0c, 0xa0, 0x63, 0x39,
-	0x34, 0x10, 0xae, 0xc7, 0xd4, 0xad, 0x21, 0x19, 0x75, 0xf5, 0xb6, 0xe5, 0xcc, 0xa2, 0xa5, 0xb2,
-	0x03, 0x4d, 0x9b, 0x1a, 0x6a, 0x0b, 0xad, 0x0d, 0xfb, 0x48, 0x79, 0x01, 0x09, 0x11, 0x95, 0x11,
-	0xfc, 0x11, 0x72, 0x40, 0x6c, 0x9a, 0xbb, 0x1e, 0xd3, 0x7e, 0x21, 0xb0, 0x5b, 0x16, 0xb1, 0xf2,
-	0x0a, 0xb6, 0x4d, 0x9f, 0x87, 0x52, 0x2c, 0x4d, 0xe9, 0x0b, 0x0c, 0xb9, 0x3f, 0xd9, 0x1b, 0x27,
-	0x02, 0x8c, 0xe7, 0xd3, 0x93, 0x7c, 0x57, 0x5f, 0x87, 0x2a, 0xaf, 0xa0, 0x15, 0x31, 0x4c, 0x30,
-	0x93, 0xed, 0x89, 0x96, 0xf9, 0xdc, 0xab, 0x8c, 0x1e, 0x3b, 0x68, 0x97, 0xf0, 0xfe, 0x7c, 0x4a,
-	0xc3, 0xf2, 0x70, 0xaa, 0x92, 0xfe, 0x48, 0x60, 0x70, 0xb2, 0x70, 0x19, 0x97, 0x11, 0xe8, 0x1c,
-	0x41, 0xa7, 0xf5, 0x6b, 0x32, 0x80, 0x8e, 0x60, 0x52, 0xac, 0xa8, 0x6b, 0x61, 0x69, 0x9a, 0x7a,
-	0x1b, 0xd7, 0xe7, 0x56, 0x5c, 0x85, 0xab, 0xa4, 0x36, 0x0d, 0xfb, 0x18, 0x45, 0x2e, 0x0b, 0xe1,
-	0x5d, 0x88, 0x7c, 0x6f, 0xaa, 0x45, 0x91, 0xcd, 0x0c, 0xf6, 0x6f, 0x44, 0xfe, 0x47, 0xd2, 0xbf,
-	0x08, 0x0c, 0x2f, 0x99, 0x5c, 0xa3, 0x0d, 0x0c, 0x61, 0x78, 0x21, 0x35, 0x78, 0x78, 0x9b, 0x66,
-	0x5b, 0x59, 0xeb, 0x4f, 0x61, 0x87, 0xb3, 0xdb, 0x78, 0x9f, 0x3a, 0x46, 0xe8, 0x7c, 0x86, 0x92,
-	0xf7, 0xf4, 0xf7, 0x38, 0xbb, 0x45, 0xc8, 0x59, 0x64, 0xdc, 0xc4, 0x4d, 0xb0, 0x08, 0x77, 0x70,
-	0x93, 0x4d, 0xdc, 0x21, 0x5e, 0x99, 0x3b, 0xb8, 0x43, 0xed, 0x57, 0x02, 0xfb, 0x0f, 0x64, 0x55,
-	0xa3, 0x7c, 0x5f, 0x14, 0x95, 0x3e, 0x58, 0x3b, 0xce, 0x0f, 0x8b, 0x98, 0x0a, 0xfe, 0x16, 0x7a,
-	0xf3, 0x29, 0xb5, 0x1c, 0x6a, 0x33, 0x4e, 0xfd, 0xeb, 0xfa, 0x84, 0x3a, 0xec, 0xe4, 0x84, 0x78,
-	0x92, 0xeb, 0x73, 0x5e, 0x40, 0x3f, 0xe7, 0xfc, 0xd6, 0x70, 0x17, 0xf5, 0x29, 0x55, 0xd8, 0x3b,
-	0x65, 0xa1, 0x14, 0xfe, 0xea, 0x68, 0x29, 0x9d, 0xd7, 0x6c, 0xa5, 0xb3, 0x10, 0x01, 0xda, 0xcf,
-	0x04, 0x9e, 0x6c, 0x6c, 0xd5, 0x28, 0xd1, 0xcb, 0x62, 0xa8, 0x2f, 0x32, 0x9f, 0xf2, 0xff, 0xe7,
-	0x85, 0xd9, 0x8b, 0x72, 0x8e, 0x31, 0xd4, 0x58, 0x4a, 0x87, 0x5e, 0xb3, 0x55, 0x54, 0xa2, 0x8a,
-	0x84, 0x17, 0xa0, 0x96, 0x11, 0x72, 0x9f, 0xb3, 0xff, 0x99, 0x12, 0x2b, 0x54, 0x91, 0xf2, 0x37,
-	0x02, 0xa0, 0xb3, 0x70, 0x76, 0x51, 0xf3, 0xaa, 0xf7, 0xa1, 0x11, 0xdc, 0xe0, 0xed, 0xee, 0xea,
-	0x8d, 0xe0, 0x46, 0x39, 0x81, 0xe7, 0x89, 0x4b, 0xb0, 0xbc, 0x5a, 0xb8, 0x66, 0x1c, 0xa8, 0xcb,
-	0x6d, 0x26, 0x02, 0xe1, 0x72, 0x19, 0xaa, 0x5b, 0xc3, 0xe6, 0xa8, 0xa9, 0xef, 0xc7, 0xa8, 0x19,
-	0x82, 0x5e, 0xb3, 0xd5, 0x97, 0x6b, 0x10, 0x6d, 0x01, 0x2d, 0x8c, 0xad, 0xc6, 0x69, 0x38, 0x28,
-	0xca, 0xf2, 0x34, 0xf3, 0xc9, 0x93, 0x4e, 0xa5, 0x78, 0x09, 0x9d, 0xf9, 0x94, 0x0a, 0xfc, 0xe1,
-	0x7f, 0x70, 0xfb, 0x93, 0xc0, 0xd3, 0x19, 0xbd, 0xd8, 0x98, 0x1a, 0x62, 0x45, 0x48, 0xa6, 0x48,
-	0x0f, 0x48, 0x80, 0x74, 0x5d, 0x9d, 0x04, 0xd1, 0x2a, 0x95, 0x8b, 0xdc, 0xe4, 0xb2, 0x6f, 0x3d,
-	0x24, 0x7b, 0x6b, 0x53, 0xf6, 0x7d, 0xe8, 0x66, 0x1d, 0x11, 0xa7, 0x84, 0x9e, 0xde, 0x49, 0x7b,
-	0x61, 0x14, 0x81, 0x65, 0xaa, 0x6d, 0x9c, 0x1d, 0x1a, 0x96, 0xa9, 0x7c, 0x04, 0xc0, 0xbe, 0x0f,
-	0x5c, 0xc1, 0x42, 0xea, 0x72, 0xb5, 0x83, 0xf6, 0x6e, 0x62, 0x39, 0xe7, 0xda, 0x0f, 0xd0, 0x2f,
-	0xe6, 0x51, 0x43, 0xf6, 0x49, 0x51, 0xbf, 0x0f, 0x33, 0x9f, 0x12, 0xa5, 0x52, 0x21, 0xbf, 0x82,
-	0x27, 0xf3, 0x29, 0x0d, 0xe8, 0xcd, 0x7a, 0x08, 0x55, 0x88, 0xbe, 0x86, 0xdd, 0x0d, 0x22, 0x6a,
-	0x99, 0x95, 0xb8, 0xa6, 0xd8, 0x16, 0xee, 0x70, 0x49, 0xe6, 0x05, 0x95, 0xd8, 0xde, 0xc2, 0xa0,
-	0x9c, 0xad, 0x6a, 0x78, 0xbf, 0x13, 0x78, 0x96, 0x4f, 0x52, 0xb3, 0xb8, 0xfd, 0xd6, 0xbb, 0xc9,
-	0x9f, 0x40, 0xbf, 0xf8, 0xc8, 0x26, 0x6f, 0x76, 0x6f, 0xfd, 0x8d, 0x55, 0x0e, 0xe0, 0x31, 0xe3,
-	0xa6, 0x58, 0x05, 0x92, 0x59, 0x49, 0xbf, 0x4f, 0x06, 0xa7, 0x9d, 0xcc, 0x7e, 0x84, 0x66, 0xed,
-	0x27, 0x02, 0x8f, 0xef, 0xc6, 0x58, 0xe3, 0x68, 0x7d, 0x5e, 0x94, 0xe9, 0x79, 0xc9, 0x44, 0xb9,
-	0xa6, 0x43, 0x2a, 0xd4, 0x0c, 0x5b, 0x67, 0x3e, 0xa2, 0x26, 0x2f, 0x15, 0xb6, 0xce, 0x6a, 0x8c,
-	0x6f, 0xf0, 0x64, 0x6c, 0x30, 0xfa, 0xd7, 0xd5, 0xf8, 0x8e, 0x47, 0xb0, 0x6f, 0xfa, 0xde, 0x98,
-	0xb3, 0xab, 0xe5, 0xc2, 0x70, 0xbd, 0x31, 0xe3, 0xb6, 0xcb, 0x59, 0xea, 0x7b, 0xdc, 0xfe, 0x66,
-	0x3e, 0x8b, 0x3e, 0xce, 0x1a, 0x57, 0x8f, 0xd0, 0x72, 0xf8, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0xcd, 0x16, 0x18, 0x86, 0xf1, 0x0c, 0x00, 0x00,
+var fileDescriptor_schema_tl_handshake_48b66c9527610044 = []byte{
+	// 869 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0x51, 0x6f, 0xe3, 0x44,
+	0x10, 0xd6, 0x26, 0x4d, 0x93, 0x4c, 0x43, 0x7a, 0xe7, 0xeb, 0x15, 0x87, 0xc0, 0x5d, 0xb0, 0x10,
+	0x4a, 0x5f, 0x22, 0x91, 0x70, 0xd2, 0xbd, 0xa1, 0xb6, 0x11, 0xa4, 0x5c, 0xb8, 0x4b, 0xdc, 0xbc,
+	0xaf, 0x1c, 0x7b, 0xb1, 0xad, 0xc4, 0x6b, 0x67, 0xbd, 0xa1, 0xe4, 0x05, 0x21, 0xc4, 0x13, 0xbf,
+	0x00, 0xf1, 0xc6, 0x2f, 0xe0, 0x5f, 0xf0, 0x07, 0xf8, 0x43, 0xc8, 0x6b, 0xc7, 0x8e, 0x6b, 0xdf,
+	0x15, 0x6c, 0x78, 0xf3, 0xce, 0x7c, 0xf3, 0x79, 0xe6, 0x9b, 0xdd, 0xd9, 0x85, 0x8e, 0xaf, 0x5b,
+	0xc4, 0xd1, 0x06, 0x7c, 0x3d, 0xb0, 0x34, 0x6a, 0xf8, 0x96, 0xb6, 0x22, 0x03, 0x8f, 0xb9, 0xdc,
+	0x95, 0xea, 0x0e, 0x17, 0x1f, 0x1f, 0x3c, 0x4d, 0x30, 0x3a, 0xd3, 0x47, 0xc3, 0xd0, 0xaf, 0xfc,
+	0x85, 0xa0, 0x77, 0x4b, 0x38, 0xd6, 0xd7, 0x36, 0xa1, 0x1c, 0x8f, 0x27, 0xd8, 0xd3, 0x98, 0xe6,
+	0xf8, 0x58, 0xa3, 0xfe, 0x1d, 0x61, 0x78, 0xac, 0x71, 0x4d, 0x3a, 0x83, 0x1a, 0x75, 0xa9, 0x4e,
+	0x64, 0xd4, 0x43, 0xfd, 0x96, 0x1a, 0x2e, 0xa4, 0x8f, 0xa1, 0xe5, 0x13, 0xf6, 0x1d, 0x61, 0x38,
+	0x74, 0x56, 0x84, 0xf3, 0x24, 0xb4, 0xbd, 0x16, 0x90, 0x4f, 0xe1, 0x94, 0x92, 0xbb, 0xd0, 0x8f,
+	0x2d, 0xcd, 0xb7, 0x3e, 0x93, 0xab, 0x02, 0xf5, 0x1e, 0x25, 0x77, 0x02, 0x32, 0x09, 0x8c, 0x59,
+	0xdc, 0x50, 0x3e, 0xca, 0xe2, 0x86, 0x59, 0xdc, 0x48, 0xae, 0x65, 0x71, 0x23, 0xe5, 0x57, 0x04,
+	0xdd, 0x77, 0x54, 0x25, 0xbd, 0x84, 0x13, 0xdd, 0xa5, 0x3e, 0x67, 0x5b, 0x9d, 0xbb, 0x4c, 0x94,
+	0xd5, 0x1e, 0x9e, 0x0f, 0x22, 0xad, 0x06, 0x8b, 0xe9, 0x75, 0xe2, 0x55, 0x0f, 0xa1, 0xd2, 0x17,
+	0x50, 0x33, 0x34, 0xae, 0x0d, 0x45, 0xb5, 0x27, 0xc3, 0x8b, 0x38, 0xe6, 0x21, 0x11, 0xd5, 0x30,
+	0x4e, 0x79, 0x03, 0xad, 0xc5, 0x14, 0x1b, 0x16, 0x36, 0x09, 0xc5, 0xee, 0xaa, 0x3c, 0xa1, 0x0a,
+	0xa7, 0x09, 0x21, 0x23, 0x9c, 0xed, 0xca, 0x73, 0xce, 0xa1, 0x9d, 0x70, 0x7e, 0xab, 0xd9, 0xeb,
+	0xf2, 0x94, 0x32, 0x9c, 0x8f, 0x89, 0xcf, 0x99, 0xbb, 0xbb, 0xdc, 0x72, 0xeb, 0x15, 0xd9, 0xa9,
+	0xc4, 0x17, 0x00, 0xe5, 0x67, 0x04, 0x8f, 0x33, 0xae, 0x12, 0x2d, 0x7a, 0x91, 0x4e, 0xf5, 0x79,
+	0x1c, 0x93, 0xff, 0xff, 0xa4, 0x31, 0xe7, 0x41, 0xcd, 0x21, 0x06, 0x6b, 0x5b, 0x6e, 0xe1, 0x15,
+	0xd9, 0x05, 0x2d, 0x2a, 0x48, 0x38, 0x07, 0x39, 0x8f, 0x90, 0xba, 0x94, 0xfc, 0xc7, 0x94, 0xa2,
+	0x43, 0x05, 0x29, 0x7f, 0x43, 0x00, 0x2a, 0xf1, 0x67, 0xf3, 0x92, 0x47, 0xbd, 0x0d, 0x15, 0x6f,
+	0x23, 0x4e, 0x77, 0x53, 0xad, 0x78, 0x1b, 0xe9, 0x1a, 0x9e, 0x45, 0x21, 0xde, 0x76, 0xb9, 0xb6,
+	0xf5, 0x30, 0x51, 0x9b, 0x9a, 0x84, 0x79, 0xcc, 0xa6, 0xdc, 0x97, 0x8f, 0x7a, 0xd5, 0x7e, 0x55,
+	0xed, 0x86, 0xa8, 0x99, 0x00, 0xbd, 0x22, 0xbb, 0x2f, 0x0f, 0x20, 0xca, 0x1a, 0x6a, 0x22, 0xb7,
+	0x12, 0xbb, 0xe1, 0x22, 0x2d, 0xcb, 0x93, 0x38, 0x26, 0x29, 0x7a, 0x2f, 0xc5, 0x0b, 0x68, 0x2c,
+	0xa6, 0x98, 0x89, 0x1f, 0xfe, 0x8b, 0xb0, 0x3f, 0x11, 0x3c, 0x99, 0xe1, 0x39, 0xb6, 0x29, 0x25,
+	0x0c, 0x07, 0xb6, 0x50, 0xca, 0x50, 0x11, 0x14, 0x2b, 0xd2, 0x02, 0xe4, 0x09, 0xba, 0xa6, 0x8a,
+	0xbc, 0x60, 0xb5, 0x97, 0x0b, 0x6d, 0x12, 0xd9, 0x8f, 0xde, 0x25, 0x7b, 0x2d, 0x2b, 0x7b, 0x17,
+	0x9a, 0xf1, 0x44, 0x94, 0x8f, 0x85, 0xbf, 0xb1, 0x9f, 0x85, 0x41, 0x06, 0x86, 0x2e, 0xd7, 0x7b,
+	0xa8, 0x5f, 0x53, 0x2b, 0x86, 0x2e, 0x7d, 0x04, 0x40, 0xbe, 0xf7, 0x6c, 0x46, 0x7c, 0x6c, 0x53,
+	0xb9, 0x21, 0xec, 0xcd, 0xc8, 0x72, 0x43, 0x95, 0x1f, 0xa0, 0x9d, 0xae, 0xa3, 0x84, 0xec, 0xc3,
+	0xb4, 0x7e, 0x1f, 0xc6, 0x31, 0x39, 0x4a, 0xed, 0x85, 0xfc, 0x0a, 0x1e, 0x2f, 0xa6, 0xd8, 0xc3,
+	0x9b, 0xc3, 0x14, 0x8a, 0x10, 0x7d, 0x0d, 0x67, 0x19, 0x22, 0x6c, 0xe8, 0x85, 0xb8, 0xa6, 0x62,
+	0x2c, 0xdc, 0xe3, 0xe2, 0xc4, 0xf1, 0x0a, 0xb1, 0xbd, 0x81, 0x4e, 0x3e, 0x5b, 0xd1, 0xf4, 0x7e,
+	0x47, 0xf0, 0xf4, 0x36, 0xdc, 0x23, 0xe3, 0x09, 0x9e, 0x85, 0xe3, 0xb7, 0xdc, 0x49, 0xfe, 0x04,
+	0xda, 0xe9, 0x4b, 0x36, 0xba, 0xb3, 0x5b, 0x87, 0x77, 0xac, 0x74, 0x01, 0x8f, 0x08, 0xd5, 0xd9,
+	0xce, 0xe3, 0xc4, 0x88, 0xe6, 0xbd, 0xd8, 0xbc, 0x4d, 0xf5, 0x34, 0xb6, 0x5f, 0x0a, 0xb3, 0xf2,
+	0x13, 0x82, 0x47, 0xf7, 0x73, 0x2c, 0xb1, 0xb5, 0x3e, 0x4f, 0xcb, 0xf4, 0xec, 0xe0, 0x2a, 0xca,
+	0xd1, 0x61, 0x2f, 0xd4, 0x4c, 0x8c, 0x4e, 0x3f, 0x86, 0x44, 0x37, 0x95, 0x18, 0x9d, 0xc5, 0x18,
+	0x5f, 0x8b, 0x9d, 0x91, 0x61, 0x74, 0x57, 0x05, 0xf9, 0xfe, 0x40, 0xd0, 0x49, 0x00, 0xf7, 0xa7,
+	0x49, 0xe1, 0x76, 0xb6, 0x00, 0x99, 0xa2, 0x83, 0x35, 0x15, 0x99, 0x52, 0x07, 0x1a, 0x86, 0x85,
+	0x3d, 0x66, 0x3b, 0x24, 0x6a, 0x57, 0xdd, 0xb0, 0x66, 0xc1, 0x52, 0x3a, 0x85, 0xaa, 0x89, 0x35,
+	0x31, 0x64, 0x9a, 0x6a, 0xc5, 0xbc, 0x94, 0x9e, 0x43, 0x44, 0x84, 0x79, 0x00, 0x3f, 0x16, 0x1c,
+	0x10, 0x9a, 0x16, 0xb6, 0x43, 0x94, 0x5f, 0x10, 0x9c, 0xe5, 0x65, 0x5c, 0xa2, 0xb9, 0x2f, 0xd3,
+	0xd2, 0x29, 0x39, 0xd2, 0xbd, 0xe5, 0x24, 0xdc, 0xc2, 0xfb, 0xa9, 0x76, 0xa4, 0xd2, 0x29, 0x4a,
+	0xfa, 0x23, 0x82, 0xce, 0x75, 0xfc, 0xba, 0xb9, 0x11, 0xa0, 0x71, 0xf9, 0x9e, 0x74, 0xa0, 0x21,
+	0x5e, 0x6a, 0xd8, 0x36, 0x44, 0x6b, 0xaa, 0x6a, 0x5d, 0xac, 0x6f, 0x8c, 0xb0, 0x0b, 0xcb, 0xa8,
+	0x37, 0x15, 0xf3, 0x4a, 0x88, 0x9c, 0x97, 0xc2, 0xff, 0x21, 0xf2, 0x5b, 0x4b, 0x4d, 0x8b, 0x9c,
+	0xbc, 0xf7, 0xfe, 0x89, 0xc8, 0x0f, 0x91, 0x5e, 0xf5, 0xa1, 0xab, 0xbb, 0xce, 0x80, 0x92, 0xe5,
+	0x76, 0xad, 0xd9, 0xce, 0x80, 0x50, 0xd3, 0xa6, 0x64, 0x1f, 0x7f, 0x55, 0xff, 0x66, 0x31, 0x0b,
+	0x3e, 0x26, 0x95, 0xe5, 0xb1, 0xb0, 0x8c, 0xfe, 0x0e, 0x00, 0x00, 0xff, 0xff, 0x18, 0xd9, 0xab,
+	0x60, 0xf1, 0x0c, 0x00, 0x00,
 }

@@ -57,6 +57,17 @@ func (m *DialogModel) PickAllIDListByDialogs(dialogs []*mtproto.Dialog) (items *
 			items.ChannelIdList = append(items.ChannelIdList, p.GetData2().GetChannelId())
 		}
 	}
+	//items.ChannelMessageIdMap = m.channelCallback.GetTopMessageListByIdList(items.ChannelIdList)
+	//for _, d := range dialogs {
+	//	dialog := d.To_Dialog()
+	//	p := dialog.GetPeer()
+	//
+	//	// TODO(@benqi): 先假设只有PEER_USER
+	//	switch p.GetConstructor() {
+	//	case mtproto.TLConstructor_CRC32_peerChannel:
+	//		dialog.SetTopMessage(items.ChannelMessageIdMap[p.GetData2().GetChannelId()])
+	//	}
+	//}
 
 	return
 }

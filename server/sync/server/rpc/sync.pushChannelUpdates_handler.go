@@ -24,16 +24,17 @@ import (
     "github.com/nebulaim/telegramd/baselib/logger"
 )
 
-// sync.pushChannelUpdates#bfd3d677 channel_id:int exclude_user_id:int updates:Updates = Bool;
+// sync.pushChannelUpdates channel_id:int user_id:int updates:Updates = Bool;
 func (s *SyncServiceImpl) SyncPushChannelUpdates(ctx context.Context, request *mtproto.TLSyncPushChannelUpdates) (*mtproto.Bool, error) {
-    glog.Infof("sync.pushChannelUpdates#bfd3d677 - request: {%s}", logger.JsonDebugData(request))
-    //err := s.processUpdatesRequest(request.GetUserId(), request.GetUpdates())
-    //if err == nil {
-    //	s.pushUpdatesToSession(syncTypeUser, request.GetUserId(), 0, 0, request.GetUpdates())
-    //	glog.Infof("SyncPushUpdates - reply: %s", logger.JsonDebugData(request))
-    //} else {
-    //	glog.Error(err)
-    //	return mtproto.ToBool(false), nil
-    //}
+    glog.Infof("sync.pushChannelUpdates - request: {%s}", logger.JsonDebugData(request))
+
+    pushData := &mtproto.PushData{
+        Constructor: mtproto.TLConstructor_CRC32_sync_pushUpdatesData,
+        Data2:       &mtproto.PushData_Data{Updates: request.GetUpdates()},
+    }
+
+    s.pushUpdatesToSession(syncTypeUser, request.GetUserId(), pushData, 0)
+
+    glog.Infof("sync.pushChannelUpdates - reply: {true}",)
     return mtproto.ToBool(true), nil
 }

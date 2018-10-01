@@ -30,7 +30,7 @@ const (
 
 type StatusClient interface {
 	Initialize(config string) error
-	SetSessionOnline(userId int32, serverId int32, authKeyId int64) error
+	SetSessionOnline(userId int32, authKeyId int64, serverId, layer int32) error
 	SetSessionOffline(userId int32, serverId int32, authKeyId int64) error
 	GetUserOnlineSessions(userId int32) (*status.SessionEntryList, error)
 	GetUsersOnlineSessionsList(userIdList []int32) (*status.UsersSessionEntryList, error)

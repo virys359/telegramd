@@ -130,10 +130,10 @@ func (m *UserModel) GetPinnedDialogs(userId int32) (dialogs []*mtproto.Dialog) {
 	return
 }
 
-func (m *UserModel) GetPeersDialogs(selfId int32, peers []*mtproto.InputPeer) (dialogs []*mtproto.Dialog) {
+func (m *UserModel) GetPeersDialogs(selfId int32, peers []*base.PeerUtil) (dialogs []*mtproto.Dialog) {
 	for _, peer := range peers {
-		peerUtil := base.FromInputPeer2(selfId, peer)
-		dialogDO := m.dao.UserDialogsDAO.SelectByPeer(selfId, int8(peerUtil.PeerType), peerUtil.PeerId)
+		// peerUtil := base.FromInputPeer2(selfId, peer)
+		dialogDO := m.dao.UserDialogsDAO.SelectByPeer(selfId, int8(peer.PeerType), peer.PeerId)
 		if dialogDO != nil {
 			dialogs = append(dialogs, dialogDOToDialog(dialogDO).To_Dialog())
 		}
@@ -214,15 +214,3 @@ func (m *UserModel) CreateOrUpdateByInbox(userId, peerType int32, peerId int32, 
 	}
 	return
 }
-
-//func (m *UserModel) SaveDraftMessage(userId int32, peerType int32, peerId int32, message *mtproto.DraftMessage) {
-//	draft, _ := json.Marshal(message)
-//	m.dao.UserDialogsDAO.SaveDraft(string(draft), userId, int8(peerType), peerId)
-//}
-
-//func (m *UserModel) ClearDraftMessage(userId int32, peerType int32, peerId int32) bool {
-//	// draft, _ := json.Marshal(message)
-//	// m.dao.UserDialogsDAO.SaveDraft(string(draft), userId, int8(peerType), peerId)
-//	affectedRows := m.dao.UserDialogsDAO.ClearDraft(userId, int8(peerType), peerId)
-//	return affectedRows > 0
-//}

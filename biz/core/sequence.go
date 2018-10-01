@@ -114,6 +114,11 @@ func NextChannelPtsId(key int32) (seq int64) {
 	return
 }
 
+func NextChannelNPtsId(key int32, n int) (seq int64) {
+	seq, _ = seqIDGen.GetNextNSeqID(channelPtsUpdatesNgenId + base.Int32ToString(key), n)
+	return
+}
+
 func CurrentChannelPtsId(key int32) (seq int64) {
 	seq, _ = seqIDGen.GetNextSeqID(channelPtsUpdatesNgenId + base.Int32ToString(key))
 	return

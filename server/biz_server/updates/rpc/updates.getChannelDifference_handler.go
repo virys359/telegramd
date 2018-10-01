@@ -23,7 +23,6 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
-	// "github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // updates.getChannelDifference#3173d78 flags:# force:flags.0?true channel:InputChannel filter:ChannelMessagesFilter pts:int limit:int = updates.ChannelDifference;
@@ -37,9 +36,27 @@ func (s *UpdatesServiceImpl) UpdatesGetChannelDifference(ctx context.Context, re
 	// messages []*mtproto.Message
 	//userList []*mtproto.User
 	//chatList []*mtproto.Chat
+
 	)
 
-	//// updateList, _ := sync_client.GetSyncClient().GetChannelUpdateListByGtPts(request.GetChannel().GetData2().GetChannelId(), lastPts)
+	// var difference *mtproto.Updates_ChannelDifference
+
+	channelId := request.GetChannel().GetData2().ChannelId
+	channelLogic, _ := s.ChannelModel.NewChannelLogicById(channelId)
+	participant := channelLogic.GetChannelParticipant(md.UserId)
+	switch participant.GetConstructor() {
+	case mtproto.TLConstructor_CRC32_channelParticipantsBanned:
+		// TODO(@benqi):
+		//banned := channel.MakeChannelBannedRights(participant.GetData2().GetBannedRights().To_ChannelBannedRights())
+		//if banned.IsForbidden() {
+		//	return nil, mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHANNEL_PRIVATE)
+		//}
+		return nil, mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHANNEL_PRIVATE)
+
+	}
+
+	// updateList, _ := sync_client.GetSyncClient().SyncGetDifference()
+	// .GetChannelUpdateListByGtPts(request.GetChannel().GetData2().GetChannelId(), lastPts)
 	//
 	//for _, update := range updateList {
 	//	switch update.GetConstructor() {
@@ -75,7 +92,7 @@ func (s *UpdatesServiceImpl) UpdatesGetChannelDifference(ctx context.Context, re
 	//	Pts:         lastPts,
 	//	Date:        int32(time.Now().Unix()),
 	//	UnreadCount: 0,
-	//	// Seq:         int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))),
+	//	Seq:         int32(model.GetSequenceModel().CurrentSeqId(base2.Int32ToString(md.UserId))),
 	//	Seq:         0,
 	//}}
 

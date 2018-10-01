@@ -115,7 +115,7 @@ func (s *ChannelsServiceImpl) ChannelsCreateChannel(ctx context.Context, request
 
 
 	// 1. 创建channel
-	channel := s.ChannelModel.NewChannelLogicByCreateChannel(md.UserId, request.GetTitle(), request.GetAbout())
+	channel, _ := s.ChannelModel.NewChannelLogicByCreateChannel(md.UserId, request.GetBroadcast(), request.GetMegagroup(), request.GetTitle(), request.GetAbout(), md.ClientMsgId)
 
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHANNEL,
@@ -127,30 +127,36 @@ func (s *ChannelsServiceImpl) ChannelsCreateChannel(ctx context.Context, request
 	// 2. 创建channel createChannel message
 	var boxList []*message.MessageBox2
 	s.MessageModel.SendInternalMessage(md.UserId, peer, randomId, false, createChannelMessage, func(i int32, box2 *message.MessageBox2) {
+		// TopMessage
+		s.DialogModel.InsertOrChannelUpdateDialog(md.UserId, base.PEER_CHANNEL, channel.GetChannelId())
+		channel.SetTopMessage(box2.MessageId)
 		boxList = append(boxList, box2)
 	})
 
+	// sync
 	syncUpdates := update2.NewUpdatesLogic(md.UserId)
-	pts := int32(core.NextChannelPtsId(peer.PeerId))
+	pts := int32(core.NextChannelNPtsId(channel.GetChannelId(), 2))
 	ptsCount := int32(1)
 
-	syncUpdates.AddUpdateNewMessage(pts, ptsCount, boxList[0].ToMessage(md.UserId))
-	syncUpdates.AddChat(channel.ToChannel(md.UserId))
-
-	sync_client.GetSyncClient().SyncUpdatesNotMe(md.UserId, md.AuthId, syncUpdates.ToUpdates())
-
-	resultUpdates := syncUpdates
-	resultUpdates.AddUpdateMessageId(boxList[0].MessageId, randomId)
 	updateChannel := &mtproto.TLUpdateChannel{Data2: &mtproto.Update_Data{
 		ChannelId: channel.GetChannelId(),
 	}}
-	resultUpdates.AddUpdate(updateChannel.To_Update())
+	syncUpdates.AddUpdate(updateChannel.To_Update())
 	updateReadChannelInbox := &mtproto.TLUpdateReadChannelInbox{ Data2: &mtproto.Update_Data{
 		ChannelId: channel.GetChannelId(),
 		MaxId:     boxList[0].MessageId,
 	}}
-	resultUpdates.AddUpdate(updateReadChannelInbox.To_Update())
+	syncUpdates.AddUpdate(updateReadChannelInbox.To_Update())
 
-	glog.Infof("channels.createChannel#f4893d7f - reply: {%v}", resultUpdates)
+	syncUpdates.AddUpdateNewChannelMessage(pts, ptsCount, boxList[0].ToMessage(md.UserId))
+	syncUpdates.AddChat(channel.ToChannel(md.UserId))
+
+	sync_client.GetSyncClient().SyncChannelUpdatesNotMe(channel.GetChannelId(), md.UserId, md.AuthId, syncUpdates.ToUpdates())
+
+	// reply
+	resultUpdates := syncUpdates
+	resultUpdates.AddUpdateMessageId(boxList[0].MessageId, randomId)
+
+	glog.Infof("channels.createChannel#f4893d7f - reply: {%s}", logger.JsonDebugData(resultUpdates))
 	return resultUpdates.ToUpdates(), nil
 }

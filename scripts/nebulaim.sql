@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-09-16 06:48:33
+-- Generation Time: 2018-09-30 23:56:32
 -- 服务器版本： 5.7.23
--- PHP Version: 7.1.14
+-- PHP Version: 7.1.16
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -96,7 +96,8 @@ CREATE TABLE `app_keys` (
 
 CREATE TABLE `auths` (
   `id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL,
+  `auth_key_id` bigint(20) NOT NULL,
+  `layer` int(11) NOT NULL DEFAULT '0',
   `api_id` int(11) NOT NULL,
   `device_model` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `system_version` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -104,10 +105,10 @@ CREATE TABLE `auths` (
   `system_lang_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `lang_pack` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `lang_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `connection_hash` bigint(20) NOT NULL DEFAULT '0' COMMENT 'initConnection消息hash值',
+  `client_ip` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -137,10 +138,9 @@ CREATE TABLE `auth_channel_updates_state` (
 
 CREATE TABLE `auth_keys` (
   `id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL COMMENT 'auth_id',
+  `auth_key_id` bigint(20) NOT NULL COMMENT 'auth_id',
   `body` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'auth_key，原始数据为256的二进制数据，存储时转换成base64格式',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -151,8 +151,9 @@ CREATE TABLE `auth_keys` (
 
 CREATE TABLE `auth_op_logs` (
   `id` bigint(20) NOT NULL,
-  `phone` int(11) NOT NULL,
-  `op_type` int(11) NOT NULL,
+  `auth_key_id` bigint(11) NOT NULL,
+  `ip` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `op_type` int(11) NOT NULL DEFAULT '1',
   `log_text` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -191,12 +192,11 @@ CREATE TABLE `auth_phone_transactions` (
 
 CREATE TABLE `auth_salts` (
   `id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL,
+  `auth_key_id` bigint(20) NOT NULL,
   `salt` bigint(20) NOT NULL,
   `valid_since` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -247,9 +247,10 @@ CREATE TABLE `auth_updates_state` (
 
 CREATE TABLE `auth_users` (
   `id` int(11) NOT NULL,
-  `auth_id` bigint(20) NOT NULL,
+  `auth_key_id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL DEFAULT '0',
   `hash` bigint(20) NOT NULL DEFAULT '0',
+  `layer` int(11) NOT NULL DEFAULT '0',
   `device_model` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `platform` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `system_version` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -257,11 +258,11 @@ CREATE TABLE `auth_users` (
   `app_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `app_version` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `date_created` int(11) NOT NULL DEFAULT '0',
-  `date_active` int(11) NOT NULL DEFAULT '0',
+  `date_actived` int(11) NOT NULL DEFAULT '0',
   `ip` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `country` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `region` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `deleted_at` bigint(20) NOT NULL DEFAULT '0',
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -295,18 +296,37 @@ CREATE TABLE `channels` (
   `creator_user_id` int(11) NOT NULL,
   `access_hash` bigint(20) NOT NULL,
   `random_id` bigint(20) NOT NULL,
+  `top_message` int(11) NOT NULL DEFAULT '0',
   `participant_count` int(11) NOT NULL,
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `about` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `photo_id` bigint(20) NOT NULL DEFAULT '0',
   `link` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `broadcast` tinyint(4) NOT NULL DEFAULT '0',
+  `verified` tinyint(4) NOT NULL DEFAULT '0',
+  `megagroup` tinyint(4) NOT NULL DEFAULT '0',
+  `democracy` tinyint(4) NOT NULL DEFAULT '0',
+  `signatures` tinyint(4) NOT NULL DEFAULT '0',
   `admins_enabled` tinyint(4) NOT NULL DEFAULT '0',
   `deactivated` tinyint(4) NOT NULL DEFAULT '0',
   `version` int(11) NOT NULL DEFAULT '1',
   `date` int(11) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `channel_admin_logs`
+--
+
+CREATE TABLE `channel_admin_logs` (
+  `id` bigint(20) NOT NULL,
+  `channel_id` int(11) NOT NULL,
+  `admin_user_id` int(11) NOT NULL,
+  `event` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -398,13 +418,28 @@ CREATE TABLE `channel_message_boxes` (
 --
 
 CREATE TABLE `channel_participants` (
-  `id` int(11) NOT NULL,
+  `id` bigint(11) NOT NULL,
   `channel_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `is_creator` int(11) NOT NULL DEFAULT '0',
   `participant_type` tinyint(4) DEFAULT '0',
   `inviter_user_id` int(11) NOT NULL DEFAULT '0',
   `invited_at` int(11) NOT NULL DEFAULT '0',
   `joined_at` int(11) NOT NULL DEFAULT '0',
+  `promoted_by` int(11) NOT NULL DEFAULT '0',
+  `admin_rights` int(11) NOT NULL DEFAULT '0',
+  `promoted_at` int(11) NOT NULL DEFAULT '0',
+  `is_left` tinyint(4) NOT NULL DEFAULT '0',
+  `left_at` int(11) NOT NULL DEFAULT '0',
+  `is_kicked` tinyint(4) NOT NULL DEFAULT '0',
+  `kicked_by` int(11) NOT NULL DEFAULT '0',
+  `kicked_at` int(11) NOT NULL DEFAULT '0',
+  `banned_rights` int(11) NOT NULL DEFAULT '0',
+  `banned_until_date` int(11) NOT NULL DEFAULT '0',
+  `banned_at` int(11) NOT NULL DEFAULT '0',
+  `read_inbox_max_id` int(11) NOT NULL DEFAULT '0',
+  `read_outbox_max_id` int(11) DEFAULT '0',
+  `date` int(11) NOT NULL DEFAULT '0',
   `state` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -471,6 +506,16 @@ CREATE TABLE `chat_participants` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `config`
+--
+
+CREATE TABLE `config` (
+  `id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `devices`
 --
 
@@ -504,22 +549,6 @@ CREATE TABLE `documents` (
   `thumb_id` bigint(20) NOT NULL DEFAULT '0',
   `version` int(11) NOT NULL DEFAULT '0',
   `attributes` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `draft_messages`
---
-
-CREATE TABLE `draft_messages` (
-  `id` bigint(20) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `draft_id` int(11) NOT NULL,
-  `draft_type` tinyint(4) NOT NULL DEFAULT '2',
-  `draft_message_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1164,7 +1193,7 @@ ALTER TABLE `app_keys`
 --
 ALTER TABLE `auths`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_id` (`auth_id`);
+  ADD UNIQUE KEY `auth_key_id` (`auth_key_id`);
 
 --
 -- Indexes for table `auth_channel_updates_state`
@@ -1178,7 +1207,7 @@ ALTER TABLE `auth_channel_updates_state`
 --
 ALTER TABLE `auth_keys`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_id` (`auth_id`);
+  ADD UNIQUE KEY `auth_key_id` (`auth_key_id`);
 
 --
 -- Indexes for table `auth_op_logs`
@@ -1198,7 +1227,7 @@ ALTER TABLE `auth_phone_transactions`
 --
 ALTER TABLE `auth_salts`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `auth` (`auth_id`);
+  ADD KEY `auth` (`auth_key_id`);
 
 --
 -- Indexes for table `auth_seq_updates`
@@ -1219,7 +1248,8 @@ ALTER TABLE `auth_updates_state`
 --
 ALTER TABLE `auth_users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `auth_id` (`auth_id`);
+  ADD UNIQUE KEY `auth_key_id` (`auth_key_id`,`user_id`),
+  ADD KEY `auth_key_id_2` (`auth_key_id`,`user_id`,`deleted`);
 
 --
 -- Indexes for table `banned`
@@ -1234,6 +1264,12 @@ ALTER TABLE `banned`
 ALTER TABLE `channels`
   ADD PRIMARY KEY (`id`),
   ADD KEY `creator_user_id_3` (`creator_user_id`,`access_hash`);
+
+--
+-- Indexes for table `channel_admin_logs`
+--
+ALTER TABLE `channel_admin_logs`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `channel_media_unread`
@@ -1267,6 +1303,7 @@ ALTER TABLE `channel_message_boxes`
 --
 ALTER TABLE `channel_participants`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `channel_id` (`channel_id`,`user_id`),
   ADD KEY `chat_id` (`channel_id`);
 
 --
@@ -1289,6 +1326,12 @@ ALTER TABLE `chat_participants`
   ADD KEY `chat_id` (`chat_id`);
 
 --
+-- Indexes for table `config`
+--
+ALTER TABLE `config`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `devices`
 --
 ALTER TABLE `devices`
@@ -1300,14 +1343,6 @@ ALTER TABLE `devices`
 --
 ALTER TABLE `documents`
   ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `draft_messages`
---
-ALTER TABLE `draft_messages`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`,`draft_id`),
-  ADD KEY `user_id_2` (`user_id`,`draft_id`,`draft_type`);
 
 --
 -- Indexes for table `files`
@@ -1426,7 +1461,7 @@ ALTER TABLE `tmp_passwords`
 ALTER TABLE `username`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `peer_type` (`peer_type`,`peer_id`),
-  ADD UNIQUE KEY `username` (`username`);
+  ADD KEY `username` (`username`);
 
 --
 -- Indexes for table `users`
@@ -1607,6 +1642,12 @@ ALTER TABLE `channels`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- 使用表AUTO_INCREMENT `channel_admin_logs`
+--
+ALTER TABLE `channel_admin_logs`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- 使用表AUTO_INCREMENT `channel_media_unread`
 --
 ALTER TABLE `channel_media_unread`
@@ -1634,7 +1675,7 @@ ALTER TABLE `channel_message_boxes`
 -- 使用表AUTO_INCREMENT `channel_participants`
 --
 ALTER TABLE `channel_participants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用表AUTO_INCREMENT `channel_pts_updates`
@@ -1664,12 +1705,6 @@ ALTER TABLE `devices`
 -- 使用表AUTO_INCREMENT `documents`
 --
 ALTER TABLE `documents`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `draft_messages`
---
-ALTER TABLE `draft_messages`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --

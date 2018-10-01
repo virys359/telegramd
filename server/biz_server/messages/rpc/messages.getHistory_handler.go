@@ -363,11 +363,10 @@ func (s *MessagesServiceImpl) getHistoryMessages(md *grpc_util.RpcMetadata, requ
 	}
 
 	// TODO(@benqi): Add channel's pts
-	messagesSlice := &mtproto.TLMessagesMessagesSlice{Data2: &mtproto.Messages_Messages_Data{
+	messagesSlice := &mtproto.TLMessagesMessages{Data2: &mtproto.Messages_Messages_Data{
 		Messages: messages,
 		Chats:    chats,
 		Users:    users,
-		Count:    request.GetLimit(),
 	}}
 	messagesMessages = messagesSlice.To_Messages_Messages()
 

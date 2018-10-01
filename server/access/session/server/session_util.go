@@ -46,42 +46,22 @@ func sendSessionDataByConnID(connID uint64, md *zproto.ZProtoMetadata, sessData 
 }
 
 func getBizRPCClient() (*grpc_util.RPCClient, error) {
-	//sessionServer, ok := app.GAppInstance.(*SessionServer)
-	//if !ok {
-	//	err := fmt.Errorf("not use app instance framework")
-	//	glog.Error(err)
-	//	return nil, err
-	//}
 	return app.GAppInstance.(*SessionServer).bizRpcClient, nil
 }
 
 func getNbfsRPCClient() (*grpc_util.RPCClient, error) {
-	//sessionServer, ok := app.GAppInstance.(*SessionServer)
-	//if !ok {
-	//	err := fmt.Errorf("not use app instance framework")
-	//	glog.Error(err)
-	//	return nil, err
-	//}
 	return app.GAppInstance.(*SessionServer).nbfsRpcClient, nil
 }
 
 func getSyncRPCClient() (mtproto.RPCSyncClient, error) {
-	//sessionServer, ok := app.GAppInstance.(*SessionServer)
-	//if !ok {
-	//	err := fmt.Errorf("not use app instance framework")
-	//	glog.Error(err)
-	//	return nil, err
-	//}
 	return app.GAppInstance.(*SessionServer).syncRpcClient, nil
 }
 
+func getAuthSessionRPCClient() (mtproto.RPCSessionClient, error) {
+	return app.GAppInstance.(*SessionServer).authSessionRpcClient, nil
+}
+
 func deleteClientSessionManager(authKeyID int64) {
-	//if sessionServer, ok := app.GAppInstance.(*SessionServer); !ok {
-	//	err := fmt.Errorf("not use app instance framework")
-	//	glog.Error(err)
-	//} else {
-	//	sessionServer.sessionManager.onCloseSessionClientManager(authKeyID)
-	//}
 	app.GAppInstance.(*SessionServer).sessionManager.onCloseSessionClientManager(authKeyID)
 }
 
@@ -94,6 +74,6 @@ func getUUID() int64 {
 	return uuid
 }
 
-func setOnline(userId int32, serverId int32, authKeyId int64) {
-	app.GAppInstance.(*SessionServer).status.SetSessionOnline(userId, serverId, authKeyId)
+func setOnline(userId int32, authKeyId int64, serverId, layer int32) {
+	app.GAppInstance.(*SessionServer).status.SetSessionOnline(userId, authKeyId, serverId, layer)
 }

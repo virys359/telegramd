@@ -34,6 +34,34 @@
        </sql>
    </operation>
 
+    <operation name="SelectMessagesViews" result_set="list">
+        <params>
+            <param name="idList" type="[]int32" />
+        </params>
+        <sql>
+            SELECT
+                channel_message_id, views
+            FROM
+                channel_messages
+            WHERE
+                channel_id = :channel_id AND channel_message_id IN (:idList)
+        </sql>
+    </operation>
+
+    <operation name="UpdateMessagesViews" result_set="list">
+        <params>
+            <param name="idList" type="[]int32" />
+        </params>
+        <sql>
+            UPDATE
+                channel_messages
+            SET
+                views = views + 1
+            WHERE
+                channel_id = :channel_id AND channel_message_id IN (:idList)
+        </sql>
+    </operation>
+
     <operation name="SelectByRandomId">
         <sql>
             SELECT

@@ -23,33 +23,28 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"time"
+	"github.com/golang/glog"
 )
 
 type dialogsDAO struct {
 	*mysql_dao.UserDialogsDAO
-	*mysql_dao.DraftMessagesDAO
 }
 
 type DialogModel struct {
 	dao *dialogsDAO
+	channelCallback core.ChannelCallback
 }
 
 func (m *DialogModel) RegisterCallback(cb interface{}) {
+	switch cb.(type) {
+	case core.ChannelCallback:
+		glog.Info("dialogModel - register core.ChannelCallback")
+		m.channelCallback = cb.(core.ChannelCallback)
+	}
 }
 
 func (m *DialogModel) InstallModel() {
 	m.dao.UserDialogsDAO = dao.GetUserDialogsDAO(dao.DB_MASTER)
-	m.dao.DraftMessagesDAO = dao.GetDraftMessagesDAO(dao.DB_MASTER)
-}
-
-func (m *DialogModel) MakeDialogLogic(userId, peerType, peerId int32) *dialogLogic {
-	// m.dao.UserDialogsDAO = dao.GetUserDialogsDAO(dao.DB_MASTER)
-	return &dialogLogic{
-		selfUserId: userId,
-		peerType:   peerType,
-		peerId:     peerId,
-		dao:        m.dao,
-	}
 }
 
 func (m *DialogModel) UpdateUnreadByPeer(userId int32, peerType int8, peerId int32, readInboxMaxId int32) {
@@ -67,6 +62,9 @@ func (m *DialogModel) GetTopMessage(userId int32, peerType int8, peerId int32) i
 	}
 	return 0
 }
+
+//InsertOrUpdateDialog(userId, peerType, peerId, topMessage int32, hasMentioned, isInbox bool)
+//InsertOrChannelUpdateDialog(userId, peerType, peerId int32)
 
 func (m *DialogModel) InsertOrUpdateDialog(userId, peerType, peerId, topMessage int32, hasMentioned, isInbox bool) {
 	dialogDO := &dataobject.UserDialogsDO{
@@ -87,6 +85,19 @@ func (m *DialogModel) InsertOrUpdateDialog(userId, peerType, peerId, topMessage 
 		}
 	}
 
+	m.dao.UserDialogsDAO.InsertOrUpdate(dialogDO)
+}
+
+func (m *DialogModel) InsertOrChannelUpdateDialog(userId, peerType, peerId int32) {
+	dialogDO := &dataobject.UserDialogsDO{
+		UserId:              userId,
+		PeerType:            int8(peerType),
+		PeerId:              peerId,
+		TopMessage:          0,
+		Date2:               int32(time.Now().Unix()),
+		UnreadCount:         0,
+		UnreadMentionsCount: 0,
+	}
 	m.dao.UserDialogsDAO.InsertOrUpdate(dialogDO)
 }
 

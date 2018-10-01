@@ -30,9 +30,23 @@ func (s *MessagesServiceImpl) MessagesGetMessagesViews(ctx context.Context, requ
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("messages.getMessagesViews#c4c8a55d - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetMessagesViews logic
+	var viewsList []int32
+
+	if request.GetPeer().GetConstructor() != mtproto.TLConstructor_CRC32_inputPeerChannel {
+		viewsList = []int32{}
+	} else {
+		// TODO(@benqi): push updateChannelMessageViews??
+		channelId := request.GetPeer().GetData2().GetChannelId()
+		increment :=  mtproto.FromBool(request.GetIncrement())
+
+		viewsList = s.MessageModel.GetChannelMessagesViews(channelId, request.GetId(), increment)
+		if increment {
+			s.MessageModel.IncrementChannelMessagesViews(channelId, request.GetId())
+		}
+	}
+
 	views := &mtproto.VectorInt{
-		Datas: []int32{},
+		Datas: viewsList,
 	}
 
 	glog.Infof("messages.getMessagesViews#c4c8a55d - reply: %s", logger.JsonDebugData(views))

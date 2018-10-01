@@ -34,9 +34,10 @@ type usersDAO struct {
 }
 
 type UserModel struct {
-	dao             *usersDAO
-	contactCallback core.ContactCallback
-	photoCallback   core.PhotoCallback
+	dao              *usersDAO
+	contactCallback  core.ContactCallback
+	photoCallback    core.PhotoCallback
+	usernameCallback core.UsernameCallback
 }
 
 func (m *UserModel) InstallModel() {
@@ -56,6 +57,9 @@ func (m *UserModel) RegisterCallback(cb interface{}) {
 	case core.PhotoCallback:
 		glog.Info("userModel - register core.PhotoCallback")
 		m.photoCallback = cb.(core.PhotoCallback)
+	case core.UsernameCallback:
+		glog.Info("userModel - register core.UsernameCallback")
+		m.usernameCallback = cb.(core.UsernameCallback)
 	}
 }
 

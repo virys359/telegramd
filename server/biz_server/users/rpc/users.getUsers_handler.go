@@ -28,7 +28,7 @@ import (
 // users.getUsers#d91a548 id:Vector<InputUser> = Vector<User>;
 func (s *UsersServiceImpl) UsersGetUsers(ctx context.Context, request *mtproto.TLUsersGetUsers) (*mtproto.Vector_User, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("UsersGetUsers - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("users.getUsers#d91a548 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl UsersGetUsers logic
 	userList := &mtproto.Vector_User{

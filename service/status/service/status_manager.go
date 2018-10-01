@@ -63,6 +63,7 @@ func (s *statusManager) addOrUpdateSession(session *status.SessionEntry) {
 			if equalSessionEntry(session, s2) {
 				s2.ServerId = session.ServerId
 				s2.Expired = session.Expired
+				s2.Layer = session.Layer
 				break
 			}
 		}

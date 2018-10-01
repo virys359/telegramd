@@ -18,12 +18,13 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/core/update"
+	"github.com/nebulaim/telegramd/server/sync/sync_client"
 )
 
 // channels.leaveChannel#f836aa95 channel:InputChannel = Updates;
@@ -31,7 +32,18 @@ func (s *ChannelsServiceImpl) ChannelsLeaveChannel(ctx context.Context, request 
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("ChannelsLeaveChannel - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl ChannelsLeaveChannel logic
+	// TODO(@benqi): check channel_id and access_hash
+	channelId := request.GetChannel().GetData2().GetChannelId()
 
-	return nil, fmt.Errorf("Not impl ChannelsLeaveChannel")
+	channelLogic, _ := s.ChannelModel.NewChannelLogicById(channelId)
+	channelLogic.LeaveChannel(md.UserId)
+
+	syncUpdates := updates.NewUpdatesLogic(md.UserId)
+	syncUpdates.AddChat(channelLogic.ToChannel(md.UserId))
+
+	sync_client.GetSyncClient().SyncChannelUpdatesNotMe(channelId, md.UserId, md.AuthId, syncUpdates.ToUpdates())
+
+	reply := syncUpdates.ToUpdates()
+	glog.Infof("channels.editBanned#bfd915cd - reply: {%s}", logger.JsonDebugData(reply))
+	return reply, nil
 }

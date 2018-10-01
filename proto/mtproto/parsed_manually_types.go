@@ -58,6 +58,16 @@ func (m *TLMessage2) Encode() []byte {
 	return x.buf
 }
 
+func (m *TLMessage2) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	// x.Int(int32(TLConstructor_CRC32_message2))
+	x.Long(m.MsgId)
+	x.Int(m.Seqno)
+	x.Int(m.Bytes)
+	x.Bytes(m.Object.EncodeToLayer(layer))
+	return x.buf
+}
+
 func (m *TLMessage2) Decode(dbuf *DecodeBuf) error {
 	m.MsgId = dbuf.Long()
 	m.Seqno = dbuf.Int()
@@ -93,6 +103,16 @@ func (m *TLMsgContainer) Encode() []byte {
 	x.Int(int32(len(m.Messages)))
 	for _, m := range m.Messages {
 		x.Bytes(m.Encode())
+	}
+	return x.buf
+}
+
+func (m *TLMsgContainer) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_msg_container))
+	x.Int(int32(len(m.Messages)))
+	for _, m := range m.Messages {
+		x.Bytes(m.EncodeToLayer(layer))
 	}
 	return x.buf
 }
@@ -137,6 +157,13 @@ func (m *TLMsgCopy) Encode() []byte {
 	return x.buf
 }
 
+func (m *TLMsgCopy) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_msg_copy))
+	x.Bytes(m.OrigMessage.EncodeToLayer(layer))
+	return x.buf
+}
+
 func (m *TLMsgCopy) Decode(dbuf *DecodeBuf) error {
 	o := dbuf.Object()
 	message2, _ := o.(*TLMessage2)
@@ -159,6 +186,10 @@ func (m *TLGzipPacked) Encode() []byte {
 	x.Int(int32(TLConstructor_CRC32_gzip_packed))
 	x.Bytes(m.PackedData)
 	return x.buf
+}
+
+func (m *TLGzipPacked) EncodeToLayer(int) []byte {
+	return m.Encode()
 }
 
 func (m *TLGzipPacked) Decode(dbuf *DecodeBuf) error {
@@ -196,6 +227,14 @@ func (m *TLRpcResult) Encode() []byte {
 	x.Int(int32(TLConstructor_CRC32_rpc_result))
 	x.Long(m.ReqMsgId)
 	x.Bytes(m.Result.Encode())
+	return x.buf
+}
+
+func (m *TLRpcResult) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_rpc_result))
+	x.Long(m.ReqMsgId)
+	x.Bytes(m.Result.EncodeToLayer(layer))
 	return x.buf
 }
 
@@ -248,6 +287,16 @@ func (m *Vector_WallPaper) Encode() []byte {
 	return x.buf
 }
 
+func (m *Vector_WallPaper) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
+	}
+	return x.buf
+}
+
 func (m *Vector_WallPaper) Decode(dbuf *DecodeBuf) error {
 	dbuf.Int() // TODO(@benqi): Check crc32 invalid
 	l1 := dbuf.Int()
@@ -273,6 +322,16 @@ func (m *Vector_User) Encode() []byte {
 	x.Int(int32(len(m.Datas)))
 	for _, v := range m.Datas {
 		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_User) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
 	}
 	return x.buf
 }
@@ -306,6 +365,16 @@ func (m *Vector_ContactStatus) Encode() []byte {
 	return x.buf
 }
 
+func (m *Vector_ContactStatus) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
+	}
+	return x.buf
+}
+
 func (m *Vector_ContactStatus) Decode(dbuf *DecodeBuf) error {
 	dbuf.Int() // TODO(@benqi): Check crc32 invalid
 	l1 := dbuf.Int()
@@ -332,6 +401,10 @@ func (m *VectorInt) Encode() []byte {
 	return x.buf
 }
 
+func (m *VectorInt) EncodeToLayer(int) []byte {
+	return m.Encode()
+}
+
 func (m *VectorInt) Decode(dbuf *DecodeBuf) error {
 	// dbuf.Int() // TODO(@benqi): Check crc32 invalid
 	m.Datas = dbuf.VectorInt()
@@ -350,6 +423,16 @@ func (m *Vector_ReceivedNotifyMessage) Encode() []byte {
 	x.Int(int32(len(m.Datas)))
 	for _, v := range m.Datas {
 		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_ReceivedNotifyMessage) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
 	}
 	return x.buf
 }
@@ -379,6 +462,10 @@ func (m *VectorLong) Encode() []byte {
 	return x.buf
 }
 
+func (m *VectorLong) EncodeToLayer(int) []byte {
+	return m.Encode()
+}
+
 func (m *VectorLong) Decode(dbuf *DecodeBuf) error {
 	m.Datas = dbuf.VectorLong()
 
@@ -398,6 +485,16 @@ func (m *Vector_StickerSetCovered) Encode() []byte {
 	x.Int(int32(len(m.Datas)))
 	for _, v := range m.Datas {
 		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_StickerSetCovered) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
 	}
 	return x.buf
 }
@@ -431,6 +528,16 @@ func (m *Vector_FileHash) Encode() []byte {
 	return x.buf
 }
 
+func (m *Vector_FileHash) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
+	}
+	return x.buf
+}
+
 func (m *Vector_FileHash) Decode(dbuf *DecodeBuf) error {
 	dbuf.Int() // TODO(@benqi): Check crc32 invalid
 	l1 := dbuf.Int()
@@ -460,6 +567,16 @@ func (m *Vector_LangPackString) Encode() []byte {
 	return x.buf
 }
 
+func (m *Vector_LangPackString) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
+	}
+	return x.buf
+}
+
 func (m *Vector_LangPackString) Decode(dbuf *DecodeBuf) error {
 	dbuf.Int() // TODO(@benqi): Check crc32 invalid
 	l1 := dbuf.Int()
@@ -485,6 +602,16 @@ func (m *Vector_LangPackLanguage) Encode() []byte {
 	x.Int(int32(len(m.Datas)))
 	for _, v := range m.Datas {
 		x.buf = append(x.buf, (*v).Encode()...)
+	}
+	return x.buf
+}
+
+func (m *Vector_LangPackLanguage) EncodeToLayer(layer int) []byte {
+	x := NewEncodeBuf(512)
+	x.Int(int32(TLConstructor_CRC32_vector))
+	x.Int(int32(len(m.Datas)))
+	for _, v := range m.Datas {
+		x.buf = append(x.buf, (*v).EncodeToLayer(layer)...)
 	}
 	return x.buf
 }

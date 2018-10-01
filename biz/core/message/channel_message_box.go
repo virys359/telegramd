@@ -17,6 +17,32 @@
 
 package message
 
+import "github.com/nebulaim/telegramd/proto/mtproto"
+
+func (m *MessageModel) GetChannelMessage(userId, channelId, id int32) (message *mtproto.Message) {
+	do := m.dao.ChannelMessagesDAO.SelectByMessageId(channelId, id)
+	if do == nil {
+		return
+	}
+	boxDO := m.makeChannelMessageBoxByDO(do)
+	return boxDO.ToMessage(userId)
+}
+
+func (m *MessageModel) GetChannelMessageList(userId, channelId int32, idList []int32) (messages []*mtproto.Message) {
+	if len(idList) == 0 {
+		messages = []*mtproto.Message{}
+	} else {
+		doList := m.dao.ChannelMessagesDAO.SelectByMessageIdList(channelId, idList)
+		messages = make([]*mtproto.Message, 0, len(doList))
+		for i := 0; i < len(doList); i++ {
+			// TODO(@benqi): check data
+			boxDO := m.makeChannelMessageBoxByDO(&doList[i])
+			messages = append(messages, boxDO.ToMessage(userId))
+		}
+	}
+	return
+}
+
 /*
 import (
 	"encoding/json"
