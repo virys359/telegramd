@@ -48,6 +48,16 @@
                 id=:id
         </sql>
     </operation>
+    <operation name="SelectByLink">
+        <sql>
+            SELECT
+                id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, date
+            FROM
+                channels
+            WHERE
+                link=:link
+        </sql>
+    </operation>
     <operation name="SelectByIdList" result_set="list">
         <params>
             <param name="idList" type="[]int32" />
@@ -113,7 +123,7 @@
         </sql>
     </operation>
 
-    <operation name="UpdateDemocracy	">
+    <operation name="UpdateDemocracy">
         <sql>
             UPDATE
                 channels

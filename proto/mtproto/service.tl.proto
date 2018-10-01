@@ -33,55 +33,6 @@ import "schema.tl.sync.proto";
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// AuthKeyInfo <--
-//  + TL_authKeyInfo
-//
-message AuthKeyInfo_Data {
-    int64 auth_key_id = 1;
-    bytes auth_key = 2;
-    FutureSalt future_salt = 3;
-}
-
-message AuthKeyInfo {
-    TLConstructor constructor = 1;
-    AuthKeyInfo_Data data2 = 2;
-}
-
-// authKeyInfo flags:# auth_key_id:long auth_key:bytes future_salt:flags.0?FutureSalt= AuthKeyInfo;
-message TL_authKeyInfo {
-    AuthKeyInfo_Data data2 = 2;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// ClientSession <--
-//  + TL_clientSessionInfo
-//
-message ClientSession_Data {
-    int64 auth_key_id = 1;
-    string ip = 2;
-    int32 layer = 3;
-    int32 api_id = 4;
-    string device_model = 5;
-    string system_version = 6;
-    string app_version = 7;
-    string system_lang_code = 8;
-    string lang_pack = 9;
-    string lang_code = 10;
-}
-
-message ClientSession {
-    TLConstructor constructor = 1;
-    ClientSession_Data data2 = 2;
-}
-
-// clientSessionInfo auth_key_id:long ip:string layer:int api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string = ClientSession;
-message TL_clientSessionInfo {
-    ClientSession_Data data2 = 2;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 // ConnectToServer <--
 //  + TL_sync_connectToSessionServer
 //
@@ -183,6 +134,55 @@ message Int64 {
 // long v:long = Int64;
 message TL_long {
     Int64_Data data2 = 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// AuthKeyInfo <--
+//  + TL_authKeyInfo
+//
+message AuthKeyInfo_Data {
+    int64 auth_key_id = 1;
+    bytes auth_key = 2;
+    FutureSalt future_salt = 3;
+}
+
+message AuthKeyInfo {
+    TLConstructor constructor = 1;
+    AuthKeyInfo_Data data2 = 2;
+}
+
+// authKeyInfo flags:# auth_key_id:long auth_key:bytes future_salt:flags.0?FutureSalt= AuthKeyInfo;
+message TL_authKeyInfo {
+    AuthKeyInfo_Data data2 = 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ClientSession <--
+//  + TL_clientSessionInfo
+//
+message ClientSession_Data {
+    int64 auth_key_id = 1;
+    string ip = 2;
+    int32 layer = 3;
+    int32 api_id = 4;
+    string device_model = 5;
+    string system_version = 6;
+    string app_version = 7;
+    string system_lang_code = 8;
+    string lang_pack = 9;
+    string lang_code = 10;
+}
+
+message ClientSession {
+    TLConstructor constructor = 1;
+    ClientSession_Data data2 = 2;
+}
+
+// clientSessionInfo auth_key_id:long ip:string layer:int api_id:int device_model:string system_version:string app_version:string system_lang_code:string lang_pack:string lang_code:string = ClientSession;
+message TL_clientSessionInfo {
+    ClientSession_Data data2 = 2;
 }
 
 

@@ -23,12 +23,11 @@ import (
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"math/rand"
 	"time"
-	"encoding/base64"
-	"github.com/nebulaim/telegramd/baselib/crypto"
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/golang/glog"
 	"math"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/baselib/random2"
 )
 
 // type ParticipantType int
@@ -42,6 +41,7 @@ import (
 
 type channelData struct {
 	*dataobject.ChannelsDO
+	Username string
 }
 
 type channelLogicData struct {
@@ -67,8 +67,39 @@ func (m *ChannelModel) NewChannelLogicById(channelId int32) (channelData2 *chann
 	if channelDO == nil {
 		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_CHAT_ID_INVALID)
 	} else {
+		username := m.usernameCallback.GetChannelUsername(channelId)
 		channelData2 = &channelLogicData{
-			channelData:           channelData{channelDO},
+			channelData:           channelData{
+				Username:   username,
+				ChannelsDO: channelDO,
+			},
+			cacheParticipantsData: make([]channelParticipantData, 0, 2),
+			dao:                   m.dao,
+			cb:                    m.photoCallback,
+			cb2:                   m.notifySettingCallback,
+			cb3:                   m.usernameCallback,
+		}
+	}
+	return
+}
+
+// chatInviteAlready#5a686d7c chat:Chat = ChatInvite;
+// chatInvite#db74f558 flags:# channel:flags.0?true broadcast:flags.1?true public:flags.2?true megagroup:flags.3?true title:string photo:ChatPhoto participants_count:int participants:flags.4?Vector<User> = ChatInvite;
+func (m *ChannelModel) NewChannelLogicByLink(link string) (channelData2 *channelLogicData, err error) {
+	channelDO := m.dao.ChannelsDAO.SelectByLink(link)
+	if channelDO == nil {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_INVITE_HASH_INVALID)
+	} else {
+		var username = ""
+		if channelDO.Public == 1 {
+			username = m.usernameCallback.GetChannelUsername(channelDO.Id)
+		}
+
+		channelData2 = &channelLogicData{
+			channelData:           channelData{
+				Username:   username,
+				ChannelsDO: channelDO,
+			},
 			cacheParticipantsData: make([]channelParticipantData, 0, 2),
 			dao:                   m.dao,
 			cb:                    m.photoCallback,
@@ -101,11 +132,12 @@ func (m *ChannelModel) NewChannelLogicByCreateChannel(creatorId int32, broadcast
 		ParticipantCount: 1,
 		Title:            title,
 		About:            about,
+		Link:             random2.RandomAlphanumeric(22),
 		PhotoId:          0,
 		Broadcast:        base2.BoolToInt8(broadcast),
 		Megagroup:        base2.BoolToInt8(megagroup),
-		// Signatures:        base2.BoolToInt8(megagroup),
-		// Democracy:        base2.BoolToInt8(megagroup),
+		Democracy:        0,
+		Signatures:       0,
 		Version:          1,
 		Date:             int32(time.Now().Unix()),
 	}
@@ -126,12 +158,17 @@ func (m *ChannelModel) NewChannelLogicByCreateChannel(creatorId int32, broadcast
 	channelParticipantData2 := channelParticipantData{participant}
 	channelParticipantData2.ChannelParticipantsDO = participant
 
+	// username := m.usernameCallback.GetChannelUsername(m)
 	channelData := &channelLogicData{
-		channelData:           channelData{channelDO},
+		channelData:           channelData{
+			Username:   "",
+			ChannelsDO: channelDO,
+		},
 		cacheParticipantsData: []channelParticipantData{channelParticipantData2},
 		dao:                   m.dao,
 		cb:                    m.photoCallback,
 		cb2:                   m.notifySettingCallback,
+		cb3:                   m.usernameCallback,
 	}
 
 	return channelData, nil
@@ -163,15 +200,6 @@ func (m *channelLogicData) GetChannelId() int32 {
 
 func (m *channelLogicData) GetVersion() int32 {
 	return m.Version
-}
-
-func (m *channelLogicData) ExportedChatInvite() string {
-	if m.Link == "" {
-		// TODO(@benqi): 检查唯一性
-		m.Link = "https://nebula.im/joinchat/" + base64.StdEncoding.EncodeToString(crypto.GenerateNonce(16))
-		m.dao.ChannelsDAO.UpdateLink(m.Link, int32(time.Now().Unix()), m.Id)
-	}
-	return m.Link
 }
 
 ////// TODO(@benqi): 性能优化
@@ -863,6 +891,17 @@ func (m *channelLogicData) EditBanned(operatorId, bannedUserId int32, bannedRigh
 	return nil
 }
 
+func (m *channelLogicData) ExportedChatInvite() string {
+	if m.Link == "" {
+		// TODO(@benqi): 检查唯一性
+		m.Link = random2.RandomAlphanumeric(22)
+		/// m.Link = "https://nebula.im/joinchat/" + base64.StdEncoding.EncodeToString(crypto.GenerateNonce(16))
+		m.dao.ChannelsDAO.UpdateLink(m.Link, int32(time.Now().Unix()), m.Id)
+	}
+	return "https://t.me/joinchat/" + m.Link
+}
+
+
 func (m *channelLogicData) ToggleSignatures(operatorId int32, enabled bool) (error) {
 	editParticipant := m.checkOrLoadChannelParticipant(operatorId)
 
@@ -884,6 +923,27 @@ func (m *channelLogicData) ToggleSignatures(operatorId int32, enabled bool) (err
 	return nil
 }
 
+func (m *channelLogicData) ToggleInvites(operatorId int32, enabled bool) (error) {
+	editParticipant := m.checkOrLoadChannelParticipant(operatorId)
+
+	if editParticipant == nil {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USER_NOT_PARTICIPANT)
+		glog.Errorf("toggleSignatures error - %s: (%d - %v)", err, operatorId, enabled)
+		return err
+	}
+
+	if !(editParticipant.IsCreator() || editParticipant.CanChangeInfo()) {
+		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_NO_EDIT_CHAT_PERMISSION)
+		glog.Errorf("toggleSignatures error - %s: (%d - %v)", err, operatorId, enabled)
+		return err
+	}
+
+	m.Democracy = base2.BoolToInt8(enabled)
+	m.dao.ChannelsDAO.UpdateDemocracy(m.Democracy, m.Date, m.Id)
+
+	return nil
+}
+
 func (m *channelLogicData) UpdateUsername(operatorId int32, username string, cb func(int32, string) bool) (error) {
 	editParticipant := m.checkOrLoadChannelParticipant(operatorId)
 
@@ -899,15 +959,15 @@ func (m *channelLogicData) UpdateUsername(operatorId int32, username string, cb 
 		return err
 	}
 
-	if cb(m.Id, username) {
-		if username == "" {
-			m.Democracy = 0
-		} else {
-			m.Democracy = 1
-		}
-		m.dao.ChannelsDAO.UpdateDemocracy(m.Democracy, m.Date, m.Id)
-	}
-
+	cb(m.Id, username)
+	//if cb(m.Id, username) {
+	//	//if username == "" {
+	//	//	m.Democracy = 0
+	//	//} else {
+	//	//	m.Democracy = 1
+	//	//}
+	//	m.dao.ChannelsDAO.UpdateDemocracy(m.Democracy, m.Date, m.Id)
+	//}
 	return nil
 }
 
@@ -937,21 +997,18 @@ func (m *channelLogicData) ToChannel(selfUserId int32) *mtproto.Chat {
 		Id:           m.Id,
 		AccessHash:   m.AccessHash,
 		Title:        m.Title,
+		Photo:        m.getChatPhoto(),
+		Username:     m.Username,
 		Date:         m.Date,
 		Version:      m.Version,
 		AdminRights:  selfParticipant.ToChannelAdminRights(),
 		BannedRights: selfParticipant.ToChannelBannedRights(),
 	}}
 
-	if m.PhotoId == 0 {
-		channel.SetPhoto(mtproto.NewTLChatPhotoEmpty().To_ChatPhoto())
-	} else {
-		channel.SetPhoto(m.cb.GetChatPhoto(m.PhotoId))
-	}
 
-	if m.IsDemocracy() {
-		channel.SetUsername(m.cb3.GetChannelUsername(m.Id))
-	}
+	// if m.IsDemocracy() {
+	// channel.SetUsername(m.cb3.GetChannelUsername(m.Id))
+	// }
 
 	return channel.To_Chat()
 }
@@ -968,29 +1025,6 @@ func (m *channelLogicData) ToChannelForbidden() *mtproto.Chat {
 }
 
 func (m *channelLogicData) ToChannelFull(selfUserId int32) *mtproto.ChatFull {
-	// TODO(@benqi): nbfs_client
-	var photo *mtproto.Photo
-
-	// TODO(@benqi):
-	if m.GetPhotoId() == 0 {
-		photoEmpty := &mtproto.TLPhotoEmpty{Data2: &mtproto.Photo_Data{
-			Id: 0,
-		}}
-		photo = photoEmpty.To_Photo()
-	} else {
-		// sizes, _ := nbfs_client.GetPhotoSizeList(channelData.channel.PhotoId)
-		// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
-		//channelPhoto := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
-		//	Id:          channelData.channel.PhotoId,
-		//	HasStickers: false,
-		//	AccessHash:  channelData.channel.PhotoId, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
-		//	Date:        int32(time.Now().Unix()),
-		//	Sizes:       sizes,
-		//}}
-		photo = m.cb.GetPhoto(m.PhotoId)
-		// channelPhoto.To_Photo()
-	}
-
 	peer := &base.PeerUtil{
 		PeerType: base.PEER_CHANNEL,
 		PeerId:   m.Id,
@@ -1019,7 +1053,7 @@ func (m *channelLogicData) ToChannelFull(selfUserId int32) *mtproto.ChatFull {
 		About:             m.About,
 		ParticipantsCount: m.ParticipantCount,
 		AdminsCount:       1, // TODO(@benqi): calc adminscount
-		ChatPhoto:         photo,
+		ChatPhoto:         m.getPhoto(),
 		NotifySettings:    notifySettings,
 		// ExportedInvite:    mtproto.NewTLChatInviteEmpty().To_ExportedChatInvite(), // TODO(@benqi):
 		BotInfo: []*mtproto.BotInfo{},
@@ -1032,9 +1066,83 @@ func (m *channelLogicData) ToChannelFull(selfUserId int32) *mtproto.ChatFull {
 	}
 
 	exportedInvite := &mtproto.TLChatInviteExported{Data2: &mtproto.ExportedChatInvite_Data{
-		Link: m.Link,
+		Link: "https://t.me/joinchat/" + m.Link,
 	}}
 
 	channelFull.SetExportedInvite(exportedInvite.To_ExportedChatInvite())
 	return channelFull.To_ChatFull()
 }
+
+func (m *channelLogicData) ToChatInvite(userId int32, cb func([]int32) []*mtproto.User) *mtproto.ChatInvite {
+	var chatInvite *mtproto.ChatInvite
+	invitedParticipant := m.checkOrLoadChannelParticipant(userId)
+	if invitedParticipant != nil {
+		_chatInviteAlready := &mtproto.TLChatInviteAlready{Data2: &mtproto.ChatInvite_Data{
+			Chat: m.ToChannel(userId),
+		}}
+		chatInvite = _chatInviteAlready.To_ChatInvite()
+	} else {
+		_chatInvite := &mtproto.TLChatInvite{Data2: &mtproto.ChatInvite_Data{
+			Channel:           true,
+			Broadcast:         m.Broadcast == 1,
+			Public:            m.Public == 1,
+			Megagroup:         m.IsMegagroup(),
+			Title:             m.Title,
+			Photo:             m.getChatPhoto(),
+			ParticipantsCount: m.ParticipantCount,
+		}}
+
+		if cb != nil {
+			participants := m.GetChannelParticipantListRecent(0, 5, 0)
+			idList := []int32{m.CreatorUserId}
+			for _, p := range participants {
+				if p.GetData2().GetUserId() != m.CreatorUserId {
+					idList = append(idList, p.GetData2().GetUserId())
+				}
+			}
+			_chatInvite.SetParticipants(cb(idList))
+		} else {
+			_chatInvite.SetParticipants(make([]*mtproto.User, 0))
+		}
+
+		chatInvite = _chatInvite.To_ChatInvite()
+	}
+	return chatInvite
+}
+
+func (m *channelLogicData) getPhoto() *mtproto.Photo {
+	// TODO(@benqi): nbfs_client
+	var photo *mtproto.Photo
+
+	// TODO(@benqi):
+	if m.GetPhotoId() == 0 {
+		photoEmpty := &mtproto.TLPhotoEmpty{Data2: &mtproto.Photo_Data{
+			Id: 0,
+		}}
+		photo = photoEmpty.To_Photo()
+	} else {
+		// sizes, _ := nbfs_client.GetPhotoSizeList(channelData.channel.PhotoId)
+		// photo2 := photo2.MakeUserProfilePhoto(photoId, sizes)
+		//channelPhoto := &mtproto.TLPhoto{ Data2: &mtproto.Photo_Data{
+		//	Id:          channelData.channel.PhotoId,
+		//	HasStickers: false,
+		//	AccessHash:  channelData.channel.PhotoId, // photo2.GetFileAccessHash(file.GetData2().GetId(), file.GetData2().GetParts()),
+		//	Date:        int32(time.Now().Unix()),
+		//	Sizes:       sizes,
+		//}}
+		photo = m.cb.GetPhoto(m.PhotoId)
+		// channelPhoto.To_Photo()
+	}
+	return photo
+}
+
+func (m *channelLogicData) getChatPhoto() *mtproto.ChatPhoto {
+	var chatPhoto *mtproto.ChatPhoto
+	if m.PhotoId == 0 {
+		chatPhoto = mtproto.NewTLChatPhotoEmpty().To_ChatPhoto()
+	} else {
+		chatPhoto = m.cb.GetChatPhoto(m.PhotoId)
+	}
+	return chatPhoto
+}
+

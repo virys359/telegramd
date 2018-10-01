@@ -49,7 +49,7 @@
     "call_ring_timeout_ms": 90000,
     "call_connect_timeout_ms": 30000,
     "call_packet_timeout_ms": 10000,
-    "me_url_prefix": "https://nebula.im/",
+    "me_url_prefix": "https://t.me/",
     "autoupdate_url_prefix": "",
     "gif_search_username": "gif",
     "venue_search_username": "foursquare",

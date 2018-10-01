@@ -29,8 +29,12 @@ import (
 	"github.com/nebulaim/telegramd/biz/core/message"
 	"fmt"
 	"github.com/nebulaim/telegramd/biz/core/update"
+	"net/url"
 )
 
+
+// TODO(@benqi): mention...
+//
 func makeMessageBySendMessage(fromId, peerType, peerId int32, request *mtproto.TLMessagesSendMessage) (message *mtproto.TLMessage) {
 	message = &mtproto.TLMessage{Data2: &mtproto.Message_Data{
 		Out:          true,
@@ -57,7 +61,18 @@ func makeMessageBySendMessage(fromId, peerType, peerId int32, request *mtproto.T
 		Constructor: mtproto.TLConstructor_CRC32_messageMediaEmpty,
 		Data2:       &mtproto.MessageMedia_Data{},
 	}
-	message.SetEntities(request.GetEntities())
+	entities := request.GetEntities()
+
+	u, err := url.Parse(request.Message)
+	if err == nil && (u.Scheme == "http" || u.Scheme == "https") {
+		entityUrl := &mtproto.TLMessageEntityUrl{Data2: &mtproto.MessageEntity_Data{
+			Offset: 0,
+			Length: int32(len(request.Message)),
+		}}
+		entities = append(entities, entityUrl.To_MessageEntity())
+	}
+	message.Data2.Entities = entities
+
 	return
 }
 

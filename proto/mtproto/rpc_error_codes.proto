@@ -177,6 +177,7 @@ enum TLRpcErrorCodes {
 
     // invite, user banned.
     INVITE_HASH_EXPIRED = 400090;
+    INVITE_HASH_INVALID = 400091;
 
     // access
     ACCESS_HASH_INVALID = 400200;

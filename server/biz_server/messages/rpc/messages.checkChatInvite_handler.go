@@ -18,7 +18,6 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
@@ -29,9 +28,22 @@ import (
 // messages.checkChatInvite#3eadb1bb hash:string = ChatInvite;
 func (s *MessagesServiceImpl) MessagesCheckChatInvite(ctx context.Context, request *mtproto.TLMessagesCheckChatInvite) (*mtproto.ChatInvite, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesCheckChatInvite - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.checkChatInvite#3eadb1bb - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesCheckChatInvite logic
+	var (
+		chatInvite *mtproto.ChatInvite
+	)
 
-	return nil, fmt.Errorf("Not impl MessagesCheckChatInvite")
+	channelLogic, err := s.ChannelModel.NewChannelLogicByLink(request.GetHash())
+	if err == nil {
+		chatInvite = channelLogic.ToChatInvite(md.UserId, func(idList []int32) []*mtproto.User {
+			return s.UserModel.GetUsersBySelfAndIDList(md.UserId, idList)
+		})
+		glog.Infof("messages.checkChatInvite#3eadb1bb - reply: {%s}", logger.JsonDebugData(chatInvite))
+		return chatInvite, nil
+	}
+
+	// TODO(@benqi): do chat checkChatInvite
+	glog.Errorf("messages.checkChatInvite#3eadb1bb - error: {%v}", err)
+	return nil, err
 }

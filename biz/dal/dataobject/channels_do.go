@@ -27,6 +27,7 @@ type ChannelsDO struct {
 	Title            string `db:"title"`
 	About            string `db:"about"`
 	PhotoId          int64  `db:"photo_id"`
+	Public           int8   `db:"public"`
 	Link             string `db:"link"`
 	Broadcast        int8   `db:"broadcast"`
 	Verified         int8   `db:"verified"`

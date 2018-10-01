@@ -155,6 +155,42 @@ func (dao *ChannelsDAO) UpdateLink(link string, date int32, id int32) int64 {
 	return rows
 }
 
+// select id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, `date` from channels where link = :link
+// TODO(@benqi): sqlmap
+func (dao *ChannelsDAO) SelectByLink(link string) *dataobject.ChannelsDO {
+	var query = "select id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, `date` from channels where link = ?"
+	rows, err := dao.db.Queryx(query, link)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectByLink(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	do := &dataobject.ChannelsDO{}
+	if rows.Next() {
+		err = rows.StructScan(do)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectByLink(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+	} else {
+		return nil
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectByLink(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return do
+}
+
 // select id, creator_user_id, access_hash, random_id, top_message, participant_count, title, about, photo_id, link, broadcast, megagroup, democracy, signatures, admins_enabled, deactivated, version, `date` from channels where id in (:idList)
 // TODO(@benqi): sqlmap
 func (dao *ChannelsDAO) SelectByIdList(idList []int32) []dataobject.ChannelsDO {
@@ -311,14 +347,14 @@ func (dao *ChannelsDAO) UpdateDemocracy(democracy int8, date int32, id int32) in
 	r, err := dao.db.Exec(query, democracy, date, id)
 
 	if err != nil {
-		errDesc := fmt.Sprintf("Exec in UpdateDemocracy	(_), error: %v", err)
+		errDesc := fmt.Sprintf("Exec in UpdateDemocracy(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
 
 	rows, err := r.RowsAffected()
 	if err != nil {
-		errDesc := fmt.Sprintf("RowsAffected in UpdateDemocracy	(_), error: %v", err)
+		errDesc := fmt.Sprintf("RowsAffected in UpdateDemocracy(_), error: %v", err)
 		glog.Error(errDesc)
 		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
 	}
