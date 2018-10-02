@@ -23,6 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/biz/dal/dao/mysql_dao"
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/biz/base"
+	"github.com/nebulaim/telegramd/proto/mtproto"
 )
 
 const (
@@ -125,4 +126,32 @@ func (m *UsernameModel) GetChannelUsername(channelId int32) (username string) {
 		username = do.Username
 	}
 	return
+}
+
+func (m *UsernameModel) ResolveUsername(username string) (*base.PeerUtil, error) {
+	// TODO(@benqi): check len(username) >= 5
+	var (
+		peer *base.PeerUtil
+		err error
+	)
+
+	if len(username) >= 5 {
+		usernameDO := m.UsernameDAO.SelectByUsername(username)
+		if usernameDO != nil {
+			if usernameDO.PeerType == base.PEER_USER || usernameDO.PeerType == base.PEER_CHANNEL {
+				peer = &base.PeerUtil{
+					PeerType: int32(usernameDO.PeerType),
+					PeerId:   usernameDO.PeerId,
+				}
+			} else {
+				err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_NOT_OCCUPIED)
+			}
+		} else {
+			err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_NOT_OCCUPIED)
+		}
+	} else {
+		err = mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USERNAME_INVALID)
+	}
+
+	return peer, err
 }

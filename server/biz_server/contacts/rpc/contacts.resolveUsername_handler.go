@@ -23,6 +23,7 @@ import (
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/base"
 )
 
 // contacts.resolveUsername#f93ccba3 username:string = contacts.ResolvedPeer;
@@ -30,27 +31,24 @@ func (s *ContactsServiceImpl) ContactsResolveUsername(ctx context.Context, reque
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
 	glog.Infof("contacts.resolveUsername#f93ccba3 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	var resolvedPeer *mtproto.TLContactsResolvedPeer
+	peer, err := s.UsernameModel.ResolveUsername(request.GetUsername())
+	if err != nil {
+		glog.Errorf("contacts.resolveUsername#f93ccba3 - reply: {%v}", err)
+		return nil, err
+	}
 
-	user := s.UserModel.GetUserByUsername(md.UserId, request.GetUsername())
-	if user != nil {
-		peer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
-			UserId: user.GetId(),
-		}}
-		resolvedPeer = &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
-			Peer:  peer.To_Peer(),
-			Chats: []*mtproto.Chat{},
-			Users: []*mtproto.User{user.To_User()},
-		}}
+	resolvedPeer := &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
+		Peer: peer.ToPeer(),
+		Chats: []*mtproto.Chat{},
+		Users: []*mtproto.User{},
+	}}
+	// peer.ToPeer()
+	if peer.PeerType == base.PEER_USER {
+		resolvedPeer.SetUsers([]*mtproto.User{s.UserModel.GetUserById(md.UserId, peer.PeerId).To_User()})
+	} else if peer.PeerType == base.PEER_CHAT {
+		resolvedPeer.SetChats([]*mtproto.Chat{s.ChatModel.GetChatBySelfID(md.UserId, peer.PeerId)})
 	} else {
-		peer := &mtproto.TLPeerUser{Data2: &mtproto.Peer_Data{
-			UserId: 0,
-		}}
-		resolvedPeer = &mtproto.TLContactsResolvedPeer{Data2: &mtproto.Contacts_ResolvedPeer_Data{
-			Peer:  peer.To_Peer(),
-			Chats: []*mtproto.Chat{},
-			Users: []*mtproto.User{},
-		}}
+		resolvedPeer.SetChats([]*mtproto.Chat{s.ChannelModel.GetChannelBySelfID(md.UserId, peer.PeerId)})
 	}
 
 	glog.Infof("contacts.resolveUsername#f93ccba3 - reply: {%v}", resolvedPeer)

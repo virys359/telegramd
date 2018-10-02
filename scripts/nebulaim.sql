@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-09-30 23:56:32
+-- Generation Time: 2018-10-02 13:40:34
 -- 服务器版本： 5.7.23
 -- PHP Version: 7.1.16
 
@@ -301,6 +301,7 @@ CREATE TABLE `channels` (
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `about` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `photo_id` bigint(20) NOT NULL DEFAULT '0',
+  `public` tinyint(4) NOT NULL DEFAULT '0',
   `link` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `broadcast` tinyint(4) NOT NULL DEFAULT '0',
   `verified` tinyint(4) NOT NULL DEFAULT '0',
@@ -430,6 +431,8 @@ CREATE TABLE `channel_participants` (
   `admin_rights` int(11) NOT NULL DEFAULT '0',
   `promoted_at` int(11) NOT NULL DEFAULT '0',
   `is_left` tinyint(4) NOT NULL DEFAULT '0',
+  `hidden_prehistory` tinyint(4) NOT NULL DEFAULT '0',
+  `hidden_prehistory_message_id` int(11) NOT NULL DEFAULT '0',
   `left_at` int(11) NOT NULL DEFAULT '0',
   `is_kicked` tinyint(4) NOT NULL DEFAULT '0',
   `kicked_by` int(11) NOT NULL DEFAULT '0',

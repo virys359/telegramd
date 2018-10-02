@@ -44,6 +44,7 @@ func (s *MessagesServiceImpl) MessagesImportChatInvite(ctx context.Context, requ
 		ChannelId: channelLogic.GetChannelId(),
 	}}
 
+	// TODO(@benqi): importChatInvite
 	channelLogic.InviteToChannel(channelLogic.CreatorUserId, md.UserId)
 	s.DialogModel.InsertOrChannelUpdateDialog(md.UserId, base.PEER_CHANNEL, channelLogic.GetChannelId())
 

@@ -22,11 +22,17 @@ import (
 	"github.com/nebulaim/telegramd/biz/core"
 	"github.com/nebulaim/telegramd/biz/core/contact"
 	"github.com/nebulaim/telegramd/biz/core/user"
+	"github.com/nebulaim/telegramd/biz/core/username"
+	"github.com/nebulaim/telegramd/biz/core/channel"
+	"github.com/nebulaim/telegramd/biz/core/chat"
 )
 
 type ContactsServiceImpl struct {
 	*contact.ContactModel
 	*user.UserModel
+	*username.UsernameModel
+	*channel.ChannelModel
+	*chat.ChatModel
 }
 
 func NewContactsServiceImpl(models []core.CoreModel) *ContactsServiceImpl {
@@ -38,6 +44,12 @@ func NewContactsServiceImpl(models []core.CoreModel) *ContactsServiceImpl {
 			impl.ContactModel = m.(*contact.ContactModel)
 		case *user.UserModel:
 			impl.UserModel = m.(*user.UserModel)
+		case *username.UsernameModel:
+			impl.UsernameModel = m.(*username.UsernameModel)
+		case *channel.ChannelModel:
+			impl.ChannelModel = m.(*channel.ChannelModel)
+		case *chat.ChatModel:
+			impl.ChatModel = m.(*chat.ChatModel)
 		}
 	}
 

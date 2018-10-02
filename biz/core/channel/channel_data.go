@@ -591,7 +591,39 @@ func (m *channelLogicData) InviteToChannel(inviterId, userId int32) error {
 	return nil
 }
 
-func (m *channelLogicData) JoinChannel(inviterId, userId int32) error {
+func (m *channelLogicData) JoinChannel(joinId int32) error {
+	joinParticipant := m.checkOrLoadChannelParticipant(joinId)
+	if joinParticipant != nil {
+		if !(joinParticipant.IsBanned() || joinParticipant.IsLeft()) {
+			err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_USER_ALREADY_PARTICIPANT)
+			glog.Errorf("joinChannel error - %s: (join %d)", err, joinId)
+			return err
+		}
+	} else {
+		//
+	}
+
+	// TODO(@benqi): check participant too much.
+
+	var now = int32(time.Now().Unix())
+	channelParticipant := &dataobject.ChannelParticipantsDO{
+		ChannelId:       m.Id,
+		UserId:          joinId,
+		InviterUserId:   m.CreatorUserId,
+		InvitedAt:       now,
+		JoinedAt:        now,
+	}
+	channelParticipant.Id = m.dao.ChannelParticipantsDAO.InsertOrUpdate(channelParticipant)
+
+	m.ParticipantCount += 1
+	m.dao.ChannelsDAO.UpdateParticipantCount(m.ParticipantCount, now, m.Id)
+
+	if joinParticipant != nil {
+		joinParticipant.ChannelParticipantsDO = channelParticipant
+	} else {
+		m.cacheParticipantsData = append(m.cacheParticipantsData, channelParticipantData{channelParticipant})
+	}
+
 	return nil
 }
 
