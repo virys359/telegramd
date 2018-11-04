@@ -33,6 +33,31 @@ import "schema.tl.sync.proto";
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// AttachData <--
+//  + TL_attachData
+//
+message AttachData_Data {
+    int64 auth_key_id = 1;
+    int64 session_id = 2;
+    int64 message_id = 3;
+    int32 layer = 4;
+    int32 user_id = 5;
+    int64 access_hash = 6;
+    bytes attach_data = 7;
+}
+
+message AttachData {
+    TLConstructor constructor = 1;
+    AttachData_Data data2 = 2;
+}
+
+// attachData flags:# auth_key_id:long session_id:long message_id:long layer:int user_id:int access_hash:long attach_data:bytes = AttachData;
+message TL_attachData {
+    AttachData_Data data2 = 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // ConnectToServer <--
 //  + TL_sync_connectToSessionServer
 //

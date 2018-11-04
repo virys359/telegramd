@@ -15,30 +15,29 @@
  * limitations under the License.
  */
 
-package model
+package main
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"io/ioutil"
-	"testing"
+	"github.com/nebulaim/telegramd/baselib/grpc_util/middleware/examples/helloworld"
+	"google.golang.org/grpc"
+	"math/rand"
+	"time"
 )
 
-func TestGetHelpConfig(t *testing.T) {
-	helpConfig := mtproto.NewTLConfig()
-	// data2 := &ProfilePhotoIds{}
-	configData, err := ioutil.ReadFile("./config_test.json")
+func main() {
+	rand.Seed(time.Now().UnixNano())
+	conn, err := grpc.Dial("127.0.0.1:50051", grpc.WithInsecure())
 	if err != nil {
-		fmt.Println(err)
-		return
+		fmt.Printf("fail to dial: %v\n", err)
 	}
+	defer conn.Close()
 
-	err = json.Unmarshal([]byte(configData), helpConfig)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("%s\n", logger.JsonDebugData(helpConfig))
+	var h = "hellow world"
+
+	client := helloworld.NewGreeterClient(conn)
+	request := &helloworld.HelloRequest{Name: h}
+	response, _ := client.SayHello(context.Background(), request)
+	fmt.Println(response)
 }

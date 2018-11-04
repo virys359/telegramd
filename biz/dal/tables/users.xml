@@ -10,12 +10,12 @@
     </operation>
     <operation name="SelectByPhoneNumber">
         <sql>
-            SELECT id, access_hash, first_name, last_name, username, banned, photos FROM users WHERE phone=:phone limit 1
+            SELECT id, access_hash, first_name, last_name, username, banned, photos FROM users WHERE phone=:phone LIMIT 1
         </sql>
     </operation>
     <operation name="SelectById">
         <sql>
-            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE id=:id limit 1
+            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE id=:id LIMIT 1
         </sql>
     </operation>
     <operation name="SelectUsersByIdList" result_set="list">
@@ -23,10 +23,17 @@
             <param name="id_list" type="[]int32" />
         </params>
         <sql>
-            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE id in (:id_list)
+            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE id IN (:id_list)
         </sql>
     </operation>
-
+    <operation name="SelectUsersByPhoneList" result_set="list">
+        <params>
+            <param name="phoneList" type="[]string" />
+        </params>
+        <sql>
+            SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE phone IN (:phoneList)
+        </sql>
+    </operation>
     <operation name="SelectByQueryString" result_set="list">
         <sql>
             SELECT id, access_hash, first_name, last_name, username, phone, photos FROM users WHERE username = :username OR first_name = :first_name OR last_name = :last_name OR phone = :phone limit 20

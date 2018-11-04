@@ -28,12 +28,12 @@ import (
 // help.getInviteText#a4a95186 lang_code:string = help.InviteText;
 func (s *HelpServiceImpl) HelpGetInviteTextLayer46(ctx context.Context, request *mtproto.TLHelpGetInviteTextLayer46) (*mtproto.Help_InviteText, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("HelpGetInviteText - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("help.getInviteText#a4a95186 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	inviteText := &mtproto.TLHelpInviteText{Data2: &mtproto.Help_InviteText_Data{
 		Message: "Invited by @benqi",
 	}}
 
-	glog.Infof("HelpGetInviteText - reply: %s", logger.JsonDebugData(inviteText))
+	glog.Infof("help.getInviteText#a4a95186 - reply: %s", logger.JsonDebugData(inviteText))
 	return inviteText.To_Help_InviteText(), nil
 }

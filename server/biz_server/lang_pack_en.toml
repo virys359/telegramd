@@ -740,7 +740,7 @@ value = "Allow"
 key = "lng_allow_bot"
 
 [[Strings]]
-value = "Allow {bot_name} to pass your Telegram name and ID to the web pages you open via this bot?"
+value = "Allow {bot_name} to pass your Telegram name and ID (not your phone number) to the web pages you open via this bot?"
 key = "lng_allow_bot_pass"
 
 [[Strings]]
@@ -1896,6 +1896,14 @@ value = "File download could not be finished.\n\nWould you like to try again?"
 key = "lng_download_finish_failed"
 
 [[Strings]]
+value = "Download path"
+key = "lng_download_path"
+
+[[Strings]]
+value = "Ask download path for each file"
+key = "lng_download_path_ask"
+
+[[Strings]]
 value = "Choose download path"
 key = "lng_download_path_choose"
 
@@ -1912,7 +1920,7 @@ value = "Clearing..."
 key = "lng_download_path_clearing"
 
 [[Strings]]
-value = "default folder"
+value = "Default folder"
 key = "lng_download_path_default"
 
 [[Strings]]
@@ -1944,7 +1952,7 @@ value = "Settings"
 key = "lng_download_path_settings"
 
 [[Strings]]
-value = "temp folder"
+value = "Temp folder"
 key = "lng_download_path_temp"
 
 [[Strings]]
@@ -2044,6 +2052,10 @@ value = "These users will or will not be able to call you regardless of the sett
 key = "lng_edit_privacy_calls_exceptions"
 
 [[Strings]]
+value = "Who can call you"
+key = "lng_edit_privacy_calls_header"
+
+[[Strings]]
 value = "Never allow"
 key = "lng_edit_privacy_calls_never_empty"
 
@@ -2052,7 +2064,7 @@ value = "Never allow"
 key = "lng_edit_privacy_calls_never_title"
 
 [[Strings]]
-value = "Telegram call privacy"
+value = "Voice calls privacy"
 key = "lng_edit_privacy_calls_title"
 
 [[Strings]]
@@ -2066,6 +2078,10 @@ key = "lng_edit_privacy_everyone"
 [[Strings]]
 value = "Add exceptions"
 key = "lng_edit_privacy_exceptions"
+
+[[Strings]]
+value = "Add users"
+key = "lng_edit_privacy_exceptions_add"
 
 [[Strings]]
 value = "Always allow"
@@ -2082,6 +2098,10 @@ key = "lng_edit_privacy_groups_description"
 [[Strings]]
 value = "These users will or will not be able to add you to groups and channels regardless of the settings above."
 key = "lng_edit_privacy_groups_exceptions"
+
+[[Strings]]
+value = "Who can invite you to groups and channels"
+key = "lng_edit_privacy_groups_header"
 
 [[Strings]]
 value = "Never allow"
@@ -2110,6 +2130,10 @@ key = "lng_edit_privacy_lastseen_description"
 [[Strings]]
 value = "These settings will override the values above."
 key = "lng_edit_privacy_lastseen_exceptions"
+
+[[Strings]]
+value = "Who can see your last seen time"
+key = "lng_edit_privacy_lastseen_header"
 
 [[Strings]]
 value = "Never share with"
@@ -2500,11 +2524,11 @@ value = "Total size: {size}."
 key = "lng_export_total_size"
 
 [[Strings]]
-value = "Sorry, if a person leaves a group, only a mutual contact can bring them back (they need to have your phone number, and you need theirs)."
+value = "Sorry, if a person left a group, only a mutual contact can bring them back (they need to have your phone number, and you need theirs)."
 key = "lng_failed_add_not_mutual"
 
 [[Strings]]
-value = "Sorry, if a person leaves a channel, only a mutual contact can bring them back (they need to have your phone number, and you need theirs)."
+value = "Sorry, if a person left a channel, only a mutual contact can bring them back (they need to have your phone number, and you need theirs)."
 key = "lng_failed_add_not_mutual_channel"
 
 [[Strings]]
@@ -2736,7 +2760,7 @@ value = "In reply to"
 key = "lng_in_reply_to"
 
 [[Strings]]
-value = "About"
+value = "Description"
 key = "lng_info_about_label"
 
 [[Strings]]
@@ -2848,12 +2872,36 @@ value = "Clear all"
 key = "lng_local_storage_clear"
 
 [[Strings]]
+value = "Clear"
+key = "lng_local_storage_clear_some"
+
+[[Strings]]
 value = "Cleared!"
 key = "lng_local_storage_cleared"
 
 [[Strings]]
 value = "Clearing..."
 key = "lng_local_storage_clearing"
+
+[[Strings]]
+value = "No cached files"
+key = "lng_local_storage_empty"
+
+[[Strings]]
+value = "Never"
+key = "lng_local_storage_limit_never"
+
+[[Strings]]
+value = "Total size limit: {size}"
+key = "lng_local_storage_size_limit"
+
+[[Strings]]
+value = "Summary"
+key = "lng_local_storage_summary"
+
+[[Strings]]
+value = "Clear files older than: {limit}"
+key = "lng_local_storage_time_limit"
 
 [[Strings]]
 value = "Local storage"
@@ -2880,7 +2928,7 @@ value = "Choose an application to open the document \"{file}\"."
 key = "lng_mac_choose_text"
 
 [[Strings]]
-value = "Enable:"
+value = "Show:"
 key = "lng_mac_enable_filter"
 
 [[Strings]]
@@ -3000,7 +3048,7 @@ value = "Group Info"
 key = "lng_manage_group_info"
 
 [[Strings]]
-value = "Manage Group"
+value = "Manage group"
 key = "lng_manage_group_title"
 
 [[Strings]]
@@ -3036,7 +3084,7 @@ value = "Members"
 key = "lng_manage_peer_members"
 
 [[Strings]]
-value = "Recent Actions"
+value = "Recent actions"
 key = "lng_manage_peer_recent_actions"
 
 [[Strings]]
@@ -3054,6 +3102,10 @@ key = "lng_media_audio"
 [[Strings]]
 value = "No voice messages here yet"
 key = "lng_media_audio_empty"
+
+[[Strings]]
+value = "Voice messages"
+key = "lng_media_audio_title"
 
 [[Strings]]
 value = "Automatic voice message download"
@@ -3080,8 +3132,12 @@ value = "Private chats"
 key = "lng_media_auto_private_chats"
 
 [[Strings]]
-value = "Automatic media download settings"
+value = "Automatic media download"
 key = "lng_media_auto_settings"
+
+[[Strings]]
+value = "Automatically download"
+key = "lng_media_auto_title"
 
 [[Strings]]
 value = "Cancel"
@@ -3100,6 +3156,10 @@ value = "No files found"
 key = "lng_media_file_empty_search"
 
 [[Strings]]
+value = "GIFs and animations"
+key = "lng_media_gif_title"
+
+[[Strings]]
 value = "No shared links here yet"
 key = "lng_media_link_empty"
 
@@ -3114,6 +3174,10 @@ key = "lng_media_open_with"
 [[Strings]]
 value = "No photos here yet"
 key = "lng_media_photo_empty"
+
+[[Strings]]
+value = "Photos"
+key = "lng_media_photo_title"
 
 [[Strings]]
 value = "{ready} of {total} {mb}"
@@ -3532,11 +3596,11 @@ value = "Auto-Lock"
 key = "lng_passcode_autolock"
 
 [[Strings]]
-value = "Auto-Lock if away for:"
+value = "Auto-Lock if away for..."
 key = "lng_passcode_autolock_away"
 
 [[Strings]]
-value = "Auto-Lock if inactive for:"
+value = "Auto-Lock if inactive for..."
 key = "lng_passcode_autolock_inactive"
 
 [[Strings]]
@@ -3820,7 +3884,7 @@ value = "Could not get authorization form."
 key = "lng_passport_form_error"
 
 [[Strings]]
-value = "Upload the front side of your document."
+value = "Upload a photo of the front side of the document."
 key = "lng_passport_front_side_description"
 
 [[Strings]]
@@ -3876,7 +3940,7 @@ value = "Driver's licence"
 key = "lng_passport_identity_license"
 
 [[Strings]]
-value = "Upload a scan of your driver's licence"
+value = "Upload a scan of your driver's license"
 key = "lng_passport_identity_license_upload"
 
 [[Strings]]
@@ -4032,7 +4096,7 @@ value = "Reupload selfie"
 key = "lng_passport_reupload_selfie"
 
 [[Strings]]
-value = "Upload the reverse side of your document."
+value = "Upload a photo of the reverse side of the document."
 key = "lng_passport_reverse_side_description"
 
 [[Strings]]
@@ -4308,7 +4372,7 @@ value = "Convert"
 key = "lng_profile_convert_confirm"
 
 [[Strings]]
-value = "— New members see the full message history"
+value = "— New members may see the full message history"
 key = "lng_profile_convert_feature1"
 
 [[Strings]]
@@ -4568,7 +4632,7 @@ value = "Socket address"
 key = "lng_proxy_address_label"
 
 [[Strings]]
-value = "available (ping: {ping}ms)"
+value = "available (ping: {ping} ms)"
 key = "lng_proxy_available"
 
 [[Strings]]
@@ -4652,7 +4716,7 @@ value = "Quit Telegram"
 key = "lng_quit_from_tray"
 
 [[Strings]]
-value = "Frequently used"
+value = "Recently used"
 key = "lng_recent_stickers"
 
 [[Strings]]
@@ -4836,7 +4900,7 @@ value = "Send messages"
 key = "lng_rights_chat_send_text"
 
 [[Strings]]
-value = "Manage permissions"
+value = "Edit permissions"
 key = "lng_rights_edit_admin"
 
 [[Strings]]
@@ -5036,12 +5100,20 @@ value = "Terminate all other sessions"
 key = "lng_sessions_terminate_all"
 
 [[Strings]]
+value = "Any details such as age, occupation or city.\nExample: 23 y.o. designer from San Francisco"
+key = "lng_settings_about_bio"
+
+[[Strings]]
 value = "Adaptive layout for wide screens"
 key = "lng_settings_adaptive_wide"
 
 [[Strings]]
 value = "Place Telegram in \"Send to\" menu"
 key = "lng_settings_add_sendto"
+
+[[Strings]]
+value = "Advanced"
+key = "lng_settings_advanced"
 
 [[Strings]]
 value = "Notifications position and count"
@@ -5064,7 +5136,11 @@ value = "Launch Telegram when system starts"
 key = "lng_settings_auto_start"
 
 [[Strings]]
-value = "Edit theme"
+value = "Autoplay GIFs"
+key = "lng_settings_autoplay_gifs"
+
+[[Strings]]
+value = "Launch theme editor"
 key = "lng_settings_bg_edit_theme"
 
 [[Strings]]
@@ -5080,12 +5156,16 @@ value = "Tile background"
 key = "lng_settings_bg_tile"
 
 [[Strings]]
-value = "Use default color theme"
+value = "Use default theme"
 key = "lng_settings_bg_use_default"
 
 [[Strings]]
 value = "Blocked users"
 key = "lng_settings_blocked_users"
+
+[[Strings]]
+value = "Voice calls"
+key = "lng_settings_calls"
 
 [[Strings]]
 value = "Phone calls privacy"
@@ -5108,6 +5188,14 @@ value = "Choose username"
 key = "lng_settings_choose_username"
 
 [[Strings]]
+value = "Are you sure you want to close this page? You didn't save your changes."
+key = "lng_settings_close_sure"
+
+[[Strings]]
+value = "Connection type"
+key = "lng_settings_connection_type"
+
+[[Strings]]
 value = "Select an area for your profile photo"
 key = "lng_settings_crop_profile"
 
@@ -5120,8 +5208,24 @@ value = "Version {version}:"
 key = "lng_settings_current_version_label"
 
 [[Strings]]
+value = "Data and storage"
+key = "lng_settings_data_storage"
+
+[[Strings]]
+value = "Default interface scale"
+key = "lng_settings_default_scale"
+
+[[Strings]]
 value = "Desktop notifications"
 key = "lng_settings_desktop_notify"
+
+[[Strings]]
+value = "If away for..."
+key = "lng_settings_destroy_if"
+
+[[Strings]]
+value = "Delete my account"
+key = "lng_settings_destroy_title"
 
 [[Strings]]
 value = "Disable night mode"
@@ -5132,6 +5236,10 @@ value = "Downloading update {ready} / {total} MB..."
 key = "lng_settings_downloading"
 
 [[Strings]]
+value = "Downloading update {progress}..."
+key = "lng_settings_downloading_update"
+
+[[Strings]]
 value = "to set it as your photo"
 key = "lng_settings_drop_area_subtitle"
 
@@ -5140,8 +5248,16 @@ value = "Edit"
 key = "lng_settings_edit"
 
 [[Strings]]
+value = "Edit information"
+key = "lng_settings_edit_info"
+
+[[Strings]]
 value = "None"
 key = "lng_settings_empty_bio"
+
+[[Strings]]
+value = "Enable animations"
+key = "lng_settings_enable_animations"
 
 [[Strings]]
 value = "Enable night mode"
@@ -5160,12 +5276,36 @@ value = "Go to FAQ"
 key = "lng_settings_faq_button"
 
 [[Strings]]
-value = "Group invite settings"
+value = "Change who can add you to groups and channels."
+key = "lng_settings_group_privacy_about"
+
+[[Strings]]
+value = "Groups"
+key = "lng_settings_groups_invite"
+
+[[Strings]]
+value = "Groups & Channels invite settings"
 key = "lng_settings_groups_invite_privacy"
 
 [[Strings]]
 value = "Include muted chats in unread count"
 key = "lng_settings_include_muted"
+
+[[Strings]]
+value = "Edit profile"
+key = "lng_settings_information"
+
+[[Strings]]
+value = "Install beta versions"
+key = "lng_settings_install_beta"
+
+[[Strings]]
+value = "Language"
+key = "lng_settings_language"
+
+[[Strings]]
+value = "Last seen"
+key = "lng_settings_last_seen"
 
 [[Strings]]
 value = "Last seen privacy"
@@ -5176,7 +5316,7 @@ value = "Latest version is installed"
 key = "lng_settings_latest_installed"
 
 [[Strings]]
-value = "Log Out"
+value = "Log out"
 key = "lng_settings_logout"
 
 [[Strings]]
@@ -5184,8 +5324,20 @@ value = "Manage local storage"
 key = "lng_settings_manage_local_storage"
 
 [[Strings]]
+value = "Messages"
+key = "lng_settings_messages"
+
+[[Strings]]
+value = "Name"
+key = "lng_settings_name_label"
+
+[[Strings]]
 value = "You need to restart for applying some of the new settings. Restart now?"
 key = "lng_settings_need_restart"
+
+[[Strings]]
+value = "Network and proxy"
+key = "lng_settings_network_proxy"
 
 [[Strings]]
 value = "No cached data found!"
@@ -5198,6 +5350,42 @@ key = "lng_settings_notifications_count"
 [[Strings]]
 value = "Location on the screen"
 key = "lng_settings_notifications_position"
+
+[[Strings]]
+value = "Disable passcode"
+key = "lng_settings_passcode_disable"
+
+[[Strings]]
+value = "Local passcode"
+key = "lng_settings_passcode_title"
+
+[[Strings]]
+value = "Disable cloud password"
+key = "lng_settings_password_disable"
+
+[[Strings]]
+value = "Two-step verification"
+key = "lng_settings_password_title"
+
+[[Strings]]
+value = "Peer-to-Peer"
+key = "lng_settings_peer_to_peer"
+
+[[Strings]]
+value = "Disabling peer-to-peer will relay all calls through Telegram servers to avoid revealing your IP address, but may slightly decrease audio quality."
+key = "lng_settings_peer_to_peer_about"
+
+[[Strings]]
+value = "Performance"
+key = "lng_settings_performance"
+
+[[Strings]]
+value = "Phone number"
+key = "lng_settings_phone_label"
+
+[[Strings]]
+value = "Privacy"
+key = "lng_settings_privacy_title"
 
 [[Strings]]
 value = "Replace emoji"
@@ -5280,6 +5468,14 @@ value = "Send by Enter"
 key = "lng_settings_send_enter"
 
 [[Strings]]
+value = "Control your sessions on other devices."
+key = "lng_settings_sessions_about"
+
+[[Strings]]
+value = "Active sessions"
+key = "lng_settings_sessions_title"
+
+[[Strings]]
 value = "Show sender's name"
 key = "lng_settings_show_name"
 
@@ -5300,12 +5496,24 @@ value = "Launch minimized"
 key = "lng_settings_start_min"
 
 [[Strings]]
+value = "Stickers and emoji"
+key = "lng_settings_stickers_emoji"
+
+[[Strings]]
 value = "Suggest popular stickers by emoji"
 key = "lng_settings_suggest_by_emoji"
 
 [[Strings]]
 value = "Suggest emoji replacements"
 key = "lng_settings_suggest_emoji"
+
+[[Strings]]
+value = "System integration"
+key = "lng_settings_system_integration"
+
+[[Strings]]
+value = "Themes"
+key = "lng_settings_themes"
 
 [[Strings]]
 value = "Update automatically"
@@ -5340,12 +5548,28 @@ value = "Use native notifications"
 key = "lng_settings_use_native_notifications"
 
 [[Strings]]
+value = "Use night mode"
+key = "lng_settings_use_night_mode"
+
+[[Strings]]
 value = "Use Windows notifications"
 key = "lng_settings_use_windows"
 
 [[Strings]]
 value = "Username:"
 key = "lng_settings_username"
+
+[[Strings]]
+value = "Add username"
+key = "lng_settings_username_add"
+
+[[Strings]]
+value = "Username"
+key = "lng_settings_username_label"
+
+[[Strings]]
+value = "Version and updates"
+key = "lng_settings_version_info"
 
 [[Strings]]
 value = "View list"
@@ -5648,7 +5872,7 @@ value = "Share Stickers"
 key = "lng_stickers_share_pack"
 
 [[Strings]]
-value = "Manage and reorder sticker packs"
+value = "Manage sticker sets"
 key = "lng_stickers_you_have"
 
 [[Strings]]
@@ -5708,7 +5932,7 @@ value = "Enable"
 key = "lng_sure_enable"
 
 [[Strings]]
-value = "Are you sure you want to enable this proxy?\n\nServer: {server}\nPort: {port}\n\nYou can change your proxy server later in the Settings (Connection Type)."
+value = "Are you sure you want to enable this proxy?\n\nServer: {server}\nPort: {port}\n\nYou can change your proxy server later in Settings > Connection Type."
 key = "lng_sure_enable_socks"
 
 [[Strings]]
@@ -5724,7 +5948,7 @@ value = "Are you sure you want to log out?"
 key = "lng_sure_logout"
 
 [[Strings]]
-value = "Telegram will restart in order to change language"
+value = "Telegram will restart in order to change the language"
 key = "lng_sure_save_language"
 
 [[Strings]]
@@ -6181,10 +6405,10 @@ key = "lng_duration_minsec_minutes"
 
 [[StringPluralizeds]]
 fewValue = ""
-oneValue = "{count} sec"
+oneValue = "{count} s"
 manyValue = ""
 zeroValue = ""
-otherValue = "{count} sec"
+otherValue = "{count} s"
 twoValue = ""
 key = "lng_duration_minsec_seconds"
 
@@ -6214,6 +6438,15 @@ zeroValue = ""
 otherValue = "Never allow {count} users"
 twoValue = ""
 key = "lng_edit_privacy_calls_never"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} user"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} users"
+twoValue = ""
+key = "lng_edit_privacy_exceptions_count"
 
 [[StringPluralizeds]]
 fewValue = ""
@@ -6295,6 +6528,69 @@ zeroValue = ""
 otherValue = "{count} members, among them:"
 twoValue = ""
 key = "lng_group_invite_members"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} GIF animation"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} GIF animations"
+twoValue = ""
+key = "lng_local_storage_animation"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} image"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} images"
+twoValue = ""
+key = "lng_local_storage_image"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} month"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} months"
+twoValue = ""
+key = "lng_local_storage_limit_months"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} week"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} weeks"
+twoValue = ""
+key = "lng_local_storage_limit_weeks"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} video message"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} video messages"
+twoValue = ""
+key = "lng_local_storage_round"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} sticker"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} stickers"
+twoValue = ""
+key = "lng_local_storage_sticker"
+
+[[StringPluralizeds]]
+fewValue = ""
+oneValue = "{count} voice message"
+manyValue = ""
+zeroValue = ""
+otherValue = "{count} voice messages"
+twoValue = ""
+key = "lng_local_storage_voice"
 
 [[StringPluralizeds]]
 fewValue = ""

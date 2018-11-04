@@ -30,6 +30,27 @@ import "schema.tl.crc32.proto";
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// ResPQ <--
+//  + TL_resPQ
+//
+message ResPQ_Data {
+    bytes nonce = 1;
+    bytes server_nonce = 2;
+    string pq = 3;
+    repeated int64 server_public_key_fingerprints = 4;
+}
+
+message ResPQ {
+    TLConstructor constructor = 1;
+    ResPQ_Data data2 = 2;
+}
+
+// resPQ#05162463 nonce:int128 server_nonce:int128 pq:string server_public_key_fingerprints:Vector<long> = ResPQ;
+message TL_resPQ {
+    ResPQ_Data data2 = 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // P_Q_inner_data <--
 //  + TL_p_q_inner_data
 //  + TL_p_q_inner_data_dc
@@ -199,23 +220,21 @@ message TL_destroy_auth_key_fail {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ResPQ <--
-//  + TL_resPQ
+// RSAPublicKey <--
+//  + TL_rsa_public_key
 //
-message ResPQ_Data {
-    bytes nonce = 1;
-    bytes server_nonce = 2;
-    string pq = 3;
-    repeated int64 server_public_key_fingerprints = 4;
+message RSAPublicKey_Data {
+    string n = 1;
+    string e = 2;
 }
 
-message ResPQ {
+message RSAPublicKey {
     TLConstructor constructor = 1;
-    ResPQ_Data data2 = 2;
+    RSAPublicKey_Data data2 = 2;
 }
 
-// resPQ#05162463 nonce:int128 server_nonce:int128 pq:string server_public_key_fingerprints:Vector<long> = ResPQ;
-message TL_resPQ {
-    ResPQ_Data data2 = 2;
+// rsa_public_key n:string e:string = RSAPublicKey;
+message TL_rsa_public_key {
+    RSAPublicKey_Data data2 = 2;
 }
 

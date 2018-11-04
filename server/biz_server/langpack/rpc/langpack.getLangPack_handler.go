@@ -32,7 +32,7 @@ func (s *LangpackServiceImpl) LangpackGetLangPack(ctx context.Context, request *
     glog.Infof("langpack.getLangPack#f2f2330a - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
     if _, err := toml.DecodeFile(LANG_PACK_EN_FILE, &langs); err != nil {
-        glog.Errorf("LangpackGetLangPack - decode file %s error: %v", LANG_PACK_EN_FILE, err)
+        glog.Errorf("langpack.getLangPack#f2f2330a - decode file %s error: %v", LANG_PACK_EN_FILE, err)
         return nil, err
     }
 
@@ -58,6 +58,6 @@ func (s *LangpackServiceImpl) LangpackGetLangPack(ctx context.Context, request *
 
     diff.SetStrings(diffStrings)
     // reply := mtproto.MakeLangPackDifference(diff)
-    glog.Infof("LangpackGetLangPack - reply: %s", logger.JsonDebugData(diff))
+    glog.Infof("langpack.getLangPack#f2f2330a - reply: %s", logger.JsonDebugData(diff))
     return diff.To_LangPackDifference(), nil
 }

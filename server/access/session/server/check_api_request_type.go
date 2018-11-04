@@ -100,6 +100,7 @@ func checkRpcWithoutLogin(tl mtproto.TLObject) bool {
 	switch tl.(type) {
 	case //*mtproto.TLAuthCheckPhone,
 		// *mtproto.TLAuthSendCodeLayer51,
+		*mtproto.TLAuthLogOut,
 		*mtproto.TLAuthSendCode,
 		*mtproto.TLAuthSignIn,
 		*mtproto.TLAuthSignUp,
@@ -123,6 +124,7 @@ func checkRpcWithoutLogin(tl mtproto.TLObject) bool {
 	case *mtproto.TLLangpackGetLanguages,
 		*mtproto.TLLangpackGetDifference,
 		*mtproto.TLLangpackGetLangPack,
+		*mtproto.TLLangpackGetLangPackLayer71,
 		*mtproto.TLLangpackGetStrings:
 
 		return true

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +15,12 @@
  * limitations under the License.
  */
 
-package model
+package dataobject
 
-import (
-	// "fmt"
-	// "github.com/nebulaim/telegramd/helper/orm"
-	// _ "github.com/go-sql-driver/mysql" // import your used driver
-	"fmt"
-	"github.com/BurntSushi/toml"
-	"testing"
-)
-
-func TestGetLangPacks(t *testing.T) {
-	var langPacks LangPacks
-
-	if _, err := toml.DecodeFile("../../lang_pack_en.toml", &langPacks); err != nil {
-		fmt.Printf("%s\n", err)
-		return
-	}
-
-	fmt.Printf("%v\n", langPacks)
+type ImportedContactsDO struct {
+	Id             int64  `db:"id"`
+	UserId         int32  `db:"user_id"`
+	ImportedUserId int32  `db:"imported_user_id"`
+	Deleted        int8   `db:"deleted"`
+	CreatedAt      string `db:"created_at"`
 }

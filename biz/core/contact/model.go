@@ -46,6 +46,7 @@ type contactsDAO struct {
 	*mysql_dao.UsersDAO
 	*mysql_dao.UnregisteredContactsDAO
 	*mysql_dao.PopularContactsDAO
+	*mysql_dao.ImportedContactsDAO
 }
 
 type ContactModel struct {
@@ -57,6 +58,7 @@ func (m *ContactModel) InstallModel() {
 	m.dao.UsersDAO = dao.GetUsersDAO(dao.DB_MASTER)
 	m.dao.UnregisteredContactsDAO = dao.GetUnregisteredContactsDAO(dao.DB_MASTER)
 	m.dao.PopularContactsDAO = dao.GetPopularContactsDAO(dao.DB_MASTER)
+	m.dao.ImportedContactsDAO = dao.GetImportedContactsDAO(dao.DB_MASTER)
 }
 
 func (m *ContactModel) RegisterCallback(cb interface{}) {

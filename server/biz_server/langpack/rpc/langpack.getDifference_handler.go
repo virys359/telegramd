@@ -28,7 +28,7 @@ import (
 // langpack.getDifference#b2e4d7d from_version:int = LangPackDifference;
 func (s *LangpackServiceImpl) LangpackGetDifference(ctx context.Context, request *mtproto.TLLangpackGetDifference) (*mtproto.LangPackDifference, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("LangpackGetDifference - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("langpack.getDifference#b2e4d7d - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
 	// TODO(@benqi): Impl LangpackGetDifference logic
 	diff := mtproto.NewTLLangPackDifference()
@@ -40,6 +40,6 @@ func (s *LangpackServiceImpl) LangpackGetDifference(ctx context.Context, request
 		// TODO(@benqi): 找出不同版本的增量更新数据
 	}
 
-	glog.Infof("LangpackGetDifference - reply: %s", logger.JsonDebugData(diff))
+	glog.Infof("langpack.getDifference#b2e4d7d - reply: %s", logger.JsonDebugData(diff))
 	return diff.To_LangPackDifference(), nil
 }

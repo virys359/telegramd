@@ -187,19 +187,21 @@ func (c *clientSessionHandler) sendPendingMessagesToClient(connID ClientConnID, 
 
 	// glog.Infof("sendPendingMessagesToClient - connID: {%v}, pendingLen: {%v}", connID, len(pendingMessages))
 	if len(pendingMessages) == 1 {
-		return c.sendToClient(connID, md, pendingMessages[0].messageId, pendingMessages[0].confirm, pendingMessages[0].tl)
+		// return c.sendToClient(connID, md, pendingMessages[0].messageId, pendingMessages[0].confirm, pendingMessages[0].tl)
+		return c.sendToClient(connID, md, 0, pendingMessages[0].confirm, pendingMessages[0].tl)
 	} else {
 		msgContainer := &mtproto.TLMsgContainer{
 			Messages: make([]mtproto.TLMessage2, 0, len(pendingMessages)),
 		}
 		// var seqno int32
 		for _, m := range pendingMessages {
-			msgId := m.messageId
-			if msgId == 0 {
-				msgId = mtproto.GenerateMessageId()
-			}
+			//msgId := m.messageId
+			//if msgId == 0 {
+			//	msgId = mtproto.GenerateMessageId()
+			//}
 			message2 := mtproto.TLMessage2{
-				MsgId:  msgId,
+				//MsgId:  msgId,
+				MsgId:  mtproto.GenerateMessageId(),
 				Seqno:  c.generateMessageSeqNo(m.confirm),
 				Bytes:  int32(len(m.tl.EncodeToLayer(int(c.manager.Layer)))),
 				// Bytes:  int32(len(m.tl.Encode())),

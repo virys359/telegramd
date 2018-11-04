@@ -164,6 +164,45 @@ func (dao *UsersDAO) SelectUsersByIdList(id_list []int32) []dataobject.UsersDO {
 	return values
 }
 
+// select id, access_hash, first_name, last_name, username, phone, photos from users where phone in (:phoneList)
+// TODO(@benqi): sqlmap
+func (dao *UsersDAO) SelectUsersByPhoneList(phoneList []string) []dataobject.UsersDO {
+	var q = "select id, access_hash, first_name, last_name, username, phone, photos from users where phone in (?)"
+	query, a, err := sqlx.In(q, phoneList)
+	rows, err := dao.db.Queryx(query, a...)
+
+	if err != nil {
+		errDesc := fmt.Sprintf("Queryx in SelectUsersByPhoneList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	defer rows.Close()
+
+	var values []dataobject.UsersDO
+	for rows.Next() {
+		v := dataobject.UsersDO{}
+
+		// TODO(@benqi): 不使用反射
+		err := rows.StructScan(&v)
+		if err != nil {
+			errDesc := fmt.Sprintf("StructScan in SelectUsersByPhoneList(_), error: %v", err)
+			glog.Error(errDesc)
+			panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+		}
+		values = append(values, v)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		errDesc := fmt.Sprintf("rows in SelectUsersByPhoneList(_), error: %v", err)
+		glog.Error(errDesc)
+		panic(mtproto.NewRpcError(int32(mtproto.TLRpcErrorCodes_DBERR), errDesc))
+	}
+
+	return values
+}
+
 // select id, access_hash, first_name, last_name, username, phone, photos from users where username = :username or first_name = :first_name or last_name = :last_name or phone = :phone limit 20
 // TODO(@benqi): sqlmap
 func (dao *UsersDAO) SelectByQueryString(username string, first_name string, last_name string, phone string) []dataobject.UsersDO {

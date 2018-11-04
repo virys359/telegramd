@@ -39,12 +39,50 @@ func (s *ContactsServiceImpl) ContactsImportContacts(ctx context.Context, reques
 	var (
 		err              error
 		importedContacts *mtproto.TLContactsImportedContacts
+		region 			 string
+		// := s.UserModel.GetCountryCodeByUser(md.UserId)
 	)
 
 	if len(request.Contacts) == 0 {
 		err := mtproto.NewRpcError2(mtproto.TLRpcErrorCodes_BAD_REQUEST)
 		glog.Error(err, ": contacts empty")
 		return nil, err
+	}
+
+	importList := make([]*mtproto.InputContact_Data, 0, len(request.Contacts))
+	importPhoneList := make([]string, 0, len(request.Contacts))
+	for _, c2 := range request.GetContacts() {
+		c := c2.To_InputPhoneContact()
+		// if c.GetPhone() == ""
+		// ignore first_name and last_name is emtpy
+		if c.GetFirstName() == "" && c.GetLastName() == "" {
+			continue
+		}
+		phone := c.GetPhone()
+		pnumber, err := base.MakePhoneNumberUtil(phone, "")
+		if err != nil {
+			if region == "" {
+				region = s.UserModel.GetCountryCodeByUser(md.UserId)
+			}
+			pnumber, err = base.MakePhoneNumberUtil(phone, region)
+			if err != nil {
+				continue
+			}
+		}
+		phone = pnumber.GetNormalizeDigits()
+		c.SetPhone(phone)
+		importPhoneList = append(importPhoneList, phone)
+		importList = append(importList, c.GetData2())
+	}
+
+	if len(importList) == 0 {
+		glog.Warning("")
+		importedContacts = &mtproto.TLContactsImportedContacts{ Data2: &mtproto.Contacts_ImportedContacts_Data{
+			Imported:       []*mtproto.ImportedContact{},
+			PopularInvites: []*mtproto.PopularContact{},
+			RetryContacts:  []int64{},
+		}}
+		return importedContacts.To_Contacts_ImportedContacts(), nil
 	}
 
 	// 注意: 目前只支持导入1个并且已经注册的联系人!!!!

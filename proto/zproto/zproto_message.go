@@ -130,9 +130,8 @@ type ZProtoMetadata struct {
 	SpanId       int64
 	ReceiveTime  int64
 	From         string
-	// To        string
-	Options map[string]string
-	extend  []byte
+	Options      map[string]string
+	extend       []byte
 }
 
 func (m *ZProtoMetadata) Encode(x *bytes2.BufferOutput) {

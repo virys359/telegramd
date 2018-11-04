@@ -34,6 +34,7 @@ enum TLConstructor {
     CRC32_msg_copy = 530561358;
     CRC32_gzip_packed = 812830625;
     CRC32_rpc_result = -212046591;
+    CRC32_rsa_public_key = 2048510838;
     CRC32_resPQ = 85337187;
     CRC32_p_q_inner_data = -2083955988;
     CRC32_p_q_inner_data_dc = -1443537003;
@@ -780,6 +781,7 @@ enum TLConstructor {
     CRC32_messages_searchLayer68 = -225926539;
     CRC32_account_registerDeviceLayer71 = 1669245048;
     CRC32_account_unregisterDeviceLayer71 = 1707432768;
+    CRC32_messages_getMessagesLayer71 = 1109588596;
     CRC32_langpack_getLangPackLayer71 = -1699363442;
     CRC32_invokeAfterMsg = -878758099;
     CRC32_invokeAfterMsgs = 1036301552;
@@ -1056,6 +1058,7 @@ enum TLConstructor {
     CRC32_long = 1253220205;
     CRC32_authKeyInfo = -793297679;
     CRC32_clientSessionInfo = 167005722;
+    CRC32_attachData = -989020720;
     CRC32_sync_connectToSessionServer = -830423433;
     CRC32_sync_sessionServerConnected = -385206154;
     CRC32_sync_pushUpdatesData = 2074796531;

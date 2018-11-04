@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, https://github.com/nebulaim
+ *  Copyright (c) 2018, https://github.com/nebulaim
  *  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,30 +15,28 @@
  * limitations under the License.
  */
 
-package model
+package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/nebulaim/telegramd/baselib/logger"
-	"github.com/nebulaim/telegramd/proto/mtproto"
-	"io/ioutil"
-	"testing"
+	"io"
+	"log"
+	"net"
 )
 
-func TestGetHelpConfig(t *testing.T) {
-	helpConfig := mtproto.NewTLConfig()
-	// data2 := &ProfilePhotoIds{}
-	configData, err := ioutil.ReadFile("./config_test.json")
+func main() {
+	l, err := net.Listen("tcp", "localhost:33333")
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
-
-	err = json.Unmarshal([]byte(configData), helpConfig)
-	if err != nil {
-		fmt.Println(err)
-		return
+	defer l.Close()
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+		go func(c net.Conn) {
+			defer c.Close()
+			io.Copy(conn, c)
+		}(conn)
 	}
-	fmt.Printf("%s\n", logger.JsonDebugData(helpConfig))
 }

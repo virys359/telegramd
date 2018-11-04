@@ -332,7 +332,7 @@ func (m *MessageModel) SendInternalMessage(senderUserId int32,
 				if do.UserId == senderUserId {
 					continue
 				}
-				inBoxReplyToMsgId := m.GetPeerMessageId(peer.PeerId, outBoxReplyToMsgId, outBox.OwnerId)
+				inBoxReplyToMsgId := m.GetPeerMessageId(outBox.OwnerId, outBoxReplyToMsgId, do.UserId)
 				inBox := MakeMessageInBox(do.UserId, hasMediaUnread, inBoxReplyToMsgId, messageData)
 				inBox.Insert()
 

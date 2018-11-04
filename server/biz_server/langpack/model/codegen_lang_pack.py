@@ -102,7 +102,7 @@ with open(sys.argv[1]) as f:
 print'''# lang_pack_en.toml
 
 langCode = "en"
-version = 69
+version = 77
 '''
 
 

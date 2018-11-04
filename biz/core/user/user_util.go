@@ -107,6 +107,15 @@ func (m *UserModel) GetUserByPhoneNumber(selfId int32, phoneNumber string) *user
 	return m.makeUserDataByDO(selfId, do)
 }
 
+func (m *UserModel) GetUserListByPhoneNumberList(selfId int32, phoneNumberList []string) []*userData {
+	do := m.dao.UsersDAO.SelectByPhoneNumber(phoneNumberList[0])
+	if do == nil {
+		return nil
+	}
+	do.Phone = phoneNumberList[0]
+	return []*userData{m.makeUserDataByDO(selfId, do)}
+}
+
 func (m *UserModel) GetUserByUsername(selfId int32, username string) *userData {
 	do := m.dao.UsersDAO.SelectByUsername(username)
 	if do == nil {

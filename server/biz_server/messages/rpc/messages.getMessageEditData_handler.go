@@ -18,20 +18,27 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/nebulaim/telegramd/baselib/grpc_util"
 	"github.com/nebulaim/telegramd/baselib/logger"
 	"github.com/nebulaim/telegramd/proto/mtproto"
 	"golang.org/x/net/context"
+	"github.com/nebulaim/telegramd/biz/base"
 )
 
 // messages.getMessageEditData#fda68d36 peer:InputPeer id:int = messages.MessageEditData;
 func (s *MessagesServiceImpl) MessagesGetMessageEditData(ctx context.Context, request *mtproto.TLMessagesGetMessageEditData) (*mtproto.Messages_MessageEditData, error) {
 	md := grpc_util.RpcMetadataFromIncoming(ctx)
-	glog.Infof("MessagesGetMessageEditData - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
+	glog.Infof("messages.getMessageEditData#fda68d36 - metadata: %s, request: %s", logger.JsonDebugData(md), logger.JsonDebugData(request))
 
-	// TODO(@benqi): Impl MessagesGetMessageEditData logic
-
-	return nil, fmt.Errorf("Not impl MessagesGetMessageEditData")
+	peer := base.FromInputPeer2(md.UserId, request.GetPeer())
+	editData := &mtproto.TLMessagesMessageEditData{Data2: &mtproto.Messages_MessageEditData_Data{}}
+	edit, err := s.MessageModel.GetMessageBox2(peer.PeerType, md.UserId, request.GetId())
+	if err == nil {
+		// editData := &mtproto.TLMessagesMessageEditData{Data2: &mtproto.Messages_MessageEditData_Data{}}
+		//editData.SetCaption(edit.Message.GetData2().e)
+		_ = edit
+	}
+	glog.Infof("messages.getMessageEditData#fda68d36 - reply: %s", logger.JsonDebugData(editData))
+	return editData.To_Messages_MessageEditData(), nil
 }

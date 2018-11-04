@@ -22,6 +22,7 @@ import (
 
 	"github.com/nebulaim/telegramd/biz/dal/dataobject"
 	"github.com/nebulaim/telegramd/proto/mtproto"
+	// "github.com/mattermost/mattermost-server/model"
 )
 
 //type contactUser struct {
@@ -240,4 +241,110 @@ func (c contactLogic) SearchContacts(q string, limit int32) []int32 {
 		founds = append(founds, do.Id)
 	}
 	return founds
+}
+
+//const (
+//	_unregisted = iota
+//	_noneContact
+//	_contact
+//	_mutualContact
+//)
+
+type contactItem struct {
+	c               *mtproto.InputContact_Data
+	unregisted      bool
+	userId          int32
+	contactId       int32
+	importContactId int32
+}
+
+func (c *contactLogic) importContacts(contacts []*mtproto.InputContact_Data) []*mtproto.ImportedContact_Data {
+	//// TODO(@benqi): 优化, 减少数据库操作：
+	//// ## importContacts优化方法
+	//// - user_contacts表添加relation_id字段
+	//// - 由selfUserId和contact.userId生成relation_id，由relation_id_list查出所有contacts
+	//// - 处理完后批量更新到数据库
+	//// - 处理importers
+	////  - 方法1，存储在mysql里：
+	//// 		- 如果AB或BA存在，则importer肯定存在，只需要批量自增importers
+	////  	- AB或BA都不存在，批量查出importers，计算最终的importers存储到db里（插入或自增）
+	////  - 方法2，存储在redis里：
+	////		- 批量执行redis的increase
+	////
+	//importeds := make([]*contact.ImportedContactData, 0, len(contacts))
+	//for _, contact := range contacts {
+	//	importeds = append(importeds, c.importContact(contact))
+	//}
+	//
+	//return importeds
+
+	importContacts := make(map[string]*contactItem)
+	// 1. 找出phoneList里的所有已注册用户
+	phoneList := make([]string, 0, len(contacts))
+	for _, c2 := range contacts {
+		phoneList = append(phoneList, c2.Phone)
+		importContacts[c2.Phone] = &contactItem{unregisted: true, c: c2}
+	}
+
+	// 已注册
+	registeredContacts := c.dao.UsersDAO.SelectUsersByPhoneList(phoneList)
+	for i := 0; i < len(registeredContacts); i++ {
+		if c2, ok := importContacts[registeredContacts[i].Phone]; ok {
+			c2.unregisted = false
+			c2.userId = registeredContacts[i].Id
+		}
+	}
+
+	myContacts := c.dao.UserContactsDAO.SelectAllUserContacts(c.selfUserId)
+	for i := 0; i < len(myContacts); i++ {
+		if c2, ok := importContacts[myContacts[i].ContactPhone]; ok {
+			c2.contactId = myContacts[i].ContactUserId
+		}
+	}
+
+	importedMyContacts := c.dao.ImportedContactsDAO.SelectImportedContacts(c.selfUserId)
+	for i := 0; i < len(importedMyContacts); i++ {
+		for _, c2 := range importContacts {
+			if c2.userId == importedMyContacts[i].ImportedUserId {
+				c2.importContactId = c2.userId
+				break
+			}
+		}
+	}
+
+	for _, c2 := range importContacts {
+		if c2.unregisted {
+			do := &dataobject.UnregisteredContactsDO{
+				ImporterUserId:   c.selfUserId,
+				ContactPhone:     c2.c.Phone,
+				ContactFirstName: c2.c.FirstName,
+				ContactLastName:  c2.c.LastName,
+			}
+			c.dao.UnregisteredContactsDAO.Insert(do)
+		} else {
+			if c2.contactId != 0 || c2.contactId == 0 && c2.importContactId == 0 {
+			} else {
+				//if c2.importContactId == 0 {
+				//
+				//} else {
+				//
+				//}
+			}
+		}
+		//if c2.userId == importedMyContacts[i].ImportedUserId == {
+		//	c2.mutualContact = true
+		//	break
+		//}
+	}
+
+	//// select * from users where phone in (:phoneList)
+	//// users := GetUserListByPhoneNumberList[]*mtproto.User{}// model.GetGroupNameFromUserIds()
+	//for _, c2 := range contacts {
+	//	if checkExists(c2.Phone) {
+	//
+	//	}
+	//	// c.dao.SelectByPhoneNumber()
+	//}
+
+	return nil
 }

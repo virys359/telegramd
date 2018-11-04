@@ -77,6 +77,7 @@ type MysqlDAOList struct {
 
 	UnregisteredContactsDAO *mysql_dao.UnregisteredContactsDAO
 	PopularContactsDAO      *mysql_dao.PopularContactsDAO
+	ImportedContactsDAO 	*mysql_dao.ImportedContactsDAO
 
 	UsernameDAO *mysql_dao.UsernameDAO
 }
@@ -139,6 +140,7 @@ func InstallMysqlDAOManager(clients sync.Map /*map[string]*sqlx.DB*/) {
 
 		daoList.UnregisteredContactsDAO = mysql_dao.NewUnregisteredContactsDAO(v)
 		daoList.PopularContactsDAO = mysql_dao.NewPopularContactsDAO(v)
+		daoList.ImportedContactsDAO = mysql_dao.NewImportedContactsDAO(v)
 
 		daoList.UsernameDAO = mysql_dao.NewUsernameDAO(v)
 
@@ -474,11 +476,21 @@ func GetUnregisteredContactsDAO(dbName string) (dao *mysql_dao.UnregisteredConta
 	return
 }
 
+
 func GetPopularContactsDAO(dbName string) (dao *mysql_dao.PopularContactsDAO) {
 	daoList := GetMysqlDAOList(dbName)
 	// err := mysqlDAOManager.daoListMap[dbName]
 	if daoList != nil {
 		dao = daoList.PopularContactsDAO
+	}
+	return
+}
+
+func GetImportedContactsDAO(dbName string) (dao *mysql_dao.ImportedContactsDAO) {
+	daoList := GetMysqlDAOList(dbName)
+	// err := mysqlDAOManager.daoListMap[dbName]
+	if daoList != nil {
+		dao = daoList.ImportedContactsDAO
 	}
 	return
 }
