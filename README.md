@@ -4,16 +4,7 @@
 ## Chinese
 
 ### 简介
-Go语言非官方开源telegram服务端，包括但不限于如下一些特色：
-
-- [mtprotoc](https://github.com/nebulaim/mtprotoc)代码生成器
-	- 可自动将tl转换成protobuf协议
-	- 自动生成tl二进制数据的的codec代码，可将接收到客户端tl的二进制数据转换成protobuf对象，并通过grpc接入到内部各服务节点处理，这样就可以借助很完善的grpc生态环境来实现我们的系统
-- [dalgen](https://github.com/nebulaim/nebula-dal-generator)数据访问层代码生成器
-	- 集成了sqlparser解析器，通过可配置的sql自动生成dao代码
-	- 代码生成时检查sql语法，极大减少传统手写sql实现的出错几率和手写sql调用的工作量
-- 支持可切换的多个服务注册和发现系统
-- 集成了grpc的recovery等中间件
+Go语言非官方开源telegram服务端
 
 ### 架构图
 ![架构图](doc/image/architecture-001.jpeg)
