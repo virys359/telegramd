@@ -139,5 +139,5 @@ open source mtproto server implement by golang, which compatible telegram client
 [prerequisite](scripts/prerequisite.sh)
 
 ## Feedback
-Please report bugs, concerns, suggestions by issues, or join telegram group [Telegramd](https://t.me/joinchat/D8b0DRJiuH8EcIHNZQmCxQ) to discuss problems around source code.
+Please report bugs, concerns, suggestions by issues, or join telegram group [Telegramd](https://t.me/entelegramd) to discuss problems around source code.
 
